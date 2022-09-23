@@ -1,7 +1,7 @@
 {
-  "name": "lido-api-template",
+  "name": "lido-no-keys-service",
   "version": "0.0.1",
-  "description": "Lido API Template",
+  "description": "Lido Node Operators keys service",
   "author": "Lido team",
   "private": true,
   "license": "MIT",
@@ -21,7 +21,10 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@lido-nestjs/contracts": "^2.3.0",
+    "@lido-nestjs/execution": "^1.4.0",
     "@lido-nestjs/logger": "^1.0.1",
+    "@lido-nestjs/registry": "^1.4.4",
     "@nestjs/common": "^8.2.5",
     "@nestjs/config": "^1.1.6",
     "@nestjs/core": "^8.2.5",
@@ -34,11 +37,17 @@
     "cache-manager": "^3.6.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
+    "ethers": "^5.5.4",
     "fastify-swagger": "^4.13.1",
     "prom-client": "^14.0.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.5.2"
+    "rxjs": "^7.5.2",
+    "@mikro-orm/nestjs": "^5.0.2",
+    "@mikro-orm/core": "^5.2.0",
+    "@mikro-orm/knex": "^5.2.0",
+    "@mikro-orm/postgresql": "^5.2.0",
+    "@nestjs/schedule": "^2.0.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.2.5",

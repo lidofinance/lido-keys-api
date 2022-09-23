@@ -1,0 +1,13 @@
+import { ApiProperty } from '@nestjs/swagger';
+
+export class Key {
+  @ApiProperty({
+    required: true,
+  })
+  pubkey: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  signature?: string;
+}

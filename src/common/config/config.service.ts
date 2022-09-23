@@ -9,7 +9,7 @@ export class ConfigService extends ConfigServiceSource<EnvironmentVariables> {
     return [this.get('SENTRY_DSN') ?? ''].filter((v) => v).map((v) => String(v));
   }
 
-  public get<T extends keyof EnvironmentVariables>(key: T): EnvironmentVariables[T] {
-    return super.get(key, { infer: true }) as EnvironmentVariables[T];
-  }
+  // public get<T extends keyof EnvironmentVariables>(key: T): EnvironmentVariables[T] {
+  //   return super.get(key, { infer: true }) as EnvironmentVariables[T];
+  // }
 }

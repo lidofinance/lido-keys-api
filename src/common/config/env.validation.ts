@@ -1,11 +1,13 @@
 import { plainToClass, Transform } from 'class-transformer';
-import { IsEnum, IsNumber, IsString, IsOptional, validateSync, Min } from 'class-validator';
+import { IsEnum, IsNumber, IsString, IsOptional, validateSync, Min, IsArray, ArrayMinSize } from 'class-validator';
 import { Environment, LogLevel, LogFormat } from './interfaces';
+import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
+import { CronExpression } from '@nestjs/schedule';
 
 const toNumber =
   ({ defaultValue }) =>
   ({ value }) => {
-    if (value === '' || value == null) return defaultValue;
+    if (value === '' || value == null || value == undefined) return defaultValue;
     return Number(value);
   };
 
@@ -54,6 +56,38 @@ export class EnvironmentVariables {
   @IsEnum(LogFormat)
   @Transform(({ value }) => value || LogFormat.json)
   LOG_FORMAT: LogFormat;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @Transform(({ value }) => value.split(','))
+  PROVIDERS_URLS: NonEmptyArray<string>;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  CHAIN_ID: number;
+
+  @IsString()
+  DB_HOST: string;
+
+  @IsString()
+  DB_USERNAME: string;
+
+  @IsString()
+  DB_PASSWORD: string;
+
+  @IsString()
+  DB_NAME: string;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  DB_PORT: number;
+
+  @IsString()
+  DB_MIGRATIONS_TABLE_NAME;
+
+  @IsOptional()
+  @IsString()
+  JOB_INTERVAL_REGISTRY = CronExpression.EVERY_MINUTE;
 }
 
 export function validate(config: Record<string, unknown>) {

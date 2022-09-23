@@ -1,4 +1,4 @@
-## Lido API Template
+## Lido Node Operators Keys Service
 
 > 🚧 CI and deploy
 > 
@@ -12,6 +12,10 @@
 ```bash
 $ yarn install
 ```
+
+## Usage
+
+Generate db for application and put name in `DB_NAME` environment.
 
 ## Running the app
 

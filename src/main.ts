@@ -24,7 +24,8 @@ async function bootstrap() {
   app.enableVersioning({ type: VersioningType.URI });
 
   // logger
-  app.useLogger(app.get(LOGGER_PROVIDER));
+  const logger = app.get(LOGGER_PROVIDER);
+  app.useLogger(logger);
 
   // sentry
   const release = `${APP_NAME}@${APP_VERSION}`;
@@ -51,6 +52,6 @@ async function bootstrap() {
   SwaggerModule.setup(SWAGGER_URL, app, swaggerDocument);
 
   // app
-  await app.listen(appPort, '0.0.0.0');
+  await app.listen(appPort, '0.0.0.0', () => logger.log(`Listening on ${appPort}`));
 }
 bootstrap();
