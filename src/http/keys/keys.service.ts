@@ -18,7 +18,7 @@ export class KeysService {
     const keys = registryKeys.map((key) => this.transformKey(key, withSignature));
 
     return {
-      // swagger uo не справляется с выводом всех значений
+      // swagger ui не справляется с выводом всех значений
       // стоит ли добавить пагинацию ? на основе бд или на основе работы с данными в памяти
       data: keys,
       meta: {

@@ -12,6 +12,7 @@ const toNumber =
   };
 
 export class EnvironmentVariables {
+  @IsOptional()
   @IsEnum(Environment)
   NODE_ENV: Environment = Environment.development;
 
@@ -81,9 +82,6 @@ export class EnvironmentVariables {
   @IsNumber()
   @Transform(({ value }) => Number(value))
   DB_PORT: number;
-
-  @IsString()
-  DB_MIGRATIONS_TABLE_NAME;
 
   @IsOptional()
   @IsString()
