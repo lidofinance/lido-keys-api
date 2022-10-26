@@ -89,6 +89,10 @@ export class EnvironmentVariables {
 }
 
 export function validate(config: Record<string, unknown>) {
+  if (process.env.NODE_ENV == 'test') {
+    return config;
+  }
+
   const validatedConfig = plainToClass(EnvironmentVariables, config);
 
   const validatorOptions = { skipMissingProperties: false };
