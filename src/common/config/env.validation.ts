@@ -85,7 +85,7 @@ export class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
-  JOB_INTERVAL_REGISTRY = CronExpression.EVERY_MINUTE;
+  JOB_INTERVAL_REGISTRY = CronExpression.EVERY_5_SECONDS;
 }
 
 export function validate(config: Record<string, unknown>) {

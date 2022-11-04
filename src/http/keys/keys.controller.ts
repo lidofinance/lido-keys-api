@@ -1,8 +1,8 @@
-import { Controller, Get, Version, Query, Param } from '@nestjs/common';
+import { Controller, Get, Post, Version, Query, Body } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
 import { KeysQuery } from './entities';
-import { AllKeysResponse, KeyResponse } from './entities';
+import { KeysResponse } from './entities';
 import { toList } from '../common/utils';
 
 @Controller('keys')
@@ -15,7 +15,7 @@ export class KeysController {
   @ApiResponse({
     status: 200,
     description: 'Get list of all keys',
-    type: () => AllKeysResponse,
+    type: () => KeysResponse,
   })
   getAll(@Query() query: KeysQuery) {
     const fields = toList(query.fields);
@@ -23,14 +23,14 @@ export class KeysController {
   }
 
   @Version('1')
-  @Get(':pubkey')
+  @Post()
   @ApiResponse({
     status: 200,
-    description: 'Return key by pubkey',
-    type: () => KeyResponse,
+    description: 'Returns all keys found in db from pubkey list',
+    type: () => KeysResponse,
   })
-  getOne(@Query() query: KeysQuery, @Param('pubkey') pubkey: string) {
+  getAllByPubkeys(@Body() pubkeys: string[], @Query() query: KeysQuery) {
     const fields = toList(query.fields);
-    return this.keysService.getByPubKey(fields, pubkey);
+    return this.keysService.getByPubKeys(fields, pubkeys);
   }
 }

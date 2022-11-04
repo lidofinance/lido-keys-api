@@ -42,8 +42,8 @@ describe('Keys controller', () => {
     getMetaDataFromStorage() {
       return Promise.resolve(meta);
     }
-    getOperatorKey(pubkey: string) {
-      const key = registryKeys.find((el) => el.key === pubkey);
+    getOperatorKeys(pubkeys: string[]) {
+      const key = registryKeys.filter((el) => pubkeys.includes(el.key));
       return Promise.resolve(key);
     }
   }
@@ -68,44 +68,54 @@ describe('Keys controller', () => {
     keysController = moduleRef.get<KeysController>(KeysController);
   });
 
-  describe('getALL', () => {
+  describe('getAll', () => {
     test('without query', async () => {
       const result = await keysController.getAll(<any>{});
-      const keys = registryKeys.map((key) => ({ pubkey: key.key }));
+      const keys = registryKeys.map((key) => ({ key: key.key }));
       expect(result).toEqual({ data: keys, meta: meta });
     });
 
     test('with fields as one value', async () => {
       const result = await keysController.getAll(<any>{ fields: 'signature' });
-      const keys = registryKeys.map((key) => ({ pubkey: key.key, signature: key.depositSignature }));
+      const keys = registryKeys.map((key) => ({ key: key.key, depositSignature: key.depositSignature }));
       expect(result).toEqual({ data: keys, meta: meta });
     });
 
     test('with list of fields', async () => {
       const result = await keysController.getAll(<any>{ fields: ['signature', 'operatorIndex'] });
-      const keys = registryKeys.map((key) => ({ pubkey: key.key, signature: key.depositSignature }));
+      const keys = registryKeys.map((key) => ({ key: key.key, depositSignature: key.depositSignature }));
       expect(result).toEqual({ data: keys, meta: meta });
     });
   });
 
   describe('getOne', () => {
     test('without query', async () => {
-      const result = await keysController.getOne(<any>{}, registryKeys[0].key);
-      expect(result).toEqual({ data: { pubkey: registryKeys[0].key }, meta: meta });
+      const result = await keysController.getAllByPubkeys([registryKeys[0].key, registryKeys[1].key], <any>{}); //getOne(<any>{}, registryKeys[0].key);
+      expect(result).toEqual({ data: [{ key: registryKeys[0].key }, { key: registryKeys[1].key }], meta: meta });
     });
 
     test('with fields as one value', async () => {
-      const result = await keysController.getOne(<any>{ fields: 'signature' }, registryKeys[0].key);
+      const result = await keysController.getAllByPubkeys([registryKeys[0].key, registryKeys[1].key], <any>{
+        fields: 'signature',
+      });
       expect(result).toEqual({
-        data: { pubkey: registryKeys[0].key, signature: registryKeys[0].depositSignature },
+        data: [
+          { key: registryKeys[0].key, depositSignature: registryKeys[0].depositSignature },
+          { key: registryKeys[1].key, depositSignature: registryKeys[1].depositSignature },
+        ],
         meta: meta,
       });
     });
 
     test('with list of fields', async () => {
-      const result = await keysController.getOne(<any>{ fields: ['signature', 'operatorIndex'] }, registryKeys[0].key);
+      const result = await keysController.getAllByPubkeys([registryKeys[0].key, registryKeys[1].key], <any>{
+        fields: ['signature', 'operatorIndex'],
+      });
       expect(result).toEqual({
-        data: { pubkey: registryKeys[0].key, signature: registryKeys[0].depositSignature },
+        data: [
+          { key: registryKeys[0].key, depositSignature: registryKeys[0].depositSignature },
+          { key: registryKeys[1].key, depositSignature: registryKeys[1].depositSignature },
+        ],
         meta: meta,
       });
     });

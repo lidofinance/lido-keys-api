@@ -4,10 +4,10 @@ export class Key {
   @ApiProperty({
     required: true,
   })
-  pubkey: string;
+  key: string;
 
   @ApiProperty({
     required: false,
   })
-  signature?: string;
+  depositSignature?: string;
 }

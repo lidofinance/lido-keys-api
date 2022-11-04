@@ -7,6 +7,8 @@ export function filterFields(query: string, transformMap: { [key: string]: strin
   return fields;
 }
 
+// <T>(value: T | T[]): T[[]
+
 export const toList = (value) => {
   if (Array.isArray(value)) {
     return value;

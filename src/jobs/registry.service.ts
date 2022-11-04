@@ -27,7 +27,9 @@ export class RegistryService {
 
   public async onModuleInit(): Promise<void> {
     // Do not wait for initialization to avoid blocking the main process
-    this.initialize();
+
+    // this.initialize().catch((err) => this.logger.error(err));
+    this.initialize().catch((err) => this.logger.error(err));
   }
 
   /**
@@ -64,7 +66,7 @@ export class RegistryService {
     this.lastTimestamp = meta?.timestamp ?? this.lastTimestamp;
   }
 
-  /** returns all operators keys from the db */
+  /** @returns all operators keys from the db */
   public async getAllKeysFromStorage(): Promise<RegistryKey[]> {
     return await this.keyStorageService.findAll();
   }
@@ -74,13 +76,12 @@ export class RegistryService {
   }
 
   /**
-   * Returns key data by public key
-   * @param pubKey - validator public key
-   * @returns key data from DB
+   * Returns all keys found in db from pubkey list
+   * @param pubKeys - validators public keys
+   * @returns keys from DB
    */
-  public async getOperatorKey(pubKey: string): Promise<RegistryKey | null> {
-    const keys = await this.keyStorageService.findByPubkey(pubKey);
-    return keys?.[0] ?? null;
+  public async getOperatorKeys(pubKeys: string[]): Promise<RegistryKey[] | null> {
+    return await this.keyStorageService.find({ key: { $in: pubKeys } });
   }
 
   /**
