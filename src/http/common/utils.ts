@@ -1,15 +1,9 @@
-export function filterFields(query: string, transformMap: { [key: string]: string }): string[] {
-  const fields = query.split(',').reduce((result, field) => {
-    const transformedField = transformMap[field.toLowerCase()];
-    return transformedField ? result.concat([transformedField]) : result;
-  }, []);
-
-  return fields;
-}
-
-// <T>(value: T | T[]): T[[]
-
-export const toList = (value) => {
+// for /keys query parsed by nest js
+// in case of fields=signature -> query.fields = "signature"; toList("signature") ->  ["signature"]
+// fields="signature,something" -> query.fields = "signature,something";  toList("signature,something") -> ["signature", "something"]
+// without fields -> query.fields = undefined; toList(undefined) -> [];
+// fields="signature",fields="something" -> query.fields = ["signature", "something"]; toList(["signature", "something"]) -> ["signature", "something"]
+export const toList = (value: string | string[]): string[] => {
   if (Array.isArray(value)) {
     return value;
   }
@@ -18,5 +12,7 @@ export const toList = (value) => {
     return [];
   }
 
-  return [value];
+  const values = value.split(',');
+
+  return values;
 };
