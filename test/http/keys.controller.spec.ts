@@ -3,6 +3,8 @@ import { KeysController, KeysService } from '../../src/http/keys';
 import { hexZeroPad } from '@ethersproject/bytes';
 import { RegistryService } from '../../src/jobs/registry.service';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { EntityManager } from '@mikro-orm/postgresql';
+
 describe('Keys controller', () => {
   let keysController: KeysController;
 
@@ -48,6 +50,12 @@ describe('Keys controller', () => {
     }
   }
 
+  class EntityManagerMock {
+    transactional(fn) {
+      return fn();
+    }
+  }
+
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [KeysController],
@@ -56,6 +64,10 @@ describe('Keys controller', () => {
         {
           provide: RegistryService,
           useClass: RegistryServiceMock,
+        },
+        {
+          provide: EntityManager,
+          useClass: EntityManagerMock,
         },
         {
           provide: LOGGER_PROVIDER,
