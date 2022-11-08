@@ -23,7 +23,7 @@ export class KeysController {
   }
 
   @Version('1')
-  @Post()
+  @Post('/find')
   @ApiResponse({
     status: 200,
     description: 'Returns all keys found in db from pubkey list',
