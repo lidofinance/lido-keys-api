@@ -5,7 +5,15 @@
   "author": "Lido team",
   "private": true,
   "license": "MIT",
+  "mikro-orm": {
+    "useTsNode": true,
+    "configPaths": [
+      "./src/mikro-orm.config.ts",
+      "./dist/mikro-orm.config.js"
+    ]
+  },
   "scripts": {
+    "mikro-orm": "./node_modules/mikro-orm",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -24,11 +32,18 @@
     "@lido-nestjs/contracts": "^2.3.0",
     "@lido-nestjs/execution": "^1.4.0",
     "@lido-nestjs/logger": "^1.0.1",
-    "@lido-nestjs/registry": "^1.4.4",
+    "@lido-nestjs/registry": "^1.4.7",
+    "@mikro-orm/cli": "^5.5.3",
+    "@mikro-orm/core": "^5.5.3",
+    "@mikro-orm/knex": "^5.5.3",
+    "@mikro-orm/migrations": "^5.5.3",
+    "@mikro-orm/nestjs": "^5.1.2",
+    "@mikro-orm/postgresql": "^5.5.3",
     "@nestjs/common": "^8.2.5",
     "@nestjs/config": "^1.1.6",
     "@nestjs/core": "^8.2.5",
     "@nestjs/platform-fastify": "^8.2.5",
+    "@nestjs/schedule": "^2.0.1",
     "@nestjs/swagger": "^5.1.5",
     "@nestjs/terminus": "^8.0.4",
     "@nestjs/throttler": "^2.0.0",
@@ -42,12 +57,7 @@
     "prom-client": "^14.0.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.5.2",
-    "@mikro-orm/nestjs": "^5.0.2",
-    "@mikro-orm/core": "^5.2.0",
-    "@mikro-orm/knex": "^5.2.0",
-    "@mikro-orm/postgresql": "^5.2.0",
-    "@nestjs/schedule": "^2.0.1"
+    "rxjs": "^7.5.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.2.5",

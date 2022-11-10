@@ -12,6 +12,7 @@ import { RegistryModule } from '../jobs';
 import { ScheduleModule } from '@nestjs/schedule';
 import { KeyRegistryModule } from '@lido-nestjs/registry';
 import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
+import config from '../mikro-orm.config';
 
 @Module({
   imports: [
@@ -22,15 +23,14 @@ import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
     MikroOrmModule.forRootAsync({
       async useFactory(configService: ConfigService) {
         return {
+          ...config,
           dbName: configService.get('DB_NAME'),
           host: configService.get('DB_HOST'),
           port: configService.get('DB_PORT'),
           user: configService.get('DB_USERNAME'),
           password: configService.get('DB_PASSWORD'),
-          type: 'postgresql',
-          autoLoadEntities: true,
+          autoLoadEntities: false,
           cache: { enabled: false },
-          schemaGenerator: { createForeignKeyConstraints: false },
         };
       },
       inject: [ConfigService],

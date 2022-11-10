@@ -7,6 +7,7 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { SWAGGER_URL } from 'http/common/swagger';
 import { ConfigService } from 'common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
+import { MikroORM } from '@mikro-orm/core';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ trustProxy: true }), {
@@ -19,6 +20,9 @@ async function bootstrap() {
   const appPort = configService.get('PORT');
   const corsWhitelist = configService.get('CORS_WHITELIST_REGEXP');
   const sentryDsn = configService.get('SENTRY_DSN');
+
+  // migrating when starting application
+  await app.get(MikroORM).getMigrator().up();
 
   // versions
   app.enableVersioning({ type: VersioningType.URI });

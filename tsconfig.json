@@ -21,7 +21,8 @@
       "app/*": ["src/app/*"],
       "common/*": ["src/common/*"],
       "http/*": ["src/http/*"],
-      "jobs/*": ["src/jobs/*"]
+      "jobs/*": ["src/jobs/*"],
+      "migrations/*": ["src/migrations/*"]
     }
   },
   "include": ["src/**/*", "test/**/*"],
