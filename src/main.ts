@@ -6,7 +6,8 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { SWAGGER_URL } from 'http/common/swagger';
 import { ConfigService } from 'common/config';
-import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from 'app';
+import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
+import { MikroORM } from '@mikro-orm/core';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ trustProxy: true }), {
@@ -20,11 +21,15 @@ async function bootstrap() {
   const corsWhitelist = configService.get('CORS_WHITELIST_REGEXP');
   const sentryDsn = configService.get('SENTRY_DSN');
 
+  // migrating when starting application
+  await app.get(MikroORM).getMigrator().up();
+
   // versions
   app.enableVersioning({ type: VersioningType.URI });
 
   // logger
-  app.useLogger(app.get(LOGGER_PROVIDER));
+  const logger = app.get(LOGGER_PROVIDER);
+  app.useLogger(logger);
 
   // sentry
   const release = `${APP_NAME}@${APP_VERSION}`;
@@ -51,6 +56,6 @@ async function bootstrap() {
   SwaggerModule.setup(SWAGGER_URL, app, swaggerDocument);
 
   // app
-  await app.listen(appPort, '0.0.0.0');
+  await app.listen(appPort, '0.0.0.0', () => logger.log(`Listening on ${appPort}`));
 }
 bootstrap();

@@ -1,4 +1,4 @@
-## Lido API Template
+## Lido Node Operators Keys Service
 
 > 🚧 CI and deploy
 > 
@@ -12,6 +12,8 @@
 ```bash
 $ yarn install
 ```
+
+## Usage
 
 ## Running the app
 

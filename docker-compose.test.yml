@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  no_keys_service_db:
+    image: postgres:14-alpine
+    container_name: no_keys_service_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - ${DB_PORT}:5432
+    volumes:
+      - ./.volumes/pgdata-${CHAIN_ID}/:/var/lib/postgresql/data
+
+  no_keys_service_prometheus:
+    image: prom/prometheus:v2.17.2
+    container_name: no_keys_service_prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./config/:/etc/prometheus/
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  no_keys_service_grafana:
+    image: grafana/grafana-oss:9.1.5
+    container_name: no_keys_service_grafana
+    restart: unless-stopped
+    ports:
+      - 8000:3000
+    volumes:
+      - ./.volumes/grafana/var:/var/lib/grafana
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
