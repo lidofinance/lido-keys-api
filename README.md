@@ -15,8 +15,6 @@ $ yarn install
 
 ## Usage
 
-Generate db for application and put name in `DB_NAME` environment.
-
 ## Running the app
 
 ```bash
