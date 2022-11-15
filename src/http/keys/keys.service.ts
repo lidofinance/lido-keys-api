@@ -30,8 +30,8 @@ export class KeysService {
       // стоит ли добавить пагинацию ? на основе бд или на основе работы с данными в памяти
       data: keys,
       meta: {
-        blockNumber: meta.blockNumber,
-        blockHash: meta.blockHash,
+        blockNumber: meta?.blockNumber ?? 0,
+        blockHash: meta?.blockHash ?? '',
       },
     };
   }

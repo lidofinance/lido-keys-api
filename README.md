@@ -1,8 +1,11 @@
 ## Lido Node Operators Keys Service
 
+Service that provides API that allows you to work with Lido keys from different sources.
+
 > 🚧 CI and deploy
-> 
+>
 > After creating repo from the template make sure that you have correctly filled TARGET_WORKFLOW field in:
+>
 > - .github/workflows/ci-dev.yml
 > - .github/workflows/ci-staging.yml
 > - .github/workflows/ci-prod.yml
@@ -17,29 +20,16 @@ $ yarn install
 
 ## Running the app
 
-```bash
+````bash
 # development
-$ yarn start
-
-# watch mode
 $ yarn start:dev
-
-# production mode
-$ yarn start:prod
-```
 
 ## Test
 
 ```bash
 # unit tests
 $ yarn test
-
-# e2e tests
-$ yarn test:e2e
-
-# test coverage
-$ yarn test:cov
-```
+````
 
 ## Release flow
 
