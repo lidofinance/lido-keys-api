@@ -575,10 +575,36 @@
   dependencies:
     "@ethersproject/logger" "^5.7.0"
 
-"@ethersproject/providers@5.7.1", "@ethersproject/providers@^5.5.3":
+"@ethersproject/providers@5.7.1":
   version "5.7.1"
   resolved "https://registry.yarnpkg.com/@ethersproject/providers/-/providers-5.7.1.tgz#b0799b616d5579cd1067a8ebf1fc1ec74c1e122c"
   integrity sha512-vZveG/DLyo+wk4Ga1yx6jSEHrLPgmTt+dFv0dv8URpVCRf0jVhalps1jq/emN/oXnMRsC7cQgAF32DcXLL7BPQ==
+  dependencies:
+    "@ethersproject/abstract-provider" "^5.7.0"
+    "@ethersproject/abstract-signer" "^5.7.0"
+    "@ethersproject/address" "^5.7.0"
+    "@ethersproject/base64" "^5.7.0"
+    "@ethersproject/basex" "^5.7.0"
+    "@ethersproject/bignumber" "^5.7.0"
+    "@ethersproject/bytes" "^5.7.0"
+    "@ethersproject/constants" "^5.7.0"
+    "@ethersproject/hash" "^5.7.0"
+    "@ethersproject/logger" "^5.7.0"
+    "@ethersproject/networks" "^5.7.0"
+    "@ethersproject/properties" "^5.7.0"
+    "@ethersproject/random" "^5.7.0"
+    "@ethersproject/rlp" "^5.7.0"
+    "@ethersproject/sha2" "^5.7.0"
+    "@ethersproject/strings" "^5.7.0"
+    "@ethersproject/transactions" "^5.7.0"
+    "@ethersproject/web" "^5.7.0"
+    bech32 "1.1.4"
+    ws "7.4.6"
+
+"@ethersproject/providers@^5.5.3":
+  version "5.7.2"
+  resolved "https://registry.yarnpkg.com/@ethersproject/providers/-/providers-5.7.2.tgz#f8b1a4f275d7ce58cf0a2eec222269a08beb18cb"
+  integrity sha512-g34EWZ1WWAVgr4aptGlVBF8mhl3VWjv+8hoAnzStu8Ah22VHBsuGzP17eb6xDVRzw895G4W7vvx60lFFur/1Rg==
   dependencies:
     "@ethersproject/abstract-provider" "^5.7.0"
     "@ethersproject/abstract-signer" "^5.7.0"
@@ -1024,9 +1050,9 @@
   integrity sha512-6k2eeLV7tFjKiqk26LWZHWfLowVuUbKC6+NunHHZIqEtO4xRWeOwMg6ntm0AEMdZ0WL0F6KDrFV+g7bhWB4cWA==
 
 "@lido-nestjs/execution@^1.4.0":
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/execution/-/execution-1.8.0.tgz#57ac760a96ad3294c068305badbf09f04621ed80"
-  integrity sha512-XzNHKAGT0dfB1Uhb5De1VsQ79nhyEUNKIQAvz8BWitrIkmQb8l4gJh5D7j1Zhfa+YQvTteyR3fX8upY7wrp02w==
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/execution/-/execution-1.8.3.tgz#9dc86e2097a6582683af5256a6ef60cf8655483f"
+  integrity sha512-MYb0iyLl3lrKJEVEw+JRzhaygpGqX/KVNPYcr9SgyJ6WzUBN68csmzQnVyGzgparO9WKbIJKNmrMxexOdORCWg==
   dependencies:
     "@ethersproject/bignumber" "^5.5.0"
     "@ethersproject/bytes" "^5.5.0"
@@ -1035,7 +1061,7 @@
     "@ethersproject/properties" "^5.5.0"
     "@ethersproject/providers" "^5.5.3"
     "@ethersproject/web" "^5.5.1"
-    "@lido-nestjs/logger" "1.2.1"
+    "@lido-nestjs/logger" "1.3.0"
     "@lido-nestjs/middleware" "1.1.1"
 
 "@lido-nestjs/logger@1.2.1", "@lido-nestjs/logger@^1.0.1":
@@ -1044,6 +1070,15 @@
   integrity sha512-IMCLMhjOw5v37XqYIu6hV71MHas3KFT2+zh7qFJD2Y4+IHBOAcV7xkctyRSsk2NeA8m4ly8B/lA8ox7BWu8BiA==
   dependencies:
     nest-winston "^1.6.2"
+    winston "^3.4.0"
+
+"@lido-nestjs/logger@1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/logger/-/logger-1.3.0.tgz#ac7607cc4f42acf41794f0c6677e518dce076430"
+  integrity sha512-vU43NfeR2aT1vQznF34SbfObB+pLY9XmIIEYC8NmvHpnvcklv8bcwbc1QpYOgOT3vHoEL8CDhTP6gwI0yYna9w==
+  dependencies:
+    nest-winston "^1.6.2"
+    traverse "^0.6.7"
     winston "^3.4.0"
 
 "@lido-nestjs/middleware@1.1.1":
@@ -4720,9 +4755,9 @@ neo-async@^2.6.2:
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
 nest-winston@^1.6.2:
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/nest-winston/-/nest-winston-1.7.0.tgz#92fd415d42c882e1d07201fb962140e5ba291c4c"
-  integrity sha512-FJ94dJ++8BEjQfK5TuqiY5g7pP48RLRss41Bm6bCCfzYgywymEI6m+HPHW9K/q2i7wO5TU6Sva51/Rvmmhxddw==
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/nest-winston/-/nest-winston-1.8.0.tgz#86b5960f82ef0caf4e16c7f528ff10446abfd52f"
+  integrity sha512-DyoNrly6DXjNG2ZPXSD2+w+pgEE8u0y0iwsaLZsufFLIKB/YNgP7zIXV5JxIqns0e5QzLlxdHhO2hx+1W8dvCw==
   dependencies:
     fast-safe-stringify "^2.1.1"
 
@@ -5378,9 +5413,9 @@ safe-regex2@^2.0.0:
     ret "~0.2.0"
 
 safe-stable-stringify@^2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/safe-stable-stringify/-/safe-stable-stringify-2.3.1.tgz#ab67cbe1fe7d40603ca641c5e765cb942d04fc73"
-  integrity sha512-kYBSfT+troD9cDA85VDnHZ1rpHC50O0g1e6WlGHVCz/g+JS+9WKLj+XwFYyR8UbrZN8ll9HUpDAAddY58MGisg==
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/safe-stable-stringify/-/safe-stable-stringify-2.4.1.tgz#34694bd8a30575b7f94792aa51527551bd733d61"
+  integrity sha512-dVHE6bMtS/bnL2mwualjc6IxEv1F+OCUpA46pKUj6F8uDbUM0jCCulPqRNPSnWwGNKx5etqMjZYdXtrm5KJZGA==
 
 "safer-buffer@>= 2.1.2 < 3":
   version "2.1.2"
@@ -5869,6 +5904,11 @@ tr46@~0.0.3:
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
+traverse@^0.6.7:
+  version "0.6.7"
+  resolved "https://registry.yarnpkg.com/traverse/-/traverse-0.6.7.tgz#46961cd2d57dd8706c36664acde06a248f1173fe"
+  integrity sha512-/y956gpUo9ZNCb99YjxG7OaslxZWHfCHAUUfshwqOXmxUIvqLjVO581BT+gM59+QV9tFe6/CGG53tsA1Y7RSdg==
+
 tree-kill@1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/tree-kill/-/tree-kill-1.2.2.tgz#4ca09a9092c88b73a7cdc5e8a01b507b0790a0cc"
@@ -6246,10 +6286,11 @@ winston-transport@^4.5.0:
     triple-beam "^1.3.0"
 
 winston@^3.4.0:
-  version "3.8.1"
-  resolved "https://registry.yarnpkg.com/winston/-/winston-3.8.1.tgz#76f15b3478cde170b780234e0c4cf805c5a7fb57"
-  integrity sha512-r+6YAiCR4uI3N8eQNOg8k3P3PqwAm20cLKlzVD9E66Ch39+LZC+VH1UKf9JemQj2B3QoUHfKD7Poewn0Pr3Y1w==
+  version "3.8.2"
+  resolved "https://registry.yarnpkg.com/winston/-/winston-3.8.2.tgz#56e16b34022eb4cff2638196d9646d7430fdad50"
+  integrity sha512-MsE1gRx1m5jdTTO9Ld/vND4krP2To+lgDoMEHGGa4HIlAUyXJtfc7CxQcGXVyz2IBpw5hbFkj2b/AtUdQwyRew==
   dependencies:
+    "@colors/colors" "1.5.0"
     "@dabh/diagnostics" "^2.0.2"
     async "^3.2.3"
     is-stream "^2.0.0"

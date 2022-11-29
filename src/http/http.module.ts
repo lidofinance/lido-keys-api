@@ -9,9 +9,10 @@ import { ThrottlerModule, ThrottlerBehindProxyGuard } from './common/throttler';
 import { LoggerMiddleware, MetricsMiddleware } from './common/middleware';
 import { CacheModule } from './common/cache';
 import { KeysModule } from './keys';
+import { ModulesModule } from './modules';
 
 @Module({
-  imports: [KeysModule, CacheModule, ThrottlerModule],
+  imports: [KeysModule, ModulesModule, CacheModule, ThrottlerModule],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerBehindProxyGuard },
     { provide: APP_INTERCEPTOR, useClass: CacheInterceptor },

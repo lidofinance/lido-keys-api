@@ -1,9 +1,8 @@
-// for /keys query parsed by nest js
-// in case of fields=signature -> query.fields = "signature"; toList("signature") ->  ["signature"]
-// fields="signature,something" -> query.fields = "signature,something";  toList("signature,something") -> ["signature", "something"]
-// without fields -> query.fields = undefined; toList(undefined) -> [];
-// fields="signature",fields="something" -> query.fields = ["signature", "something"]; toList(["signature", "something"]) -> ["signature", "something"]
-export const toList = (value: string | string[]): string[] => {
+export function prepareQuery(queryFields: string | string[] | undefined, allowedFields: string[]): string[] {
+  return toList(queryFields).filter((field) => allowedFields.includes(field));
+}
+
+export function toList(value: string | string[] | undefined): string[] {
   if (Array.isArray(value)) {
     return value;
   }
@@ -15,4 +14,4 @@ export const toList = (value: string | string[]): string[] => {
   const values = value.split(',');
 
   return values;
-};
+}
