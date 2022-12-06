@@ -44,4 +44,4 @@ jobs:
           APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
           TARGET_REPO: "lidofinance/infra-mainnet"
           TAG: "${{ steps.tag_name.outputs.TAG }}"
-          TARGET_WORKFLOW: "!! PUT CORRECT REFERENCE TO DEPLOY WF IN lidofinance/infra-mainnet HERE. EX. my_awesome_app.yml !!"
+          TARGET_WORKFLOW: "build_mainnet_node_operators_keys_api.yaml"
