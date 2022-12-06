@@ -12,6 +12,13 @@
       "./dist/mikro-orm.config.js"
     ]
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lidofinance/lido-node-operators-keys-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lidofinance/lido-node-operators-keys-api/issues"
+  },
   "scripts": {
     "mikro-orm": "./node_modules/mikro-orm",
     "prebuild": "rimraf dist",
