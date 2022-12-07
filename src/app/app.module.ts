@@ -27,7 +27,7 @@ import config from '../mikro-orm.config';
           dbName: configService.get('DB_NAME'),
           host: configService.get('DB_HOST'),
           port: configService.get('DB_PORT'),
-          user: configService.get('DB_USERNAME'),
+          user: configService.get('DB_USER'),
           password: configService.get('DB_PASSWORD'),
           autoLoadEntities: false,
           cache: { enabled: false },
