@@ -93,7 +93,7 @@ describe('Keys controller', () => {
     keysController = moduleRef.get<KeysController>(KeysController);
   });
 
-  describe('getAll', () => {
+  describe('get', () => {
     test('without query', async () => {
       const result = await keysController.get(<any>{});
       const keys = registryKeys.map((key) => ({ key: key.key }));
@@ -183,7 +183,7 @@ describe('Keys controller', () => {
       });
     });
 
-    test('Add fileds', async () => {
+    test('Add all possible fields', async () => {
       process.env['CHAIN_ID'] = '1';
       const result = await keysController.getForModule('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
         fields: Object.values(MODULE_FIELDS),
@@ -217,6 +217,22 @@ describe('Keys controller', () => {
       });
     });
 
+    test('Add part of possible fields', async () => {
+      process.env['CHAIN_ID'] = '1';
+      const result = await keysController.getForModule('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
+        fields: [MODULE_FIELDS.USED, MODULE_FIELDS.SIGNATURE],
+      });
+
+      const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
+
+      const pickFun = ({ key, depositSignature, used }) => ({ key, depositSignature, used });
+
+      expect(result).toEqual({
+        data: registryKeys.map((key) => pickFun(key)),
+        meta: moduleMeta,
+      });
+    });
+
     test('unused keys', async () => {
       process.env['CHAIN_ID'] = '1';
       const result = await keysController.getForModule(
@@ -233,6 +249,88 @@ describe('Keys controller', () => {
 
       expect(result).toEqual({
         data: keys,
+        meta: moduleMeta,
+      });
+    });
+  });
+
+  describe('getForModuleByPubkeys', () => {
+    test('unknown module', async () => {
+      process.env['CHAIN_ID'] = '1';
+      const address = '0x000000000000000000';
+      expect(keysController.getForModuleByPubkeys(address, [], <any>{})).rejects.toThrowError(
+        `Module with address ${address} is not supported`,
+      );
+    });
+
+    test('keys for NodeOperatorRegistry on Mainnet', async () => {
+      process.env['CHAIN_ID'] = '1';
+      const result = await keysController.getForModuleByPubkeys(
+        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+        [registryKeys[0].key, registryKeys[1].key],
+        <any>{},
+      );
+
+      const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
+
+      expect(result).toEqual({
+        data: [{ key: registryKeys[0].key }, { key: registryKeys[1].key }],
+        meta: moduleMeta,
+      });
+    });
+
+    test('keys for NodeOperatorRegistry on Goerli', async () => {
+      // set process.env
+      process.env['CHAIN_ID'] = '5';
+
+      const result = await keysController.getForModuleByPubkeys(
+        '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
+        [registryKeys[0].key, registryKeys[1].key],
+        <any>{},
+      );
+
+      const moduleMeta = { ...meta, moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320' };
+
+      expect(result).toEqual({
+        data: [{ key: registryKeys[0].key }, { key: registryKeys[1].key }],
+        meta: moduleMeta,
+      });
+    });
+
+    test('Add all possible fields', async () => {
+      process.env['CHAIN_ID'] = '1';
+      const result = await keysController.getForModuleByPubkeys(
+        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+        [registryKeys[0].key, registryKeys[1].key],
+        {
+          fields: Object.values(MODULE_FIELDS),
+        },
+      );
+
+      const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
+
+      expect(result).toEqual({
+        data: [registryKeys[0], registryKeys[1]],
+        meta: moduleMeta,
+      });
+    });
+
+    test('Add part of possible fields', async () => {
+      process.env['CHAIN_ID'] = '1';
+      const result = await keysController.getForModuleByPubkeys(
+        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+        [registryKeys[0].key, registryKeys[1].key],
+        {
+          fields: [MODULE_FIELDS.USED, MODULE_FIELDS.SIGNATURE],
+        },
+      );
+
+      const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
+
+      const pickFun = ({ key, depositSignature, used }) => ({ key, depositSignature, used });
+
+      expect(result).toEqual({
+        data: [pickFun(registryKeys[0]), pickFun(registryKeys[1])],
         meta: moduleMeta,
       });
     });
