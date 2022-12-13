@@ -63,7 +63,28 @@ export class KeysService {
     }
   }
 
-  async getRegistryKeysByPubkeys(fields: string[], pubkeys: string[]) {
+  async getForModuleByPubkeys(moduleAddress: string, fields: string[], pubkeys: string[]): Promise<ModuleKeysResponse> {
+    const moduleInfo = this.getModule(moduleAddress);
+
+    if (!moduleInfo) {
+      throw new NotFoundException(`Module with address ${moduleAddress} is not supported`);
+    }
+
+    if (moduleInfo.type == ModuleType.CURATED) {
+      const { registryKeys, meta } = await this.getRegistryKeysByPubkeys(fields, pubkeys);
+
+      return {
+        data: registryKeys,
+        meta: {
+          moduleAddress,
+          blockNumber: meta.blockNumber,
+          blockHash: meta.blockHash,
+        },
+      };
+    }
+  }
+
+  private async getRegistryKeysByPubkeys(fields: string[], pubkeys: string[]) {
     const { keys, meta } = await this.keyRegistryService.getKeysWithMetaByPubKeys(pubkeys);
 
     const registryKeys = keys.map((registryKey) => ({
@@ -77,7 +98,7 @@ export class KeysService {
   /**
    * Get registry keys from db with meta
    **/
-  async getRegistryKeys(fields: string[], used?: boolean) {
+  private async getRegistryKeys(fields: string[], used?: boolean) {
     const filters = used != undefined ? { used } : {};
     const { keys, meta } = await this.keyRegistryService.getKeysWithMeta(filters);
 

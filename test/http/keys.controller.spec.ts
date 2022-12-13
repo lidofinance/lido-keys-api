@@ -199,10 +199,13 @@ describe('Keys controller', () => {
 
     test('used keys', async () => {
       process.env['CHAIN_ID'] = '1';
-      const result = await keysController.getForModule('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
-        fields: Object.values(MODULE_FIELDS),
-        used: true,
-      });
+      const result = await keysController.getForModule(
+        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+        {
+          fields: Object.values(MODULE_FIELDS),
+        },
+        true,
+      );
 
       const keys = registryKeys.filter((key) => key.used);
 
@@ -216,10 +219,13 @@ describe('Keys controller', () => {
 
     test('unused keys', async () => {
       process.env['CHAIN_ID'] = '1';
-      const result = await keysController.getForModule('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
-        fields: Object.values(MODULE_FIELDS),
-        used: false,
-      });
+      const result = await keysController.getForModule(
+        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+        {
+          fields: Object.values(MODULE_FIELDS),
+        },
+        false,
+      );
 
       const keys = registryKeys.filter((key) => !key.used);
 

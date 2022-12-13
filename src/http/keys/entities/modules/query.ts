@@ -16,12 +16,5 @@ export class ModuleKeysQuery {
     isArray: true,
     enum: MODULE_FIELDS,
   })
-  fields: MODULE_FIELDS[];
-
-  @ApiProperty({
-    name: 'used',
-    required: false,
-    description: 'Filter for used keys from registry module',
-  })
-  used?: boolean;
+  fields?: MODULE_FIELDS[];
 }
