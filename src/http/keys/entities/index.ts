@@ -1,2 +1,2 @@
 export * from './general';
-export * from './modules';
+export * from './staking-router-modules';

@@ -1,20 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export enum MODULE_FIELDS {
-  SIGNATURE = 'depositSignature',
+export enum STAKING_ROUTER_MODULE_FIELDS {
+  DEPOSIT_SIGNATURE = 'depositSignature',
   USED = 'used',
   OPERATOR_INDEX = 'operatorIndex',
   KEY_INDEX = 'index',
 }
 
-export class ModuleKeysQuery {
+export class StakingRouterModuleKeysQuery {
   @ApiProperty({
     name: 'fields',
     required: false,
     description:
       'List of fields that should be included in response. Some fields will be included not for all kinds of modules.',
     isArray: true,
-    enum: MODULE_FIELDS,
+    enum: STAKING_ROUTER_MODULE_FIELDS,
   })
-  fields?: MODULE_FIELDS[];
+  fields?: STAKING_ROUTER_MODULE_FIELDS[];
 }

@@ -1,7 +1,13 @@
 import { Controller, Get, Post, Version, Query, Body, Param, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
-import { KeysQuery, ModuleKeysResponse, GENERAL_FIELDS, MODULE_FIELDS, ModuleKeysQuery } from './entities';
+import {
+  KeysQuery,
+  StakingRouterModuleKeysResponse,
+  GENERAL_FIELDS,
+  STAKING_ROUTER_MODULE_FIELDS,
+  StakingRouterModuleKeysQuery,
+} from './entities';
 import { KeysResponse } from './entities';
 import { prepareQuery } from '../common/utils';
 
@@ -52,15 +58,15 @@ export class KeysController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'List of keys for module',
-    type: ModuleKeysResponse,
+    type: StakingRouterModuleKeysResponse,
   })
   @ApiOperation({ summary: 'Get list of keys for module' })
   getForModule(
     @Param('module_address') module_address: string,
-    @Query() query: ModuleKeysQuery,
+    @Query() query: StakingRouterModuleKeysQuery,
     @Query('used') used?: boolean,
   ) {
-    const filteredFields = prepareQuery(query.fields, Object.values(MODULE_FIELDS));
+    const filteredFields = prepareQuery(query.fields, Object.values(STAKING_ROUTER_MODULE_FIELDS));
     return this.keysService.getForModule(module_address, filteredFields, used);
   }
 
@@ -74,15 +80,15 @@ export class KeysController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Returns all keys found in db from pubkey list for module',
-    type: ModuleKeysResponse,
+    type: StakingRouterModuleKeysResponse,
   })
   @ApiOperation({ summary: 'Get list of found keys in db from pubkey list for module' })
   getForModuleByPubkeys(
     @Param('module_address') module_address: string,
     @Body() pubkeys: string[],
-    @Query() query: ModuleKeysQuery,
+    @Query() query: StakingRouterModuleKeysQuery,
   ) {
-    const filteredFields = prepareQuery(query.fields, Object.values(MODULE_FIELDS));
+    const filteredFields = prepareQuery(query.fields, Object.values(STAKING_ROUTER_MODULE_FIELDS));
     return this.keysService.getForModuleByPubkeys(module_address, filteredFields, pubkeys);
   }
 }

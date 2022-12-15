@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from 'common/config';
-import { modules } from 'common/config';
-import { ModuleResponse } from './entities';
+import { stakingRouterModules } from 'common/config';
+import { StakingRouterModuleResponse } from './entities';
 
 @Injectable()
-export class ModulesService {
+export class StakingRouterModulesService {
   constructor(protected configService: ConfigService) {}
 
-  get(): ModuleResponse {
+  get(): StakingRouterModuleResponse {
     const chainId = this.configService.get('CHAIN_ID');
 
     return {
-      data: modules[chainId],
+      data: stakingRouterModules[chainId],
     };
   }
 }

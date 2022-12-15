@@ -4,7 +4,7 @@ import { hexZeroPad } from '@ethersproject/bytes';
 import { RegistryService } from '../../src/jobs/registry.service';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ConfigService } from '../../src/common/config';
-import { MODULE_FIELDS } from 'http/keys/entities';
+import { STAKING_ROUTER_MODULE_FIELDS } from 'http/keys/entities';
 
 describe('Keys controller', () => {
   let keysController: KeysController;
@@ -43,6 +43,8 @@ describe('Keys controller', () => {
   const meta = {
     blockNumber: 15819109,
     blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
+    timestamp: 0,
+    keysOpIndex: 0,
   };
 
   class ConfigServiceMock {
@@ -97,26 +99,29 @@ describe('Keys controller', () => {
     test('without query', async () => {
       const result = await keysController.get(<any>{});
       const keys = registryKeys.map((key) => ({ key: key.key }));
-      expect(result).toEqual({ data: keys, meta });
+      expect(result).toEqual({ data: keys, meta: { blockNumber: meta.blockNumber, blockHash: meta.blockHash } });
     });
 
     test('with fields as one value', async () => {
       const result = await keysController.get(<any>{ fields: 'depositSignature' });
       const keys = registryKeys.map((key) => ({ key: key.key, depositSignature: key.depositSignature }));
-      expect(result).toEqual({ data: keys, meta });
+      expect(result).toEqual({ data: keys, meta: { blockNumber: meta.blockNumber, blockHash: meta.blockHash } });
     });
 
     test('with list of fields', async () => {
       const result = await keysController.get(<any>{ fields: ['depositSignature', 'operatorIndex'] });
       const keys = registryKeys.map((key) => ({ key: key.key, depositSignature: key.depositSignature }));
-      expect(result).toEqual({ data: keys, meta });
+      expect(result).toEqual({ data: keys, meta: { blockNumber: meta.blockNumber, blockHash: meta.blockHash } });
     });
   });
 
   describe('getByPubkeys', () => {
     test('without query', async () => {
       const result = await keysController.getByPubkeys([registryKeys[0].key, registryKeys[1].key], <any>{});
-      expect(result).toEqual({ data: [{ key: registryKeys[0].key }, { key: registryKeys[1].key }], meta });
+      expect(result).toEqual({
+        data: [{ key: registryKeys[0].key }, { key: registryKeys[1].key }],
+        meta: { blockNumber: meta.blockNumber, blockHash: meta.blockHash },
+      });
     });
 
     test('with fields as one value', async () => {
@@ -128,7 +133,7 @@ describe('Keys controller', () => {
           { key: registryKeys[0].key, depositSignature: registryKeys[0].depositSignature },
           { key: registryKeys[1].key, depositSignature: registryKeys[1].depositSignature },
         ],
-        meta,
+        meta: { blockNumber: meta.blockNumber, blockHash: meta.blockHash },
       });
     });
 
@@ -141,7 +146,7 @@ describe('Keys controller', () => {
           { key: registryKeys[0].key, depositSignature: registryKeys[0].depositSignature },
           { key: registryKeys[1].key, depositSignature: registryKeys[1].depositSignature },
         ],
-        meta,
+        meta: { blockNumber: meta.blockNumber, blockHash: meta.blockHash },
       });
     });
   });
@@ -186,7 +191,7 @@ describe('Keys controller', () => {
     test('Add all possible fields', async () => {
       process.env['CHAIN_ID'] = '1';
       const result = await keysController.getForModule('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
-        fields: Object.values(MODULE_FIELDS),
+        fields: Object.values(STAKING_ROUTER_MODULE_FIELDS),
       });
 
       const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
@@ -202,7 +207,7 @@ describe('Keys controller', () => {
       const result = await keysController.getForModule(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
         {
-          fields: Object.values(MODULE_FIELDS),
+          fields: Object.values(STAKING_ROUTER_MODULE_FIELDS),
         },
         true,
       );
@@ -220,7 +225,7 @@ describe('Keys controller', () => {
     test('Add part of possible fields', async () => {
       process.env['CHAIN_ID'] = '1';
       const result = await keysController.getForModule('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
-        fields: [MODULE_FIELDS.USED, MODULE_FIELDS.SIGNATURE],
+        fields: [STAKING_ROUTER_MODULE_FIELDS.USED, STAKING_ROUTER_MODULE_FIELDS.DEPOSIT_SIGNATURE],
       });
 
       const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
@@ -238,7 +243,7 @@ describe('Keys controller', () => {
       const result = await keysController.getForModule(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
         {
-          fields: Object.values(MODULE_FIELDS),
+          fields: Object.values(STAKING_ROUTER_MODULE_FIELDS),
         },
         false,
       );
@@ -303,7 +308,7 @@ describe('Keys controller', () => {
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
         [registryKeys[0].key, registryKeys[1].key],
         {
-          fields: Object.values(MODULE_FIELDS),
+          fields: Object.values(STAKING_ROUTER_MODULE_FIELDS),
         },
       );
 
@@ -321,7 +326,7 @@ describe('Keys controller', () => {
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
         [registryKeys[0].key, registryKeys[1].key],
         {
-          fields: [MODULE_FIELDS.USED, MODULE_FIELDS.SIGNATURE],
+          fields: [STAKING_ROUTER_MODULE_FIELDS.USED, STAKING_ROUTER_MODULE_FIELDS.DEPOSIT_SIGNATURE],
         },
       );
 

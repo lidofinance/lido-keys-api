@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
-import { ModulesController, ModulesService } from '../../src/http/modules';
+import { StakingRouterModulesController, StakingRouterModulesService } from '../../src/http/staking-router-modules';
 import { ConfigService } from '../../src/common/config';
 
 describe('Sources controller', () => {
-  let modulesController: ModulesController;
+  let modulesController: StakingRouterModulesController;
 
   class ConfigServiceMock {
     get(value) {
@@ -13,9 +13,9 @@ describe('Sources controller', () => {
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      controllers: [ModulesController],
+      controllers: [StakingRouterModulesController],
       providers: [
-        ModulesService,
+        StakingRouterModulesService,
         {
           provide: ConfigService,
           useClass: ConfigServiceMock,
@@ -23,7 +23,7 @@ describe('Sources controller', () => {
       ],
     }).compile();
 
-    modulesController = moduleRef.get<ModulesController>(ModulesController);
+    modulesController = moduleRef.get<StakingRouterModulesController>(StakingRouterModulesController);
   });
 
   test('mainnet', () => {

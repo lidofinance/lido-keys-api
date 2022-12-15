@@ -2,18 +2,21 @@ import { GENERAL_FIELDS } from 'http/keys/entities';
 import { toList, prepareQuery } from '../../src/http/common/utils';
 describe('toList', () => {
   test('fields as a list of strings ', () => {
-    expect(toList([GENERAL_FIELDS.SIGNATURE, 'something else'])).toEqual([GENERAL_FIELDS.SIGNATURE, 'something else']);
+    expect(toList([GENERAL_FIELDS.DEPOSIT_SIGNATURE, 'something else'])).toEqual([
+      GENERAL_FIELDS.DEPOSIT_SIGNATURE,
+      'something else',
+    ]);
   });
 
   test('few fields in one strings ', () => {
-    expect(toList(`${GENERAL_FIELDS.SIGNATURE},${'something else'}`)).toEqual([
-      GENERAL_FIELDS.SIGNATURE,
+    expect(toList(`${GENERAL_FIELDS.DEPOSIT_SIGNATURE},${'something else'}`)).toEqual([
+      GENERAL_FIELDS.DEPOSIT_SIGNATURE,
       'something else',
     ]);
   });
 
   test('one field as a string', () => {
-    expect(toList(`${GENERAL_FIELDS.SIGNATURE}`)).toEqual([GENERAL_FIELDS.SIGNATURE]);
+    expect(toList(`${GENERAL_FIELDS.DEPOSIT_SIGNATURE}`)).toEqual([GENERAL_FIELDS.DEPOSIT_SIGNATURE]);
   });
 
   test('undefined', () => {

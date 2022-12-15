@@ -1,10 +1,10 @@
 import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { KeysResponse, ModuleKeysResponse } from './entities';
+import { KeysResponse, StakingRouterModuleKeysResponse } from './entities';
 import { RegistryService } from 'jobs/registry.service';
-import { modules } from 'common/config';
+import { stakingRouterModules } from 'common/config';
 import { ConfigService } from 'common/config';
-import { ModuleType } from 'http/modules/entities';
+import { StakingRouterModuleType } from 'http/staking-router-modules/entities';
 @Injectable()
 export class KeysService {
   constructor(
@@ -42,14 +42,18 @@ export class KeysService {
     };
   }
 
-  async getForModule(moduleAddress: string, fields: string[], used: boolean | undefined): Promise<ModuleKeysResponse> {
-    const moduleInfo = this.getModule(moduleAddress);
+  async getForModule(
+    moduleAddress: string,
+    fields: string[],
+    used: boolean | undefined,
+  ): Promise<StakingRouterModuleKeysResponse> {
+    const moduleInfo = this.getStakingRouterModule(moduleAddress);
 
     if (!moduleInfo) {
       throw new NotFoundException(`Module with address ${moduleAddress} is not supported`);
     }
 
-    if (moduleInfo.type == ModuleType.CURATED) {
+    if (moduleInfo.type == StakingRouterModuleType.CURATED) {
       const { registryKeys, meta } = await this.getRegistryKeys(fields, used);
 
       return {
@@ -58,19 +62,25 @@ export class KeysService {
           moduleAddress,
           blockNumber: meta.blockNumber,
           blockHash: meta.blockHash,
+          timestamp: meta.timestamp,
+          keysOpIndex: meta.keysOpIndex,
         },
       };
     }
   }
 
-  async getForModuleByPubkeys(moduleAddress: string, fields: string[], pubkeys: string[]): Promise<ModuleKeysResponse> {
-    const moduleInfo = this.getModule(moduleAddress);
+  async getForModuleByPubkeys(
+    moduleAddress: string,
+    fields: string[],
+    pubkeys: string[],
+  ): Promise<StakingRouterModuleKeysResponse> {
+    const moduleInfo = this.getStakingRouterModule(moduleAddress);
 
     if (!moduleInfo) {
       throw new NotFoundException(`Module with address ${moduleAddress} is not supported`);
     }
 
-    if (moduleInfo.type == ModuleType.CURATED) {
+    if (moduleInfo.type == StakingRouterModuleType.CURATED) {
       const { registryKeys, meta } = await this.getRegistryKeysByPubkeys(fields, pubkeys);
 
       return {
@@ -79,6 +89,8 @@ export class KeysService {
           moduleAddress,
           blockNumber: meta.blockNumber,
           blockHash: meta.blockHash,
+          timestamp: meta.timestamp,
+          keysOpIndex: meta.keysOpIndex,
         },
       };
     }
@@ -110,9 +122,9 @@ export class KeysService {
     return { registryKeys, meta };
   }
 
-  private getModule(moduleAddress) {
+  private getStakingRouterModule(moduleAddress) {
     const chainId = this.configService.get('CHAIN_ID');
-    return modules[chainId].find((module) => module.address == moduleAddress);
+    return stakingRouterModules[chainId].find((module) => module.address == moduleAddress);
   }
 
   private transformKey(key: object, fields: string[]) {

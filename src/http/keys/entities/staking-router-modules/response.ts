@@ -1,19 +1,19 @@
 import { ApiProperty, getSchemaPath, ApiExtraModels } from '@nestjs/swagger';
-import { ModuleMeta } from './meta';
+import { StakingRouterModuleMeta } from './meta';
 import { RegistryKey } from './registry.key';
 
-type ModuleKey = RegistryKey;
+type StakingRouterModuleKey = RegistryKey;
 
 @ApiExtraModels(RegistryKey)
-export class ModuleKeysResponse {
+export class StakingRouterModuleKeysResponse {
   @ApiProperty({
     type: 'array',
     items: { oneOf: [{ $ref: getSchemaPath(RegistryKey) }] },
   })
-  data: ModuleKey[];
+  data: StakingRouterModuleKey[];
 
   @ApiProperty({
-    type: () => ModuleMeta,
+    type: () => StakingRouterModuleMeta,
   })
-  meta: ModuleMeta;
+  meta: StakingRouterModuleMeta;
 }

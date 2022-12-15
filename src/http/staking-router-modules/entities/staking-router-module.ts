@@ -1,35 +1,35 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export enum ModuleType {
+export enum StakingRouterModuleType {
   CURATED = 'Curated',
   COMMUNITY = 'Community',
   DVT = 'DVT',
 }
 
-export class Module {
+export class StakingRouterModule {
   // @ApiProperty({
   //   required: true,
   //   description: 'Type of storing keys by module',
   //   enum: ModuleKeyStoreType,
   // })
-  // type: ModuleKeyStoreType;
+  // type: StakingRouterModuleKeyStoreType;
 
   @ApiProperty({
     required: true,
-    description: 'Type of module',
-    enum: ModuleType,
+    description: 'Type of Staking Router module',
+    enum: StakingRouterModuleType,
   })
-  type: ModuleType;
+  type: StakingRouterModuleType;
 
   @ApiProperty({
     required: true,
-    description: 'Module description',
+    description: 'Staking Router Module description',
   })
   description: string;
 
   @ApiProperty({
     required: true,
-    description: 'Module contract address',
+    description: 'Staking Router Module contract address',
   })
   address: string;
 }
