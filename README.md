@@ -1,6 +1,6 @@
 ## Lido Node Operators Keys Service
 
-Simple Lido keys and validators API. It will be possible to launch it on someone machine and fetch actual Lido keys from all sources. API also provides http methods for Automating Validator Exits.
+Simple Lido keys and validators HTTP API. It will be possible to launch it on someone machine and fetch actual Lido keys from all sources. API also provides http methods for Automating Validator Exits.
 
 ## How it works
 
