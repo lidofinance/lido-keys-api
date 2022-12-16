@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export enum FIELDS {
-  SIGNATURE = 'signature',
+export enum GENERAL_FIELDS {
+  DEPOSIT_SIGNATURE = 'depositSignature',
 }
 
 export class KeysQuery {
@@ -10,7 +10,7 @@ export class KeysQuery {
     required: false,
     description: 'List of fields that should be included in response.',
     isArray: true,
-    enum: FIELDS,
+    enum: GENERAL_FIELDS,
   })
-  fields: FIELDS[];
+  fields: GENERAL_FIELDS[];
 }

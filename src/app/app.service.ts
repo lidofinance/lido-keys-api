@@ -4,6 +4,7 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ConfigService } from 'common/config';
 import { PrometheusService } from 'common/prometheus';
 import { APP_NAME, APP_VERSION } from './app.constants';
+import { stakingRouterModules } from 'common/config';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -18,6 +19,12 @@ export class AppService implements OnModuleInit {
     const env = this.configService.get('NODE_ENV');
     const version = APP_VERSION;
     const name = APP_NAME;
+    const chainId = this.configService.get('CHAIN_ID');
+
+    if (!stakingRouterModules[chainId]) {
+      this.logger.error(`Wrong CHAIN_ID value, service doesnt work in chain with id=${chainId}`);
+      process.exit(1);
+    }
 
     this.prometheusService.buildInfo.labels({ env, name, version }).inc();
     this.logger.log('Init app', { env, name, version });
