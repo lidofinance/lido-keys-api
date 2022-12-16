@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { StakingRouterModulesController, StakingRouterModulesService } from '../../src/http/staking-router-modules';
 import { ConfigService } from '../../src/common/config';
 
-describe('Sources controller', () => {
+describe('StakingRouterModules controller', () => {
   let modulesController: StakingRouterModulesController;
 
   class ConfigServiceMock {

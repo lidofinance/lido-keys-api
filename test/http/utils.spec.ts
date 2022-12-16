@@ -8,7 +8,7 @@ describe('toList', () => {
     ]);
   });
 
-  test('few fields in one strings ', () => {
+  test('multiple fields in one string', () => {
     expect(toList(`${GENERAL_FIELDS.DEPOSIT_SIGNATURE},${'something else'}`)).toEqual([
       GENERAL_FIELDS.DEPOSIT_SIGNATURE,
       'something else',
