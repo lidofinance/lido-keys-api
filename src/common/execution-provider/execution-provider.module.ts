@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { FallbackProviderModule } from '@lido-nestjs/execution';
 import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
+import { ExecutionProviderService } from './execution-provider.service';
 @Global()
 @Module({
   imports: [
@@ -13,10 +14,13 @@ import { ConfigService } from 'common/config';
           fetchMiddlewares: [
             async (next) => {
               const endTimer = prometheusService.elRpcRequestDuration.startTimer();
+
               try {
-                return await next();
+                const result = await next();
+                endTimer({ result: 'success' });
+                return result;
               } catch (error) {
-                prometheusService.elRpcErrors.inc();
+                endTimer({ result: 'error' });
                 throw error;
               } finally {
                 endTimer();
@@ -28,5 +32,7 @@ import { ConfigService } from 'common/config';
       inject: [ConfigService, PrometheusService],
     }),
   ],
+  providers: [ExecutionProviderService],
+  exports: [ExecutionProviderService],
 })
-export class ProviderModule {}
+export class ExecutionProviderModule {}

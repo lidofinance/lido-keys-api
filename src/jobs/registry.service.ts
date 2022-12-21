@@ -50,7 +50,7 @@ export class RegistryService {
    */
   @OneAtTime()
   private async updateKeys(): Promise<void> {
-    await this.jobService.wrapJob({ name: 'update keys' }, async () => {
+    await this.jobService.wrapJob({ name: 'Update keys from NodeOperatorRegistry' }, async () => {
       await this.keyRegistryService.update('latest');
       await this.updateTimestamp();
       this.updateMetrics();
