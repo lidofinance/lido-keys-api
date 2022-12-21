@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { FallbackProviderModule } from '@lido-nestjs/execution';
 import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
+import { ExecutionProviderService } from './execution-provider.service';
 @Global()
 @Module({
   imports: [
@@ -31,5 +32,7 @@ import { ConfigService } from 'common/config';
       inject: [ConfigService, PrometheusService],
     }),
   ],
+  providers: [ExecutionProviderService],
+  exports: [ExecutionProviderService],
 })
-export class ProviderModule {}
+export class ExecutionProviderModule {}

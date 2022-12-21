@@ -1,4 +1,5 @@
-import { CHAINS } from './chains';
+// import { CHAINS } from './chains';
+import { CHAINS } from '@lido-nestjs/constants';
 import { StakingRouterModule, StakingRouterModuleType } from 'http/staking-router-modules/entities';
 
 export const stakingRouterModules: {
