@@ -13,10 +13,13 @@ import { ConfigService } from 'common/config';
           fetchMiddlewares: [
             async (next) => {
               const endTimer = prometheusService.elRpcRequestDuration.startTimer();
+
               try {
-                return await next();
+                const result = await next();
+                endTimer({ result: 'success' });
+                return result;
               } catch (error) {
-                prometheusService.elRpcErrors.inc();
+                endTimer({ result: 'error' });
                 throw error;
               } finally {
                 endTimer();
