@@ -50,7 +50,7 @@ export class EnvironmentVariables {
 
   @IsOptional()
   @IsEnum(LogLevel)
-  @Transform(({ value }) => value || LogLevel.info)
+  @Transform(({ value }) => value || LogLevel.debug)
   LOG_LEVEL: LogLevel;
 
   @IsOptional()
