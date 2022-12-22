@@ -1029,7 +1029,7 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@lido-nestjs/constants@1.1.0":
+"@lido-nestjs/constants@1.1.0", "@lido-nestjs/constants@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@lido-nestjs/constants/-/constants-1.1.0.tgz#4fae4eb3371b633edbc5d6e956403f57db01d9a9"
   integrity sha512-53R9yjOmkSrNSWj0D5tLuo5gp7TRhJ1fm8NFZWWfAl9HbSng/nFfdgWa0CSiwmDPS5JReO1Vq2PJnOO1SL/Qaw==
