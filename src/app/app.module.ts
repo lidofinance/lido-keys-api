@@ -6,12 +6,11 @@ import { SentryInterceptor } from 'common/sentry';
 import { HealthModule } from 'common/health';
 import { AppService } from './app.service';
 import { HTTPModule } from '../http';
-import { ProviderModule } from 'common/provider';
+import { ExecutionProviderModule, ExecutionProvider } from 'common/execution-provider';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { RegistryModule } from '../jobs';
 import { ScheduleModule } from '@nestjs/schedule';
 import { KeyRegistryModule } from '@lido-nestjs/registry';
-import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
 import config from '../mikro-orm.config';
 
 @Module({
@@ -19,7 +18,7 @@ import config from '../mikro-orm.config';
     HealthModule,
     PrometheusModule,
     ConfigModule,
-    ProviderModule,
+    ExecutionProviderModule,
     MikroOrmModule.forRootAsync({
       async useFactory(configService: ConfigService) {
         return {
@@ -27,7 +26,7 @@ import config from '../mikro-orm.config';
           dbName: configService.get('DB_NAME'),
           host: configService.get('DB_HOST'),
           port: configService.get('DB_PORT'),
-          user: configService.get('DB_USERNAME'),
+          user: configService.get('DB_USER'),
           password: configService.get('DB_PASSWORD'),
           autoLoadEntities: false,
           cache: { enabled: false },
@@ -37,7 +36,7 @@ import config from '../mikro-orm.config';
     }),
     ScheduleModule.forRoot(),
     KeyRegistryModule.forRootAsync({
-      inject: [SimpleFallbackJsonRpcBatchProvider],
+      inject: [ExecutionProvider],
       async useFactory(provider) {
         return { provider };
       },

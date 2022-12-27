@@ -12,6 +12,13 @@
       "./dist/mikro-orm.config.js"
     ]
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lidofinance/lido-node-operators-keys-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lidofinance/lido-node-operators-keys-api/issues"
+  },
   "scripts": {
     "mikro-orm": "./node_modules/mikro-orm",
     "prebuild": "rimraf dist",
@@ -33,6 +40,7 @@
     "@lido-nestjs/execution": "^1.4.0",
     "@lido-nestjs/logger": "^1.0.1",
     "@lido-nestjs/registry": "^1.4.7",
+    "@lido-nestjs/constants": "^1.1.0",
     "@mikro-orm/cli": "^5.5.3",
     "@mikro-orm/core": "^5.5.3",
     "@mikro-orm/knex": "^5.5.3",

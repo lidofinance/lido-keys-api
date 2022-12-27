@@ -50,7 +50,7 @@ export class EnvironmentVariables {
 
   @IsOptional()
   @IsEnum(LogLevel)
-  @Transform(({ value }) => value || LogLevel.info)
+  @Transform(({ value }) => value || LogLevel.debug)
   LOG_LEVEL: LogLevel;
 
   @IsOptional()
@@ -71,7 +71,7 @@ export class EnvironmentVariables {
   DB_HOST: string;
 
   @IsString()
-  DB_USERNAME: string;
+  DB_USER: string;
 
   @IsString()
   DB_PASSWORD: string;

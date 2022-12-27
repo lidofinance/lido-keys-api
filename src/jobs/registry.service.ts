@@ -12,6 +12,7 @@ import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
 import { JobService } from 'common/job';
+import { EntityManager } from '@mikro-orm/postgresql';
 
 @Injectable()
 export class RegistryService {
@@ -23,12 +24,11 @@ export class RegistryService {
     protected readonly prometheusService: PrometheusService,
     protected readonly configService: ConfigService,
     protected readonly jobService: JobService,
+    private readonly entityManager: EntityManager,
   ) {}
 
   public async onModuleInit(): Promise<void> {
     // Do not wait for initialization to avoid blocking the main process
-
-    // this.initialize().catch((err) => this.logger.error(err));
     this.initialize().catch((err) => this.logger.error(err));
   }
 
@@ -49,10 +49,11 @@ export class RegistryService {
    * Collects updates from the registry contract and saves the changes to the database
    */
   @OneAtTime()
-  protected async updateKeys(): Promise<void> {
-    await this.jobService.wrapJob({ name: 'update keys' }, async () => {
+  private async updateKeys(): Promise<void> {
+    await this.jobService.wrapJob({ name: 'Update keys from NodeOperatorRegistry' }, async () => {
       await this.keyRegistryService.update('latest');
       await this.updateTimestamp();
+      this.updateMetrics();
     });
   }
 
@@ -61,33 +62,50 @@ export class RegistryService {
   /**
    * Updates timestamp of the last registry update
    */
-  protected async updateTimestamp(): Promise<void> {
+  private async updateTimestamp(): Promise<void> {
     const meta = await this.metaStorageService.get();
     this.lastTimestamp = meta?.timestamp ?? this.lastTimestamp;
   }
 
-  /** @returns all operators keys from the db */
-  public async getAllKeysFromStorage(): Promise<RegistryKey[]> {
-    return await this.keyStorageService.findAll();
+  public async getKeysWithMetaByPubKeys(pubkeys: string[]): Promise<{ keys: RegistryKey[]; meta: RegistryMeta }> {
+    const { keys, meta } = await this.entityManager.transactional(async () => {
+      const keys = await this.getKeysByPubkeys(pubkeys);
+      const meta = await this.getMetaDataFromStorage();
+
+      return { keys, meta };
+    });
+
+    return { keys, meta };
   }
 
-  public async getMetaDataFromStorage(): Promise<RegistryMeta> {
+  public async getKeysWithMeta(filters: { used?: boolean }): Promise<{ keys: RegistryKey[]; meta: RegistryMeta }> {
+    const { keys, meta } = await this.entityManager.transactional(async () => {
+      const keys = await this.keyStorageService.find(filters);
+      const meta = await this.getMetaDataFromStorage();
+
+      return { keys, meta };
+    });
+
+    return { keys, meta };
+  }
+
+  private async getMetaDataFromStorage(): Promise<RegistryMeta> {
     return await this.metaStorageService.get();
   }
 
   /**
    * Returns all keys found in db from pubkey list
-   * @param pubKeys - validators public keys
+   * @param pubKeys - public keys
    * @returns keys from DB
    */
-  public async getOperatorKeys(pubKeys: string[]): Promise<RegistryKey[] | null> {
+  private async getKeysByPubkeys(pubKeys: string[]): Promise<RegistryKey[] | null> {
     return await this.keyStorageService.find({ key: { $in: pubKeys } });
   }
 
   /**
    * Updates prometheus metrics
    */
-  protected updateMetrics() {
+  private updateMetrics() {
     this.prometheusService.registryLastUpdate.set(this.lastTimestamp);
 
     this.logger.log('Registry metrics updated');
