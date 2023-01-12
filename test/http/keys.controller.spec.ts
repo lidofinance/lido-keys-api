@@ -10,6 +10,7 @@ describe('Keys controller', () => {
   let keysController: KeysController;
   let registryService: RegistryService;
 
+  // const OLD_ENV = process.env;
   const registryKeys = [
     {
       index: 1,
