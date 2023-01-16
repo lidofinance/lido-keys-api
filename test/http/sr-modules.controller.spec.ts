@@ -474,6 +474,7 @@ describe('StakingRouterModules controller', () => {
     });
 
     test('moduleId is a number', async () => {
+      process.env['CHAIN_ID'] = '1';
       const getKeysWithMetaByPubkeysMock = jest.spyOn(registryService, 'getKeysWithMetaByPubkeys');
       const result = await modulesController.getModuleKeysByPubkeys(1, [
         hexZeroPad('0x12', 98),
@@ -497,6 +498,7 @@ describe('StakingRouterModules controller', () => {
         },
       });
     });
+
     test('module not found', async () => {
       process.env['CHAIN_ID'] = '1';
       const getKeysWithMetaByPubkeysMock = jest.spyOn(registryService, 'getKeysWithMetaByPubkeys');
