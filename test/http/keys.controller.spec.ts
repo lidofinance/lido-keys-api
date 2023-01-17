@@ -1,13 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test } from '@nestjs/testing';
 import { KeysController, KeysService } from '../../src/http/keys';
 import { hexZeroPad } from '@ethersproject/bytes';
 import { RegistryService } from '../../src/jobs/registry.service';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ConfigService } from '../../src/common/config';
-import { STAKING_ROUTER_MODULE_FIELDS } from 'http/keys/entities';
 
 describe('Keys controller', () => {
   let keysController: KeysController;
+  let registryService: RegistryService;
 
   const registryKeys = [
     {
@@ -19,23 +20,16 @@ describe('Keys controller', () => {
     },
     {
       index: 2,
-      operatorIndex: 1,
+      operatorIndex: 2,
       key: hexZeroPad('0x13', 98),
       depositSignature: hexZeroPad('0x13', 194),
       used: true,
     },
     {
       index: 3,
-      operatorIndex: 1,
-      key: hexZeroPad('0x14', 98),
-      depositSignature: hexZeroPad('0x14', 194),
-      used: true,
-    },
-    {
-      index: 4,
-      operatorIndex: 1,
-      key: hexZeroPad('0x15', 98),
-      depositSignature: hexZeroPad('0x15', 194),
+      operatorIndex: 2,
+      key: hexZeroPad('0x13', 98),
+      depositSignature: hexZeroPad('0x13', 194),
       used: false,
     },
   ];
@@ -54,24 +48,26 @@ describe('Keys controller', () => {
   }
 
   class RegistryServiceMock {
-    getKeysWithMeta(filters: { used?: boolean }) {
-      const { used } = filters;
-
-      if (used == undefined) {
-        return Promise.resolve({ keys: registryKeys, meta });
-      }
-      const keys = registryKeys.filter((key) => key.used == used);
-
+    getKeysWithMeta(filters) {
+      return Promise.resolve({ keys: registryKeys, meta });
+    }
+    getKeyWithMetaByPubkey(pubkey: string) {
+      const keys = registryKeys.filter((el) => el.key == pubkey);
       return Promise.resolve({ keys, meta });
     }
 
-    getKeysWithMetaByPubKeys(pubkeys: string[]) {
+    getKeysWithMetaByPubkeys(pubkeys: string[]) {
       const keys = registryKeys.filter((el) => pubkeys.includes(el.key));
       return Promise.resolve({ keys, meta });
     }
   }
 
+  const OLD_ENV = process.env;
+
   beforeEach(async () => {
+    jest.resetModules();
+    process.env = { ...OLD_ENV };
+
     const moduleRef = await Test.createTestingModule({
       controllers: [KeysController],
       providers: [
@@ -93,250 +89,265 @@ describe('Keys controller', () => {
       ],
     }).compile();
     keysController = moduleRef.get<KeysController>(KeysController);
+    registryService = moduleRef.get<RegistryService>(RegistryService);
+  });
+
+  afterAll(() => {
+    process.env = OLD_ENV;
   });
 
   describe('get', () => {
-    test('without query', async () => {
-      const result = await keysController.get(<any>{});
-      const keys = registryKeys.map((key) => ({ key: key.key }));
-      expect(result).toEqual({ data: keys, meta: { blockNumber: meta.blockNumber, blockHash: meta.blockHash } });
+    test('keys on Mainnet', async () => {
+      process.env['CHAIN_ID'] = '1';
+
+      const getKeysWithMetaMock = jest.spyOn(registryService, 'getKeysWithMeta');
+
+      const result = await keysController.get({ used: true, operatorIndex: 1 });
+
+      expect(getKeysWithMetaMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
+
+      expect(result).toEqual({
+        data: [
+          {
+            depositSignature: hexZeroPad('0x12', 194),
+            key: hexZeroPad('0x12', 98),
+            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+            operatorIndex: 1,
+            used: true,
+          },
+          {
+            depositSignature: hexZeroPad('0x13', 194),
+            key: hexZeroPad('0x13', 98),
+            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+            operatorIndex: 2,
+            used: true,
+          },
+          {
+            depositSignature: hexZeroPad('0x13', 194),
+            key: hexZeroPad('0x13', 98),
+            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+            operatorIndex: 2,
+            used: false,
+          },
+        ],
+        meta: {
+          elBlockSnapshot: {
+            blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
+            blockNumber: 15819109,
+            timestamp: 0,
+          },
+        },
+      });
     });
 
-    test('with fields as one value', async () => {
-      const result = await keysController.get(<any>{ fields: 'depositSignature' });
-      const keys = registryKeys.map((key) => ({ key: key.key, depositSignature: key.depositSignature }));
-      expect(result).toEqual({ data: keys, meta: { blockNumber: meta.blockNumber, blockHash: meta.blockHash } });
+    test('keys on Goerli', async () => {
+      process.env['CHAIN_ID'] = '5';
+
+      const getKeysWithMetaMock = jest.spyOn(registryService, 'getKeysWithMeta');
+
+      const result = await keysController.get({ used: true, operatorIndex: 1 });
+
+      expect(getKeysWithMetaMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
+
+      expect(result).toEqual({
+        data: [
+          {
+            depositSignature: hexZeroPad('0x12', 194),
+            key: hexZeroPad('0x12', 98),
+            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
+            operatorIndex: 1,
+            used: true,
+          },
+          {
+            depositSignature: hexZeroPad('0x13', 194),
+            key: hexZeroPad('0x13', 98),
+            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
+            operatorIndex: 2,
+            used: true,
+          },
+          {
+            depositSignature: hexZeroPad('0x13', 194),
+            key: hexZeroPad('0x13', 98),
+            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
+            operatorIndex: 2,
+            used: false,
+          },
+        ],
+        meta: {
+          elBlockSnapshot: {
+            blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
+            blockNumber: 15819109,
+            timestamp: 0,
+          },
+        },
+      });
+    });
+  });
+
+  describe('getByPubkey', () => {
+    test('keys on Mainnet', async () => {
+      process.env['CHAIN_ID'] = '1';
+
+      const getKeyWithMetaByPubkeyMock = jest.spyOn(registryService, 'getKeyWithMetaByPubkey');
+
+      const result = await keysController.getByPubkey(hexZeroPad('0x13', 98));
+
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(1);
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
+
+      expect(result).toEqual({
+        data: [
+          {
+            depositSignature: hexZeroPad('0x13', 194),
+            key: hexZeroPad('0x13', 98),
+            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+            operatorIndex: 2,
+            used: true,
+          },
+          {
+            depositSignature: hexZeroPad('0x13', 194),
+            key: hexZeroPad('0x13', 98),
+            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+            operatorIndex: 2,
+            used: false,
+          },
+        ],
+        meta: {
+          elBlockSnapshot: {
+            blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
+            blockNumber: 15819109,
+            timestamp: 0,
+          },
+        },
+      });
     });
 
-    test('with list of fields', async () => {
-      const result = await keysController.get(<any>{ fields: ['depositSignature', 'operatorIndex'] });
-      const keys = registryKeys.map((key) => ({ key: key.key, depositSignature: key.depositSignature }));
-      expect(result).toEqual({ data: keys, meta: { blockNumber: meta.blockNumber, blockHash: meta.blockHash } });
+    test('keys on Goerli', async () => {
+      process.env['CHAIN_ID'] = '5';
+
+      const getKeyWithMetaByPubkeyMock = jest.spyOn(registryService, 'getKeyWithMetaByPubkey');
+
+      const result = await keysController.getByPubkey(hexZeroPad('0x13', 98));
+
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(1);
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
+
+      expect(result).toEqual({
+        data: [
+          {
+            depositSignature: hexZeroPad('0x13', 194),
+            key: hexZeroPad('0x13', 98),
+            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
+            operatorIndex: 2,
+            used: true,
+          },
+          {
+            depositSignature: hexZeroPad('0x13', 194),
+            key: hexZeroPad('0x13', 98),
+            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
+            operatorIndex: 2,
+            used: false,
+          },
+        ],
+        meta: {
+          elBlockSnapshot: {
+            blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
+            blockNumber: 15819109,
+            timestamp: 0,
+          },
+        },
+      });
     });
   });
 
   describe('getByPubkeys', () => {
-    test('without query', async () => {
-      const result = await keysController.getByPubkeys([registryKeys[0].key, registryKeys[1].key], <any>{});
-      expect(result).toEqual({
-        data: [{ key: registryKeys[0].key }, { key: registryKeys[1].key }],
-        meta: { blockNumber: meta.blockNumber, blockHash: meta.blockHash },
-      });
-    });
+    test('keys on Mainnet', async () => {
+      process.env['CHAIN_ID'] = '1';
 
-    test('with fields as one value', async () => {
-      const result = await keysController.getByPubkeys([registryKeys[0].key, registryKeys[1].key], <any>{
-        fields: 'depositSignature',
-      });
+      const getKeysWithMetaByPubkeysMock = jest.spyOn(registryService, 'getKeysWithMetaByPubkeys');
+
+      const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+
+      expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+
       expect(result).toEqual({
         data: [
-          { key: registryKeys[0].key, depositSignature: registryKeys[0].depositSignature },
-          { key: registryKeys[1].key, depositSignature: registryKeys[1].depositSignature },
+          {
+            operatorIndex: 1,
+            key: hexZeroPad('0x12', 98),
+            depositSignature: hexZeroPad('0x12', 194),
+            used: true,
+            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+          },
+          {
+            depositSignature: hexZeroPad('0x13', 194),
+            key: hexZeroPad('0x13', 98),
+            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+            operatorIndex: 2,
+            used: true,
+          },
+          {
+            depositSignature: hexZeroPad('0x13', 194),
+            key: hexZeroPad('0x13', 98),
+            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+            operatorIndex: 2,
+            used: false,
+          },
         ],
-        meta: { blockNumber: meta.blockNumber, blockHash: meta.blockHash },
+        meta: {
+          elBlockSnapshot: {
+            blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
+            blockNumber: 15819109,
+            timestamp: 0,
+          },
+        },
       });
     });
 
-    test('with list of fields', async () => {
-      const result = await keysController.getByPubkeys([registryKeys[0].key, registryKeys[1].key], <any>{
-        fields: ['depositSignature', 'operatorIndex'],
-      });
+    test('keys on Goerli', async () => {
+      process.env['CHAIN_ID'] = '5';
+
+      const getKeysWithMetaByPubkeysMock = jest.spyOn(registryService, 'getKeysWithMetaByPubkeys');
+
+      const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+
+      expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+
       expect(result).toEqual({
         data: [
-          { key: registryKeys[0].key, depositSignature: registryKeys[0].depositSignature },
-          { key: registryKeys[1].key, depositSignature: registryKeys[1].depositSignature },
+          {
+            operatorIndex: 1,
+            key: hexZeroPad('0x12', 98),
+            depositSignature: hexZeroPad('0x12', 194),
+            used: true,
+            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
+          },
+          {
+            depositSignature: hexZeroPad('0x13', 194),
+            key: hexZeroPad('0x13', 98),
+            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
+            operatorIndex: 2,
+            used: true,
+          },
+          {
+            depositSignature: hexZeroPad('0x13', 194),
+            key: hexZeroPad('0x13', 98),
+            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
+            operatorIndex: 2,
+            used: false,
+          },
         ],
-        meta: { blockNumber: meta.blockNumber, blockHash: meta.blockHash },
-      });
-    });
-  });
-
-  describe('getForModule', () => {
-    test('unknown module', async () => {
-      process.env['CHAIN_ID'] = '1';
-      const address = '0x000000000000000000';
-      expect(keysController.getForModule(address, <any>{})).rejects.toThrowError(
-        `Module with address ${address} is not supported`,
-      );
-    });
-
-    test('keys for NodeOperatorRegistry on Mainnet', async () => {
-      process.env['CHAIN_ID'] = '1';
-      const result = await keysController.getForModule('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', <any>{});
-      const keys = registryKeys.map((key) => ({ key: key.key }));
-
-      const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
-
-      expect(result).toEqual({
-        data: keys,
-        meta: moduleMeta,
-      });
-    });
-
-    test('keys for NodeOperatorRegistry on Goerli', async () => {
-      // set process.env
-      process.env['CHAIN_ID'] = '5';
-
-      const result = await keysController.getForModule('0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320', <any>{});
-      const keys = registryKeys.map((key) => ({ key: key.key }));
-
-      const moduleMeta = { ...meta, moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320' };
-
-      expect(result).toEqual({
-        data: keys,
-        meta: moduleMeta,
-      });
-    });
-
-    test('Add all possible fields', async () => {
-      process.env['CHAIN_ID'] = '1';
-      const result = await keysController.getForModule('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
-        fields: Object.values(STAKING_ROUTER_MODULE_FIELDS),
-      });
-
-      const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
-
-      expect(result).toEqual({
-        data: registryKeys,
-        meta: moduleMeta,
-      });
-    });
-
-    test('used keys', async () => {
-      process.env['CHAIN_ID'] = '1';
-      const result = await keysController.getForModule(
-        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        {
-          fields: Object.values(STAKING_ROUTER_MODULE_FIELDS),
+        meta: {
+          elBlockSnapshot: {
+            blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
+            blockNumber: 15819109,
+            timestamp: 0,
+          },
         },
-        true,
-      );
-
-      const keys = registryKeys.filter((key) => key.used);
-
-      const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
-
-      expect(result).toEqual({
-        data: keys,
-        meta: moduleMeta,
-      });
-    });
-
-    test('Add part of possible fields', async () => {
-      process.env['CHAIN_ID'] = '1';
-      const result = await keysController.getForModule('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
-        fields: [STAKING_ROUTER_MODULE_FIELDS.USED, STAKING_ROUTER_MODULE_FIELDS.DEPOSIT_SIGNATURE],
-      });
-
-      const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
-
-      const pickFun = ({ key, depositSignature, used }) => ({ key, depositSignature, used });
-
-      expect(result).toEqual({
-        data: registryKeys.map((key) => pickFun(key)),
-        meta: moduleMeta,
-      });
-    });
-
-    test('unused keys', async () => {
-      process.env['CHAIN_ID'] = '1';
-      const result = await keysController.getForModule(
-        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        {
-          fields: Object.values(STAKING_ROUTER_MODULE_FIELDS),
-        },
-        false,
-      );
-
-      const keys = registryKeys.filter((key) => !key.used);
-
-      const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
-
-      expect(result).toEqual({
-        data: keys,
-        meta: moduleMeta,
-      });
-    });
-  });
-
-  describe('getForModuleByPubkeys', () => {
-    test('unknown module', async () => {
-      process.env['CHAIN_ID'] = '1';
-      const address = '0x000000000000000000';
-      expect(keysController.getForModuleByPubkeys(address, [], <any>{})).rejects.toThrowError(
-        `Module with address ${address} is not supported`,
-      );
-    });
-
-    test('keys for NodeOperatorRegistry on Mainnet', async () => {
-      process.env['CHAIN_ID'] = '1';
-      const result = await keysController.getForModuleByPubkeys(
-        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        [registryKeys[0].key, registryKeys[1].key],
-        <any>{},
-      );
-
-      const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
-
-      expect(result).toEqual({
-        data: [{ key: registryKeys[0].key }, { key: registryKeys[1].key }],
-        meta: moduleMeta,
-      });
-    });
-
-    test('keys for NodeOperatorRegistry on Goerli', async () => {
-      // set process.env
-      process.env['CHAIN_ID'] = '5';
-
-      const result = await keysController.getForModuleByPubkeys(
-        '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
-        [registryKeys[0].key, registryKeys[1].key],
-        <any>{},
-      );
-
-      const moduleMeta = { ...meta, moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320' };
-
-      expect(result).toEqual({
-        data: [{ key: registryKeys[0].key }, { key: registryKeys[1].key }],
-        meta: moduleMeta,
-      });
-    });
-
-    test('Add all possible fields', async () => {
-      process.env['CHAIN_ID'] = '1';
-      const result = await keysController.getForModuleByPubkeys(
-        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        [registryKeys[0].key, registryKeys[1].key],
-        {
-          fields: Object.values(STAKING_ROUTER_MODULE_FIELDS),
-        },
-      );
-
-      const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
-
-      expect(result).toEqual({
-        data: [registryKeys[0], registryKeys[1]],
-        meta: moduleMeta,
-      });
-    });
-
-    test('Add part of possible fields', async () => {
-      process.env['CHAIN_ID'] = '1';
-      const result = await keysController.getForModuleByPubkeys(
-        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        [registryKeys[0].key, registryKeys[1].key],
-        {
-          fields: [STAKING_ROUTER_MODULE_FIELDS.USED, STAKING_ROUTER_MODULE_FIELDS.DEPOSIT_SIGNATURE],
-        },
-      );
-
-      const moduleMeta = { ...meta, moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5' };
-
-      const pickFun = ({ key, depositSignature, used }) => ({ key, depositSignature, used });
-
-      expect(result).toEqual({
-        data: [pickFun(registryKeys[0]), pickFun(registryKeys[1])],
-        meta: moduleMeta,
       });
     });
   });

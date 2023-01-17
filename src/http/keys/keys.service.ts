@@ -1,10 +1,12 @@
-import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { KeysResponse, StakingRouterModuleKeysResponse } from './entities';
+import { KeyListResponse, KeyWithModuleAddress, FilterQuery } from './entities';
 import { RegistryService } from 'jobs/registry.service';
-import { stakingRouterModules } from 'common/config';
 import { ConfigService } from 'common/config';
-import { StakingRouterModuleType } from 'http/staking-router-modules/entities';
+import { RegistryKey, RegistryMeta } from '@lido-nestjs/registry';
+import { ELBlockSnapshot } from 'http/common/entities';
+import { getSRModuleByType } from 'http/common/sr-modules.utils';
+
 @Injectable()
 export class KeysService {
   constructor(
@@ -13,124 +15,83 @@ export class KeysService {
     protected configService: ConfigService,
   ) {}
 
-  async get(fields: string[]): Promise<KeysResponse> {
+  async get(filters: FilterQuery): Promise<KeyListResponse> {
     //TODO: In future iteration for staking router here will be method to get keys from all modules
-    const { registryKeys, meta } = await this.getRegistryKeys(fields);
+    const chainId = this.configService.get('CHAIN_ID');
+    const registryModule = getSRModuleByType('grouped-onchain-v1', chainId);
+
+    const { keys, meta } = await this.keyRegistryService.getKeysWithMeta(filters);
+
+    const registryKeys: KeyWithModuleAddress[] = keys.map((key) =>
+      this.formModuleKey(key, registryModule.stakingModuleAddress),
+    );
+    const elBlockSnapshot = this.formELBlockSnapshot(meta);
 
     return {
       // swagger ui не справляется с выводом всех значений
       // но пагинацию добавить не можем
       data: registryKeys,
       meta: {
-        blockNumber: meta?.blockNumber ?? 0,
-        blockHash: meta?.blockHash ?? '',
+        elBlockSnapshot,
       },
     };
   }
 
-  async getByPubKeys(fields: string[], pubkeys: string[]): Promise<KeysResponse> {
-    // TODO: In future iteration for staking router here will be method to get keys from all modules
-    // TODO: where will we use this method?
-    const { registryKeys, meta } = await this.getRegistryKeysByPubkeys(fields, pubkeys);
+  async getByPubkey(pubkey: string): Promise<KeyListResponse> {
+    const { keys, meta } = await this.keyRegistryService.getKeyWithMetaByPubkey(pubkey);
+    const chainId = this.configService.get('CHAIN_ID');
+    const registryModule = getSRModuleByType('grouped-onchain-v1', chainId);
+
+    const registryKeys: KeyWithModuleAddress[] = keys.map((key) =>
+      this.formModuleKey(key, registryModule.stakingModuleAddress),
+    );
+    const elBlockSnapshot = this.formELBlockSnapshot(meta);
 
     return {
       data: registryKeys,
       meta: {
-        blockNumber: meta.blockNumber,
-        blockHash: meta.blockHash,
+        elBlockSnapshot,
       },
     };
   }
 
-  async getForModule(
-    moduleAddress: string,
-    fields: string[],
-    used: boolean | undefined,
-  ): Promise<StakingRouterModuleKeysResponse> {
-    const moduleInfo = this.getStakingRouterModule(moduleAddress);
-
-    if (!moduleInfo) {
-      throw new NotFoundException(`Module with address ${moduleAddress} is not supported`);
-    }
-
-    if (moduleInfo.type == StakingRouterModuleType.CURATED) {
-      const { registryKeys, meta } = await this.getRegistryKeys(fields, used);
-
-      return {
-        data: registryKeys,
-        meta: {
-          moduleAddress,
-          blockNumber: meta.blockNumber,
-          blockHash: meta.blockHash,
-          timestamp: meta.timestamp,
-          keysOpIndex: meta.keysOpIndex,
-        },
-      };
-    }
-  }
-
-  async getForModuleByPubkeys(
-    moduleAddress: string,
-    fields: string[],
-    pubkeys: string[],
-  ): Promise<StakingRouterModuleKeysResponse> {
-    const moduleInfo = this.getStakingRouterModule(moduleAddress);
-
-    if (!moduleInfo) {
-      throw new NotFoundException(`Module with address ${moduleAddress} is not supported`);
-    }
-
-    if (moduleInfo.type == StakingRouterModuleType.CURATED) {
-      const { registryKeys, meta } = await this.getRegistryKeysByPubkeys(fields, pubkeys);
-
-      return {
-        data: registryKeys,
-        meta: {
-          moduleAddress,
-          blockNumber: meta.blockNumber,
-          blockHash: meta.blockHash,
-          timestamp: meta.timestamp,
-          keysOpIndex: meta.keysOpIndex,
-        },
-      };
-    }
-  }
-
-  private async getRegistryKeysByPubkeys(fields: string[], pubkeys: string[]) {
-    const { keys, meta } = await this.keyRegistryService.getKeysWithMetaByPubKeys(pubkeys);
-
-    const registryKeys = keys.map((registryKey) => ({
-      key: registryKey.key,
-      ...this.transformKey(registryKey, fields),
-    }));
-
-    return { registryKeys, meta };
-  }
-
-  /**
-   * Get registry keys from db with meta
-   **/
-  private async getRegistryKeys(fields: string[], used?: boolean) {
-    const filters = used != undefined ? { used } : {};
-    const { keys, meta } = await this.keyRegistryService.getKeysWithMeta(filters);
-
-    const registryKeys = keys.map((registryKey) => ({
-      key: registryKey.key,
-      ...this.transformKey(registryKey, fields),
-    }));
-
-    return { registryKeys, meta };
-  }
-
-  private getStakingRouterModule(moduleAddress) {
+  async getByPubKeys(pubkeys: string[]): Promise<KeyListResponse> {
+    // TODO: In future iteration for staking router here will be method to get keys from all modules
+    // TODO: where will we use this method?
+    const { keys, meta } = await this.keyRegistryService.getKeysWithMetaByPubkeys(pubkeys);
     const chainId = this.configService.get('CHAIN_ID');
-    return stakingRouterModules[chainId].find((module) => module.address == moduleAddress);
-  }
+    const registryModule = getSRModuleByType('grouped-onchain-v1', chainId);
 
-  private transformKey(key: object, fields: string[]) {
-    return fields.reduce((acc, field) => {
-      acc[field] = key[field];
-      return acc;
-    }, {});
+    const registryKeys: KeyWithModuleAddress[] = keys.map((key) =>
+      this.formModuleKey(key, registryModule.stakingModuleAddress),
+    );
+    const elBlockSnapshot = this.formELBlockSnapshot(meta);
+
+    return {
+      data: registryKeys,
+      meta: {
+        elBlockSnapshot,
+      },
+    };
+  }
+  private formModuleKey(key: RegistryKey, stakingModuleAddress: string): KeyWithModuleAddress {
+    return {
+      key: key.key,
+      depositSignature: key.depositSignature,
+      operatorIndex: key.operatorIndex,
+      used: key.used,
+      moduleAddress: stakingModuleAddress,
+    };
+  }
+  private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot | null {
+    if (!meta) {
+      return null;
+    }
+
+    return {
+      blockNumber: meta.blockNumber,
+      blockHash: meta.blockHash,
+      timestamp: meta.timestamp,
+    };
   }
 }
