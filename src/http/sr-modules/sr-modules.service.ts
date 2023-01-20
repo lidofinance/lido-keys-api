@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from 'common/config';
 import {
   GroupedByModuleKeyListResponse,
-  SRModuleKeysResponse,
+  SRModuleKeyListResponse,
   SRModuleResponse,
   SRModuleListResponse,
   RegistryKey,
@@ -44,7 +44,7 @@ export class SRModulesService {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
     }
 
-    // We supppose if module in list, Keys API knows how to work with it
+    // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
     if (module.type == 'grouped-onchain-v1') {
@@ -81,7 +81,7 @@ export class SRModulesService {
     };
   }
 
-  async getModuleKeys(moduleId: ModuleId, filters): Promise<SRModuleKeysResponse> {
+  async getModuleKeys(moduleId: ModuleId, filters): Promise<SRModuleKeyListResponse> {
     // At first we should find module by id in our list, in future without chainId
     const chainId = this.configService.get('CHAIN_ID');
     const module = getSRModule(moduleId, chainId);
@@ -111,7 +111,7 @@ export class SRModulesService {
     // compare type with other types
   }
 
-  async getModuleKeysByPubkeys(moduleId: ModuleId, pubkeys: string[]): Promise<SRModuleKeysResponse> {
+  async getModuleKeysByPubkeys(moduleId: ModuleId, pubkeys: string[]): Promise<SRModuleKeyListResponse> {
     // At first we should find module by id in our list, in future without chainId
     const chainId = this.configService.get('CHAIN_ID');
     const module = getSRModule(moduleId, chainId);

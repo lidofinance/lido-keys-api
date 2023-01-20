@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Meta } from './meta';
+import { SRModuleKeysMeta } from './meta';
 import { GeneralKey, SRModule } from 'http/common/entities/';
 
 export class GeneralKeyListWithModule {
@@ -24,7 +24,7 @@ export class GroupedByModuleKeyListResponse {
   data: GeneralKeyListWithModule[];
 
   @ApiProperty({
-    type: () => Meta,
+    type: () => SRModuleKeysMeta,
   })
-  meta: Meta;
+  meta: SRModuleKeysMeta;
 }

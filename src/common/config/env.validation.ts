@@ -63,6 +63,11 @@ export class EnvironmentVariables {
   @Transform(({ value }) => value.split(','))
   PROVIDERS_URLS: NonEmptyArray<string>;
 
+  @IsArray()
+  @ArrayMinSize(1)
+  @Transform(({ value }) => value.split(','))
+  CL_API_URLS: string[];
+
   @IsNumber()
   @Transform(({ value }) => Number(value))
   CHAIN_ID: number;
@@ -86,6 +91,25 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsString()
   JOB_INTERVAL_REGISTRY = CronExpression.EVERY_5_SECONDS;
+
+  @IsOptional()
+  @IsString()
+  JOB_INTERVAL_VALIDATORS_REGISTRY = CronExpression.EVERY_10_SECONDS;
+
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  PROVIDER_JSON_RPC_MAX_BATCH_SIZE = 100;
+
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  PROVIDER_CONCURRENT_REQUESTS = 5;
+
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  PROVIDER_BATCH_AGGREGATION_WAIT_MS = 10;
 }
 
 export function validate(config: Record<string, unknown>) {

@@ -1,0 +1,133 @@
+import { hexZeroPad } from '@ethersproject/bytes';
+
+export const dbKeys = [
+  {
+    index: 1,
+    operatorIndex: 1,
+    key: hexZeroPad('0x12', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 2,
+    operatorIndex: 2,
+    key: hexZeroPad('0x13', 98),
+    depositSignature: hexZeroPad('0x13', 194),
+    used: true,
+  },
+  {
+    index: 3,
+    operatorIndex: 2,
+    key: hexZeroPad('0x13', 98),
+    depositSignature: hexZeroPad('0x13', 194),
+    used: false,
+  },
+  {
+    index: 4,
+    operatorIndex: 1,
+    key: hexZeroPad('0x14', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 5,
+    operatorIndex: 1,
+    key: hexZeroPad('0x15', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 6,
+    operatorIndex: 1,
+    key: hexZeroPad('0x16', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 7,
+    operatorIndex: 1,
+    key: hexZeroPad('0x17', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 8,
+    operatorIndex: 1,
+    key: hexZeroPad('0x18', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 9,
+    operatorIndex: 1,
+    key: hexZeroPad('0x19', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 10,
+    operatorIndex: 1,
+    key: hexZeroPad('0x20', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+];
+
+export const operatorOneUsedKeys = [
+  {
+    index: 1,
+    operatorIndex: 1,
+    key: hexZeroPad('0x12', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 4,
+    operatorIndex: 1,
+    key: hexZeroPad('0x14', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 5,
+    operatorIndex: 1,
+    key: hexZeroPad('0x15', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 6,
+    operatorIndex: 1,
+    key: hexZeroPad('0x16', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 7,
+    operatorIndex: 1,
+    key: hexZeroPad('0x17', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 8,
+    operatorIndex: 1,
+    key: hexZeroPad('0x18', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 9,
+    operatorIndex: 1,
+    key: hexZeroPad('0x19', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+  {
+    index: 10,
+    operatorIndex: 1,
+    key: hexZeroPad('0x20', 98),
+    depositSignature: hexZeroPad('0x12', 194),
+    used: true,
+  },
+];

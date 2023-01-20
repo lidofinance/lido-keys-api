@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class FilterQuery {
+export class KeyQuery {
   @ApiProperty({
     required: false,
     description:

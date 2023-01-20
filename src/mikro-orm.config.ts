@@ -5,6 +5,9 @@ import * as glob from 'glob';
 import * as path from 'path';
 import { MigrationObject } from '@mikro-orm/core/typings';
 import { RegistryMeta, RegistryOperator, RegistryKey } from '@lido-nestjs/registry';
+import { ConsensusMetaEntity } from '@lido-nestjs/validators-registry/dist/storage/consensus-meta.entity';
+import { ConsensusValidatorEntity } from '@lido-nestjs/validators-registry/dist/storage/consensus-validator.entity';
+
 dotenv.config();
 
 // TODO move this to nestjs packages
@@ -65,8 +68,11 @@ const config: Options = {
   port: parseInt(process.env.DB_PORT, 10),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  entities: [RegistryKey, RegistryOperator, RegistryMeta],
-  migrations: getMigrationOptions(path.join(__dirname, 'migrations'), ['@lido-nestjs/registry']),
+  entities: [RegistryKey, RegistryOperator, RegistryMeta, ConsensusValidatorEntity, ConsensusMetaEntity],
+  migrations: getMigrationOptions(path.join(__dirname, 'migrations'), [
+    '@lido-nestjs/registry',
+    '@lido-nestjs/validators-registry',
+  ]),
 };
 
 export default config;

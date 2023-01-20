@@ -6,11 +6,11 @@ import { SentryInterceptor } from 'common/sentry';
 import { HealthModule } from 'common/health';
 import { AppService } from './app.service';
 import { HTTPModule } from '../http';
-import { ExecutionProviderModule, ExecutionProvider } from 'common/execution-provider';
+import { ExecutionProviderModule } from 'common/execution-provider';
+import { ConsensusProviderModule } from 'common/consensus-provider';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { RegistryModule } from '../jobs';
+import { RegistryModule, ValidatorsRegistryModule } from '../jobs';
 import { ScheduleModule } from '@nestjs/schedule';
-import { KeyRegistryModule } from '@lido-nestjs/registry';
 import config from '../mikro-orm.config';
 
 @Module({
@@ -19,6 +19,7 @@ import config from '../mikro-orm.config';
     PrometheusModule,
     ConfigModule,
     ExecutionProviderModule,
+    ConsensusProviderModule,
     MikroOrmModule.forRootAsync({
       async useFactory(configService: ConfigService) {
         return {
@@ -30,18 +31,14 @@ import config from '../mikro-orm.config';
           password: configService.get('DB_PASSWORD'),
           autoLoadEntities: false,
           cache: { enabled: false },
+          debug: true,
         };
       },
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
-    KeyRegistryModule.forRootAsync({
-      inject: [ExecutionProvider],
-      async useFactory(provider) {
-        return { provider };
-      },
-    }),
     RegistryModule,
+    ValidatorsRegistryModule,
     HTTPModule,
   ],
   providers: [{ provide: APP_INTERCEPTOR, useClass: SentryInterceptor }, AppService],

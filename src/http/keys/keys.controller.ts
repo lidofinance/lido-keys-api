@@ -52,6 +52,6 @@ export class KeysController {
   })
   @ApiOperation({ summary: 'Get list of found keys in db from pubkey list' })
   getByPubkeys(@Body() pubkeys: string[]) {
-    return this.keysService.getByPubKeys(pubkeys);
+    return this.keysService.getByPubkeys(pubkeys);
   }
 }

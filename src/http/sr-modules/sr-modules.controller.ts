@@ -3,9 +3,9 @@ import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   SRModuleListResponse,
   SRModuleResponse,
-  SRModuleKeysResponse,
+  SRModuleKeyListResponse,
   GroupedByModuleKeyListResponse,
-  FilterQuery,
+  KeyQuery,
 } from './entities';
 import { SRModulesService } from './sr-modules.service';
 import { ModuleId } from 'http/common/entities/';
@@ -13,7 +13,7 @@ import { ModuleId } from 'http/common/entities/';
 @Controller('modules')
 @ApiTags('List of Modules')
 export class SRModulesController {
-  constructor(protected readonly modulesService: SRModulesService) {}
+  constructor(protected readonly srModulesService: SRModulesService) {}
 
   @Version('1')
   @ApiOperation({ summary: 'Get list of modules supported in API.' })
@@ -24,7 +24,7 @@ export class SRModulesController {
   })
   @Get('/')
   getModules() {
-    return this.modulesService.getModules();
+    return this.srModulesService.getModules();
   }
 
   @Version('1')
@@ -40,7 +40,7 @@ export class SRModulesController {
     description: 'Staking router module_id or contract address.',
   })
   getModule(@Param('module_id') moduleId: ModuleId) {
-    return this.modulesService.getModule(moduleId);
+    return this.srModulesService.getModule(moduleId);
   }
 
   @Version('1')
@@ -51,8 +51,8 @@ export class SRModulesController {
     type: GroupedByModuleKeyListResponse,
   })
   @Get('keys')
-  getGroupedByModuleKeys(@Query() filters: FilterQuery) {
-    return this.modulesService.getGroupedByModuleKeys(filters);
+  getGroupedByModuleKeys(@Query() filters: KeyQuery) {
+    return this.srModulesService.getGroupedByModuleKeys(filters);
   }
 
   @Version('1')
@@ -60,15 +60,15 @@ export class SRModulesController {
   @ApiResponse({
     status: 200,
     description: 'List of all modules supported in API',
-    type: SRModuleKeysResponse,
+    type: SRModuleKeyListResponse,
   })
   @ApiParam({
     name: 'module_id',
     description: 'Staking router module_id or contract address.',
   })
   @Get(':module_id/keys')
-  getModuleKeys(@Param('module_id') moduleId: ModuleId, @Query() filters: FilterQuery) {
-    return this.modulesService.getModuleKeys(moduleId, filters);
+  getModuleKeys(@Param('module_id') moduleId: ModuleId, @Query() filters: KeyQuery) {
+    return this.srModulesService.getModuleKeys(moduleId, filters);
   }
 
   @Version('1')
@@ -77,13 +77,13 @@ export class SRModulesController {
   @ApiResponse({
     status: 200,
     description: 'Staking Router module keys.',
-    type: SRModuleKeysResponse,
+    type: SRModuleKeyListResponse,
   })
   @ApiParam({
     name: 'module_id',
     description: 'Staking router module_id or contract address.',
   })
-  getModuleKeysByPubkeys(@Param('module_id') module_id: ModuleId, @Body() pubkeys: string[]) {
-    return this.modulesService.getModuleKeysByPubkeys(module_id, pubkeys);
+  getModuleKeysByPubkeys(@Param('module_id') moduleId: ModuleId, @Body() pubkeys: string[]) {
+    return this.srModulesService.getModuleKeysByPubkeys(moduleId, pubkeys);
   }
 }

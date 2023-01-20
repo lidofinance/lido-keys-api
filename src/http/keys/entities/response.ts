@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Meta } from './meta';
-import { KeyWithModuleAddress } from './module.key';
+import { KeysMeta } from './meta';
+import { KeyWithModuleAddress } from './module-key';
 
 export class KeyListResponse {
   @ApiProperty({
@@ -10,7 +10,8 @@ export class KeyListResponse {
   data: KeyWithModuleAddress[];
 
   @ApiProperty({
-    type: () => Meta,
+    type: () => KeysMeta,
+    description: 'Meta for keys endpoints',
   })
-  meta: Meta;
+  meta: KeysMeta;
 }

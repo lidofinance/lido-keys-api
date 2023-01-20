@@ -3,6 +3,12 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CLBlockSnapshot {
   @ApiProperty({
     required: true,
+    description: 'Current epoch',
+  })
+  epoch: number;
+
+  @ApiProperty({
+    required: true,
     description: 'Slot root',
   })
   root: string;

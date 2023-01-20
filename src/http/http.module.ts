@@ -10,9 +10,10 @@ import { LoggerMiddleware, MetricsMiddleware } from './common/middleware';
 import { CacheModule } from './common/cache';
 import { KeysModule } from './keys';
 import { SRModulesModule } from './sr-modules';
+import { SRModulesValidatorsModule } from './sr-modules-validators';
 
 @Module({
-  imports: [KeysModule, SRModulesModule, CacheModule, ThrottlerModule],
+  imports: [KeysModule, SRModulesModule, SRModulesValidatorsModule, CacheModule, ThrottlerModule],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerBehindProxyGuard },
     { provide: APP_INTERCEPTOR, useClass: CacheInterceptor },
