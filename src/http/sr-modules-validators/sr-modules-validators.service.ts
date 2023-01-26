@@ -1,5 +1,5 @@
 import { Injectable, Inject, InternalServerErrorException, NotFoundException, LoggerService } from '@nestjs/common';
-import { ConfigService } from 'common/config';
+import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
 import {
   ExitValidatorListResponse,
   ExitValidator,
@@ -29,7 +29,7 @@ export class SRModulesValidatorsService {
     operatorId: number,
     filters: ValidatorsQuery,
   ): Promise<ExitValidatorListResponse> {
-    // At first we should find module by id in our list, in future without chainId
+    // At first, we should find module by id in our list, in future without chainId
     const chainId = this.configService.get('CHAIN_ID');
     const module = getSRModule(moduleId, chainId);
 
@@ -39,7 +39,7 @@ export class SRModulesValidatorsService {
     // We supppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type == 'grouped-onchain-v1') {
+    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
       const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
 
       if (!clMeta) {
@@ -59,6 +59,8 @@ export class SRModulesValidatorsService {
         },
       };
     }
+
+    throw new NotFoundException(`Modules with other types are not supported`);
   }
 
   async getVoluntaryExitMessages(
@@ -66,7 +68,7 @@ export class SRModulesValidatorsService {
     operatorId: number,
     filters: ValidatorsQuery,
   ): Promise<ExitPresignMessageListResponse> {
-    // At first we should find module by id in our list, in future without chainId
+    // At first, we should find module by id in our list, in future without chainId
     const chainId = this.configService.get('CHAIN_ID');
     const module = getSRModule(moduleId, chainId);
 
@@ -76,7 +78,7 @@ export class SRModulesValidatorsService {
     // We supppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type == 'grouped-onchain-v1') {
+    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
       const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
 
       if (!clMeta) {
@@ -96,6 +98,8 @@ export class SRModulesValidatorsService {
         },
       };
     }
+
+    throw new NotFoundException(`Modules with other types are not supported`);
   }
 
   private async getOperatorOldestValidators(

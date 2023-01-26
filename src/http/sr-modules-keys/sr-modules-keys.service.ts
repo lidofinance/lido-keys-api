@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from 'common/config';
+import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
 import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse, RegistryKey } from './entities';
 import { RegistryService } from 'jobs/registry.service';
 import { ELBlockSnapshot, Key, SRModule } from 'http/common/entities';
@@ -23,7 +23,7 @@ export class SRModulesKeysService {
     }
 
     const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType('grouped-onchain-v1', chainId);
+    const registryModule = getSRModuleByType(GROUPED_ONCHAIN_V1_TYPE, chainId);
 
     const registryKeys: Key[] = keys.map((key) => this.formKey(key));
 
@@ -53,7 +53,7 @@ export class SRModulesKeysService {
     // We supppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type == 'grouped-onchain-v1') {
+    if (module.type == GROUPED_ONCHAIN_V1_TYPE) {
       const { keys, meta } = await this.registryService.getKeysWithMeta(filters);
 
       if (!meta) {
@@ -78,6 +78,7 @@ export class SRModulesKeysService {
     }
 
     // compare type with other types
+    throw new NotFoundException(`Modules with other types are not supported`);
   }
 
   async getModuleKeysByPubkeys(moduleId: ModuleId, pubkeys: string[]): Promise<SRModuleKeyListResponse> {
@@ -91,7 +92,7 @@ export class SRModulesKeysService {
     // We supppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type == 'grouped-onchain-v1') {
+    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
       const { keys, meta } = await this.registryService.getKeysWithMetaByPubkeys(pubkeys);
 
       if (!meta) {
@@ -114,7 +115,9 @@ export class SRModulesKeysService {
         },
       };
     }
+
     // compare type with other types
+    throw new NotFoundException(`Modules with other types are not supported`);
   }
 
   // at the moment part of information is in json file and another part in meta table of registry lib
@@ -134,7 +137,7 @@ export class SRModulesKeysService {
     };
   }
 
-  private formKey(key): Key {
+  private formKey(key: RegistryKey): Key {
     return {
       key: key.key,
       depositSignature: key.depositSignature,
@@ -143,7 +146,7 @@ export class SRModulesKeysService {
     };
   }
 
-  private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot | null {
+  private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot {
     return {
       blockNumber: meta.blockNumber,
       blockHash: meta.blockHash,
@@ -151,7 +154,7 @@ export class SRModulesKeysService {
     };
   }
 
-  private formRegistryKey(key): RegistryKey {
+  private formRegistryKey(key: RegistryKey): RegistryKey {
     return {
       key: key.key,
       depositSignature: key.depositSignature,

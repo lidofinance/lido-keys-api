@@ -6,5 +6,5 @@ export class KeysMeta {
     type: () => ELBlockSnapshot,
     description: 'Execution layer block information',
   })
-  elBlockSnapshot: ELBlockSnapshot;
+  elBlockSnapshot!: ELBlockSnapshot;
 }

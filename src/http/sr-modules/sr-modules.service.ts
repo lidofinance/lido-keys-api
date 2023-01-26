@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from 'common/config';
+import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { RegistryService } from 'jobs/registry.service';
 import { ELBlockSnapshot, SRModule } from 'http/common/entities';
@@ -19,8 +19,16 @@ export class SRModulesService {
     // it is also important to have consistent module info and meta
 
     const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType('grouped-onchain-v1', chainId);
+    const registryModule = getSRModuleByType(GROUPED_ONCHAIN_V1_TYPE, chainId);
     const meta = await this.registryService.getMetaDataFromStorage();
+
+    if (!meta) {
+      return {
+        data: [],
+        elBlockSnapshot: null,
+      };
+    }
+
     const elBlockSnapshot = this.formELBlockSnapshot(meta);
 
     return {
@@ -30,7 +38,7 @@ export class SRModulesService {
   }
 
   async getModule(moduleId: ModuleId): Promise<SRModuleResponse> {
-    // At first we should find module by id in our list, in future without chainId
+    // At first, we should find module by id in our list, in future without chainId
     const chainId = this.configService.get('CHAIN_ID');
     const module = getSRModule(moduleId, chainId);
 
@@ -41,8 +49,16 @@ export class SRModulesService {
     // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type == 'grouped-onchain-v1') {
+    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
       const meta = await this.registryService.getMetaDataFromStorage();
+
+      if (!meta) {
+        return {
+          data: null,
+          elBlockSnapshot: null,
+        };
+      }
+
       const elBlockSnapshot = this.formELBlockSnapshot(meta);
 
       return {
@@ -50,6 +66,8 @@ export class SRModulesService {
         elBlockSnapshot,
       };
     }
+
+    throw new NotFoundException(`Modules with other types are not supported`);
   }
 
   // at the moment part of information is in json file and another part in meta table of registry lib

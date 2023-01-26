@@ -8,12 +8,12 @@ export class ExitValidatorListResponse {
     description: 'N oldest validators for current epoch when voluntary exit can be processed',
     type: () => [ExitValidator],
   })
-  data: ExitValidator[];
+  data!: ExitValidator[];
 
   @ApiProperty({
-    required: true,
-    description: 'Meta for voluntary exit enpoints',
+    nullable: true,
+    description: 'Meta for voluntary exit endpoints',
     type: () => ValidatorsMeta,
   })
-  meta: ValidatorsMeta;
+  meta!: ValidatorsMeta | null;
 }

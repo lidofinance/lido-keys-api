@@ -15,8 +15,8 @@ import { QueryOrder } from '@mikro-orm/core';
 export interface ValidatorsFilter {
   pubkeys: string[];
   statuses: string[];
-  max_amount: number;
-  percent: number;
+  max_amount: number | undefined;
+  percent: number | undefined;
 }
 
 @Injectable()
@@ -84,6 +84,8 @@ export class ValidatorsRegistryService {
       const nextValidatorsToExit = validators.slice(0, filter.max_amount);
       return { validators: nextValidatorsToExit, meta };
     }
+
+    return { validators, meta };
   }
 
   private getPercentOfValidators(validators: Validator[], percent: number): Validator[] {

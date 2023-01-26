@@ -8,12 +8,13 @@ export class ExitPresignMessageListResponse {
     description: 'Voluntary exit message list',
     type: () => [ExitPresignMessage],
   })
-  data: ExitPresignMessage[];
+  data!: ExitPresignMessage[];
 
   @ApiProperty({
     required: true,
-    description: 'Meta for voluntary exit enpoints',
+    description: 'Meta for voluntary exit endpoints',
+    nullable: true,
     type: () => ValidatorsMeta,
   })
-  meta: ValidatorsMeta;
+  meta!: ValidatorsMeta | null;
 }

@@ -6,5 +6,5 @@ export class SRModuleKeysMeta {
     type: () => ELBlockSnapshot,
     description: 'Execution layer block information',
   })
-  elBlockSnapshot: ELBlockSnapshot;
+  elBlockSnapshot!: ELBlockSnapshot;
 }

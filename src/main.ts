@@ -19,7 +19,7 @@ async function bootstrap() {
   const environment = configService.get('NODE_ENV');
   const appPort = configService.get('PORT');
   const corsWhitelist = configService.get('CORS_WHITELIST_REGEXP');
-  const sentryDsn = configService.get('SENTRY_DSN');
+  const sentryDsn = configService.get('SENTRY_DSN') ?? undefined;
 
   // migrating when starting application
   await app.get(MikroORM).getMigrator().up();

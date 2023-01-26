@@ -12,24 +12,26 @@ export class SRKeyListWithModule {
     items: { oneOf: [{ $ref: getSchemaPath(RegistryKey) }] },
     description: 'Keys of staking router module',
   })
-  keys: SRModuleKey[];
+  keys!: SRModuleKey[];
 
   @ApiProperty({
     description: 'Detailed Staking Router information',
     type: () => SRModule,
   })
-  module: SRModule;
+  module!: SRModule;
 }
 
 export class SRModuleKeyListResponse {
   @ApiProperty({
     description: 'Staking router module keys.',
+    nullable: true,
     type: () => SRKeyListWithModule,
   })
-  data: SRKeyListWithModule;
+  data!: SRKeyListWithModule | null;
 
   @ApiProperty({
+    nullable: true,
     type: () => SRModuleKeysMeta,
   })
-  meta: SRModuleKeysMeta;
+  meta!: SRModuleKeysMeta | null;
 }

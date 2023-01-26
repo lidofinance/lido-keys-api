@@ -5,11 +5,11 @@ export class ExitValidator {
     required: true,
     description: 'Index of validator.',
   })
-  validatorIndex: number;
+  validatorIndex!: number;
 
   @ApiProperty({
     required: true,
     description: 'Public key',
   })
-  key: string;
+  key!: string;
 }

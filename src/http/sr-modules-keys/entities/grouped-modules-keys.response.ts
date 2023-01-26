@@ -7,13 +7,13 @@ export class KeyListWithModule {
     description: 'Keys of staking router module',
     type: () => [Key],
   })
-  keys: Key[];
+  keys!: Key[];
 
   @ApiProperty({
     description: 'Detailed Staking Router information',
     type: () => SRModule,
   })
-  module: SRModule;
+  module!: SRModule;
 }
 
 export class GroupedByModuleKeyListResponse {
@@ -21,10 +21,11 @@ export class GroupedByModuleKeyListResponse {
     description: 'Keys for all modules grouped by staking router module',
     type: () => [KeyListWithModule],
   })
-  data: KeyListWithModule[];
+  data!: KeyListWithModule[];
 
   @ApiProperty({
+    nullable: true,
     type: () => SRModuleKeysMeta,
   })
-  meta: SRModuleKeysMeta;
+  meta!: SRModuleKeysMeta | null;
 }

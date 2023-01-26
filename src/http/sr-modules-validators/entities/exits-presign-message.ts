@@ -5,11 +5,11 @@ export class ExitPresignMessage {
     required: true,
     description: 'Index of validator.',
   })
-  validatorIndex: number;
+  validatorIndex!: number;
 
   @ApiProperty({
     required: true,
     description: 'Finalized epoch.',
   })
-  epoch: number;
+  epoch!: number;
 }

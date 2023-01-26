@@ -23,6 +23,9 @@ const findMigrations = (mainFolder: string, npmPackageNames: string[]): Migratio
     })
     .flat();
 
+  const isNullOrUndefined = (val: unknown): val is null | undefined => val === null || typeof val === 'undefined';
+  const isNotNullOrUndefined = <T>(val: T | undefined | null): val is T => !isNullOrUndefined(val);
+
   const migrations = filenames
     .map((filename) => {
       const module = require(filename);
@@ -37,7 +40,7 @@ const findMigrations = (mainFolder: string, npmPackageNames: string[]): Migratio
 
       return null;
     })
-    .filter((i) => i);
+    .filter(isNotNullOrUndefined);
 
   // TODO think about Nest.js logger
   console.log(`Found [${migrations.length}] DB migration files.`);
@@ -65,7 +68,7 @@ const config: Options = {
   type: 'postgresql',
   dbName: process.env.DB_NAME,
   host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT, 10),
+  port: parseInt(process?.env?.DB_PORT ?? '', 10),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   entities: [RegistryKey, RegistryOperator, RegistryMeta, ConsensusValidatorEntity, ConsensusMetaEntity],

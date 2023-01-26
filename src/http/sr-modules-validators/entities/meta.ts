@@ -6,5 +6,5 @@ export class ValidatorsMeta {
     type: () => CLBlockSnapshot,
     description: 'Consensus layer block information',
   })
-  clBlockSnapshot: CLBlockSnapshot;
+  clBlockSnapshot!: CLBlockSnapshot;
 }

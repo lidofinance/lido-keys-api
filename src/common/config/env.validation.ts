@@ -30,7 +30,7 @@ export class EnvironmentVariables {
   @IsInt()
   @Min(1)
   @Transform(toNumber({ defaultValue: 3000 }))
-  PORT: number;
+  PORT: number = 3000;
 
   @IsOptional()
   @IsString()
@@ -40,19 +40,19 @@ export class EnvironmentVariables {
   @IsInt()
   @Min(1)
   @Transform(toNumber({ defaultValue: 5 }))
-  GLOBAL_THROTTLE_TTL: number;
+  GLOBAL_THROTTLE_TTL: number = 5;
 
   @IsOptional()
   @IsInt()
   @Min(1)
   @Transform(toNumber({ defaultValue: 100 }))
-  GLOBAL_THROTTLE_LIMIT: number;
+  GLOBAL_THROTTLE_LIMIT: number = 100;
 
   @IsOptional()
   @IsInt()
   @Min(1)
   @Transform(toNumber({ defaultValue: 1 }))
-  GLOBAL_CACHE_TTL: number;
+  GLOBAL_CACHE_TTL: number = 1;
 
   @IsOptional()
   @IsString()
@@ -61,42 +61,42 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsEnum(LogLevel)
   @Transform(({ value }) => value || LogLevel.debug)
-  LOG_LEVEL: LogLevel;
+  LOG_LEVEL: LogLevel = LogLevel.debug;
 
   @IsOptional()
   @IsEnum(LogFormat)
   @Transform(({ value }) => value || LogFormat.json)
-  LOG_FORMAT: LogFormat;
+  LOG_FORMAT: LogFormat = LogFormat.json;
 
   @IsArray()
   @ArrayMinSize(1)
   @Transform(({ value }) => value.split(','))
-  PROVIDERS_URLS: NonEmptyArray<string>;
+  PROVIDERS_URLS!: NonEmptyArray<string>;
 
   @IsArray()
   @ArrayMinSize(1)
   @Transform(({ value }) => value.split(','))
-  CL_API_URLS: string[];
+  CL_API_URLS!: string[];
 
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
-  CHAIN_ID: number;
+  CHAIN_ID!: number;
 
   @IsString()
-  DB_HOST: string;
+  DB_HOST!: string;
 
   @IsString()
-  DB_USER: string;
+  DB_USER!: string;
 
   @IsString()
-  DB_PASSWORD: string;
+  DB_PASSWORD!: string;
 
   @IsString()
-  DB_NAME: string;
+  DB_NAME!: string;
 
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
-  DB_PORT: number;
+  DB_PORT!: number;
 
   @IsOptional()
   @IsString()
