@@ -14,7 +14,6 @@ import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/
 import { KeysService } from './keys.service';
 import { FilterQuery } from './entities';
 import { KeyListResponse } from './entities';
-import { Pubkey } from 'http/common/entities';
 
 @Controller('keys')
 @ApiTags('Operators keys')
