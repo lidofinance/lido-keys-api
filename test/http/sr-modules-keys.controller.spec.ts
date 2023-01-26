@@ -6,7 +6,7 @@ import { hexZeroPad } from '@ethersproject/bytes';
 import { RegistryService } from '../../src/jobs/registry.service';
 import {
   communityKeys,
-  generalKeys,
+  keys,
   communityModuleMainnet,
   communityModuleGoerli,
   elMeta,
@@ -77,7 +77,7 @@ describe('SRModulesKeysController controller', () => {
       expect(result).toEqual({
         data: [
           {
-            keys: generalKeys,
+            keys: keys,
             module: communityModuleMainnet,
           },
         ],
@@ -97,7 +97,7 @@ describe('SRModulesKeysController controller', () => {
       expect(result).toEqual({
         data: [
           {
-            keys: generalKeys,
+            keys: keys,
             module: communityModuleGoerli,
           },
         ],

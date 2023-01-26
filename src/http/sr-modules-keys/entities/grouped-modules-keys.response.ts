@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { SRModuleKeysMeta } from './meta';
-import { GeneralKey, SRModule } from 'http/common/entities/';
+import { Key, SRModule } from 'http/common/entities/';
 
-export class GeneralKeyListWithModule {
+export class KeyListWithModule {
   @ApiProperty({
     description: 'Keys of staking router module',
-    type: () => [GeneralKey],
+    type: () => [Key],
   })
-  keys: GeneralKey[];
+  keys: Key[];
 
   @ApiProperty({
     description: 'Detailed Staking Router information',
@@ -19,9 +19,9 @@ export class GeneralKeyListWithModule {
 export class GroupedByModuleKeyListResponse {
   @ApiProperty({
     description: 'Keys for all modules grouped by staking router module',
-    type: () => [GeneralKeyListWithModule],
+    type: () => [KeyListWithModule],
   })
-  data: GeneralKeyListWithModule[];
+  data: KeyListWithModule[];
 
   @ApiProperty({
     type: () => SRModuleKeysMeta,

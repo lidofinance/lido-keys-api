@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { GeneralKey } from 'http/common/entities/';
+import { Key } from 'http/common/entities/';
 
-export class KeyWithModuleAddress extends GeneralKey {
+export class KeyWithModuleAddress extends Key {
   @ApiProperty({
     required: true,
     description: 'Module address',

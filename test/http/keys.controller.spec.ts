@@ -8,7 +8,7 @@ import { ConfigService } from '../../src/common/config';
 
 import {
   communityKeys,
-  generalKeys,
+  keys,
   comminityKeysWithAddressMainnet,
   comminityKeysWithAddressGoerli,
   communityModuleMainnet,

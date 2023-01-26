@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from 'common/config';
 import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse, RegistryKey } from './entities';
 import { RegistryService } from 'jobs/registry.service';
-import { ELBlockSnapshot, GeneralKey, SRModule } from 'http/common/entities';
+import { ELBlockSnapshot, Key, SRModule } from 'http/common/entities';
 import { RegistryMeta } from '@lido-nestjs/registry';
 import { ModuleId } from 'http/common/entities/';
 import { getSRModule, getSRModuleByType } from 'http/common/sr-modules.utils';
@@ -25,7 +25,7 @@ export class SRModulesKeysService {
     const chainId = this.configService.get('CHAIN_ID');
     const registryModule = getSRModuleByType('grouped-onchain-v1', chainId);
 
-    const registryKeys: GeneralKey[] = keys.map((key) => this.formGeneralKey(key));
+    const registryKeys: Key[] = keys.map((key) => this.formKey(key));
 
     const elBlockSnapshot = this.formELBlockSnapshot(meta);
 
@@ -134,7 +134,7 @@ export class SRModulesKeysService {
     };
   }
 
-  private formGeneralKey(key): GeneralKey {
+  private formKey(key): Key {
     return {
       key: key.key,
       depositSignature: key.depositSignature,

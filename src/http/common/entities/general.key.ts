@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class GeneralKey {
+export class Key {
   @ApiProperty({
     required: true,
     description: 'Public key',

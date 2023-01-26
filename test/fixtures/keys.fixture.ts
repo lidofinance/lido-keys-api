@@ -76,7 +76,7 @@ export const communityKeys = [
 
 // keys for answers in general form without index according to document
 // created from registry keys
-export const generalKeys = communityKeys.map(({ operatorIndex, key, depositSignature, used }) => ({
+export const keys = communityKeys.map(({ operatorIndex, key, depositSignature, used }) => ({
   operatorIndex,
   key,
   depositSignature,

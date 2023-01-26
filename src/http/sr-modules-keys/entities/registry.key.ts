@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { GeneralKey } from 'http/common/entities/';
+import { Key } from 'http/common/entities/';
 
-export class RegistryKey extends GeneralKey {
+export class RegistryKey extends Key {
   @ApiProperty({
     description: 'Key index in contract',
   })
