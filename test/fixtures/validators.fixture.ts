@@ -1,5 +1,5 @@
 import { hexZeroPad } from '@ethersproject/bytes';
-import { ValidatorStatus, Validator, ConsensusMeta } from '@lido-nestjs/validators-registry';
+import { ValidatorStatus } from '@lido-nestjs/validators-registry';
 
 export const dbValidators = [
   {

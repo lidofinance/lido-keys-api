@@ -1,6 +1,7 @@
 import { hexZeroPad } from '@ethersproject/bytes';
 
-export const dbKeys = [
+// keys from db of  Registry (in future curated ) library
+export const communityKeys = [
   {
     index: 1,
     operatorIndex: 1,
@@ -72,6 +73,15 @@ export const dbKeys = [
     used: true,
   },
 ];
+
+// keys for answers in general form without index according to document
+// created from registry keys
+export const generalKeys = communityKeys.map(({ operatorIndex, key, depositSignature, used }) => ({
+  operatorIndex,
+  key,
+  depositSignature,
+  used,
+}));
 
 export const operatorOneUsedKeys = [
   {

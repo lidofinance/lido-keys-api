@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test } from '@nestjs/testing';
 import { ValidatorsRegistryInterface } from '@lido-nestjs/validators-registry';
 import { operatorOneValidatorsToExit, clMeta, operatorOneUsedKeys } from '../fixtures';

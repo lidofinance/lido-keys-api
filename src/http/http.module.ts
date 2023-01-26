@@ -11,9 +11,10 @@ import { CacheModule } from './common/cache';
 import { KeysModule } from './keys';
 import { SRModulesModule } from './sr-modules';
 import { SRModulesValidatorsModule } from './sr-modules-validators';
+import { SRModulesKeysModule } from './sr-modules-keys';
 
 @Module({
-  imports: [KeysModule, SRModulesModule, SRModulesValidatorsModule, CacheModule, ThrottlerModule],
+  imports: [KeysModule, SRModulesModule, SRModulesKeysModule, SRModulesValidatorsModule, CacheModule, ThrottlerModule],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerBehindProxyGuard },
     { provide: APP_INTERCEPTOR, useClass: CacheInterceptor },

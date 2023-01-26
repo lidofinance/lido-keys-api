@@ -108,7 +108,7 @@ describe('SRModulesValidators controller', () => {
         .spyOn(validatorsService, 'getOldestValidators')
         .mockImplementation(() => Promise.resolve({ validators: operatorOneValidatorsToExit, meta: clMeta }));
 
-      const res = await validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1);
+      const res = await validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {});
 
       expect(res).toEqual({
         data: operatorOneValidatorsExitList,
@@ -140,7 +140,7 @@ describe('SRModulesValidators controller', () => {
         .mockImplementation(() => Promise.resolve({ validators: operatorOneValidatorsToExit, meta: clMeta }));
 
       await expect(
-        validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1),
+        validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {}),
       ).rejects.toThrowError('Internal Server Error');
 
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
@@ -162,7 +162,11 @@ describe('SRModulesValidators controller', () => {
         .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
       const getValidatorsMock = jest.spyOn(validatorsService, 'getOldestValidators');
 
-      const result = await validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1);
+      const result = await validatorsController.getOldestValidators(
+        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+        1,
+        {},
+      );
       expect(result).toEqual({ data: [], meta: null });
 
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
@@ -183,7 +187,11 @@ describe('SRModulesValidators controller', () => {
         .spyOn(validatorsService, 'getOldestValidators')
         .mockImplementation(() => Promise.resolve({ validators: [], meta: null }));
 
-      const result = await validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1);
+      const result = await validatorsController.getOldestValidators(
+        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+        1,
+        {},
+      );
       expect(result).toEqual({ data: [], meta: null });
 
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
@@ -329,6 +337,7 @@ describe('SRModulesValidators controller', () => {
       const res = await validatorsController.getMessagesForOldestValidators(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
         1,
+        {},
       );
 
       expect(res).toEqual({
@@ -361,7 +370,7 @@ describe('SRModulesValidators controller', () => {
         .mockImplementation(() => Promise.resolve({ validators: operatorOneValidatorsToExit, meta: clMeta }));
 
       await expect(
-        validatorsController.getMessagesForOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1),
+        validatorsController.getMessagesForOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {}),
       ).rejects.toThrowError('Internal Server Error');
 
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
@@ -386,6 +395,7 @@ describe('SRModulesValidators controller', () => {
       const result = await validatorsController.getMessagesForOldestValidators(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
         1,
+        {},
       );
       expect(result).toEqual({ data: [], meta: null });
 
@@ -410,6 +420,7 @@ describe('SRModulesValidators controller', () => {
       const result = await validatorsController.getMessagesForOldestValidators(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
         1,
+        {},
       );
       expect(result).toEqual({ data: [], meta: null });
 

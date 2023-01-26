@@ -30,7 +30,7 @@ export class SRModulesValidatorsController {
   getOldestValidators(
     @Param('module_id') moduleId: ModuleId,
     @Param('operator_id') operatorId,
-    @Query() query?: ValidatorsQuery,
+    @Query() query: ValidatorsQuery,
   ) {
     return this.validatorsService.getOldestLidoValidators(moduleId, operatorId, query);
   }
@@ -55,7 +55,7 @@ export class SRModulesValidatorsController {
   getMessagesForOldestValidators(
     @Param('module_id') moduleId: ModuleId,
     @Param('operator_id') operatorId,
-    @Query() query?: ValidatorsQuery,
+    @Query() query: ValidatorsQuery,
   ) {
     return this.validatorsService.getVoluntaryExitMessages(moduleId, operatorId, query);
   }
