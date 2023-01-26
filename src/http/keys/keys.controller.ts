@@ -1,8 +1,20 @@
-import { Controller, Get, Post, Version, Query, Body, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Version,
+  Query,
+  Body,
+  Param,
+  HttpCode,
+  HttpStatus,
+  ParseArrayPipe,
+} from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
 import { FilterQuery } from './entities';
 import { KeyListResponse } from './entities';
+import { Pubkey } from 'http/common/entities';
 
 @Controller('keys')
 @ApiTags('Operators keys')
@@ -51,7 +63,7 @@ export class KeysController {
     type: KeyListResponse,
   })
   @ApiOperation({ summary: 'Get list of found keys in db from pubkey list' })
-  getByPubkeys(@Body() pubkeys: string[]) {
+  getByPubkeys(@Body(new ParseArrayPipe({ items: String })) pubkeys: string[]) {
     return this.keysService.getByPubkeys(pubkeys);
   }
 }

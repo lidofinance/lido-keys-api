@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -54,6 +54,8 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder().setTitle(APP_DESCRIPTION).setVersion(APP_VERSION).build();
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup(SWAGGER_URL, app, swaggerDocument);
+
+  app.useGlobalPipes(new ValidationPipe());
 
   // app
   await app.listen(appPort, '0.0.0.0', () => logger.log(`Listening on ${appPort}`));
