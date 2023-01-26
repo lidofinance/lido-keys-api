@@ -15,6 +15,13 @@ export class SRModulesKeysService {
     // for each module return keys with meta
     const { keys, meta } = await this.registryService.getKeysWithMeta(filters);
 
+    if (!meta) {
+      return {
+        data: [],
+        meta: null,
+      };
+    }
+
     const chainId = this.configService.get('CHAIN_ID');
     const registryModule = getSRModuleByType('grouped-onchain-v1', chainId);
 
@@ -48,6 +55,14 @@ export class SRModulesKeysService {
 
     if (module.type == 'grouped-onchain-v1') {
       const { keys, meta } = await this.registryService.getKeysWithMeta(filters);
+
+      if (!meta) {
+        return {
+          data: null,
+          meta: null,
+        };
+      }
+
       const registryKeys: RegistryKey[] = keys.map((key) => this.formRegistryKey(key));
       const elBlockSnapshot = this.formELBlockSnapshot(meta);
 
@@ -78,6 +93,14 @@ export class SRModulesKeysService {
 
     if (module.type == 'grouped-onchain-v1') {
       const { keys, meta } = await this.registryService.getKeysWithMetaByPubkeys(pubkeys);
+
+      if (!meta) {
+        return {
+          data: null,
+          meta: null,
+        };
+      }
+
       const registryKeys: RegistryKey[] = keys.map((key) => this.formRegistryKey(key));
       const elBlockSnapshot = this.formELBlockSnapshot(meta);
 
@@ -121,10 +144,6 @@ export class SRModulesKeysService {
   }
 
   private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot | null {
-    if (!meta) {
-      return null;
-    }
-
     return {
       blockNumber: meta.blockNumber,
       blockHash: meta.blockHash,

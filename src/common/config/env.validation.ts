@@ -1,5 +1,5 @@
 import { plainToClass, Transform } from 'class-transformer';
-import { IsEnum, IsNumber, IsString, IsOptional, validateSync, Min, IsArray, ArrayMinSize } from 'class-validator';
+import { IsEnum, IsString, IsOptional, validateSync, Min, IsArray, ArrayMinSize, IsInt } from 'class-validator';
 import { Environment, LogLevel, LogFormat } from './interfaces';
 import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
 import { CronExpression } from '@nestjs/schedule';
@@ -17,7 +17,7 @@ export class EnvironmentVariables {
   NODE_ENV: Environment = Environment.development;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @Min(1)
   @Transform(toNumber({ defaultValue: 3000 }))
   PORT: number;
@@ -27,19 +27,19 @@ export class EnvironmentVariables {
   CORS_WHITELIST_REGEXP = '';
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @Min(1)
   @Transform(toNumber({ defaultValue: 5 }))
   GLOBAL_THROTTLE_TTL: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @Min(1)
   @Transform(toNumber({ defaultValue: 100 }))
   GLOBAL_THROTTLE_LIMIT: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @Min(1)
   @Transform(toNumber({ defaultValue: 1 }))
   GLOBAL_CACHE_TTL: number;
@@ -68,8 +68,8 @@ export class EnvironmentVariables {
   @Transform(({ value }) => value.split(','))
   CL_API_URLS: string[];
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
   CHAIN_ID: number;
 
   @IsString()
@@ -84,8 +84,8 @@ export class EnvironmentVariables {
   @IsString()
   DB_NAME: string;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
   DB_PORT: number;
 
   @IsOptional()
@@ -97,18 +97,18 @@ export class EnvironmentVariables {
   JOB_INTERVAL_VALIDATORS_REGISTRY = CronExpression.EVERY_10_SECONDS;
 
   @IsOptional()
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
   PROVIDER_JSON_RPC_MAX_BATCH_SIZE = 100;
 
   @IsOptional()
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
   PROVIDER_CONCURRENT_REQUESTS = 5;
 
   @IsOptional()
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
   PROVIDER_BATCH_AGGREGATION_WAIT_MS = 10;
 }
 

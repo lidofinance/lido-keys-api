@@ -112,6 +112,21 @@ describe('Keys controller', () => {
         },
       });
     });
+
+    test('EL meta is empty', async () => {
+      process.env['CHAIN_ID'] = '1';
+
+      const getKeysWithMetaMock = jest
+        .spyOn(registryService, 'getKeysWithMeta')
+        .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
+
+      const result = await keysController.get({ used: true, operatorIndex: 1 });
+
+      expect(result).toEqual({ data: [], meta: null });
+
+      expect(getKeysWithMetaMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
+    });
   });
 
   describe('getByPubkey', () => {
@@ -150,6 +165,21 @@ describe('Keys controller', () => {
         },
       });
     });
+
+    test('EL meta is empty', async () => {
+      process.env['CHAIN_ID'] = '1';
+
+      const getKeyWithMetaByPubkeyMock = jest
+        .spyOn(registryService, 'getKeyWithMetaByPubkey')
+        .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
+
+      const result = await keysController.getByPubkey(hexZeroPad('0x13', 98));
+
+      expect(result).toEqual({ data: [], meta: null });
+
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(1);
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
+    });
   });
 
   describe('getByPubkeys', () => {
@@ -187,6 +217,21 @@ describe('Keys controller', () => {
           elBlockSnapshot,
         },
       });
+    });
+
+    test('EL meta is empty', async () => {
+      process.env['CHAIN_ID'] = '1';
+
+      const getKeysWithMetaByPubkeysMock = jest
+        .spyOn(registryService, 'getKeysWithMetaByPubkeys')
+        .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
+
+      const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+
+      expect(result).toEqual({ data: [], meta: null });
+
+      expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
     });
   });
 });

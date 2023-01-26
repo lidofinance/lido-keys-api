@@ -45,7 +45,7 @@ export class AppService implements OnModuleInit {
     const clChainId = Number(depositContract.data?.chain_id);
 
     if (chainId !== elChainId || elChainId !== clChainId) {
-      throw new Error('Chain ids do not match');
+      throw new Error('Execution and consensus chain ids do not match');
     }
   }
 }

@@ -106,6 +106,21 @@ describe('SRModulesKeysController controller', () => {
         },
       });
     });
+
+    test('EL meta is empty', async () => {
+      process.env['CHAIN_ID'] = '1';
+
+      const getKeysWithMetaMock = jest
+        .spyOn(registryService, 'getKeysWithMeta')
+        .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
+
+      const result = await modulesController.getGroupedByModuleKeys({ used: true, operatorIndex: 1 });
+
+      expect(result).toEqual({ data: [], meta: null });
+
+      expect(getKeysWithMetaMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
+    });
   });
 
   describe('getModuleKeys', () => {
@@ -179,6 +194,24 @@ describe('SRModulesKeysController controller', () => {
         `Module with moduleId 0x12345 is not supported`,
       );
       expect(getKeysWithMetaMock).toBeCalledTimes(0);
+    });
+
+    test('EL meta is empty', async () => {
+      process.env['CHAIN_ID'] = '1';
+
+      const getKeysWithMetaMock = jest
+        .spyOn(registryService, 'getKeysWithMeta')
+        .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
+
+      const result = await modulesController.getModuleKeys('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
+        used: true,
+        operatorIndex: 1,
+      });
+
+      expect(result).toEqual({ data: null, meta: null });
+
+      expect(getKeysWithMetaMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
     });
   });
 
@@ -257,6 +290,23 @@ describe('SRModulesKeysController controller', () => {
         modulesController.getModuleKeysByPubkeys('0x12345', [hexZeroPad('0x12', 98), hexZeroPad('0x13', 98)]),
       ).rejects.toThrowError(`Module with moduleId 0x12345 is not supported`);
       expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(0);
+    });
+
+    test('EL meta is empty', async () => {
+      process.env['CHAIN_ID'] = '1';
+
+      const getKeysWithMetaByPubkeysMock = jest
+        .spyOn(registryService, 'getKeysWithMetaByPubkeys')
+        .mockImplementation(() => Promise.resolve({ keys: null, meta: null }));
+      const result = await modulesController.getModuleKeysByPubkeys(1, [
+        hexZeroPad('0x12', 98),
+        hexZeroPad('0x13', 98),
+      ]);
+
+      expect(result).toEqual({ data: null, meta: null });
+
+      expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaByPubkeysMock).lastCalledWith([hexZeroPad('0x12', 98), hexZeroPad('0x13', 98)]);
     });
   });
 });
