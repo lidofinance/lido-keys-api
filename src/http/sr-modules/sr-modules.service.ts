@@ -80,5 +80,4 @@ export class SRModulesService {
       timestamp: meta.timestamp,
     };
   }
-  å;
 }
