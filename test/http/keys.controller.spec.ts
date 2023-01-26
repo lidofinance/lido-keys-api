@@ -6,41 +6,22 @@ import { RegistryService } from '../../src/jobs/registry.service';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ConfigService } from '../../src/common/config';
 
+import {
+  communityKeys,
+  generalKeys,
+  comminityKeysWithAddressMainnet,
+  comminityKeysWithAddressGoerli,
+  communityModuleMainnet,
+  communityModuleGoerli,
+  elMeta,
+  elBlockSnapshot,
+} from '../fixtures';
+
 describe('Keys controller', () => {
   let keysController: KeysController;
   let registryService: RegistryService;
 
   // const OLD_ENV = process.env;
-  const registryKeys = [
-    {
-      index: 1,
-      operatorIndex: 1,
-      key: hexZeroPad('0x12', 98),
-      depositSignature: hexZeroPad('0x12', 194),
-      used: true,
-    },
-    {
-      index: 2,
-      operatorIndex: 2,
-      key: hexZeroPad('0x13', 98),
-      depositSignature: hexZeroPad('0x13', 194),
-      used: true,
-    },
-    {
-      index: 3,
-      operatorIndex: 2,
-      key: hexZeroPad('0x13', 98),
-      depositSignature: hexZeroPad('0x13', 194),
-      used: false,
-    },
-  ];
-
-  const meta = {
-    blockNumber: 15819109,
-    blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
-    timestamp: 0,
-    keysOpIndex: 0,
-  };
 
   class ConfigServiceMock {
     get(value) {
@@ -50,16 +31,14 @@ describe('Keys controller', () => {
 
   class RegistryServiceMock {
     getKeysWithMeta(filters) {
-      return Promise.resolve({ keys: registryKeys, meta });
+      return Promise.resolve({ keys: communityKeys, meta: elMeta });
     }
     getKeyWithMetaByPubkey(pubkey: string) {
-      const keys = registryKeys.filter((el) => el.key == pubkey);
-      return Promise.resolve({ keys, meta });
+      return Promise.resolve({ keys: communityKeys, meta: elMeta });
     }
 
     getKeysWithMetaByPubkeys(pubkeys: string[]) {
-      const keys = registryKeys.filter((el) => pubkeys.includes(el.key));
-      return Promise.resolve({ keys, meta });
+      return Promise.resolve({ keys: communityKeys, meta: elMeta });
     }
   }
 
@@ -109,35 +88,9 @@ describe('Keys controller', () => {
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
 
       expect(result).toEqual({
-        data: [
-          {
-            depositSignature: hexZeroPad('0x12', 194),
-            key: hexZeroPad('0x12', 98),
-            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-            operatorIndex: 1,
-            used: true,
-          },
-          {
-            depositSignature: hexZeroPad('0x13', 194),
-            key: hexZeroPad('0x13', 98),
-            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-            operatorIndex: 2,
-            used: true,
-          },
-          {
-            depositSignature: hexZeroPad('0x13', 194),
-            key: hexZeroPad('0x13', 98),
-            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-            operatorIndex: 2,
-            used: false,
-          },
-        ],
+        data: comminityKeysWithAddressMainnet,
         meta: {
-          elBlockSnapshot: {
-            blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
-            blockNumber: 15819109,
-            timestamp: 0,
-          },
+          elBlockSnapshot,
         },
       });
     });
@@ -153,35 +106,9 @@ describe('Keys controller', () => {
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
 
       expect(result).toEqual({
-        data: [
-          {
-            depositSignature: hexZeroPad('0x12', 194),
-            key: hexZeroPad('0x12', 98),
-            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
-            operatorIndex: 1,
-            used: true,
-          },
-          {
-            depositSignature: hexZeroPad('0x13', 194),
-            key: hexZeroPad('0x13', 98),
-            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
-            operatorIndex: 2,
-            used: true,
-          },
-          {
-            depositSignature: hexZeroPad('0x13', 194),
-            key: hexZeroPad('0x13', 98),
-            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
-            operatorIndex: 2,
-            used: false,
-          },
-        ],
+        data: comminityKeysWithAddressGoerli,
         meta: {
-          elBlockSnapshot: {
-            blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
-            blockNumber: 15819109,
-            timestamp: 0,
-          },
+          elBlockSnapshot,
         },
       });
     });
@@ -199,28 +126,9 @@ describe('Keys controller', () => {
       expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
 
       expect(result).toEqual({
-        data: [
-          {
-            depositSignature: hexZeroPad('0x13', 194),
-            key: hexZeroPad('0x13', 98),
-            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-            operatorIndex: 2,
-            used: true,
-          },
-          {
-            depositSignature: hexZeroPad('0x13', 194),
-            key: hexZeroPad('0x13', 98),
-            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-            operatorIndex: 2,
-            used: false,
-          },
-        ],
+        data: comminityKeysWithAddressMainnet,
         meta: {
-          elBlockSnapshot: {
-            blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
-            blockNumber: 15819109,
-            timestamp: 0,
-          },
+          elBlockSnapshot,
         },
       });
     });
@@ -236,28 +144,9 @@ describe('Keys controller', () => {
       expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
 
       expect(result).toEqual({
-        data: [
-          {
-            depositSignature: hexZeroPad('0x13', 194),
-            key: hexZeroPad('0x13', 98),
-            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
-            operatorIndex: 2,
-            used: true,
-          },
-          {
-            depositSignature: hexZeroPad('0x13', 194),
-            key: hexZeroPad('0x13', 98),
-            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
-            operatorIndex: 2,
-            used: false,
-          },
-        ],
+        data: comminityKeysWithAddressGoerli,
         meta: {
-          elBlockSnapshot: {
-            blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
-            blockNumber: 15819109,
-            timestamp: 0,
-          },
+          elBlockSnapshot,
         },
       });
     });
@@ -275,35 +164,9 @@ describe('Keys controller', () => {
       expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
 
       expect(result).toEqual({
-        data: [
-          {
-            operatorIndex: 1,
-            key: hexZeroPad('0x12', 98),
-            depositSignature: hexZeroPad('0x12', 194),
-            used: true,
-            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-          },
-          {
-            depositSignature: hexZeroPad('0x13', 194),
-            key: hexZeroPad('0x13', 98),
-            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-            operatorIndex: 2,
-            used: true,
-          },
-          {
-            depositSignature: hexZeroPad('0x13', 194),
-            key: hexZeroPad('0x13', 98),
-            moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-            operatorIndex: 2,
-            used: false,
-          },
-        ],
+        data: comminityKeysWithAddressMainnet,
         meta: {
-          elBlockSnapshot: {
-            blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
-            blockNumber: 15819109,
-            timestamp: 0,
-          },
+          elBlockSnapshot,
         },
       });
     });
@@ -319,35 +182,9 @@ describe('Keys controller', () => {
       expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
 
       expect(result).toEqual({
-        data: [
-          {
-            operatorIndex: 1,
-            key: hexZeroPad('0x12', 98),
-            depositSignature: hexZeroPad('0x12', 194),
-            used: true,
-            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
-          },
-          {
-            depositSignature: hexZeroPad('0x13', 194),
-            key: hexZeroPad('0x13', 98),
-            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
-            operatorIndex: 2,
-            used: true,
-          },
-          {
-            depositSignature: hexZeroPad('0x13', 194),
-            key: hexZeroPad('0x13', 98),
-            moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
-            operatorIndex: 2,
-            used: false,
-          },
-        ],
+        data: comminityKeysWithAddressGoerli,
         meta: {
-          elBlockSnapshot: {
-            blockHash: '0x5ba6b9e7cfbbcdd0171f8c2ca5ff08852156e26cf26c722362c63d8c66ac2c15',
-            blockNumber: 15819109,
-            timestamp: 0,
-          },
+          elBlockSnapshot,
         },
       });
     });

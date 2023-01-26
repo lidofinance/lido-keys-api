@@ -83,6 +83,22 @@ export const generalKeys = communityKeys.map(({ operatorIndex, key, depositSigna
   used,
 }));
 
+export const comminityKeysWithAddressMainnet = communityKeys.map(({ operatorIndex, key, depositSignature, used }) => ({
+  operatorIndex,
+  key,
+  depositSignature,
+  used,
+  moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+}));
+
+export const comminityKeysWithAddressGoerli = communityKeys.map(({ operatorIndex, key, depositSignature, used }) => ({
+  operatorIndex,
+  key,
+  depositSignature,
+  used,
+  moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
+}));
+
 export const operatorOneUsedKeys = [
   {
     index: 1,
