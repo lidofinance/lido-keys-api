@@ -1,5 +1,15 @@
 import { plainToClass, Transform } from 'class-transformer';
-import { IsEnum, IsString, IsOptional, validateSync, Min, IsArray, ArrayMinSize, IsInt } from 'class-validator';
+import {
+  IsEnum,
+  IsString,
+  IsOptional,
+  validateSync,
+  Min,
+  IsArray,
+  ArrayMinSize,
+  IsInt,
+  IsBoolean,
+} from 'class-validator';
 import { Environment, LogLevel, LogFormat } from './interfaces';
 import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
 import { CronExpression } from '@nestjs/schedule';
@@ -110,6 +120,16 @@ export class EnvironmentVariables {
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
   PROVIDER_BATCH_AGGREGATION_WAIT_MS = 10;
+
+  // Enable endpoints that use CL API for ejector
+  @IsOptional()
+  @IsBoolean()
+  VALIDATOR_REGISTRY_ENABLE = true;
+
+  // Enable fetching unused keys
+  @IsOptional()
+  @IsBoolean()
+  FETCHING_UNUSED_KEYS_ENABLE = true;
 }
 
 export function validate(config: Record<string, unknown>) {
