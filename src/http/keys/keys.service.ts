@@ -1,8 +1,8 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { KeyListResponse, KeyWithModuleAddress, FilterQuery } from './entities';
 import { RegistryService } from 'jobs/registry.service';
-import { ConfigService } from 'common/config';
+import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
 import { RegistryKey, RegistryMeta } from '@lido-nestjs/registry';
 import { ELBlockSnapshot } from 'http/common/entities';
 import { getSRModuleByType } from 'http/common/sr-modules.utils';
@@ -18,9 +18,21 @@ export class KeysService {
   async get(filters: FilterQuery): Promise<KeyListResponse> {
     //TODO: In future iteration for staking router here will be method to get keys from all modules
     const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType('grouped-onchain-v1', chainId);
+    const moduleType = GROUPED_ONCHAIN_V1_TYPE;
+    const registryModule = getSRModuleByType(moduleType, chainId);
+
+    if (!registryModule) {
+      throw new NotFoundException(`Module with type ${moduleType} not found`);
+    }
 
     const { keys, meta } = await this.keyRegistryService.getKeysWithMeta(filters);
+
+    if (!meta) {
+      return {
+        data: [],
+        meta: null,
+      };
+    }
 
     const registryKeys: KeyWithModuleAddress[] = keys.map((key) =>
       this.formModuleKey(key, registryModule.stakingModuleAddress),
@@ -40,11 +52,24 @@ export class KeysService {
   async getByPubkey(pubkey: string): Promise<KeyListResponse> {
     const { keys, meta } = await this.keyRegistryService.getKeyWithMetaByPubkey(pubkey);
     const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType('grouped-onchain-v1', chainId);
+    const moduleType = GROUPED_ONCHAIN_V1_TYPE;
+    const registryModule = getSRModuleByType(moduleType, chainId);
+
+    if (!registryModule) {
+      throw new NotFoundException(`Module with type ${moduleType} not found`);
+    }
+
+    if (!meta) {
+      return {
+        data: [],
+        meta: null,
+      };
+    }
 
     const registryKeys: KeyWithModuleAddress[] = keys.map((key) =>
       this.formModuleKey(key, registryModule.stakingModuleAddress),
     );
+
     const elBlockSnapshot = this.formELBlockSnapshot(meta);
 
     return {
@@ -55,16 +80,29 @@ export class KeysService {
     };
   }
 
-  async getByPubKeys(pubkeys: string[]): Promise<KeyListResponse> {
+  async getByPubkeys(pubkeys: string[]): Promise<KeyListResponse> {
     // TODO: In future iteration for staking router here will be method to get keys from all modules
     // TODO: where will we use this method?
     const { keys, meta } = await this.keyRegistryService.getKeysWithMetaByPubkeys(pubkeys);
     const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType('grouped-onchain-v1', chainId);
+    const moduleType = GROUPED_ONCHAIN_V1_TYPE;
+    const registryModule = getSRModuleByType(moduleType, chainId);
+
+    if (!registryModule) {
+      throw new NotFoundException(`Module with type ${moduleType} not found`);
+    }
+
+    if (!meta) {
+      return {
+        data: [],
+        meta: null,
+      };
+    }
 
     const registryKeys: KeyWithModuleAddress[] = keys.map((key) =>
       this.formModuleKey(key, registryModule.stakingModuleAddress),
     );
+
     const elBlockSnapshot = this.formELBlockSnapshot(meta);
 
     return {
@@ -83,11 +121,7 @@ export class KeysService {
       moduleAddress: stakingModuleAddress,
     };
   }
-  private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot | null {
-    if (!meta) {
-      return null;
-    }
-
+  private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot {
     return {
       blockNumber: meta.blockNumber,
       blockHash: meta.blockHash,

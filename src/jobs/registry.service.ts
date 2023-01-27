@@ -67,29 +67,7 @@ export class RegistryService {
     this.lastTimestamp = meta?.timestamp ?? this.lastTimestamp;
   }
 
-  public async getKeysWithMetaByPubkeys(pubkeys: string[]): Promise<{ keys: RegistryKey[]; meta: RegistryMeta }> {
-    const { keys, meta } = await this.entityManager.transactional(async () => {
-      const keys = await this.keyStorageService.find({ key: { $in: pubkeys.map((k) => k.toLocaleLowerCase()) } });
-      const meta = await this.getMetaDataFromStorage();
-
-      return { keys, meta };
-    });
-
-    return { keys, meta };
-  }
-
-  public async getKeysWithMeta(filters): Promise<{ keys: RegistryKey[]; meta: RegistryMeta }> {
-    const { keys, meta } = await this.entityManager.transactional(async () => {
-      const keys = await this.keyStorageService.find(filters);
-      const meta = await this.getMetaDataFromStorage();
-
-      return { keys, meta };
-    });
-
-    return { keys, meta };
-  }
-
-  public async getKeyWithMetaByPubkey(pubkey: string): Promise<{ keys: RegistryKey[]; meta: RegistryMeta }> {
+  public async getKeyWithMetaByPubkey(pubkey: string): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
     const { keys, meta } = await this.entityManager.transactional(async () => {
       const keys = await this.keyStorageService.findByPubkey(pubkey.toLocaleLowerCase());
       const meta = await this.getMetaDataFromStorage();
@@ -100,8 +78,40 @@ export class RegistryService {
     return { keys, meta };
   }
 
-  public async getMetaDataFromStorage(): Promise<RegistryMeta> {
+  public async getKeysWithMetaByPubkeys(pubkeys: string[]): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
+    const { keys, meta } = await this.entityManager.transactional(async () => {
+      const keys = await this.getKeysByPubkeys(pubkeys);
+      const meta = await this.getMetaDataFromStorage();
+
+      return { keys, meta };
+    });
+
+    return { keys, meta };
+  }
+
+  // TODO: add interface to filters
+  public async getKeysWithMeta(filters): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
+    const { keys, meta } = await this.entityManager.transactional(async () => {
+      const keys = await this.keyStorageService.find(filters);
+      const meta = await this.getMetaDataFromStorage();
+
+      return { keys, meta };
+    });
+
+    return { keys, meta };
+  }
+
+  public async getMetaDataFromStorage(): Promise<RegistryMeta | null> {
     return await this.metaStorageService.get();
+  }
+
+  /**
+   * Returns all keys found in db from pubkey list
+   * @param pubKeys - public keys
+   * @returns keys from DB
+   */
+  private async getKeysByPubkeys(pubKeys: string[]): Promise<RegistryKey[]> {
+    return await this.keyStorageService.find({ key: { $in: pubKeys } });
   }
 
   /**

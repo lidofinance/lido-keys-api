@@ -1,14 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from 'common/config';
-import {
-  GroupedByModuleKeyListResponse,
-  SRModuleKeysResponse,
-  SRModuleResponse,
-  SRModuleListResponse,
-  RegistryKey,
-} from './entities';
+import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
+import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { RegistryService } from 'jobs/registry.service';
-import { ELBlockSnapshot, GeneralKey, SRModule } from 'http/common/entities';
+import { ELBlockSnapshot, SRModule } from 'http/common/entities';
 import { RegistryMeta } from '@lido-nestjs/registry';
 import { ModuleId } from 'http/common/entities/';
 import { getSRModule, getSRModuleByType } from 'http/common/sr-modules.utils';
@@ -25,8 +19,16 @@ export class SRModulesService {
     // it is also important to have consistent module info and meta
 
     const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType('grouped-onchain-v1', chainId);
+    const registryModule = getSRModuleByType(GROUPED_ONCHAIN_V1_TYPE, chainId);
     const meta = await this.registryService.getMetaDataFromStorage();
+
+    if (!meta) {
+      return {
+        data: [],
+        elBlockSnapshot: null,
+      };
+    }
+
     const elBlockSnapshot = this.formELBlockSnapshot(meta);
 
     return {
@@ -36,7 +38,7 @@ export class SRModulesService {
   }
 
   async getModule(moduleId: ModuleId): Promise<SRModuleResponse> {
-    // At first we should find module by id in our list, in future without chainId
+    // At first, we should find module by id in our list, in future without chainId
     const chainId = this.configService.get('CHAIN_ID');
     const module = getSRModule(moduleId, chainId);
 
@@ -44,11 +46,19 @@ export class SRModulesService {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
     }
 
-    // We supppose if module in list, Keys API knows how to work with it
+    // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type == 'grouped-onchain-v1') {
+    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
       const meta = await this.registryService.getMetaDataFromStorage();
+
+      if (!meta) {
+        return {
+          data: null,
+          elBlockSnapshot: null,
+        };
+      }
+
       const elBlockSnapshot = this.formELBlockSnapshot(meta);
 
       return {
@@ -56,88 +66,8 @@ export class SRModulesService {
         elBlockSnapshot,
       };
     }
-  }
 
-  async getGroupedByModuleKeys(filters): Promise<GroupedByModuleKeyListResponse> {
-    // for each module return keys with meta
-    const { keys, meta } = await this.registryService.getKeysWithMeta(filters);
-
-    const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType('grouped-onchain-v1', chainId);
-
-    const registryKeys: GeneralKey[] = keys.map((key) => this.formGeneralKey(key));
-    const elBlockSnapshot = this.formELBlockSnapshot(meta);
-
-    return {
-      data: [
-        {
-          keys: registryKeys,
-          module: this.formSRModule(meta.keysOpIndex, registryModule),
-        },
-      ],
-      meta: {
-        elBlockSnapshot,
-      },
-    };
-  }
-
-  async getModuleKeys(moduleId: ModuleId, filters): Promise<SRModuleKeysResponse> {
-    // At first we should find module by id in our list, in future without chainId
-    const chainId = this.configService.get('CHAIN_ID');
-    const module = getSRModule(moduleId, chainId);
-
-    if (!module) {
-      throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-    }
-    // We supppose if module in list, Keys API knows how to work with it
-    // it is also important to have consistent module info and meta
-
-    if (module.type == 'grouped-onchain-v1') {
-      const { keys, meta } = await this.registryService.getKeysWithMeta(filters);
-      const registryKeys: RegistryKey[] = keys.map((key) => this.formRegistryKey(key));
-      const elBlockSnapshot = this.formELBlockSnapshot(meta);
-
-      return {
-        data: {
-          keys: registryKeys,
-          module: this.formSRModule(meta.keysOpIndex, module),
-        },
-        meta: {
-          elBlockSnapshot,
-        },
-      };
-    }
-
-    // compare type with other types
-  }
-
-  async getModuleKeysByPubkeys(moduleId: ModuleId, pubkeys: string[]): Promise<SRModuleKeysResponse> {
-    // At first we should find module by id in our list, in future without chainId
-    const chainId = this.configService.get('CHAIN_ID');
-    const module = getSRModule(moduleId, chainId);
-
-    if (!module) {
-      throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-    }
-    // We supppose if module in list, Keys API knows how to work with it
-    // it is also important to have consistent module info and meta
-
-    if (module.type == 'grouped-onchain-v1') {
-      const { keys, meta } = await this.registryService.getKeysWithMetaByPubkeys(pubkeys);
-      const registryKeys: RegistryKey[] = keys.map((key) => this.formRegistryKey(key));
-      const elBlockSnapshot = this.formELBlockSnapshot(meta);
-
-      return {
-        data: {
-          keys: registryKeys,
-          module: this.formSRModule(meta.keysOpIndex, module),
-        },
-        meta: {
-          elBlockSnapshot,
-        },
-      };
-    }
-    // compare type with other types
+    throw new NotFoundException(`Modules with other types are not supported`);
   }
 
   // at the moment part of information is in json file and another part in meta table of registry lib
@@ -157,15 +87,6 @@ export class SRModulesService {
     };
   }
 
-  private formGeneralKey(key): GeneralKey {
-    return {
-      key: key.key,
-      depositSignature: key.depositSignature,
-      operatorIndex: key.operatorIndex,
-      used: key.used,
-    };
-  }
-
   private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot | null {
     if (!meta) {
       return null;
@@ -175,16 +96,6 @@ export class SRModulesService {
       blockNumber: meta.blockNumber,
       blockHash: meta.blockHash,
       timestamp: meta.timestamp,
-    };
-  }
-
-  private formRegistryKey(key): RegistryKey {
-    return {
-      key: key.key,
-      depositSignature: key.depositSignature,
-      operatorIndex: key.operatorIndex,
-      index: key.index,
-      used: key.used,
     };
   }
 }

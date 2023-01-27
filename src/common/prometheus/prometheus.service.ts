@@ -36,9 +36,12 @@ export class PrometheusService {
     labelNames: ['result'],
   });
 
-  public elRpcErrors = this.getOrCreateMetric('Counter', {
-    name: 'el_rpc_requests_errors_total',
-    help: 'Number of EL RPC requests errors',
+  public clApiRequestDuration = this.getOrCreateMetric('Histogram', {
+    prefix: false,
+    name: 'cl_api_requests_duration_seconds',
+    help: 'CL API request duration',
+    buckets: [0.1, 0.2, 0.3, 0.6, 1, 1.5, 2, 5, 10],
+    labelNames: ['result', 'status'],
   });
 
   public jobDuration = this.getOrCreateMetric('Histogram', {
@@ -55,4 +58,18 @@ export class PrometheusService {
     help: 'Registry last update timestamp',
     labelNames: [],
   });
+
+  public validatorsRegistryLastTimestampUpdate = this.getOrCreateMetric('Gauge', {
+    prefix: true,
+    name: 'validators_registry_last_update_block_timestamp',
+    help: 'ValidatorsRegistry last update block timestamp',
+    labelNames: [],
+  });
+
+  // public validatorsRegistryLastBlockNumber = this.getOrCreateMetric('Gauge', {
+  //   prefix: true,
+  //   name: 'validators_registry_last_block_number',
+  //   help: 'ValidatorsRegistry last update block timestamp',
+  //   labelNames: [],
+  // });
 }

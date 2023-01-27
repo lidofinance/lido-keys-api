@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -19,7 +19,7 @@ async function bootstrap() {
   const environment = configService.get('NODE_ENV');
   const appPort = configService.get('PORT');
   const corsWhitelist = configService.get('CORS_WHITELIST_REGEXP');
-  const sentryDsn = configService.get('SENTRY_DSN');
+  const sentryDsn = configService.get('SENTRY_DSN') ?? undefined;
 
   // migrating when starting application
   await app.get(MikroORM).getMigrator().up();
@@ -54,6 +54,8 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder().setTitle(APP_DESCRIPTION).setVersion(APP_VERSION).build();
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup(SWAGGER_URL, app, swaggerDocument);
+
+  app.useGlobalPipes(new ValidationPipe());
 
   // app
   await app.listen(appPort, '0.0.0.0', () => logger.log(`Listening on ${appPort}`));

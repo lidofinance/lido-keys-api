@@ -3,6 +3,7 @@ import { FallbackProviderModule } from '@lido-nestjs/execution';
 import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
 import { ExecutionProviderService } from './execution-provider.service';
+
 @Global()
 @Module({
   imports: [
@@ -11,6 +12,11 @@ import { ExecutionProviderService } from './execution-provider.service';
         return {
           urls: configService.get('PROVIDERS_URLS'),
           network: configService.get('CHAIN_ID'),
+          requestPolicy: {
+            jsonRpcMaxBatchSize: configService.get('PROVIDER_JSON_RPC_MAX_BATCH_SIZE'),
+            maxConcurrentRequests: configService.get('PROVIDER_CONCURRENT_REQUESTS'),
+            batchAggregationWaitMs: configService.get('PROVIDER_BATCH_AGGREGATION_WAIT_MS'),
+          },
           fetchMiddlewares: [
             async (next) => {
               const endTimer = prometheusService.elRpcRequestDuration.startTimer();

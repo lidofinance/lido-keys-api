@@ -1,5 +1,5 @@
 import { ApiProperty, getSchemaPath, ApiExtraModels } from '@nestjs/swagger';
-import { Meta } from './meta';
+import { SRModuleKeysMeta } from './meta';
 import { RegistryKey } from './registry.key';
 import { SRModule } from 'http/common/entities/';
 
@@ -12,24 +12,24 @@ export class SRKeyListWithModule {
     items: { oneOf: [{ $ref: getSchemaPath(RegistryKey) }] },
     description: 'Keys of staking router module',
   })
-  keys: SRModuleKey[];
+  keys!: SRModuleKey[];
 
   @ApiProperty({
     description: 'Detailed Staking Router information',
     type: () => SRModule,
   })
-  module: SRModule;
+  module!: SRModule;
 }
 
-export class SRModuleKeysResponse {
+export class SRModuleKeyListResponse {
   @ApiProperty({
     description: 'Staking router module keys.',
     type: () => SRKeyListWithModule,
   })
-  data: SRKeyListWithModule;
+  data!: SRKeyListWithModule;
 
   @ApiProperty({
-    type: () => Meta,
+    type: () => SRModuleKeysMeta,
   })
-  meta: Meta;
+  meta!: SRModuleKeysMeta;
 }
