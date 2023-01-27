@@ -21,6 +21,34 @@ const toNumber =
     return Number(value);
   };
 
+const toBoolean = (value: any): boolean => {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'number') {
+    return !!value;
+  }
+
+  if (!(typeof value === 'string')) {
+    return false;
+  }
+
+  switch (value.toLowerCase().trim()) {
+    case 'true':
+    case 'yes':
+    case '1':
+      return true;
+    case 'false':
+    case 'no':
+    case '0':
+    case null:
+      return false;
+    default:
+      return false;
+  }
+};
+
 export class EnvironmentVariables {
   @IsOptional()
   @IsEnum(Environment)
@@ -124,11 +152,13 @@ export class EnvironmentVariables {
   // Enable endpoints that use CL API for ejector
   @IsOptional()
   @IsBoolean()
+  @Transform(({ value }) => toBoolean(value))
   VALIDATOR_REGISTRY_ENABLE = true;
 
   // Enable fetching unused keys
   @IsOptional()
   @IsBoolean()
+  @Transform(({ value }) => toBoolean(value))
   FETCHING_UNUSED_KEYS_ENABLE = true;
 }
 
