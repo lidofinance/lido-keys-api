@@ -56,7 +56,7 @@ export class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
-  SENTRY_DSN: string | null = null;
+  SENTRY_DSN?: string;
 
   @IsOptional()
   @IsEnum(LogLevel)

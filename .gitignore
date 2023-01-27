@@ -37,4 +37,9 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# Docker-related
+/.images
+/.volumes
+
+# Tests
 /.jest
