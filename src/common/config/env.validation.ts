@@ -30,7 +30,7 @@ export class EnvironmentVariables {
   @IsInt()
   @Min(1)
   @Transform(toNumber({ defaultValue: 3000 }))
-  PORT: number = 3000;
+  PORT = 3000;
 
   @IsOptional()
   @IsString()
@@ -40,19 +40,19 @@ export class EnvironmentVariables {
   @IsInt()
   @Min(1)
   @Transform(toNumber({ defaultValue: 5 }))
-  GLOBAL_THROTTLE_TTL: number = 5;
+  GLOBAL_THROTTLE_TTL = 5;
 
   @IsOptional()
   @IsInt()
   @Min(1)
   @Transform(toNumber({ defaultValue: 100 }))
-  GLOBAL_THROTTLE_LIMIT: number = 100;
+  GLOBAL_THROTTLE_LIMIT = 100;
 
   @IsOptional()
   @IsInt()
   @Min(1)
   @Transform(toNumber({ defaultValue: 1 }))
-  GLOBAL_CACHE_TTL: number = 1;
+  GLOBAL_CACHE_TTL = 1;
 
   @IsOptional()
   @IsString()

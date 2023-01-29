@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
+import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { RegistryService } from 'jobs/registry.service';
 import { ELBlockSnapshot, SRModule } from 'http/common/entities';

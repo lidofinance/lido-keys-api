@@ -1,5 +1,5 @@
 import { Injectable, Inject, InternalServerErrorException, NotFoundException, LoggerService } from '@nestjs/common';
-import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
+import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
 import {
   ExitValidatorListResponse,
   ExitValidator,
