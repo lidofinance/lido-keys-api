@@ -12,8 +12,8 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
-import { FilterQuery } from './entities';
 import { KeyListResponse } from './entities';
+import { KeyQuery } from 'http/common/entities';
 
 @Controller('keys')
 @ApiTags('Operators keys')
@@ -33,7 +33,7 @@ export class KeysController {
     description: 'Filter to get used keys. Possible values: true/false',
   })
   @ApiOperation({ summary: 'Get list of all keys' })
-  get(@Query() filters: FilterQuery) {
+  get(@Query() filters: KeyQuery) {
     return this.keysService.get(filters);
   }
 

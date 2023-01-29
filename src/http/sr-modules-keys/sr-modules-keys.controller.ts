@@ -1,11 +1,11 @@
 import { Controller, Get, Version, Param, Query, Body, Post, ParseArrayPipe } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse, KeyQuery } from './entities';
+import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
-import { ModuleId } from 'http/common/entities/';
+import { ModuleId, KeyQuery } from 'http/common/entities/';
 
 @Controller('modules')
-@ApiTags('List of Modules')
+@ApiTags('List of sr modules keys')
 export class SRModulesKeysController {
   constructor(protected readonly srModulesService: SRModulesKeysService) {}
 

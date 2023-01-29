@@ -5,6 +5,7 @@ import {
   ValidatorsRegistryInterface,
   ConsensusValidatorsAndMetadata,
   Validator,
+  ConsensusMeta,
 } from '@lido-nestjs/validators-registry';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
@@ -90,6 +91,10 @@ export class ValidatorsRegistryService {
     }
 
     return { validators, meta };
+  }
+
+  public async getMetaDataFromStorage(): Promise<ConsensusMeta> {
+    return this.validatorsRegistry.getMeta();
   }
 
   private getPercentOfValidators(validators: Validator[], percent: number): Validator[] {

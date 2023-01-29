@@ -1,4 +1,4 @@
-export const communityModuleMainnet = {
+export const curatedModuleMainnet = {
   id: 1,
   lastDepositAt: undefined,
   lastDepositBlock: undefined,
@@ -12,7 +12,7 @@ export const communityModuleMainnet = {
   type: 'grouped-onchain-v1',
 };
 
-export const communityModuleGoerli = {
+export const curatedModuleGoerli = {
   id: 1,
   lastDepositAt: undefined,
   lastDepositBlock: undefined,

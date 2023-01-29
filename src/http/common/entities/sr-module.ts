@@ -1,6 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SRModule {
+  // module from src/common/config/sr-modules.ts
+  constructor(nonce: number, module) {
+    this.nonce = nonce;
+    this.type = module.type;
+    this.id = module.id;
+    this.stakingModuleAddress = module.stakingModuleAddress;
+    this.moduleFee = module.moduleFee;
+    this.treasuryFee = module.treasuryFee;
+    this.targetShare = module.targetShare;
+    this.status = module.status;
+    this.name = module.name;
+    this.lastDepositAt = module.lastDepositAt;
+    this.lastDepositBlock = module.lastDepositBlock;
+  }
+
   @ApiProperty({
     description:
       "Counter that MUST change value if keys were added, removed, node operator was activated/deactivated,  a node operator's ready to deposit keys count is changed",

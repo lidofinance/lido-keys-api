@@ -1,10 +1,9 @@
 import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { KeyListResponse, KeyWithModuleAddress, FilterQuery } from './entities';
+import { KeyListResponse, KeyWithModuleAddress } from './entities';
 import { RegistryService } from 'jobs/registry.service';
 import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
-import { RegistryKey, RegistryMeta } from '@lido-nestjs/registry';
-import { ELBlockSnapshot } from 'http/common/entities';
+import { ELBlockSnapshot, KeyQuery } from 'http/common/entities';
 import { getSRModuleByType } from 'http/common/sr-modules.utils';
 
 @Injectable()
@@ -15,7 +14,7 @@ export class KeysService {
     protected configService: ConfigService,
   ) {}
 
-  async get(filters: FilterQuery): Promise<KeyListResponse> {
+  async get(filters: KeyQuery): Promise<KeyListResponse> {
     //TODO: In future iteration for staking router here will be method to get keys from all modules
     const chainId = this.configService.get('CHAIN_ID');
     const moduleType = GROUPED_ONCHAIN_V1_TYPE;
@@ -34,10 +33,10 @@ export class KeysService {
       };
     }
 
-    const registryKeys: KeyWithModuleAddress[] = keys.map((key) =>
-      this.formModuleKey(key, registryModule.stakingModuleAddress),
+    const registryKeys: KeyWithModuleAddress[] = keys.map(
+      (key) => new KeyWithModuleAddress(key, registryModule.stakingModuleAddress),
     );
-    const elBlockSnapshot = this.formELBlockSnapshot(meta);
+    const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
       // swagger ui не справляется с выводом всех значений
@@ -66,11 +65,11 @@ export class KeysService {
       };
     }
 
-    const registryKeys: KeyWithModuleAddress[] = keys.map((key) =>
-      this.formModuleKey(key, registryModule.stakingModuleAddress),
+    const registryKeys: KeyWithModuleAddress[] = keys.map(
+      (key) => new KeyWithModuleAddress(key, registryModule.stakingModuleAddress),
     );
 
-    const elBlockSnapshot = this.formELBlockSnapshot(meta);
+    const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
       data: registryKeys,
@@ -99,33 +98,17 @@ export class KeysService {
       };
     }
 
-    const registryKeys: KeyWithModuleAddress[] = keys.map((key) =>
-      this.formModuleKey(key, registryModule.stakingModuleAddress),
+    const registryKeys: KeyWithModuleAddress[] = keys.map(
+      (key) => new KeyWithModuleAddress(key, registryModule.stakingModuleAddress),
     );
 
-    const elBlockSnapshot = this.formELBlockSnapshot(meta);
+    const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
       data: registryKeys,
       meta: {
         elBlockSnapshot,
       },
-    };
-  }
-  private formModuleKey(key: RegistryKey, stakingModuleAddress: string): KeyWithModuleAddress {
-    return {
-      key: key.key,
-      depositSignature: key.depositSignature,
-      operatorIndex: key.operatorIndex,
-      used: key.used,
-      moduleAddress: stakingModuleAddress,
-    };
-  }
-  private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot {
-    return {
-      blockNumber: meta.blockNumber,
-      blockHash: meta.blockHash,
-      timestamp: meta.timestamp,
     };
   }
 }

@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { SRModulesController, SRModulesService } from '../../src/http/sr-modules';
 import { ConfigService } from '../../src/common/config';
 import { RegistryService } from '../../src/jobs/registry.service';
-import { communityModuleMainnet, communityModuleGoerli, elMeta, elBlockSnapshot } from '../fixtures';
+import { curatedModuleMainnet, curatedModuleGoerli, elMeta, elBlockSnapshot } from '../fixtures';
 
 describe('SRModules controller', () => {
   let modulesController: SRModulesController;
@@ -58,7 +58,7 @@ describe('SRModules controller', () => {
 
       expect(getMetaDataFromStorageMock).toBeCalledTimes(1);
       expect(result).toEqual({
-        data: [communityModuleMainnet],
+        data: [curatedModuleMainnet],
         elBlockSnapshot,
       });
     });
@@ -70,7 +70,7 @@ describe('SRModules controller', () => {
 
       expect(getMetaDataFromStorageMock).toBeCalledTimes(1);
       expect(result).toEqual({
-        data: [communityModuleGoerli],
+        data: [curatedModuleGoerli],
         elBlockSnapshot,
       });
     });
@@ -84,7 +84,7 @@ describe('SRModules controller', () => {
       const result = await modulesController.getModule('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5');
       expect(getMetaDataFromStorageMock).toBeCalledTimes(1);
       expect(result).toEqual({
-        data: communityModuleMainnet,
+        data: curatedModuleMainnet,
         elBlockSnapshot,
       });
     });
@@ -95,7 +95,7 @@ describe('SRModules controller', () => {
       const result = await modulesController.getModule('0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320');
       expect(getMetaDataFromStorageMock).toBeCalledTimes(1);
       expect(result).toEqual({
-        data: communityModuleGoerli,
+        data: curatedModuleGoerli,
         elBlockSnapshot,
       });
     });

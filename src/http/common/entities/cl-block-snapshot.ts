@@ -1,6 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ConsensusMeta } from '@lido-nestjs/validators-registry';
 
 export class CLBlockSnapshot {
+  constructor(clMeta: ConsensusMeta) {
+    this.epoch = clMeta.epoch;
+    this.root = clMeta.slotStateRoot;
+    this.slot = clMeta.slot;
+    this.blockNumber = clMeta.blockNumber;
+    this.timestamp = clMeta.timestamp;
+    this.blockHash = clMeta.blockHash;
+  }
+
   @ApiProperty({
     required: true,
     description: 'Current epoch',

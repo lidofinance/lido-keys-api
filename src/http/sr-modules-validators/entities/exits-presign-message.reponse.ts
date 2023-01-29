@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { CLMeta } from 'http/common/entities';
 import { ExitPresignMessage } from './exits-presign-message';
-import { ValidatorsMeta } from './meta';
 
 export class ExitPresignMessageListResponse {
   @ApiProperty({
@@ -14,7 +14,7 @@ export class ExitPresignMessageListResponse {
     required: true,
     description: 'Meta for voluntary exit endpoints',
     nullable: true,
-    type: () => ValidatorsMeta,
+    type: () => CLMeta,
   })
-  meta!: ValidatorsMeta | null;
+  meta!: CLMeta | null;
 }

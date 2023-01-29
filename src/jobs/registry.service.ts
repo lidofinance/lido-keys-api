@@ -7,12 +7,15 @@ import {
   RegistryMetaStorageService,
   RegistryKey,
   RegistryMeta,
+  RegistryOperator,
+  RegistryOperatorStorageService,
 } from '@lido-nestjs/registry';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
 import { JobService } from 'common/job';
 import { EntityManager } from '@mikro-orm/postgresql';
+import { KeyQuery } from 'http/common/entities';
 
 @Injectable()
 export class RegistryService {
@@ -21,6 +24,7 @@ export class RegistryService {
     protected readonly keyRegistryService: KeyRegistryService,
     protected readonly keyStorageService: RegistryKeyStorageService,
     protected readonly metaStorageService: RegistryMetaStorageService,
+    protected readonly operatorStorageService: RegistryOperatorStorageService,
     protected readonly prometheusService: PrometheusService,
     protected readonly configService: ConfigService,
     protected readonly jobService: JobService,
@@ -29,7 +33,7 @@ export class RegistryService {
 
   public async onModuleInit(): Promise<void> {
     // Do not wait for initialization to avoid blocking the main process
-    this.initialize().catch((err) => this.logger.error(err));
+    // this.initialize().catch((err) => this.logger.error(err));
   }
 
   /**
@@ -109,6 +113,45 @@ export class RegistryService {
 
   public async getMetaDataFromStorage(): Promise<RegistryMeta | null> {
     return await this.metaStorageService.get();
+  }
+
+  public async getOperatorsWithMeta(): Promise<{ operators: RegistryOperator[]; meta: RegistryMeta | null }> {
+    const { operators, meta } = await this.entityManager.transactional(async () => {
+      const operators = await this.operatorStorageService.findAll();
+      const meta = await this.getMetaDataFromStorage();
+
+      return { operators, meta };
+    });
+
+    return { operators, meta };
+  }
+
+  public async getOperatorByIndex(index: number): Promise<{ operator: RegistryOperator; meta: RegistryMeta | null }> {
+    const { operator, meta } = await this.entityManager.transactional(async () => {
+      const operator = await this.operatorStorageService.findOneByIndex(index);
+      const meta = await this.getMetaDataFromStorage();
+
+      return { operator, meta };
+    });
+
+    return { operator, meta };
+  }
+
+  public async getData(filters: KeyQuery): Promise<{
+    operators: RegistryOperator[];
+    keys: RegistryKey[];
+    meta: RegistryMeta | null;
+  }> {
+    const { operators, keys, meta } = await this.entityManager.transactional(async () => {
+      const operatorFilters = filters.operatorIndex ? { index: filters.operatorIndex } : {};
+      const operators = await this.operatorStorageService.find(operatorFilters);
+      const keys = await this.keyStorageService.find(filters);
+      const meta = await this.getMetaDataFromStorage();
+
+      return { operators, keys, meta };
+    });
+
+    return { operators, keys, meta };
   }
 
   /**

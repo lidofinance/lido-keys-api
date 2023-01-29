@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ELBlockSnapshot } from 'http/common/entities/el-block-snapshot';
+import { ELBlockSnapshot } from './el-block-snapshot';
 
-export class KeysMeta {
+export class ELMeta {
   @ApiProperty({
     type: () => ELBlockSnapshot,
     description: 'Execution layer block information',

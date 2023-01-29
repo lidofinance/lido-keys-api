@@ -50,7 +50,7 @@ export class SRModulesValidatorsService {
       }
 
       const data = this.createExitValidatorList(validators);
-      const clBlockSnapshot = this.createCLBlockSnapshot(clMeta);
+      const clBlockSnapshot = new CLBlockSnapshot(clMeta);
 
       return {
         data,
@@ -89,7 +89,7 @@ export class SRModulesValidatorsService {
       }
 
       const data = this.createExitPresignMessageList(validators, clMeta);
-      const clBlockSnapshot = this.createCLBlockSnapshot(clMeta);
+      const clBlockSnapshot = new CLBlockSnapshot(clMeta);
 
       return {
         data,
@@ -162,16 +162,5 @@ export class SRModulesValidatorsService {
 
   private createExitPresignMessageList(validators: Validator[], clMeta: ConsensusMeta): ExitPresignMessage[] {
     return validators.map((v) => ({ validatorIndex: v.index, epoch: clMeta.epoch }));
-  }
-
-  private createCLBlockSnapshot(clMeta: ConsensusMeta): CLBlockSnapshot {
-    return {
-      epoch: clMeta.epoch,
-      root: clMeta.slotStateRoot,
-      slot: clMeta.slot,
-      blockNumber: clMeta.blockNumber,
-      timestamp: clMeta.timestamp,
-      blockHash: clMeta.blockHash,
-    };
   }
 }
