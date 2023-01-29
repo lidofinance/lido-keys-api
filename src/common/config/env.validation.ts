@@ -130,6 +130,10 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsBoolean()
   FETCHING_UNUSED_KEYS_ENABLE = true;
+
+  @IsOptional()
+  @IsString()
+  JOB_INTERVAL_REGISTRY_KEYS_OPERATOR_METRIC = CronExpression.EVERY_30_SECONDS;
 }
 
 export function validate(config: Record<string, unknown>) {

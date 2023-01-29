@@ -31,7 +31,7 @@ import config from '../mikro-orm.config';
           password: configService.get('DB_PASSWORD'),
           autoLoadEntities: false,
           cache: { enabled: false },
-          debug: true,
+          allowGlobalContext: true,
         };
       },
       inject: [ConfigService],

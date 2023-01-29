@@ -51,11 +51,15 @@ export class ValidatorsRegistryService {
       // meta shouldnt be null
       // if update didnt happen, meta will be fetched from db
       this.lastBlockTimestamp = meta.timestamp ?? this.lastBlockTimestamp;
+      this.lastBlockNumber = meta.blockNumber ?? this.lastBlockNumber;
+      this.lastSlot = meta.slot ?? this.lastSlot;
       this.updateMetrics();
     });
   }
 
   protected lastBlockTimestamp = 0;
+  protected lastBlockNumber = undefined;
+  protected lastSlot = undefined;
 
   /**
    *
@@ -96,7 +100,8 @@ export class ValidatorsRegistryService {
 
   private updateMetrics() {
     this.prometheusService.validatorsRegistryLastTimestampUpdate.set(this.lastBlockTimestamp);
-    // TODO: want to add blockNumber
+    this.prometheusService.validatorsRegistryLastBlockNumber.set(this.lastBlockNumber);
+    this.prometheusService.validatorsRegistryLastSlot.set(this.lastSlot);
 
     this.logger.log('ValidatorsRegistry metrics updated');
   }
