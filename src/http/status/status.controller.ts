@@ -4,7 +4,7 @@ import { Status } from './entities';
 import { StatusService } from './status.service';
 
 @Controller('/status')
-@ApiTags('List of operators')
+@ApiTags('status')
 export class StatusController {
   constructor(protected readonly status: StatusService) {}
 

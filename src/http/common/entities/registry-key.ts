@@ -11,5 +11,5 @@ export class RegistryKey extends Key {
   @ApiProperty({
     description: 'Key index in contract',
   })
-  index!: number;
+  index: number;
 }

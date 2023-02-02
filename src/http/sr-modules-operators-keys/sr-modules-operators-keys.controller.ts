@@ -5,7 +5,7 @@ import { ModuleId, KeyQuery } from 'http/common/entities/';
 import { SRModulesOperatorsKeysService } from './sr-modules-operators-keys.service';
 
 @Controller('/modules')
-@ApiTags('Endpoint return lists of keys and operators')
+@ApiTags('operators-keys')
 export class SRModulesOperatorsKeysController {
   constructor(protected readonly srModulesOperatorsKeys: SRModulesOperatorsKeysService) {}
 

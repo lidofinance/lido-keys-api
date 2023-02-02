@@ -1,75 +1,75 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { StakingRouterModule } from 'common/config';
 
 export class SRModule {
-  // module from src/common/config/sr-modules.ts
-  constructor(nonce: number, module) {
+  constructor(nonce: number, module: StakingRouterModule) {
     this.nonce = nonce;
     this.type = module.type;
     this.id = module.id;
     this.stakingModuleAddress = module.stakingModuleAddress;
-    this.moduleFee = module.moduleFee;
-    this.treasuryFee = module.treasuryFee;
-    this.targetShare = module.targetShare;
-    this.status = module.status;
+    this.moduleFee = module?.moduleFee;
+    this.treasuryFee = module?.treasuryFee;
+    this.targetShare = module?.targetShare;
+    this.status = module?.status;
     this.name = module.name;
-    this.lastDepositAt = module.lastDepositAt;
-    this.lastDepositBlock = module.lastDepositBlock;
+    this.lastDepositAt = module?.lastDepositAt;
+    this.lastDepositBlock = module?.lastDepositBlock;
   }
 
   @ApiProperty({
     description:
       "Counter that MUST change value if keys were added, removed, node operator was activated/deactivated,  a node operator's ready to deposit keys count is changed",
   })
-  nonce!: number;
+  nonce: number;
 
   @ApiProperty({
     description: 'type of module',
   })
-  type!: string;
+  type: string;
 
   @ApiProperty({
     description: 'unique id of the module',
   })
-  id!: number;
+  id: number;
 
   @ApiProperty({
     description: 'address of module',
   })
-  stakingModuleAddress!: string;
+  stakingModuleAddress: string;
 
   @ApiProperty({
     description: 'rewarf fee of the module',
   })
-  moduleFee!: number;
+  moduleFee: number;
 
   @ApiProperty({
     description: 'treasury fee',
   })
-  treasuryFee!: number;
+  treasuryFee: number;
 
   @ApiProperty({
     description: 'target percent of total keys in protocol, in BP',
   })
-  targetShare!: number;
+  targetShare: number;
 
   @ApiProperty({
     description:
       'module status if module can not accept the deposits or can participate in further reward distribution',
   })
-  status!: number;
+  status: number;
 
   @ApiProperty({
     description: 'name of module',
   })
-  name!: string;
+  name: string;
 
   @ApiProperty({
     description: 'block.timestamp of the last deposit of the module',
   })
-  lastDepositAt!: number;
+  lastDepositAt: number;
 
   @ApiProperty({
     description: 'block.number of the last deposit of the module',
   })
-  lastDepositBlock!: number;
+  lastDepositBlock: number;
 }

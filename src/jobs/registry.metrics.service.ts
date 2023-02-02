@@ -6,6 +6,7 @@ import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { ConfigService } from 'common/config';
+import { JobService } from 'common/job';
 
 @Injectable()
 export class RegistryMetricsService {
@@ -14,6 +15,7 @@ export class RegistryMetricsService {
     private readonly entityManager: EntityManager,
     protected readonly prometheusService: PrometheusService,
     protected readonly configService: ConfigService,
+    protected readonly jobService: JobService,
   ) {}
 
   public async onModuleInit(): Promise<void> {
@@ -35,17 +37,19 @@ export class RegistryMetricsService {
 
   @OneAtTime()
   private async updateRegistryKeysOperatorMetric() {
-    const keysAmountByOperator = await this.registryKeysAmountByOperatorIndex();
+    await this.jobService.wrapJob({ name: 'Update keys amount metric' }, async () => {
+      const keysAmountByOperator = await this.registryKeysAmountByOperatorIndex();
 
-    keysAmountByOperator.forEach(({ operatorIndex, count, used }) => {
-      this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
-        {
-          operator: operatorIndex,
-          srModuleId: 1,
-          used: Number(used),
-        },
-        Number(count),
-      );
+      keysAmountByOperator.forEach(({ operatorIndex, count, used }) => {
+        this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
+          {
+            operator: operatorIndex,
+            srModuleId: 1,
+            used: Number(used),
+          },
+          Number(count),
+        );
+      });
     });
   }
 

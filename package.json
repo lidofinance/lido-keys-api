@@ -1,5 +1,5 @@
 {
-  "name": "lido-no-keys-service",
+  "name": "lido-keys-api",
   "version": "0.1.1",
   "description": "Lido Node Operators keys service",
   "author": "Lido team",
@@ -14,10 +14,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lidofinance/lido-node-operators-keys-api.git"
+    "url": "git+https://github.com/lidofinance/lido-keys-api.git"
   },
   "bugs": {
-    "url": "https://github.com/lidofinance/lido-node-operators-keys-api/issues"
+    "url": "https://github.com/lidofinance/lido-keys-api/issues"
   },
   "scripts": {
     "mikro-orm": "./node_modules/mikro-orm",

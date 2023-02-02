@@ -13,5 +13,5 @@ export class KeyWithModuleAddress extends Key {
     required: true,
     description: 'Module address',
   })
-  moduleAddress!: string;
+  moduleAddress: string;
 }

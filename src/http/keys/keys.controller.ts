@@ -16,7 +16,7 @@ import { KeyListResponse } from './entities';
 import { KeyQuery } from 'http/common/entities';
 
 @Controller('keys')
-@ApiTags('Operators keys')
+@ApiTags('keys')
 export class KeysController {
   constructor(protected readonly keysService: KeysService) {}
 

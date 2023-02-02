@@ -33,7 +33,7 @@ export class RegistryService {
 
   public async onModuleInit(): Promise<void> {
     // Do not wait for initialization to avoid blocking the main process
-    // this.initialize().catch((err) => this.logger.error(err));
+    this.initialize().catch((err) => this.logger.error(err));
   }
 
   /**

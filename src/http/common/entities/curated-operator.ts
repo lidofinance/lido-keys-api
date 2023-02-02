@@ -14,20 +14,20 @@ export class CuratedOperator extends Operator {
   }
 
   @ApiProperty({ description: 'Operator name' })
-  name!: string;
+  name: string;
 
   @ApiProperty({ description: 'Ethereum 1 address which receives stETH rewards for this operator' })
-  rewardAddress!: string;
+  rewardAddress: string;
 
   @ApiProperty({ description: 'The maximum number of validators to stake for this operator' })
-  stakingLimit!: number;
+  stakingLimit: number;
 
   @ApiProperty({ description: 'Amount of stopped validators' })
-  stoppedValidators!: number;
+  stoppedValidators: number;
 
   @ApiProperty({ description: 'Total signing keys amount' })
-  totalSigningKeys!: number;
+  totalSigningKeys: number;
 
   @ApiProperty({ description: 'Amount of used signing keys' })
-  usedSigningKeys!: number;
+  usedSigningKeys: number;
 }

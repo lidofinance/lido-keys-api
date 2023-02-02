@@ -6,7 +6,7 @@ import { Query as ValidatorsQuery } from './entities/query';
 import { ExitPresignMessageListResponse, ExitValidatorListResponse } from './entities';
 
 @Controller('modules')
-@ApiTags('List of validators')
+@ApiTags('validators')
 export class SRModulesValidatorsController {
   constructor(protected readonly validatorsService: SRModulesValidatorsService) {}
 

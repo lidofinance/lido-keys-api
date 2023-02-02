@@ -9,7 +9,7 @@ import { ModuleId } from 'http/common/entities/';
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
 
 @Controller('/')
-@ApiTags('List of operators')
+@ApiTags('operators')
 export class SRModulesOperatorsController {
   constructor(protected readonly srModulesOperators: SRModulesOperatorsService) {}
 

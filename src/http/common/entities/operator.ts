@@ -10,10 +10,10 @@ export class Operator {
   @ApiProperty({
     description: 'Index of Operator',
   })
-  index!: number;
+  index: number;
 
   @ApiProperty({
     description: 'This value shows if node operator active',
   })
-  active!: boolean;
+  active: boolean;
 }

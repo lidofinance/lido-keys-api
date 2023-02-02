@@ -20,6 +20,11 @@ export class KeysService {
     const moduleType = GROUPED_ONCHAIN_V1_TYPE;
     const registryModule = getSRModuleByType(moduleType, chainId);
 
+    // Here it is not important to check type
+    // Because moduleType we get from our tooling list and SR module list we check after fetching it from SR contract,
+    // it should contain only types we know.
+    // and here we just get keys from all modules we know from SR module list
+
     if (!registryModule) {
       throw new NotFoundException(`Module with type ${moduleType} not found`);
     }
