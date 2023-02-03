@@ -5,6 +5,7 @@ import {
   ValidatorsRegistryInterface,
   ConsensusValidatorsAndMetadata,
   Validator,
+  ConsensusMeta,
 } from '@lido-nestjs/validators-registry';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
@@ -51,11 +52,15 @@ export class ValidatorsRegistryService {
       // meta shouldnt be null
       // if update didnt happen, meta will be fetched from db
       this.lastBlockTimestamp = meta.timestamp ?? this.lastBlockTimestamp;
+      this.lastBlockNumber = meta.blockNumber ?? this.lastBlockNumber;
+      this.lastSlot = meta.slot ?? this.lastSlot;
       this.updateMetrics();
     });
   }
 
   protected lastBlockTimestamp = 0;
+  protected lastBlockNumber = undefined;
+  protected lastSlot = undefined;
 
   /**
    *
@@ -88,6 +93,10 @@ export class ValidatorsRegistryService {
     return { validators, meta };
   }
 
+  public async getMetaDataFromStorage(): Promise<ConsensusMeta> {
+    return this.validatorsRegistry.getMeta();
+  }
+
   private getPercentOfValidators(validators: Validator[], percent: number): Validator[] {
     // Does this round method suit to us?
     const amount = Math.round((validators.length * percent) / 100);
@@ -96,7 +105,8 @@ export class ValidatorsRegistryService {
 
   private updateMetrics() {
     this.prometheusService.validatorsRegistryLastTimestampUpdate.set(this.lastBlockTimestamp);
-    // TODO: want to add blockNumber
+    this.prometheusService.validatorsRegistryLastBlockNumber.set(this.lastBlockNumber);
+    this.prometheusService.validatorsRegistryLastSlot.set(this.lastSlot);
 
     this.logger.log('ValidatorsRegistry metrics updated');
   }

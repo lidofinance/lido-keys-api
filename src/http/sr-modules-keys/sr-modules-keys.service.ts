@@ -1,10 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
-import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse, RegistryKey } from './entities';
+import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
+import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse } from './entities';
 import { RegistryService } from 'jobs/registry.service';
-import { ELBlockSnapshot, Key, SRModule } from 'http/common/entities';
-import { RegistryMeta } from '@lido-nestjs/registry';
-import { ModuleId } from 'http/common/entities/';
+import { ELBlockSnapshot, Key, SRModule, ModuleId, RegistryKey as RespRegistryKey } from 'http/common/entities';
+import { RegistryKey } from '@lido-nestjs/registry';
 import { getSRModule, getSRModuleByType } from 'http/common/sr-modules.utils';
 
 @Injectable()
@@ -25,15 +24,15 @@ export class SRModulesKeysService {
     const chainId = this.configService.get('CHAIN_ID');
     const registryModule = getSRModuleByType(GROUPED_ONCHAIN_V1_TYPE, chainId);
 
-    const registryKeys: Key[] = keys.map((key) => this.formKey(key));
+    const registryKeys: Key[] = keys.map((key) => new Key(key));
 
-    const elBlockSnapshot = this.formELBlockSnapshot(meta);
+    const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
       data: [
         {
           keys: registryKeys,
-          module: this.formSRModule(meta.keysOpIndex, registryModule),
+          module: new SRModule(meta.keysOpIndex, registryModule),
         },
       ],
       meta: {
@@ -63,13 +62,13 @@ export class SRModulesKeysService {
         };
       }
 
-      const registryKeys: RegistryKey[] = keys.map((key) => this.formRegistryKey(key));
-      const elBlockSnapshot = this.formELBlockSnapshot(meta);
+      const registryKeys: RespRegistryKey[] = keys.map((key) => new RegistryKey(key));
+      const elBlockSnapshot = new ELBlockSnapshot(meta);
 
       return {
         data: {
           keys: registryKeys,
-          module: this.formSRModule(meta.keysOpIndex, module),
+          module: new SRModule(meta.keysOpIndex, module),
         },
         meta: {
           elBlockSnapshot,
@@ -102,13 +101,13 @@ export class SRModulesKeysService {
         };
       }
 
-      const registryKeys: RegistryKey[] = keys.map((key) => this.formRegistryKey(key));
-      const elBlockSnapshot = this.formELBlockSnapshot(meta);
+      const registryKeys: RespRegistryKey[] = keys.map((key) => new RegistryKey(key));
+      const elBlockSnapshot = new ELBlockSnapshot(meta);
 
       return {
         data: {
           keys: registryKeys,
-          module: this.formSRModule(meta.keysOpIndex, module),
+          module: new SRModule(meta.keysOpIndex, module),
         },
         meta: {
           elBlockSnapshot,
@@ -118,49 +117,5 @@ export class SRModulesKeysService {
 
     // compare type with other types
     throw new NotFoundException(`Modules with other types are not supported`);
-  }
-
-  // at the moment part of information is in json file and another part in meta table of registry lib
-  private formSRModule(nonce: number, module): SRModule {
-    return {
-      nonce: nonce,
-      type: module.type,
-      id: module.id,
-      stakingModuleAddress: module.stakingModuleAddress,
-      moduleFee: module.moduleFee,
-      treasuryFee: module.treasuryFee,
-      targetShare: module.targetShare,
-      status: module.status,
-      name: module.name,
-      lastDepositAt: module.lastDepositAt,
-      lastDepositBlock: module.lastDepositBlock,
-    };
-  }
-
-  private formKey(key: RegistryKey): Key {
-    return {
-      key: key.key,
-      depositSignature: key.depositSignature,
-      operatorIndex: key.operatorIndex,
-      used: key.used,
-    };
-  }
-
-  private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot {
-    return {
-      blockNumber: meta.blockNumber,
-      blockHash: meta.blockHash,
-      timestamp: meta.timestamp,
-    };
-  }
-
-  private formRegistryKey(key: RegistryKey): RegistryKey {
-    return {
-      key: key.key,
-      depositSignature: key.depositSignature,
-      operatorIndex: key.operatorIndex,
-      index: key.index,
-      used: key.used,
-    };
   }
 }

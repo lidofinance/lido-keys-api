@@ -1,9 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
+import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { RegistryService } from 'jobs/registry.service';
 import { ELBlockSnapshot, SRModule } from 'http/common/entities';
-import { RegistryMeta } from '@lido-nestjs/registry';
 import { ModuleId } from 'http/common/entities/';
 import { getSRModule, getSRModuleByType } from 'http/common/sr-modules.utils';
 
@@ -29,10 +28,10 @@ export class SRModulesService {
       };
     }
 
-    const elBlockSnapshot = this.formELBlockSnapshot(meta);
+    const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
-      data: [this.formSRModule(meta.keysOpIndex, registryModule)],
+      data: [new SRModule(meta.keysOpIndex, registryModule)],
       elBlockSnapshot,
     };
   }
@@ -59,43 +58,14 @@ export class SRModulesService {
         };
       }
 
-      const elBlockSnapshot = this.formELBlockSnapshot(meta);
+      const elBlockSnapshot = new ELBlockSnapshot(meta);
 
       return {
-        data: this.formSRModule(meta.keysOpIndex, module),
+        data: new SRModule(meta.keysOpIndex, module),
         elBlockSnapshot,
       };
     }
 
     throw new NotFoundException(`Modules with other types are not supported`);
-  }
-
-  // at the moment part of information is in json file and another part in meta table of registry lib
-  private formSRModule(nonce: number, module): SRModule {
-    return {
-      nonce: nonce,
-      type: module.type,
-      id: module.id,
-      stakingModuleAddress: module.stakingModuleAddress,
-      moduleFee: module.moduleFee,
-      treasuryFee: module.treasuryFee,
-      targetShare: module.targetShare,
-      status: module.status,
-      name: module.name,
-      lastDepositAt: module.lastDepositAt,
-      lastDepositBlock: module.lastDepositBlock,
-    };
-  }
-
-  private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot | null {
-    if (!meta) {
-      return null;
-    }
-
-    return {
-      blockNumber: meta.blockNumber,
-      blockHash: meta.blockHash,
-      timestamp: meta.timestamp,
-    };
   }
 }

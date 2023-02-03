@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { CLMeta } from 'http/common/entities';
 import { ExitValidator } from './exit-validator';
-import { ValidatorsMeta } from './meta';
 
 export class ExitValidatorListResponse {
   @ApiProperty({
@@ -13,7 +13,7 @@ export class ExitValidatorListResponse {
   @ApiProperty({
     nullable: true,
     description: 'Meta for voluntary exit endpoints',
-    type: () => ValidatorsMeta,
+    type: () => CLMeta,
   })
-  meta!: ValidatorsMeta | null;
+  meta!: CLMeta | null;
 }

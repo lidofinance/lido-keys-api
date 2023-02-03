@@ -1,7 +1,7 @@
+import { CLBlockSnapshot } from './cl-block-snapshot';
 import { ApiProperty } from '@nestjs/swagger';
-import { CLBlockSnapshot } from 'http/common/entities/cl-block-snapshot';
 
-export class ValidatorsMeta {
+export class CLMeta {
   @ApiProperty({
     type: () => CLBlockSnapshot,
     description: 'Consensus layer block information',

@@ -5,10 +5,10 @@ import { ConfigService } from '../../src/common/config';
 import { hexZeroPad } from '@ethersproject/bytes';
 import { RegistryService } from '../../src/jobs/registry.service';
 import {
-  communityKeys,
-  keys,
-  communityModuleMainnet,
-  communityModuleGoerli,
+  curatedKeys,
+  keysInGeneralForm,
+  curatedModuleMainnet,
+  curatedModuleGoerli,
   elMeta,
   elBlockSnapshot,
 } from '../fixtures';
@@ -27,11 +27,11 @@ describe('SRModulesKeysController controller', () => {
     getKeysWithMeta(filters) {
       // in this tests we dont check filters like used keys or keys by operatorIndex
       // fetching data from db and filters check is implemented in registry library
-      return Promise.resolve({ keys: communityKeys, meta: elMeta });
+      return Promise.resolve({ keys: curatedKeys, meta: elMeta });
     }
 
     getKeysWithMetaByPubkeys(pubkeys: string[]) {
-      return Promise.resolve({ keys: communityKeys, meta: elMeta });
+      return Promise.resolve({ keys: curatedKeys, meta: elMeta });
     }
   }
 
@@ -77,8 +77,8 @@ describe('SRModulesKeysController controller', () => {
       expect(result).toEqual({
         data: [
           {
-            keys: keys,
-            module: communityModuleMainnet,
+            keys: keysInGeneralForm,
+            module: curatedModuleMainnet,
           },
         ],
         meta: {
@@ -97,8 +97,8 @@ describe('SRModulesKeysController controller', () => {
       expect(result).toEqual({
         data: [
           {
-            keys: keys,
-            module: communityModuleGoerli,
+            keys: keysInGeneralForm,
+            module: curatedModuleGoerli,
           },
         ],
         meta: {
@@ -107,7 +107,7 @@ describe('SRModulesKeysController controller', () => {
       });
     });
 
-    test('EL meta is empty', async () => {
+    test('EL meta is null', async () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeysWithMetaMock = jest
@@ -136,8 +136,8 @@ describe('SRModulesKeysController controller', () => {
       expect(getKeysWithMetaMock).lastCalledWith({ used: true, operatorIndex: 1 });
       expect(result).toEqual({
         data: {
-          keys: communityKeys,
-          module: communityModuleMainnet,
+          keys: curatedKeys,
+          module: curatedModuleMainnet,
         },
 
         meta: {
@@ -158,8 +158,8 @@ describe('SRModulesKeysController controller', () => {
       expect(getKeysWithMetaMock).lastCalledWith({ used: true, operatorIndex: 1 });
       expect(result).toEqual({
         data: {
-          keys: communityKeys,
-          module: communityModuleGoerli,
+          keys: curatedKeys,
+          module: curatedModuleGoerli,
         },
 
         meta: {
@@ -177,8 +177,8 @@ describe('SRModulesKeysController controller', () => {
       expect(getKeysWithMetaMock).lastCalledWith({ used: true, operatorIndex: 1 });
       expect(result).toEqual({
         data: {
-          keys: communityKeys,
-          module: communityModuleMainnet,
+          keys: curatedKeys,
+          module: curatedModuleMainnet,
         },
 
         meta: {
@@ -196,7 +196,7 @@ describe('SRModulesKeysController controller', () => {
       expect(getKeysWithMetaMock).toBeCalledTimes(0);
     });
 
-    test('EL meta is empty', async () => {
+    test('EL meta is null', async () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeysWithMetaMock = jest
@@ -229,8 +229,8 @@ describe('SRModulesKeysController controller', () => {
 
       expect(result).toEqual({
         data: {
-          keys: communityKeys,
-          module: communityModuleMainnet,
+          keys: curatedKeys,
+          module: curatedModuleMainnet,
         },
         meta: {
           elBlockSnapshot,
@@ -251,8 +251,8 @@ describe('SRModulesKeysController controller', () => {
 
       expect(result).toEqual({
         data: {
-          keys: communityKeys,
-          module: communityModuleGoerli,
+          keys: curatedKeys,
+          module: curatedModuleGoerli,
         },
         meta: {
           elBlockSnapshot,
@@ -273,8 +273,8 @@ describe('SRModulesKeysController controller', () => {
 
       expect(result).toEqual({
         data: {
-          keys: communityKeys,
-          module: communityModuleMainnet,
+          keys: curatedKeys,
+          module: curatedModuleMainnet,
         },
         meta: {
           elBlockSnapshot,
@@ -292,7 +292,7 @@ describe('SRModulesKeysController controller', () => {
       expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(0);
     });
 
-    test('EL meta is empty', async () => {
+    test('EL meta is null', async () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeysWithMetaByPubkeysMock = jest

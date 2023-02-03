@@ -1,7 +1,10 @@
 import { hexZeroPad } from '@ethersproject/bytes';
+import { RegistryKey } from '@lido-nestjs/registry';
+import { Key } from 'http/common/entities';
+import { KeyWithModuleAddress } from 'http/keys/entities';
 
 // keys from db of  Registry (in future curated ) library
-export const communityKeys = [
+export const curatedKeys: RegistryKey[] = [
   {
     index: 1,
     operatorIndex: 1,
@@ -76,30 +79,34 @@ export const communityKeys = [
 
 // keys for answers in general form without index according to document
 // created from registry keys
-export const keys = communityKeys.map(({ operatorIndex, key, depositSignature, used }) => ({
+export const keysInGeneralForm: Key[] = curatedKeys.map(({ operatorIndex, key, depositSignature, used }) => ({
   operatorIndex,
   key,
   depositSignature,
   used,
 }));
 
-export const comminityKeysWithAddressMainnet = communityKeys.map(({ operatorIndex, key, depositSignature, used }) => ({
-  operatorIndex,
-  key,
-  depositSignature,
-  used,
-  moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-}));
+export const curatedKeysWithAddressMainnet: KeyWithModuleAddress[] = curatedKeys.map(
+  ({ operatorIndex, key, depositSignature, used }) => ({
+    operatorIndex,
+    key,
+    depositSignature,
+    used,
+    moduleAddress: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+  }),
+);
 
-export const comminityKeysWithAddressGoerli = communityKeys.map(({ operatorIndex, key, depositSignature, used }) => ({
-  operatorIndex,
-  key,
-  depositSignature,
-  used,
-  moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
-}));
+export const curatedKeysWithAddressGoerli: KeyWithModuleAddress[] = curatedKeys.map(
+  ({ operatorIndex, key, depositSignature, used }) => ({
+    operatorIndex,
+    key,
+    depositSignature,
+    used,
+    moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
+  }),
+);
 
-export const operatorOneUsedKeys = [
+export const operatorOneUsedKeys: RegistryKey[] = [
   {
     index: 1,
     operatorIndex: 1,

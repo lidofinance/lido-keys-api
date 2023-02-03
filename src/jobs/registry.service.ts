@@ -7,12 +7,15 @@ import {
   RegistryMetaStorageService,
   RegistryKey,
   RegistryMeta,
+  RegistryOperator,
+  RegistryOperatorStorageService,
 } from '@lido-nestjs/registry';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
 import { JobService } from 'common/job';
 import { EntityManager } from '@mikro-orm/postgresql';
+import { KeyQuery } from 'http/common/entities';
 
 @Injectable()
 export class RegistryService {
@@ -21,6 +24,7 @@ export class RegistryService {
     protected readonly keyRegistryService: KeyRegistryService,
     protected readonly keyStorageService: RegistryKeyStorageService,
     protected readonly metaStorageService: RegistryMetaStorageService,
+    protected readonly operatorStorageService: RegistryOperatorStorageService,
     protected readonly prometheusService: PrometheusService,
     protected readonly configService: ConfigService,
     protected readonly jobService: JobService,
@@ -52,19 +56,23 @@ export class RegistryService {
   private async updateKeys(): Promise<void> {
     await this.jobService.wrapJob({ name: 'Update keys from NodeOperatorRegistry' }, async () => {
       await this.keyRegistryService.update('latest');
-      await this.updateTimestamp();
+      await this.updateMetaForMetrics();
       this.updateMetrics();
     });
   }
 
   protected lastTimestamp = 0;
+  protected lastBlockNumber = undefined;
+  protected lastNonce = undefined;
 
   /**
    * Updates timestamp of the last registry update
    */
-  private async updateTimestamp(): Promise<void> {
+  private async updateMetaForMetrics(): Promise<void> {
     const meta = await this.metaStorageService.get();
     this.lastTimestamp = meta?.timestamp ?? this.lastTimestamp;
+    this.lastBlockNumber = meta?.blockNumber ?? this.lastBlockNumber;
+    this.lastNonce = meta?.keysOpIndex ?? this.lastNonce;
   }
 
   public async getKeyWithMetaByPubkey(pubkey: string): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
@@ -78,7 +86,9 @@ export class RegistryService {
     return { keys, meta };
   }
 
-  public async getKeysWithMetaByPubkeys(pubkeys: string[]): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
+  public async getKeysWithMetaByPubkeys(
+    pubkeys: string[],
+  ): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
     const { keys, meta } = await this.entityManager.transactional(async () => {
       const keys = await this.getKeysByPubkeys(pubkeys);
       const meta = await this.getMetaDataFromStorage();
@@ -105,6 +115,45 @@ export class RegistryService {
     return await this.metaStorageService.get();
   }
 
+  public async getOperatorsWithMeta(): Promise<{ operators: RegistryOperator[]; meta: RegistryMeta | null }> {
+    const { operators, meta } = await this.entityManager.transactional(async () => {
+      const operators = await this.operatorStorageService.findAll();
+      const meta = await this.getMetaDataFromStorage();
+
+      return { operators, meta };
+    });
+
+    return { operators, meta };
+  }
+
+  public async getOperatorByIndex(index: number): Promise<{ operator: RegistryOperator; meta: RegistryMeta | null }> {
+    const { operator, meta } = await this.entityManager.transactional(async () => {
+      const operator = await this.operatorStorageService.findOneByIndex(index);
+      const meta = await this.getMetaDataFromStorage();
+
+      return { operator, meta };
+    });
+
+    return { operator, meta };
+  }
+
+  public async getData(filters: KeyQuery): Promise<{
+    operators: RegistryOperator[];
+    keys: RegistryKey[];
+    meta: RegistryMeta | null;
+  }> {
+    const { operators, keys, meta } = await this.entityManager.transactional(async () => {
+      const operatorFilters = filters.operatorIndex ? { index: filters.operatorIndex } : {};
+      const operators = await this.operatorStorageService.find(operatorFilters);
+      const keys = await this.keyStorageService.find(filters);
+      const meta = await this.getMetaDataFromStorage();
+
+      return { operators, keys, meta };
+    });
+
+    return { operators, keys, meta };
+  }
+
   /**
    * Returns all keys found in db from pubkey list
    * @param pubKeys - public keys
@@ -118,7 +167,10 @@ export class RegistryService {
    * Updates prometheus metrics
    */
   private updateMetrics() {
-    this.prometheusService.registryLastUpdate.set(this.lastTimestamp);
+    // soon we will get this value from SR contract from the list of modules
+    this.prometheusService.registryLastUpdate.set({ srModuleId: 1 }, this.lastTimestamp);
+    this.prometheusService.registryBlockNumber.set({ srModuleId: 1 }, this.lastBlockNumber);
+    this.prometheusService.registryNonce.set({ srModuleId: 1 }, this.lastNonce);
 
     this.logger.log('Registry metrics updated');
   }
