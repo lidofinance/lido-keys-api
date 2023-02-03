@@ -6,9 +6,10 @@ import { ConfigService } from '../../src/common/config';
 import { elMeta, elBlockSnapshot, clMeta, clBlockSnapshot } from '../fixtures';
 import { StatusController, StatusService } from '../../src/http/status';
 import { APP_VERSION } from 'app/app.constants';
+import { EntityManager } from '@mikro-orm/postgresql';
 
 describe('SRModulesOperatorsController', () => {
-  let operatorsKeysController: StatusController;
+  let statusController: StatusController;
   let registryService: RegistryService;
   let validatorsService: ValidatorsRegistryService;
 
@@ -27,6 +28,12 @@ describe('SRModulesOperatorsController', () => {
   class ValidatorsRegistryServiceMock {
     getMetaDataFromStorage() {
       return Promise.resolve(clMeta);
+    }
+  }
+
+  class EntityManagerMock {
+    transactional(func) {
+      return Promise.resolve(func());
     }
   }
 
@@ -52,10 +59,14 @@ describe('SRModulesOperatorsController', () => {
           provide: ConfigService,
           useClass: ConfigServiceMock,
         },
+        {
+          provide: EntityManager,
+          useClass: EntityManagerMock,
+        },
       ],
     }).compile();
 
-    operatorsKeysController = moduleRef.get<StatusController>(StatusController);
+    statusController = moduleRef.get<StatusController>(StatusController);
     registryService = moduleRef.get<RegistryService>(RegistryService);
     validatorsService = moduleRef.get<ValidatorsRegistryService>(ValidatorsRegistryService);
   });
@@ -71,7 +82,7 @@ describe('SRModulesOperatorsController', () => {
       const getELMetaDataMock = jest.spyOn(registryService, 'getMetaDataFromStorage');
       const getCLMetaDataMock = jest.spyOn(validatorsService, 'getMetaDataFromStorage');
 
-      const result = await operatorsKeysController.get();
+      const result = await statusController.get();
 
       expect(result).toEqual({
         chainId: '1',

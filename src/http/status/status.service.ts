@@ -5,6 +5,7 @@ import { CLBlockSnapshot, ELBlockSnapshot } from 'http/common/entities';
 import { APP_VERSION } from 'app/app.constants';
 import { Status } from './entities';
 import { Injectable } from '@nestjs/common';
+import { EntityManager } from '@mikro-orm/postgresql';
 
 @Injectable()
 export class StatusService {
@@ -12,13 +13,19 @@ export class StatusService {
     protected readonly registryService: RegistryService,
     protected readonly validatorsRegistryService: ValidatorsRegistryService,
     protected readonly configService: ConfigService,
+    private readonly entityManager: EntityManager,
   ) {}
 
   public async get(): Promise<Status> {
     const chainId = this.configService.get('CHAIN_ID');
 
-    const registryMeta = await this.registryService.getMetaDataFromStorage();
-    const validatorsMeta = await this.validatorsRegistryService.getMetaDataFromStorage();
+    // todo: add transaction
+    const { registryMeta, validatorsMeta } = await this.entityManager.transactional(async () => {
+      const registryMeta = await this.registryService.getMetaDataFromStorage();
+      const validatorsMeta = await this.validatorsRegistryService.getMetaDataFromStorage();
+
+      return { registryMeta, validatorsMeta };
+    });
 
     return {
       appVersion: APP_VERSION,
