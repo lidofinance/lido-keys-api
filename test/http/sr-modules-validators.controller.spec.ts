@@ -141,7 +141,7 @@ describe('SRModulesValidators controller', () => {
 
       await expect(
         validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {}),
-      ).rejects.toThrowError('Internal Server Error');
+      ).rejects.toThrowError('Last Execution Layer block number in our database older than last Consensus Layer');
 
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
@@ -371,7 +371,7 @@ describe('SRModulesValidators controller', () => {
 
       await expect(
         validatorsController.getMessagesForOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {}),
-      ).rejects.toThrowError('Internal Server Error');
+      ).rejects.toThrowError('Last Execution Layer block number in our database older than last Consensus Layer');
 
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });

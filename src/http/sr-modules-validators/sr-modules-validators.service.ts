@@ -147,10 +147,12 @@ export class SRModulesValidatorsService {
 
     // We need EL meta always be actual
     if (elMeta.blockNumber < clMeta.blockNumber) {
-      this.logger.warn(`Last Execution Layer block number in our database older than last Consensus Layer`);
+      this.logger.warn('Last Execution Layer block number in our database older than last Consensus Layer');
       // add metric or alert on breaking el > cl condition
       // TODO: what answer will be better here?
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException(
+        'Last Execution Layer block number in our database older than last Consensus Layer',
+      );
     }
 
     return { validators, meta: clMeta };
