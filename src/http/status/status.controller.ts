@@ -9,10 +9,10 @@ export class StatusController {
   constructor(protected readonly status: StatusService) {}
 
   @Version('1')
-  @ApiOperation({ summary: 'Get status of API' })
+  @ApiOperation({ summary: 'Get status of Keys API' })
   @ApiResponse({
     status: 200,
-    description: 'API status',
+    description: 'Keys API status',
     type: () => Status,
   })
   @Get('/')
