@@ -58,6 +58,7 @@ describe('Keys controller', () => {
           provide: LOGGER_PROVIDER,
           useFactory: () => ({
             log: jest.fn(),
+            warn: jest.fn(),
           }),
         },
       ],

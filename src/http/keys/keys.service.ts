@@ -32,6 +32,7 @@ export class KeysService {
     const { keys, meta } = await this.keyRegistryService.getKeysWithMeta(filters);
 
     if (!meta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
       return {
         data: [],
         meta: null,
@@ -55,19 +56,25 @@ export class KeysService {
 
   async getByPubkey(pubkey: string): Promise<KeyListResponse> {
     const { keys, meta } = await this.keyRegistryService.getKeyWithMetaByPubkey(pubkey);
+
+    if (!meta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+      return {
+        data: [],
+        meta: null,
+      };
+    }
+
+    if (keys.length == 0) {
+      throw new NotFoundException(`There are no keys with ${pubkey} public key in db.`);
+    }
+
     const chainId = this.configService.get('CHAIN_ID');
     const moduleType = GROUPED_ONCHAIN_V1_TYPE;
     const registryModule = getSRModuleByType(moduleType, chainId);
 
     if (!registryModule) {
-      throw new NotFoundException(`Module with type ${moduleType} not found`);
-    }
-
-    if (!meta) {
-      return {
-        data: [],
-        meta: null,
-      };
+      throw new NotFoundException(`Module with type ${moduleType} was not found`);
     }
 
     const registryKeys: KeyWithModuleAddress[] = keys.map(
@@ -88,19 +95,21 @@ export class KeysService {
     // TODO: In future iteration for staking router here will be method to get keys from all modules
     // TODO: where will we use this method?
     const { keys, meta } = await this.keyRegistryService.getKeysWithMetaByPubkeys(pubkeys);
+
+    if (!meta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+      return {
+        data: [],
+        meta: null,
+      };
+    }
+
     const chainId = this.configService.get('CHAIN_ID');
     const moduleType = GROUPED_ONCHAIN_V1_TYPE;
     const registryModule = getSRModuleByType(moduleType, chainId);
 
     if (!registryModule) {
       throw new NotFoundException(`Module with type ${moduleType} not found`);
-    }
-
-    if (!meta) {
-      return {
-        data: [],
-        meta: null,
-      };
     }
 
     const registryKeys: KeyWithModuleAddress[] = keys.map(

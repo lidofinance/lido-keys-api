@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { RegistryService } from 'jobs/registry.service';
@@ -8,7 +9,11 @@ import { getSRModule, getSRModuleByType } from 'http/common/sr-modules.utils';
 
 @Injectable()
 export class SRModulesService {
-  constructor(protected configService: ConfigService, protected registryService: RegistryService) {}
+  constructor(
+    @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
+    protected configService: ConfigService,
+    protected registryService: RegistryService,
+  ) {}
 
   async getModules(): Promise<SRModuleListResponse> {
     // Currently modules information is fixed in json
@@ -22,6 +27,7 @@ export class SRModulesService {
     const meta = await this.registryService.getMetaDataFromStorage();
 
     if (!meta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
       return {
         data: [],
         elBlockSnapshot: null,
@@ -52,6 +58,7 @@ export class SRModulesService {
       const meta = await this.registryService.getMetaDataFromStorage();
 
       if (!meta) {
+        this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
         return {
           data: null,
           elBlockSnapshot: null,

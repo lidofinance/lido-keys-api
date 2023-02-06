@@ -23,5 +23,5 @@ export class Status {
     type: () => CLBlockSnapshot,
     description: 'Consensus layer block information',
   })
-  clBlockSnapshot!: CLBlockSnapshot;
+  clBlockSnapshot!: CLBlockSnapshot | null;
 }

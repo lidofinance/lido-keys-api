@@ -12,6 +12,7 @@ import {
   elMeta,
   elBlockSnapshot,
 } from '../fixtures';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 
 describe('SRModulesKeysController controller', () => {
   let modulesController: SRModulesKeysController;
@@ -52,6 +53,13 @@ describe('SRModulesKeysController controller', () => {
         {
           provide: ConfigService,
           useClass: ConfigServiceMock,
+        },
+        {
+          provide: LOGGER_PROVIDER,
+          useFactory: () => ({
+            log: jest.fn(),
+            warn: jest.fn(),
+          }),
         },
       ],
     }).compile();

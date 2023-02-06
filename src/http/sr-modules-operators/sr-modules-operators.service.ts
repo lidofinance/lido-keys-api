@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
 import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
 import { RegistryService } from 'jobs/registry.service';
 import { ModuleId } from 'http/common/entities/';
@@ -9,15 +9,21 @@ import {
   SRModuleOperatorListResponse,
   SRModuleOperatorResponse,
 } from './entities';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 
 @Injectable()
 export class SRModulesOperatorsService {
-  constructor(protected configService: ConfigService, protected registryService: RegistryService) {}
+  constructor(
+    @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
+    protected configService: ConfigService,
+    protected registryService: RegistryService,
+  ) {}
 
   public async getAll(): Promise<GroupedByModuleOperatorListResponse> {
     const { operators, meta } = await this.registryService.getOperatorsWithMeta();
 
     if (!meta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
       return {
         data: [],
         meta: null,
@@ -52,6 +58,7 @@ export class SRModulesOperatorsService {
       const { operators, meta } = await this.registryService.getOperatorsWithMeta();
 
       if (!meta) {
+        this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
         return {
           data: null,
           meta: null,
@@ -77,14 +84,14 @@ export class SRModulesOperatorsService {
     if (!module) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
     }
-    // We supppose if module in list, Keys API knows how to work with it
+    // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
     if (module.type == GROUPED_ONCHAIN_V1_TYPE) {
       const { operator, meta } = await this.registryService.getOperatorByIndex(operatorIndex);
 
       if (!meta) {
-        // todo : add log
+        this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
         return {
           data: null,
           meta: null,

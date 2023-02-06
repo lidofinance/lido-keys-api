@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
 import { ELBlockSnapshot, ModuleId, SRModule } from 'http/common/entities';
 import { CuratedOperator, RegistryKey as CuratedKey } from 'http/common/entities';
 import { KeyQuery } from 'http/common/entities';
@@ -6,10 +6,15 @@ import { RegistryService } from 'jobs/registry.service';
 import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
 import { getSRModule } from 'http/common/sr-modules.utils';
 import { SRModuleOperatorsKeysResponse } from './entities';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 
 @Injectable()
 export class SRModulesOperatorsKeysService {
-  constructor(protected readonly registry: RegistryService, protected readonly configService: ConfigService) {}
+  constructor(
+    @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
+    protected readonly registry: RegistryService,
+    protected readonly configService: ConfigService,
+  ) {}
 
   public async get(moduleId: ModuleId, filters: KeyQuery): Promise<SRModuleOperatorsKeysResponse> {
     // At first we should find module by id in our list, in future without chainId
@@ -26,6 +31,7 @@ export class SRModulesOperatorsKeysService {
       const { keys, operators, meta } = await this.registry.getData(filters);
 
       if (!meta) {
+        this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
         return {
           data: null,
           meta: null,
