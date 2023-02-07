@@ -168,8 +168,9 @@ export class RegistryService {
    */
   private updateMetrics() {
     // soon we will get this value from SR contract from the list of modules
-    this.prometheusService.registryLastUpdate.set({ srModuleId: 1 }, this.lastTimestamp);
-    this.prometheusService.registryBlockNumber.set({ srModuleId: 1 }, this.lastBlockNumber);
+    this.prometheusService.registryLastUpdate.set(this.lastTimestamp);
+    this.prometheusService.registryBlockNumber.set(this.lastBlockNumber);
+    // this value will be different for all SR modules
     this.prometheusService.registryNonce.set({ srModuleId: 1 }, this.lastNonce);
 
     this.logger.log('Registry metrics updated');

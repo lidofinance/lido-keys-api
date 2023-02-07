@@ -19,7 +19,6 @@ export class StatusService {
   public async get(): Promise<Status> {
     const chainId = this.configService.get('CHAIN_ID');
 
-    // todo: add transaction
     const { registryMeta, validatorsMeta } = await this.entityManager.transactional(async () => {
       const registryMeta = await this.registryService.getMetaDataFromStorage();
       const validatorsMeta = await this.validatorsRegistryService.getMetaDataFromStorage();
@@ -27,11 +26,14 @@ export class StatusService {
       return { registryMeta, validatorsMeta };
     });
 
+    const elBlockSnapshot = registryMeta ? new ELBlockSnapshot(registryMeta) : null;
+    const clBlockSnapshot = validatorsMeta ? new CLBlockSnapshot(validatorsMeta) : null;
+
     return {
       appVersion: APP_VERSION,
       chainId,
-      elBlockSnapshot: new ELBlockSnapshot(registryMeta),
-      clBlockSnapshot: new CLBlockSnapshot(validatorsMeta),
+      elBlockSnapshot,
+      clBlockSnapshot,
     };
   }
 }

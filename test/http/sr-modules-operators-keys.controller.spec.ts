@@ -15,6 +15,7 @@ import {
   curatedModuleGoerli,
   curatedKeys,
 } from '../fixtures';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 
 describe('SRModulesOperatorsController', () => {
   let operatorsKeysController: SRModulesOperatorsKeysController;
@@ -49,6 +50,13 @@ describe('SRModulesOperatorsController', () => {
         {
           provide: ConfigService,
           useClass: ConfigServiceMock,
+        },
+        {
+          provide: LOGGER_PROVIDER,
+          useFactory: () => ({
+            log: jest.fn(),
+            warn: jest.fn(),
+          }),
         },
       ],
     }).compile();

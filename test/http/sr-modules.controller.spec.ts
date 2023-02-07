@@ -4,6 +4,7 @@ import { SRModulesController, SRModulesService } from '../../src/http/sr-modules
 import { ConfigService } from '../../src/common/config';
 import { RegistryService } from '../../src/jobs/registry.service';
 import { curatedModuleMainnet, curatedModuleGoerli, elMeta, elBlockSnapshot } from '../fixtures';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 
 describe('SRModules controller', () => {
   let modulesController: SRModulesController;
@@ -38,6 +39,13 @@ describe('SRModules controller', () => {
         {
           provide: ConfigService,
           useClass: ConfigServiceMock,
+        },
+        {
+          provide: LOGGER_PROVIDER,
+          useFactory: () => ({
+            log: jest.fn(),
+            warn: jest.fn(),
+          }),
         },
       ],
     }).compile();

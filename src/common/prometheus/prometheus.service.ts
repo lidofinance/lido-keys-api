@@ -55,15 +55,13 @@ export class PrometheusService {
   public registryLastUpdate = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'last_update_timestamp',
-    help: 'Last updated sr module block timestamp',
-    labelNames: ['srModuleId'],
+    help: 'Block timestamp for which the last update was made.',
   });
 
   public validatorsRegistryLastTimestampUpdate = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'validators_registry_last_update_block_timestamp',
-    help: 'ValidatorsRegistry last update block timestamp',
-    labelNames: [],
+    help: 'Block timestamp for which the last ValidatorsRegistry update was made.',
   });
 
   public registryNumberOfKeysBySRModuleAndOperator = this.getOrCreateMetric('Gauge', {
@@ -76,28 +74,25 @@ export class PrometheusService {
   public registryNonce = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'nonce_value',
-    help: 'Nonce value',
+    help: 'Nonce of Staking Router module  during last update',
     labelNames: ['srModuleId'],
   });
 
   public registryBlockNumber = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'last_block_number',
-    help: 'Last updated sr module block number',
-    labelNames: ['srModuleId'],
+    help: 'Block number for which the last update was made.',
   });
 
   public validatorsRegistryLastBlockNumber = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'validators_registry_last_block_number',
-    help: 'ValidatorsRegistry last updated block timestamp',
-    labelNames: [],
+    help: 'Block number for which the last ValidatorsRegistry update was made.',
   });
 
   public validatorsRegistryLastSlot = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'validators_registry_last_slot',
-    help: 'ValidatorsRegistry last updated slot',
-    labelNames: [],
+    help: 'Slot for which the last ValidatorsRegistry update was made.',
   });
 }

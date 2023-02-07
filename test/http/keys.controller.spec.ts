@@ -58,6 +58,7 @@ describe('Keys controller', () => {
           provide: LOGGER_PROVIDER,
           useFactory: () => ({
             log: jest.fn(),
+            warn: jest.fn(),
           }),
         },
       ],
@@ -191,6 +192,19 @@ describe('Keys controller', () => {
 
       expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
+    });
+
+    test('404 error', async () => {
+      process.env['CHAIN_ID'] = '1';
+
+      const getKeyWithMetaByPubkeyMock = jest
+        .spyOn(registryService, 'getKeyWithMetaByPubkey')
+        .mockImplementation(() => Promise.resolve({ keys: [], meta: elMeta }));
+
+      expect(keysController.getByPubkey('')).rejects.toThrowError(`There are no keys with  public key in db.`);
+
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(1);
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledWith('');
     });
   });
 
