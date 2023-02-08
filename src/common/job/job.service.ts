@@ -18,7 +18,7 @@ export class JobService {
    * @returns job function call result
    */
   @UseRequestContext()
-  async wrapJob<R, M extends { name: string }>(meta: M, jobFn: () => Promise<R>): Promise<R> {
+  async wrapJob<R, M extends { name: string }>(meta: M, jobFn: () => Promise<R>): Promise<R | undefined> {
     this.logger.debug?.('Job started', meta);
     const endTimer = this.prometheusService.jobDuration.startTimer({ job: meta.name });
 

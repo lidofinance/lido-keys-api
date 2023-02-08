@@ -36,9 +36,12 @@ export class PrometheusService {
     labelNames: ['result'],
   });
 
-  public elRpcErrors = this.getOrCreateMetric('Counter', {
-    name: 'el_rpc_requests_errors_total',
-    help: 'Number of EL RPC requests errors',
+  public clApiRequestDuration = this.getOrCreateMetric('Histogram', {
+    prefix: false,
+    name: 'cl_api_requests_duration_seconds',
+    help: 'CL API request duration',
+    buckets: [0.1, 0.2, 0.3, 0.6, 1, 1.5, 2, 5, 10],
+    labelNames: ['result', 'status'],
   });
 
   public jobDuration = this.getOrCreateMetric('Histogram', {
@@ -51,8 +54,45 @@ export class PrometheusService {
 
   public registryLastUpdate = this.getOrCreateMetric('Gauge', {
     prefix: true,
-    name: 'registry_last_update_timestamp',
-    help: 'Registry last update timestamp',
-    labelNames: [],
+    name: 'last_update_timestamp',
+    help: 'Block timestamp for which the last update was made.',
+  });
+
+  public validatorsRegistryLastTimestampUpdate = this.getOrCreateMetric('Gauge', {
+    prefix: true,
+    name: 'validators_registry_last_update_block_timestamp',
+    help: 'Block timestamp for which the last ValidatorsRegistry update was made.',
+  });
+
+  public registryNumberOfKeysBySRModuleAndOperator = this.getOrCreateMetric('Gauge', {
+    prefix: true,
+    name: 'keys_by_sr_module_and_operator',
+    help: 'Amount of keys by sr module and operator id',
+    labelNames: ['operator', 'srModuleId', 'used'],
+  });
+
+  public registryNonce = this.getOrCreateMetric('Gauge', {
+    prefix: true,
+    name: 'nonce_value',
+    help: 'Nonce of Staking Router module  during last update',
+    labelNames: ['srModuleId'],
+  });
+
+  public registryBlockNumber = this.getOrCreateMetric('Gauge', {
+    prefix: true,
+    name: 'last_block_number',
+    help: 'Block number for which the last update was made.',
+  });
+
+  public validatorsRegistryLastBlockNumber = this.getOrCreateMetric('Gauge', {
+    prefix: true,
+    name: 'validators_registry_last_block_number',
+    help: 'Block number for which the last ValidatorsRegistry update was made.',
+  });
+
+  public validatorsRegistryLastSlot = this.getOrCreateMetric('Gauge', {
+    prefix: true,
+    name: 'validators_registry_last_slot',
+    help: 'Slot for which the last ValidatorsRegistry update was made.',
   });
 }

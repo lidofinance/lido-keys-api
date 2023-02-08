@@ -1,11 +1,38 @@
 version: '3.7'
 
 services:
+  db:
+    image: postgres:14-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - ${DB_PORT}:5432
+    volumes:
+      - ./.volumes/pgdata-${CHAIN_ID}/:/var/lib/postgresql/data
+
   main:
-    container_name: main
     build: ./
     restart: always
     environment:
-      - PORT=3000
+      - NODE_ENV=production
+      - PORT=${PORT}
+      - CORS_WHITELIST_REGEXP=${CORS_WHITELIST_REGEXP}
+      - GLOBAL_THROTTLE_TTL=${GLOBAL_THROTTLE_TTL}
+      - GLOBAL_THROTTLE_LIMIT=${GLOBAL_THROTTLE_LIMIT}
+      - GLOBAL_CACHE_TTL=${GLOBAL_CACHE_TTL}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - LOG_FORMAT=${LOG_FORMAT}
+      - PROVIDERS_URLS=${PROVIDERS_URLS}
+      - CL_API_URLS=${CL_API_URLS}
+      - CHAIN_ID=${CHAIN_ID}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=5432
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JOB_INTERVAL_REGISTRY=${JOB_INTERVAL_REGISTRY}
     ports:
-      - '3000:3000'
+      - '${PORT}:${PORT}'
