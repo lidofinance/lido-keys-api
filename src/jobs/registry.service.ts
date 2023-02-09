@@ -61,9 +61,9 @@ export class RegistryService {
     });
   }
 
-  protected lastTimestamp = 0;
-  protected lastBlockNumber = undefined;
-  protected lastNonce = undefined;
+  protected lastTimestamp: number | undefined = undefined;
+  protected lastBlockNumber: number | undefined = undefined;
+  protected lastNonce: number | undefined = undefined;
 
   /**
    * Updates timestamp of the last registry update
@@ -126,7 +126,9 @@ export class RegistryService {
     return { operators, meta };
   }
 
-  public async getOperatorByIndex(index: number): Promise<{ operator: RegistryOperator; meta: RegistryMeta | null }> {
+  public async getOperatorByIndex(
+    index: number,
+  ): Promise<{ operator: RegistryOperator | null; meta: RegistryMeta | null }> {
     const { operator, meta } = await this.entityManager.transactional(async () => {
       const operator = await this.operatorStorageService.findOneByIndex(index);
       const meta = await this.getMetaDataFromStorage();
@@ -168,10 +170,10 @@ export class RegistryService {
    */
   private updateMetrics() {
     // soon we will get this value from SR contract from the list of modules
-    this.prometheusService.registryLastUpdate.set(this.lastTimestamp);
-    this.prometheusService.registryBlockNumber.set(this.lastBlockNumber);
+    this.lastTimestamp && this.prometheusService.registryLastUpdate.set(this.lastTimestamp);
+    this.lastBlockNumber && this.prometheusService.registryBlockNumber.set(this.lastBlockNumber);
     // this value will be different for all SR modules
-    this.prometheusService.registryNonce.set({ srModuleId: 1 }, this.lastNonce);
+    this.lastNonce && this.prometheusService.registryNonce.set({ srModuleId: 1 }, this.lastNonce);
 
     this.logger.log('Registry metrics updated');
   }

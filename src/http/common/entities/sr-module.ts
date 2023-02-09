@@ -34,29 +34,34 @@ export class SRModule {
 
   @ApiProperty({
     description: 'address of module',
+    nullable: true,
   })
   stakingModuleAddress: string;
 
   @ApiProperty({
     description: 'rewarf fee of the module',
+    nullable: true,
   })
-  moduleFee: number;
+  moduleFee: number | null;
 
   @ApiProperty({
     description: 'treasury fee',
+    nullable: true,
   })
-  treasuryFee: number;
+  treasuryFee: number | null;
 
   @ApiProperty({
     description: 'target percent of total keys in protocol, in BP',
+    nullable: true,
   })
-  targetShare: number;
+  targetShare: number | null;
 
   @ApiProperty({
     description:
       'module status if module can not accept the deposits or can participate in further reward distribution',
+    nullable: true,
   })
-  status: number;
+  status: number | null;
 
   @ApiProperty({
     description: 'name of module',
@@ -65,11 +70,13 @@ export class SRModule {
 
   @ApiProperty({
     description: 'block.timestamp of the last deposit of the module',
+    nullable: true,
   })
-  lastDepositAt: number;
+  lastDepositAt: number | null;
 
   @ApiProperty({
     description: 'block.number of the last deposit of the module',
+    nullable: true,
   })
-  lastDepositBlock: number;
+  lastDepositBlock: number | null;
 }

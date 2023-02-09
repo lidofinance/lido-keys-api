@@ -54,5 +54,7 @@ export class SRModulesOperatorsKeysService {
         },
       };
     }
+
+    throw new NotFoundException(`Modules with other types are not supported`);
   }
 }
