@@ -32,7 +32,13 @@ export class SRModulesOperatorsService {
 
     const curatedOperators: CuratedOperator[] = operators.map((op) => new CuratedOperator(op));
     const chainId = this.configService.get('CHAIN_ID');
-    const curatedModule = getSRModuleByType(CURATED_ONCHAIN_V1_TYPE, chainId);
+    const moduleType = CURATED_ONCHAIN_V1_TYPE;
+    const curatedModule = getSRModuleByType(moduleType, chainId);
+
+    if (!curatedModule) {
+      throw new NotFoundException(`Module with type ${moduleType} not found`);
+    }
+
     const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
@@ -74,6 +80,8 @@ export class SRModulesOperatorsService {
         },
       };
     }
+
+    throw new NotFoundException(`Modules with other types are not supported`);
   }
 
   public async getModuleOperator(moduleId: ModuleId, operatorIndex: number): Promise<SRModuleOperatorResponse> {
@@ -113,5 +121,7 @@ export class SRModulesOperatorsService {
         },
       };
     }
+
+    throw new NotFoundException(`Modules with other types are not supported`);
   }
 }

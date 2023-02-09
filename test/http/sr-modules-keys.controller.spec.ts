@@ -305,7 +305,7 @@ describe('SRModulesKeysController controller', () => {
 
       const getKeysWithMetaByPubkeysMock = jest
         .spyOn(registryService, 'getKeysWithMetaByPubkeys')
-        .mockImplementation(() => Promise.resolve({ keys: null, meta: null }));
+        .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
       const result = await modulesController.getModuleKeysByPubkeys(1, [
         hexZeroPad('0x12', 98),
         hexZeroPad('0x13', 98),

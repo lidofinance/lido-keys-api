@@ -23,7 +23,14 @@ export class SRModulesService {
     // it is also important to have consistent module info and meta
 
     const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType(CURATED_ONCHAIN_V1_TYPE, chainId);
+
+    const moduleType = CURATED_ONCHAIN_V1_TYPE;
+    const curatedModule = getSRModuleByType(moduleType, chainId);
+
+    if (!curatedModule) {
+      throw new NotFoundException(`Module with type ${moduleType} not found`);
+    }
+
     const meta = await this.registryService.getMetaDataFromStorage();
 
     if (!meta) {
@@ -37,7 +44,7 @@ export class SRModulesService {
     const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
-      data: [new SRModule(meta.keysOpIndex, registryModule)],
+      data: [new SRModule(meta.keysOpIndex, curatedModule)],
       elBlockSnapshot,
     };
   }

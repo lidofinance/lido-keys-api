@@ -28,7 +28,14 @@ export class SRModulesKeysService {
     }
 
     const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType(CURATED_ONCHAIN_V1_TYPE, chainId);
+
+    const moduleType = CURATED_ONCHAIN_V1_TYPE;
+    const curatedModule = getSRModuleByType(moduleType, chainId);
+
+    if (!curatedModule) {
+      throw new NotFoundException(`Module with type ${moduleType} not found`);
+    }
+
     const registryKeys: Key[] = keys.map((key) => new Key(key));
     const elBlockSnapshot = new ELBlockSnapshot(meta);
 
@@ -36,7 +43,7 @@ export class SRModulesKeysService {
       data: [
         {
           keys: registryKeys,
-          module: new SRModule(meta.keysOpIndex, registryModule),
+          module: new SRModule(meta.keysOpIndex, curatedModule),
         },
       ],
       meta: {
