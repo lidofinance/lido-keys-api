@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
+import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { RegistryService } from 'jobs/registry.service';
 import { ELBlockSnapshot, SRModule } from 'http/common/entities';
@@ -23,7 +23,7 @@ export class SRModulesService {
     // it is also important to have consistent module info and meta
 
     const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType(GROUPED_ONCHAIN_V1_TYPE, chainId);
+    const registryModule = getSRModuleByType(CURATED_ONCHAIN_V1_TYPE, chainId);
     const meta = await this.registryService.getMetaDataFromStorage();
 
     if (!meta) {
@@ -54,7 +54,7 @@ export class SRModulesService {
     // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type === CURATED_ONCHAIN_V1_TYPE) {
       const meta = await this.registryService.getMetaDataFromStorage();
 
       if (!meta) {
