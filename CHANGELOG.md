@@ -1,3 +1,20 @@
+# [0.4.0](https://github.com/lidofinance/lido-keys-api/compare/0.3.0...0.4.0) (2023-02-09)
+
+
+### Bug Fixes
+
+* GROUPED_ONCHAIN_V1_TYPE -> CURATED_ONCHAIN_V1_TYPE ([e756f04](https://github.com/lidofinance/lido-keys-api/commit/e756f04163d7d92f7fa21f0eb298057e1d3091a9))
+* sr-module response undefined values -> null ([f9302ce](https://github.com/lidofinance/lido-keys-api/commit/f9302ce01b1a15c74ad26f0a09c8dac4cc315796))
+* strictNullChecks: true ([d14418d](https://github.com/lidofinance/lido-keys-api/commit/d14418debb7fefb00f27306647532bb9f33afbe7))
+* update api ([d2e6f50](https://github.com/lidofinance/lido-keys-api/commit/d2e6f5084ca60c2e108ca3150591d13ba549c788))
+
+
+### Features
+
+* add metrics dashboard ([1f2896c](https://github.com/lidofinance/lido-keys-api/commit/1f2896c4cf6124ea50b953aed7aef9adceed9e86))
+
+
+
 # [0.3.0](https://github.com/lidofinance/lido-keys-api/compare/0.2.0...0.3.0) (2023-02-09)
 
 
