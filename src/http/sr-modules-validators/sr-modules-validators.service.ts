@@ -1,5 +1,5 @@
 import { Injectable, Inject, InternalServerErrorException, NotFoundException, LoggerService } from '@nestjs/common';
-import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
+import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
 import {
   ExitValidatorListResponse,
   ExitValidator,
@@ -39,7 +39,7 @@ export class SRModulesValidatorsService {
     // We supppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type === CURATED_ONCHAIN_V1_TYPE) {
       const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
 
       if (!clMeta) {
@@ -78,7 +78,7 @@ export class SRModulesValidatorsService {
     // We supppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type === CURATED_ONCHAIN_V1_TYPE) {
       const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
 
       if (!clMeta) {

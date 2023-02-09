@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
-import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
+import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
 import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse } from './entities';
 import { RegistryService } from 'jobs/registry.service';
 import { ELBlockSnapshot, Key, SRModule, ModuleId, RegistryKey as RespRegistryKey } from 'http/common/entities';
@@ -28,7 +28,7 @@ export class SRModulesKeysService {
     }
 
     const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType(GROUPED_ONCHAIN_V1_TYPE, chainId);
+    const registryModule = getSRModuleByType(CURATED_ONCHAIN_V1_TYPE, chainId);
     const registryKeys: Key[] = keys.map((key) => new Key(key));
     const elBlockSnapshot = new ELBlockSnapshot(meta);
 
@@ -56,7 +56,7 @@ export class SRModulesKeysService {
     // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type == GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type == CURATED_ONCHAIN_V1_TYPE) {
       const { keys, meta } = await this.registryService.getKeysWithMeta(filters);
 
       if (!meta) {
@@ -96,7 +96,7 @@ export class SRModulesKeysService {
     // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type === CURATED_ONCHAIN_V1_TYPE) {
       const { keys, meta } = await this.registryService.getKeysWithMetaByPubkeys(pubkeys);
 
       if (!meta) {
