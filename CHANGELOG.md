@@ -1,3 +1,12 @@
+# [0.3.0](https://github.com/lidofinance/lido-keys-api/compare/0.2.0...0.3.0) (2023-02-09)
+
+
+### Features
+
+* new node version for docker ([a59750f](https://github.com/lidofinance/lido-keys-api/commit/a59750f5ae3cd247f825339e76174f0c16b0406b))
+
+
+
 # [0.2.0](https://github.com/lidofinance/lido-keys-api/compare/0.1.1...0.2.0) (2023-02-08)
 
 
