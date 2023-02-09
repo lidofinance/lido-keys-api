@@ -58,9 +58,9 @@ export class ValidatorsRegistryService {
     });
   }
 
-  protected lastBlockTimestamp = 0;
-  protected lastBlockNumber = undefined;
-  protected lastSlot = undefined;
+  protected lastBlockTimestamp: number | undefined = undefined;
+  protected lastBlockNumber: number | undefined = undefined;
+  protected lastSlot: number | undefined = undefined;
 
   /**
    *
@@ -93,7 +93,7 @@ export class ValidatorsRegistryService {
     return { validators, meta };
   }
 
-  public async getMetaDataFromStorage(): Promise<ConsensusMeta> {
+  public async getMetaDataFromStorage(): Promise<ConsensusMeta | null> {
     return this.validatorsRegistry.getMeta();
   }
 
@@ -104,9 +104,10 @@ export class ValidatorsRegistryService {
   }
 
   private updateMetrics() {
-    this.prometheusService.validatorsRegistryLastTimestampUpdate.set(this.lastBlockTimestamp);
-    this.prometheusService.validatorsRegistryLastBlockNumber.set(this.lastBlockNumber);
-    this.prometheusService.validatorsRegistryLastSlot.set(this.lastSlot);
+    this.lastBlockTimestamp &&
+      this.prometheusService.validatorsRegistryLastTimestampUpdate.set(this.lastBlockTimestamp);
+    this.lastBlockNumber && this.prometheusService.validatorsRegistryLastBlockNumber.set(this.lastBlockNumber);
+    this.lastSlot && this.prometheusService.validatorsRegistryLastSlot.set(this.lastSlot);
 
     this.logger.log('ValidatorsRegistry metrics updated');
   }

@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
-import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
+import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
 import { RegistryService } from 'jobs/registry.service';
 import { ModuleId } from 'http/common/entities/';
 import { ELBlockSnapshot, SRModule, CuratedOperator } from 'http/common/entities/';
@@ -32,7 +32,13 @@ export class SRModulesOperatorsService {
 
     const curatedOperators: CuratedOperator[] = operators.map((op) => new CuratedOperator(op));
     const chainId = this.configService.get('CHAIN_ID');
-    const curatedModule = getSRModuleByType(GROUPED_ONCHAIN_V1_TYPE, chainId);
+    const moduleType = CURATED_ONCHAIN_V1_TYPE;
+    const curatedModule = getSRModuleByType(moduleType, chainId);
+
+    if (!curatedModule) {
+      throw new NotFoundException(`Module with type ${moduleType} not found`);
+    }
+
     const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
@@ -54,7 +60,7 @@ export class SRModulesOperatorsService {
     // We supppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type == GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type == CURATED_ONCHAIN_V1_TYPE) {
       const { operators, meta } = await this.registryService.getOperatorsWithMeta();
 
       if (!meta) {
@@ -74,6 +80,8 @@ export class SRModulesOperatorsService {
         },
       };
     }
+
+    throw new NotFoundException(`Modules with other types are not supported`);
   }
 
   public async getModuleOperator(moduleId: ModuleId, operatorIndex: number): Promise<SRModuleOperatorResponse> {
@@ -87,7 +95,7 @@ export class SRModulesOperatorsService {
     // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type == GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type == CURATED_ONCHAIN_V1_TYPE) {
       const { operator, meta } = await this.registryService.getOperatorByIndex(operatorIndex);
 
       if (!meta) {
@@ -113,5 +121,7 @@ export class SRModulesOperatorsService {
         },
       };
     }
+
+    throw new NotFoundException(`Modules with other types are not supported`);
   }
 }

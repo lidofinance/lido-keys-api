@@ -3,7 +3,7 @@ import { ELBlockSnapshot, ModuleId, SRModule } from 'http/common/entities';
 import { CuratedOperator, RegistryKey as CuratedKey } from 'http/common/entities';
 import { KeyQuery } from 'http/common/entities';
 import { RegistryService } from 'jobs/registry.service';
-import { ConfigService, GROUPED_ONCHAIN_V1_TYPE } from 'common/config';
+import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
 import { getSRModule } from 'http/common/sr-modules.utils';
 import { SRModuleOperatorsKeysResponse } from './entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
@@ -27,7 +27,7 @@ export class SRModulesOperatorsKeysService {
     // We supppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type == GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type == CURATED_ONCHAIN_V1_TYPE) {
       const { keys, operators, meta } = await this.registry.getData(filters);
 
       if (!meta) {
@@ -54,5 +54,7 @@ export class SRModulesOperatorsKeysService {
         },
       };
     }
+
+    throw new NotFoundException(`Modules with other types are not supported`);
   }
 }
