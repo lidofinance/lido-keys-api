@@ -7,13 +7,13 @@ export class SRModule {
     this.type = module.type;
     this.id = module.id;
     this.stakingModuleAddress = module.stakingModuleAddress;
-    this.moduleFee = module?.moduleFee;
-    this.treasuryFee = module?.treasuryFee;
-    this.targetShare = module?.targetShare;
-    this.status = module?.status;
+    this.moduleFee = module?.moduleFee ?? null;
+    this.treasuryFee = module?.treasuryFee ?? null;
+    this.targetShare = module?.targetShare ?? null;
+    this.status = module?.status ?? null;
     this.name = module.name;
-    this.lastDepositAt = module?.lastDepositAt;
-    this.lastDepositBlock = module?.lastDepositBlock;
+    this.lastDepositAt = module?.lastDepositAt ?? null;
+    this.lastDepositBlock = module?.lastDepositBlock ?? null;
   }
 
   @ApiProperty({
