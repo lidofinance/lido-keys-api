@@ -15,6 +15,8 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { VALIDATORS_STATUSES_FOR_EXIT, DEFAULT_EXIT_PERCENT } from './constants';
 import { ConsensusMeta, Validator } from '@lido-nestjs/validators-registry';
 
+const VALIDATORS_REGISRY_DISABLED_ERROR = 'Validators Registry is disabled. Check environment variables';
+
 @Injectable()
 export class SRModulesValidatorsService {
   constructor(
@@ -29,6 +31,11 @@ export class SRModulesValidatorsService {
     operatorId: number,
     filters: ValidatorsQuery,
   ): Promise<ExitValidatorListResponse> {
+    if (this.disabledRegistry()) {
+      this.logger.warn('ValidatorsRegistry is disabled in API');
+      throw new InternalServerErrorException(VALIDATORS_REGISRY_DISABLED_ERROR);
+    }
+
     // At first, we should find module by id in our list, in future without chainId
     const chainId = this.configService.get('CHAIN_ID');
     const module = getSRModule(moduleId, chainId);
@@ -68,6 +75,11 @@ export class SRModulesValidatorsService {
     operatorId: number,
     filters: ValidatorsQuery,
   ): Promise<ExitPresignMessageListResponse> {
+    if (this.disabledRegistry()) {
+      this.logger.warn('ValidatorsRegistry is disabled in API');
+      throw new InternalServerErrorException(VALIDATORS_REGISRY_DISABLED_ERROR);
+    }
+
     // At first, we should find module by id in our list, in future without chainId
     const chainId = this.configService.get('CHAIN_ID');
     const module = getSRModule(moduleId, chainId);
@@ -127,12 +139,19 @@ export class SRModulesValidatorsService {
     const percent =
       filters?.max_amount == undefined && filters?.percent == undefined ? DEFAULT_EXIT_PERCENT : filters?.percent;
 
-    const { validators, meta: clMeta } = await this.validatorsRegistryService.getOldestValidators({
+    const result = await this.validatorsRegistryService.getOldestValidators({
       pubkeys,
       statuses: VALIDATORS_STATUSES_FOR_EXIT,
       max_amount: filters?.max_amount,
       percent: percent,
     });
+
+    if (!result) {
+      // if result of this method is null it means Validators Registry is disabled
+      throw new InternalServerErrorException(VALIDATORS_REGISRY_DISABLED_ERROR);
+    }
+
+    const { validators, meta: clMeta } = result;
 
     // check if clMeta is not null
     // if it is null, it means keys db is empty and Updating Validators Job is not finished yet
@@ -164,5 +183,9 @@ export class SRModulesValidatorsService {
 
   private createExitPresignMessageList(validators: Validator[], clMeta: ConsensusMeta): ExitPresignMessage[] {
     return validators.map((v) => ({ validatorIndex: v.index, epoch: clMeta.epoch }));
+  }
+
+  private disabledRegistry() {
+    return !this.configService.get('VALIDATOR_REGISTRY_ENABLE');
   }
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test } from '@nestjs/testing';
 import { SRModulesValidatorsController, SRModulesValidatorsService } from '../../src/http/sr-modules-validators';
-import { ConfigService } from '../../src/common/config';
+import { toBoolean, ConfigService } from '../../src/common/config';
 import { RegistryService } from '../../src/jobs/registry.service';
 import { ValidatorsRegistryService } from '../../src/jobs/validators-registry.service';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
@@ -23,6 +23,9 @@ describe('SRModulesValidators controller', () => {
 
   class ConfigServiceMock {
     get(value) {
+      if (value == 'VALIDATOR_REGISTRY_ENABLE') {
+        return toBoolean(process.env[value]);
+      }
       return process.env[value];
     }
   }
@@ -43,6 +46,7 @@ describe('SRModulesValidators controller', () => {
   beforeEach(async () => {
     jest.resetModules();
     process.env = { ...OLD_ENV };
+    process.env['VALIDATOR_REGISTRY_ENABLE'] = 'true';
 
     const moduleRef = await Test.createTestingModule({
       controllers: [SRModulesValidatorsController],
@@ -304,6 +308,27 @@ describe('SRModulesValidators controller', () => {
         percent: 100,
       });
     });
+
+    test('validators registry is disabled', async () => {
+      process.env['CHAIN_ID'] = '1';
+      process.env['VALIDATOR_REGISTRY_ENABLE'] = 'false';
+
+      // return used keys
+      const getKeysWithMetaMock = jest.spyOn(registryService, 'getKeysWithMeta');
+      // in api this method should return null in case of VALIDATOR_REGISTRY_ENABLE = 'false'
+      // but here we are interested in check this env in controller methods and relevant error
+      const getValidatorsMock = jest.spyOn(validatorsService, 'getOldestValidators');
+
+      expect(
+        validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {
+          percent: 100,
+          max_amount: 100,
+        }),
+      ).rejects.toThrowError('Validators Registry is disabled. Check environment variables');
+
+      expect(getKeysWithMetaMock).toBeCalledTimes(0);
+      expect(getValidatorsMock).toBeCalledTimes(0);
+    });
   });
 
   describe('getMessagesForOldestValidators', () => {
@@ -545,6 +570,27 @@ describe('SRModulesValidators controller', () => {
         max_amount: 100,
         percent: 100,
       });
+    });
+
+    test('validators registry is disabled', async () => {
+      process.env['CHAIN_ID'] = '1';
+      process.env['VALIDATOR_REGISTRY_ENABLE'] = 'false';
+
+      // return used keys
+      const getKeysWithMetaMock = jest.spyOn(registryService, 'getKeysWithMeta');
+      // in api this method should return null in case of VALIDATOR_REGISTRY_ENABLE = 'false'
+      // but here we are interested in check this env in controller methods and relevant error
+      const getValidatorsMock = jest.spyOn(validatorsService, 'getOldestValidators');
+
+      expect(
+        validatorsController.getMessagesForOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {
+          percent: 100,
+          max_amount: 100,
+        }),
+      ).rejects.toThrowError('Validators Registry is disabled. Check environment variables');
+
+      expect(getKeysWithMetaMock).toBeCalledTimes(0);
+      expect(getValidatorsMock).toBeCalledTimes(0);
     });
   });
 });
