@@ -497,6 +497,9 @@ interface Response {
 
 For running locally in container run
 
+1. `docker-compose -f docker-compose.yml build`
+2. `docker-compose -f docker-compose.yml up`
+
 ## Tests
 
 Unit tests
