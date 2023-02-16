@@ -71,6 +71,7 @@ const config: Options = {
   port: parseInt(process?.env?.DB_PORT ?? '', 10),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
+  cache: { enabled: false },
   entities: [RegistryKey, RegistryOperator, RegistryMeta, ConsensusValidatorEntity, ConsensusMetaEntity],
   migrations: getMigrationOptions(path.join(__dirname, 'migrations'), [
     '@lido-nestjs/registry',
