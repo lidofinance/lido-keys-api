@@ -1,6 +1,6 @@
 ## Lido Node Operators Keys Service
 
-Simple Lido keys and validators HTTP API. It will be possible to launch it on someone machine and fetch actual Lido keys from all sources. API also provides http methods for Automating Validator Exits.
+Simple Lido keys and validators HTTP API.
 
 ## How it works
 
@@ -486,6 +486,28 @@ interface Response {
   clBlockSnapshot: CLBlockSnapshot;
 }
 ```
+
+## Installation
+
+`$ yarn install`
+
+## Running
+
+`$ yarn start:dev`
+
+For running locally in container run
+
+## Tests
+
+Unit tests
+
+`$ yarn test`
+
+## Environment variable
+
+Check `sample.env` file.
+
+Pay attention that API by default running job for fetching and updating Validators. If you are not planning to use `validators` endpoints, you could disable this job by setting `VALIDATOR_REGISTRY_ENABLE=false`.
 
 ## Release flow
 
