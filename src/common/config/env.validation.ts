@@ -21,7 +21,7 @@ const toNumber =
     return Number(value);
   };
 
-const toBoolean = (value: any): boolean => {
+export const toBoolean = (value: any): boolean => {
   if (typeof value === 'boolean') {
     return value;
   }

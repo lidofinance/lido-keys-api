@@ -5,7 +5,7 @@ import { SRModulesValidatorsService } from './sr-modules-validators.service';
 
 @Module({
   imports: [LoggerModule],
-  controllers: [SRModulesValidatorsController],
   providers: [SRModulesValidatorsService],
+  controllers: [SRModulesValidatorsController],
 })
 export class SRModulesValidatorsModule {}
