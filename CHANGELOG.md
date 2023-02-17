@@ -1,3 +1,12 @@
+## [0.4.1](https://github.com/lidofinance/lido-keys-api/compare/0.4.0...0.4.1) (2023-02-17)
+
+
+### Bug Fixes
+
+* db config ([e7a62aa](https://github.com/lidofinance/lido-keys-api/commit/e7a62aaf1ef06ababf634251c0529e1f5beaeb59))
+
+
+
 # [0.4.0](https://github.com/lidofinance/lido-keys-api/compare/0.3.0...0.4.0) (2023-02-09)
 
 
