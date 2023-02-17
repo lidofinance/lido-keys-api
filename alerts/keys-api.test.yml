@@ -1,0 +1,61 @@
+rule_files:
+  - keys-api.rule.yml
+
+evaluation_interval: 1m
+
+tests:
+  # Execution Layer RPC errors
+  - interval: 5m
+    input_series:
+      - series: el_rpc_requests_duration_seconds_count{result="error", service="lido-keys-api"}
+        values: 10 70 111 151
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: KeysApiExecutionLayerRPCErrors
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              app_team: tooling
+            exp_annotations:
+              summary: Execution Layer RPC errors
+              description: 60 errors in the last 5 minutes appeared in EL RPC queries
+      - eval_time: 10m
+        alertname: KeysApiExecutionLayerRPCErrors
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              app_team: tooling
+            exp_annotations:
+              summary: Execution Layer RPC errors
+              description: 41 errors in the last 5 minutes appeared in EL RPC queries
+      - eval_time: 15m
+        alertname: KeysApiExecutionLayerRPCErrors
+        exp_alerts: []
+
+  # Consensus Layer API errors
+  - interval: 5m
+    input_series:
+      - series: cl_api_requests_duration_seconds_count{result="error", service="lido-keys-api"}
+        values: 0 61 152 212
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: KeysApiConsensusLayerAPIErrors
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              app_team: tooling
+            exp_annotations:
+              summary: Consensus Layer API errors
+              description: 61 errors in the last 5 minutes appeared in CL API queries
+      - eval_time: 10m
+        alertname: KeysApiConsensusLayerAPIErrors
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              app_team: tooling
+            exp_annotations:
+              summary: Consensus Layer API errors
+              description: 91 errors in the last 5 minutes appeared in CL API queries
+      - eval_time: 15m
+        alertname: KeysApiConsensusLayerAPIErrors
+        exp_alerts: []

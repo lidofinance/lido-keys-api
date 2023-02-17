@@ -1,0 +1,20 @@
+groups:
+  - name: Keys API
+    rules:
+      - alert: KeysApiExecutionLayerRPCErrors
+        expr: sum by (instance, project) (increase(el_rpc_requests_duration_seconds_count{result="error", service="lido-keys-api"}[5m])) > 40
+        labels:
+          severity: warning
+          app_team: tooling
+        annotations:
+          summary: Execution Layer RPC errors
+          description: '{{ $value }} errors in the last 5 minutes appeared in EL RPC queries'
+
+      - alert: KeysApiConsensusLayerAPIErrors
+        expr: sum by (instance, project) (increase(cl_api_requests_duration_seconds_count{result="error", service="lido-keys-api"}[5m])) > 60
+        labels:
+          severity: warning
+          app_team: tooling
+        annotations:
+          summary: Consensus Layer API errors
+          description: '{{ $value }} errors in the last 5 minutes appeared in CL API queries'

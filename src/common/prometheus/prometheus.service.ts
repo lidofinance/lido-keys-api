@@ -48,7 +48,7 @@ export class PrometheusService {
     prefix: true,
     name: 'job_duration_seconds',
     help: 'Job execution duration',
-    buckets: [0.2, 0.6, 1, 2, 3, 5, 8, 13, 30, 60],
+    buckets: [0.2, 0.6, 1, 2, 3, 5, 8, 13, 30, 60, 120, 180],
     labelNames: ['result', 'job'],
   });
 

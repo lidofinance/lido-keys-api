@@ -1,0 +1,59 @@
+rule_files:
+  - keys-api-outdated-keys.rule.yml
+
+evaluation_interval: 1m
+
+tests:
+  # Outdated keys list. Outdated
+  - interval: 5m
+    input_series:
+      - series: lido_keys_api_last_update_timestamp{}
+        values: 0 0 0 400
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: KeysApiOutdatedKeys
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              app_team: tooling
+            exp_annotations:
+              summary: Keys are outdated
+              description: Keys were not updated for 10m 0s
+      - eval_time: 15m
+        alertname: KeysApiOutdatedKeys
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              app_team: tooling
+            exp_annotations:
+              summary: Keys are outdated
+              description: Keys were not updated for 8m 20s
+
+  #Outdated keys list. Up to date
+  - interval: 5m
+    input_series:
+      - series: lido_keys_api_last_update_timestamp{}
+        values: 0 300 600 601
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: KeysApiOutdatedKeys
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: KeysApiOutdatedKeys
+        exp_alerts: []
+
+  # Outdated keys list. Initial start
+  - interval: 10m
+    input_series:
+      - series: lido_keys_api_last_update_timestamp{}
+        values: _ _ _ 1501
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: KeysApiOutdatedKeys
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: KeysApiOutdatedKeys
+        exp_alerts: []
+      - eval_time: 30m
+        alertname: KeysApiOutdatedKeys
+        exp_alerts: []
