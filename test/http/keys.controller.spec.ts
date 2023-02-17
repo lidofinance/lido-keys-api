@@ -7,12 +7,9 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ConfigService } from '../../src/common/config';
 
 import {
-  communityKeys,
-  keys,
-  comminityKeysWithAddressMainnet,
-  comminityKeysWithAddressGoerli,
-  communityModuleMainnet,
-  communityModuleGoerli,
+  curatedKeys,
+  curatedKeysWithAddressMainnet,
+  curatedKeysWithAddressGoerli,
   elMeta,
   elBlockSnapshot,
 } from '../fixtures';
@@ -20,8 +17,7 @@ import {
 describe('Keys controller', () => {
   let keysController: KeysController;
   let registryService: RegistryService;
-
-  // const OLD_ENV = process.env;
+  const OLD_ENV = process.env;
 
   class ConfigServiceMock {
     get(value) {
@@ -31,18 +27,16 @@ describe('Keys controller', () => {
 
   class RegistryServiceMock {
     getKeysWithMeta(filters) {
-      return Promise.resolve({ keys: communityKeys, meta: elMeta });
+      return Promise.resolve({ keys: curatedKeys, meta: elMeta });
     }
     getKeyWithMetaByPubkey(pubkey: string) {
-      return Promise.resolve({ keys: communityKeys, meta: elMeta });
+      return Promise.resolve({ keys: curatedKeys, meta: elMeta });
     }
 
     getKeysWithMetaByPubkeys(pubkeys: string[]) {
-      return Promise.resolve({ keys: communityKeys, meta: elMeta });
+      return Promise.resolve({ keys: curatedKeys, meta: elMeta });
     }
   }
-
-  const OLD_ENV = process.env;
 
   beforeEach(async () => {
     jest.resetModules();
@@ -64,6 +58,7 @@ describe('Keys controller', () => {
           provide: LOGGER_PROVIDER,
           useFactory: () => ({
             log: jest.fn(),
+            warn: jest.fn(),
           }),
         },
       ],
@@ -88,7 +83,7 @@ describe('Keys controller', () => {
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
 
       expect(result).toEqual({
-        data: comminityKeysWithAddressMainnet,
+        data: curatedKeysWithAddressMainnet,
         meta: {
           elBlockSnapshot,
         },
@@ -106,14 +101,14 @@ describe('Keys controller', () => {
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
 
       expect(result).toEqual({
-        data: comminityKeysWithAddressGoerli,
+        data: curatedKeysWithAddressGoerli,
         meta: {
           elBlockSnapshot,
         },
       });
     });
 
-    test('EL meta is empty', async () => {
+    test('EL meta is null', async () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeysWithMetaMock = jest
@@ -126,6 +121,24 @@ describe('Keys controller', () => {
 
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
+    });
+
+    test('request without query', async () => {
+      process.env['CHAIN_ID'] = '1';
+
+      const getKeysWithMetaMock = jest.spyOn(registryService, 'getKeysWithMeta');
+
+      const result = await keysController.get({});
+
+      expect(getKeysWithMetaMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaMock).toBeCalledWith({});
+
+      expect(result).toEqual({
+        data: curatedKeysWithAddressMainnet,
+        meta: {
+          elBlockSnapshot,
+        },
+      });
     });
   });
 
@@ -141,7 +154,7 @@ describe('Keys controller', () => {
       expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
 
       expect(result).toEqual({
-        data: comminityKeysWithAddressMainnet,
+        data: curatedKeysWithAddressMainnet,
         meta: {
           elBlockSnapshot,
         },
@@ -159,14 +172,14 @@ describe('Keys controller', () => {
       expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
 
       expect(result).toEqual({
-        data: comminityKeysWithAddressGoerli,
+        data: curatedKeysWithAddressGoerli,
         meta: {
           elBlockSnapshot,
         },
       });
     });
 
-    test('EL meta is empty', async () => {
+    test('EL meta is null', async () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeyWithMetaByPubkeyMock = jest
@@ -179,6 +192,19 @@ describe('Keys controller', () => {
 
       expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
+    });
+
+    test('404 error', async () => {
+      process.env['CHAIN_ID'] = '1';
+
+      const getKeyWithMetaByPubkeyMock = jest
+        .spyOn(registryService, 'getKeyWithMetaByPubkey')
+        .mockImplementation(() => Promise.resolve({ keys: [], meta: elMeta }));
+
+      expect(keysController.getByPubkey('')).rejects.toThrowError(`There are no keys with  public key in db.`);
+
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(1);
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledWith('');
     });
   });
 
@@ -194,7 +220,7 @@ describe('Keys controller', () => {
       expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
 
       expect(result).toEqual({
-        data: comminityKeysWithAddressMainnet,
+        data: curatedKeysWithAddressMainnet,
         meta: {
           elBlockSnapshot,
         },
@@ -212,14 +238,14 @@ describe('Keys controller', () => {
       expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
 
       expect(result).toEqual({
-        data: comminityKeysWithAddressGoerli,
+        data: curatedKeysWithAddressGoerli,
         meta: {
           elBlockSnapshot,
         },
       });
     });
 
-    test('EL meta is empty', async () => {
+    test('EL meta is null', async () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeysWithMetaByPubkeysMock = jest

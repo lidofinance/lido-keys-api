@@ -5,7 +5,7 @@ import { SRModulesService } from './sr-modules.service';
 import { ModuleId } from 'http/common/entities/';
 
 @Controller('modules')
-@ApiTags('List of Modules')
+@ApiTags('modules')
 export class SRModulesController {
   constructor(protected readonly srModulesService: SRModulesService) {}
 

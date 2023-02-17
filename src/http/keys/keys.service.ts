@@ -1,10 +1,9 @@
 import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { KeyListResponse, KeyWithModuleAddress, FilterQuery } from './entities';
+import { KeyListResponse, KeyWithModuleAddress } from './entities';
 import { RegistryService } from 'jobs/registry.service';
-import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
-import { RegistryKey, RegistryMeta } from '@lido-nestjs/registry';
-import { ELBlockSnapshot } from 'http/common/entities';
+import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
+import { ELBlockSnapshot, KeyQuery } from 'http/common/entities';
 import { getSRModuleByType } from 'http/common/sr-modules.utils';
 
 @Injectable()
@@ -15,11 +14,16 @@ export class KeysService {
     protected configService: ConfigService,
   ) {}
 
-  async get(filters: FilterQuery): Promise<KeyListResponse> {
+  async get(filters: KeyQuery): Promise<KeyListResponse> {
     //TODO: In future iteration for staking router here will be method to get keys from all modules
     const chainId = this.configService.get('CHAIN_ID');
-    const moduleType = GROUPED_ONCHAIN_V1_TYPE;
+    const moduleType = CURATED_ONCHAIN_V1_TYPE;
     const registryModule = getSRModuleByType(moduleType, chainId);
+
+    // Here it is not important to check type
+    // Because moduleType we get from our tooling list and SR module list we check after fetching it from SR contract,
+    // it should contain only types we know.
+    // and here we just get keys from all modules we know from SR module list
 
     if (!registryModule) {
       throw new NotFoundException(`Module with type ${moduleType} not found`);
@@ -28,16 +32,17 @@ export class KeysService {
     const { keys, meta } = await this.keyRegistryService.getKeysWithMeta(filters);
 
     if (!meta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
       return {
         data: [],
         meta: null,
       };
     }
 
-    const registryKeys: KeyWithModuleAddress[] = keys.map((key) =>
-      this.formModuleKey(key, registryModule.stakingModuleAddress),
+    const registryKeys: KeyWithModuleAddress[] = keys.map(
+      (key) => new KeyWithModuleAddress(key, registryModule.stakingModuleAddress),
     );
-    const elBlockSnapshot = this.formELBlockSnapshot(meta);
+    const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
       // swagger ui не справляется с выводом всех значений
@@ -51,26 +56,32 @@ export class KeysService {
 
   async getByPubkey(pubkey: string): Promise<KeyListResponse> {
     const { keys, meta } = await this.keyRegistryService.getKeyWithMetaByPubkey(pubkey);
-    const chainId = this.configService.get('CHAIN_ID');
-    const moduleType = GROUPED_ONCHAIN_V1_TYPE;
-    const registryModule = getSRModuleByType(moduleType, chainId);
-
-    if (!registryModule) {
-      throw new NotFoundException(`Module with type ${moduleType} not found`);
-    }
 
     if (!meta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
       return {
         data: [],
         meta: null,
       };
     }
 
-    const registryKeys: KeyWithModuleAddress[] = keys.map((key) =>
-      this.formModuleKey(key, registryModule.stakingModuleAddress),
+    if (keys.length == 0) {
+      throw new NotFoundException(`There are no keys with ${pubkey} public key in db.`);
+    }
+
+    const chainId = this.configService.get('CHAIN_ID');
+    const moduleType = CURATED_ONCHAIN_V1_TYPE;
+    const registryModule = getSRModuleByType(moduleType, chainId);
+
+    if (!registryModule) {
+      throw new NotFoundException(`Module with type ${moduleType} was not found`);
+    }
+
+    const registryKeys: KeyWithModuleAddress[] = keys.map(
+      (key) => new KeyWithModuleAddress(key, registryModule.stakingModuleAddress),
     );
 
-    const elBlockSnapshot = this.formELBlockSnapshot(meta);
+    const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
       data: registryKeys,
@@ -84,48 +95,34 @@ export class KeysService {
     // TODO: In future iteration for staking router here will be method to get keys from all modules
     // TODO: where will we use this method?
     const { keys, meta } = await this.keyRegistryService.getKeysWithMetaByPubkeys(pubkeys);
-    const chainId = this.configService.get('CHAIN_ID');
-    const moduleType = GROUPED_ONCHAIN_V1_TYPE;
-    const registryModule = getSRModuleByType(moduleType, chainId);
-
-    if (!registryModule) {
-      throw new NotFoundException(`Module with type ${moduleType} not found`);
-    }
 
     if (!meta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
       return {
         data: [],
         meta: null,
       };
     }
 
-    const registryKeys: KeyWithModuleAddress[] = keys.map((key) =>
-      this.formModuleKey(key, registryModule.stakingModuleAddress),
+    const chainId = this.configService.get('CHAIN_ID');
+    const moduleType = CURATED_ONCHAIN_V1_TYPE;
+    const registryModule = getSRModuleByType(moduleType, chainId);
+
+    if (!registryModule) {
+      throw new NotFoundException(`Module with type ${moduleType} not found`);
+    }
+
+    const registryKeys: KeyWithModuleAddress[] = keys.map(
+      (key) => new KeyWithModuleAddress(key, registryModule.stakingModuleAddress),
     );
 
-    const elBlockSnapshot = this.formELBlockSnapshot(meta);
+    const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
       data: registryKeys,
       meta: {
         elBlockSnapshot,
       },
-    };
-  }
-  private formModuleKey(key: RegistryKey, stakingModuleAddress: string): KeyWithModuleAddress {
-    return {
-      key: key.key,
-      depositSignature: key.depositSignature,
-      operatorIndex: key.operatorIndex,
-      used: key.used,
-      moduleAddress: stakingModuleAddress,
-    };
-  }
-  private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot {
-    return {
-      blockNumber: meta.blockNumber,
-      blockHash: meta.blockHash,
-      timestamp: meta.timestamp,
     };
   }
 }

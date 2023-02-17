@@ -1,5 +1,5 @@
 import { Injectable, Inject, InternalServerErrorException, NotFoundException, LoggerService } from '@nestjs/common';
-import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
+import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
 import {
   ExitValidatorListResponse,
   ExitValidator,
@@ -39,7 +39,7 @@ export class SRModulesValidatorsService {
     // We supppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type === CURATED_ONCHAIN_V1_TYPE) {
       const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
 
       if (!clMeta) {
@@ -50,7 +50,7 @@ export class SRModulesValidatorsService {
       }
 
       const data = this.createExitValidatorList(validators);
-      const clBlockSnapshot = this.createCLBlockSnapshot(clMeta);
+      const clBlockSnapshot = new CLBlockSnapshot(clMeta);
 
       return {
         data,
@@ -78,7 +78,7 @@ export class SRModulesValidatorsService {
     // We supppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type === CURATED_ONCHAIN_V1_TYPE) {
       const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
 
       if (!clMeta) {
@@ -89,7 +89,7 @@ export class SRModulesValidatorsService {
       }
 
       const data = this.createExitPresignMessageList(validators, clMeta);
-      const clBlockSnapshot = this.createCLBlockSnapshot(clMeta);
+      const clBlockSnapshot = new CLBlockSnapshot(clMeta);
 
       return {
         data,
@@ -147,10 +147,12 @@ export class SRModulesValidatorsService {
 
     // We need EL meta always be actual
     if (elMeta.blockNumber < clMeta.blockNumber) {
-      this.logger.warn(`Last Execution Layer block number in our database older than last Consensus Layer`);
+      this.logger.warn('Last Execution Layer block number in our database older than last Consensus Layer');
       // add metric or alert on breaking el > cl condition
       // TODO: what answer will be better here?
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException(
+        'Last Execution Layer block number in our database older than last Consensus Layer',
+      );
     }
 
     return { validators, meta: clMeta };
@@ -162,16 +164,5 @@ export class SRModulesValidatorsService {
 
   private createExitPresignMessageList(validators: Validator[], clMeta: ConsensusMeta): ExitPresignMessage[] {
     return validators.map((v) => ({ validatorIndex: v.index, epoch: clMeta.epoch }));
-  }
-
-  private createCLBlockSnapshot(clMeta: ConsensusMeta): CLBlockSnapshot {
-    return {
-      epoch: clMeta.epoch,
-      root: clMeta.slotStateRoot,
-      slot: clMeta.slot,
-      blockNumber: clMeta.blockNumber,
-      timestamp: clMeta.timestamp,
-      blockHash: clMeta.blockHash,
-    };
   }
 }

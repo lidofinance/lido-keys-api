@@ -84,7 +84,7 @@ describe('SRModulesValidators controller', () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeysWithMetaMock = jest.spyOn(registryService, 'getKeysWithMeta');
-      const getValidatorsMock = jest.spyOn(validatorsService, 'getOldestValidators').mockImplementation();
+      const getValidatorsMock = jest.spyOn(validatorsService, 'getOldestValidators');
 
       expect(validatorsController.getOldestValidators('0x12345', 1, {})).rejects.toThrowError(
         `Module with moduleId 0x12345 is not supported`,
@@ -141,7 +141,7 @@ describe('SRModulesValidators controller', () => {
 
       await expect(
         validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {}),
-      ).rejects.toThrowError('Internal Server Error');
+      ).rejects.toThrowError('Last Execution Layer block number in our database older than last Consensus Layer');
 
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
@@ -154,7 +154,7 @@ describe('SRModulesValidators controller', () => {
       });
     });
 
-    test('EL meta is empty', async () => {
+    test('EL meta is null', async () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeysWithMetaMock = jest
@@ -174,7 +174,7 @@ describe('SRModulesValidators controller', () => {
       expect(getValidatorsMock).toBeCalledTimes(0);
     });
 
-    test('CL meta is empty', async () => {
+    test('CL meta is null', async () => {
       process.env['CHAIN_ID'] = '1';
 
       // return used keys
@@ -371,7 +371,7 @@ describe('SRModulesValidators controller', () => {
 
       await expect(
         validatorsController.getMessagesForOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {}),
-      ).rejects.toThrowError('Internal Server Error');
+      ).rejects.toThrowError('Last Execution Layer block number in our database older than last Consensus Layer');
 
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
@@ -384,7 +384,7 @@ describe('SRModulesValidators controller', () => {
       });
     });
 
-    test('EL meta is empty', async () => {
+    test('EL meta is null', async () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeysWithMetaMock = jest
@@ -404,7 +404,7 @@ describe('SRModulesValidators controller', () => {
       expect(getValidatorsMock).toBeCalledTimes(0);
     });
 
-    test('CL meta is empty', async () => {
+    test('CL meta is null', async () => {
       process.env['CHAIN_ID'] = '1';
 
       // return used keys

@@ -2,6 +2,10 @@ name: Tests and Checks
 
 on: push
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   security:
     uses: lidofinance/linters/.github/workflows/security.yml@master

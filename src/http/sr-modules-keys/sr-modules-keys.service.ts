@@ -1,21 +1,26 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
-import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse, RegistryKey } from './entities';
+import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
+import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
+import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse } from './entities';
 import { RegistryService } from 'jobs/registry.service';
-import { ELBlockSnapshot, Key, SRModule } from 'http/common/entities';
-import { RegistryMeta } from '@lido-nestjs/registry';
-import { ModuleId } from 'http/common/entities/';
+import { ELBlockSnapshot, Key, SRModule, ModuleId, RegistryKey as RespRegistryKey } from 'http/common/entities';
+import { RegistryKey } from '@lido-nestjs/registry';
 import { getSRModule, getSRModuleByType } from 'http/common/sr-modules.utils';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 
 @Injectable()
 export class SRModulesKeysService {
-  constructor(protected configService: ConfigService, protected registryService: RegistryService) {}
+  constructor(
+    @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
+    protected configService: ConfigService,
+    protected registryService: RegistryService,
+  ) {}
 
   async getGroupedByModuleKeys(filters): Promise<GroupedByModuleKeyListResponse> {
     // for each module return keys with meta
     const { keys, meta } = await this.registryService.getKeysWithMeta(filters);
 
     if (!meta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
       return {
         data: [],
         meta: null,
@@ -23,17 +28,22 @@ export class SRModulesKeysService {
     }
 
     const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType(GROUPED_ONCHAIN_V1_TYPE, chainId);
 
-    const registryKeys: Key[] = keys.map((key) => this.formKey(key));
+    const moduleType = CURATED_ONCHAIN_V1_TYPE;
+    const curatedModule = getSRModuleByType(moduleType, chainId);
 
-    const elBlockSnapshot = this.formELBlockSnapshot(meta);
+    if (!curatedModule) {
+      throw new NotFoundException(`Module with type ${moduleType} not found`);
+    }
+
+    const registryKeys: Key[] = keys.map((key) => new Key(key));
+    const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
       data: [
         {
           keys: registryKeys,
-          module: this.formSRModule(meta.keysOpIndex, registryModule),
+          module: new SRModule(meta.keysOpIndex, curatedModule),
         },
       ],
       meta: {
@@ -50,26 +60,27 @@ export class SRModulesKeysService {
     if (!module) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
     }
-    // We supppose if module in list, Keys API knows how to work with it
+    // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type == GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type == CURATED_ONCHAIN_V1_TYPE) {
       const { keys, meta } = await this.registryService.getKeysWithMeta(filters);
 
       if (!meta) {
+        this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
         return {
           data: null,
           meta: null,
         };
       }
 
-      const registryKeys: RegistryKey[] = keys.map((key) => this.formRegistryKey(key));
-      const elBlockSnapshot = this.formELBlockSnapshot(meta);
+      const registryKeys: RespRegistryKey[] = keys.map((key) => new RegistryKey(key));
+      const elBlockSnapshot = new ELBlockSnapshot(meta);
 
       return {
         data: {
           keys: registryKeys,
-          module: this.formSRModule(meta.keysOpIndex, module),
+          module: new SRModule(meta.keysOpIndex, module),
         },
         meta: {
           elBlockSnapshot,
@@ -89,26 +100,27 @@ export class SRModulesKeysService {
     if (!module) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
     }
-    // We supppose if module in list, Keys API knows how to work with it
+    // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type === CURATED_ONCHAIN_V1_TYPE) {
       const { keys, meta } = await this.registryService.getKeysWithMetaByPubkeys(pubkeys);
 
       if (!meta) {
+        this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
         return {
           data: null,
           meta: null,
         };
       }
 
-      const registryKeys: RegistryKey[] = keys.map((key) => this.formRegistryKey(key));
-      const elBlockSnapshot = this.formELBlockSnapshot(meta);
+      const registryKeys: RespRegistryKey[] = keys.map((key) => new RegistryKey(key));
+      const elBlockSnapshot = new ELBlockSnapshot(meta);
 
       return {
         data: {
           keys: registryKeys,
-          module: this.formSRModule(meta.keysOpIndex, module),
+          module: new SRModule(meta.keysOpIndex, module),
         },
         meta: {
           elBlockSnapshot,
@@ -118,49 +130,5 @@ export class SRModulesKeysService {
 
     // compare type with other types
     throw new NotFoundException(`Modules with other types are not supported`);
-  }
-
-  // at the moment part of information is in json file and another part in meta table of registry lib
-  private formSRModule(nonce: number, module): SRModule {
-    return {
-      nonce: nonce,
-      type: module.type,
-      id: module.id,
-      stakingModuleAddress: module.stakingModuleAddress,
-      moduleFee: module.moduleFee,
-      treasuryFee: module.treasuryFee,
-      targetShare: module.targetShare,
-      status: module.status,
-      name: module.name,
-      lastDepositAt: module.lastDepositAt,
-      lastDepositBlock: module.lastDepositBlock,
-    };
-  }
-
-  private formKey(key: RegistryKey): Key {
-    return {
-      key: key.key,
-      depositSignature: key.depositSignature,
-      operatorIndex: key.operatorIndex,
-      used: key.used,
-    };
-  }
-
-  private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot {
-    return {
-      blockNumber: meta.blockNumber,
-      blockHash: meta.blockHash,
-      timestamp: meta.timestamp,
-    };
-  }
-
-  private formRegistryKey(key: RegistryKey): RegistryKey {
-    return {
-      key: key.key,
-      depositSignature: key.depositSignature,
-      operatorIndex: key.operatorIndex,
-      index: key.index,
-      used: key.used,
-    };
   }
 }

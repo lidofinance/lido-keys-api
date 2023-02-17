@@ -1,15 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import {ConfigService, GROUPED_ONCHAIN_V1_TYPE} from 'common/config';
+import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { RegistryService } from 'jobs/registry.service';
 import { ELBlockSnapshot, SRModule } from 'http/common/entities';
-import { RegistryMeta } from '@lido-nestjs/registry';
 import { ModuleId } from 'http/common/entities/';
 import { getSRModule, getSRModuleByType } from 'http/common/sr-modules.utils';
 
 @Injectable()
 export class SRModulesService {
-  constructor(protected configService: ConfigService, protected registryService: RegistryService) {}
+  constructor(
+    @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
+    protected configService: ConfigService,
+    protected registryService: RegistryService,
+  ) {}
 
   async getModules(): Promise<SRModuleListResponse> {
     // Currently modules information is fixed in json
@@ -19,20 +23,28 @@ export class SRModulesService {
     // it is also important to have consistent module info and meta
 
     const chainId = this.configService.get('CHAIN_ID');
-    const registryModule = getSRModuleByType(GROUPED_ONCHAIN_V1_TYPE, chainId);
+
+    const moduleType = CURATED_ONCHAIN_V1_TYPE;
+    const curatedModule = getSRModuleByType(moduleType, chainId);
+
+    if (!curatedModule) {
+      throw new NotFoundException(`Module with type ${moduleType} not found`);
+    }
+
     const meta = await this.registryService.getMetaDataFromStorage();
 
     if (!meta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
       return {
         data: [],
         elBlockSnapshot: null,
       };
     }
 
-    const elBlockSnapshot = this.formELBlockSnapshot(meta);
+    const elBlockSnapshot = new ELBlockSnapshot(meta);
 
     return {
-      data: [this.formSRModule(meta.keysOpIndex, registryModule)],
+      data: [new SRModule(meta.keysOpIndex, curatedModule)],
       elBlockSnapshot,
     };
   }
@@ -49,53 +61,25 @@ export class SRModulesService {
     // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type === GROUPED_ONCHAIN_V1_TYPE) {
+    if (module.type === CURATED_ONCHAIN_V1_TYPE) {
       const meta = await this.registryService.getMetaDataFromStorage();
 
       if (!meta) {
+        this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
         return {
           data: null,
           elBlockSnapshot: null,
         };
       }
 
-      const elBlockSnapshot = this.formELBlockSnapshot(meta);
+      const elBlockSnapshot = new ELBlockSnapshot(meta);
 
       return {
-        data: this.formSRModule(meta.keysOpIndex, module),
+        data: new SRModule(meta.keysOpIndex, module),
         elBlockSnapshot,
       };
     }
 
     throw new NotFoundException(`Modules with other types are not supported`);
-  }
-
-  // at the moment part of information is in json file and another part in meta table of registry lib
-  private formSRModule(nonce: number, module): SRModule {
-    return {
-      nonce: nonce,
-      type: module.type,
-      id: module.id,
-      stakingModuleAddress: module.stakingModuleAddress,
-      moduleFee: module.moduleFee,
-      treasuryFee: module.treasuryFee,
-      targetShare: module.targetShare,
-      status: module.status,
-      name: module.name,
-      lastDepositAt: module.lastDepositAt,
-      lastDepositBlock: module.lastDepositBlock,
-    };
-  }
-
-  private formELBlockSnapshot(meta: RegistryMeta): ELBlockSnapshot | null {
-    if (!meta) {
-      return null;
-    }
-
-    return {
-      blockNumber: meta.blockNumber,
-      blockHash: meta.blockHash,
-      timestamp: meta.timestamp,
-    };
   }
 }

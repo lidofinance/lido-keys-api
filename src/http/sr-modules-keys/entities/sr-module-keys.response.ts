@@ -1,7 +1,5 @@
 import { ApiProperty, getSchemaPath, ApiExtraModels } from '@nestjs/swagger';
-import { SRModuleKeysMeta } from './meta';
-import { RegistryKey } from './registry.key';
-import { SRModule } from 'http/common/entities/';
+import { SRModule, RegistryKey, ELMeta } from 'http/common/entities/';
 
 type SRModuleKey = RegistryKey;
 
@@ -31,7 +29,7 @@ export class SRModuleKeyListResponse {
 
   @ApiProperty({
     nullable: true,
-    type: () => SRModuleKeysMeta,
+    type: () => ELMeta,
   })
-  meta!: SRModuleKeysMeta | null;
+  meta!: ELMeta | null;
 }
