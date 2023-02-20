@@ -19,7 +19,7 @@ export class RegistryMetricsService {
   ) {}
 
   public async onModuleInit(): Promise<void> {
-    await this.initialize().catch((err) => this.logger.error(err));
+    // this.initialize().catch((err) => this.logger.error(err));
   }
 
   /**
