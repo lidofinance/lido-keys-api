@@ -195,7 +195,7 @@ export class RegistryService {
         {
           operator: operator.index,
           srModuleId: 1,
-          used: 1,
+          used: 'true',
         },
         operator.usedSigningKeys,
       );
@@ -204,7 +204,7 @@ export class RegistryService {
         {
           operator: operator.index,
           srModuleId: 1,
-          used: 0,
+          used: 'false',
         },
         operator.totalSigningKeys - operator.usedSigningKeys,
       );
