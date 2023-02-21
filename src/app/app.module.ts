@@ -9,7 +9,7 @@ import { HTTPModule } from '../http';
 import { ExecutionProviderModule } from 'common/execution-provider';
 import { ConsensusProviderModule } from 'common/consensus-provider';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { RegistryModule, ValidatorsRegistryModule } from '../jobs';
+import { JobsModule } from '../jobs';
 import { ScheduleModule } from '@nestjs/schedule';
 import config from '../mikro-orm.config';
 
@@ -39,8 +39,7 @@ import config from '../mikro-orm.config';
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
-    RegistryModule,
-    ValidatorsRegistryModule,
+    JobsModule,
     HTTPModule,
   ],
   providers: [{ provide: APP_INTERCEPTOR, useClass: SentryInterceptor }, AppService],

@@ -1,0 +1,23 @@
+version: '3.7'
+
+services:
+  keys_api_prometheus:
+    image: prom/prometheus:v2.17.2
+    container_name: keys_api_prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  keys_api_grafana:
+    image: grafana/grafana-oss:9.1.5
+    container_name: keys_api_grafana
+    restart: unless-stopped
+    ports:
+      - 8000:3000
+    volumes:
+      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    depends_on:
+      - keys_api_prometheus

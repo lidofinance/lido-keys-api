@@ -2,7 +2,7 @@
 import { Test } from '@nestjs/testing';
 import { SRModulesController, SRModulesService } from '../../src/http/sr-modules';
 import { ConfigService } from '../../src/common/config';
-import { RegistryService } from '../../src/jobs/registry.service';
+import { RegistryService } from '../../src/jobs/registry/registry.service';
 import { curatedModuleMainnet, curatedModuleGoerli, elMeta, elBlockSnapshot } from '../fixtures';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 

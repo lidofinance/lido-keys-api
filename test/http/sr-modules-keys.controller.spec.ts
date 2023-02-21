@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { SRModulesKeysController, SRModulesKeysService } from '../../src/http/sr-modules-keys';
 import { ConfigService } from '../../src/common/config';
 import { hexZeroPad } from '@ethersproject/bytes';
-import { RegistryService } from '../../src/jobs/registry.service';
+import { RegistryService } from '../../src/jobs/registry/registry.service';
 import {
   curatedKeys,
   keysInGeneralForm,

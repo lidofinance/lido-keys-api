@@ -1,5 +1,5 @@
-import { RegistryService } from 'jobs/registry.service';
-import { ValidatorsRegistryService } from 'jobs/validators-registry.service';
+import { RegistryService } from 'jobs/registry/registry.service';
+import { ValidatorsRegistryService } from 'jobs/validators-registry/validators-registry.service';
 import { ConfigService } from 'common/config';
 import { CLBlockSnapshot, ELBlockSnapshot } from 'http/common/entities';
 import { APP_VERSION } from 'app/app.constants';

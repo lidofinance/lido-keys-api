@@ -1,7 +1,7 @@
 import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { KeyListResponse, KeyWithModuleAddress } from './entities';
-import { RegistryService } from 'jobs/registry.service';
+import { RegistryService } from 'jobs/registry/registry.service';
 import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
 import { ELBlockSnapshot, KeyQuery } from 'http/common/entities';
 import { getSRModuleByType } from 'http/common/sr-modules.utils';

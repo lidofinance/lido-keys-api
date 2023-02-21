@@ -8,9 +8,9 @@ import {
   Query as ValidatorsQuery,
 } from './entities';
 import { CLBlockSnapshot, ModuleId } from 'http/common/entities/';
-import { ValidatorsRegistryService } from 'jobs/validators-registry.service';
+import { ValidatorsRegistryService } from 'jobs/validators-registry/validators-registry.service';
 import { getSRModule } from 'http/common/sr-modules.utils';
-import { RegistryService } from 'jobs/registry.service';
+import { RegistryService } from 'jobs/registry/registry.service';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { VALIDATORS_STATUSES_FOR_EXIT, DEFAULT_EXIT_PERCENT } from './constants';
 import { ConsensusMeta, Validator } from '@lido-nestjs/validators-registry';

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test } from '@nestjs/testing';
 import { SRModulesOperatorsController, SRModulesOperatorsService } from '../../src/http/sr-modules-operators';
-import { RegistryService } from '../../src/jobs/registry.service';
+import { RegistryService } from '../../src/jobs/registry/registry.service';
 import { ConfigService } from '../../src/common/config';
 import {
   curatedOperators,

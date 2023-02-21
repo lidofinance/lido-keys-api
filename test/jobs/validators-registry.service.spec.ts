@@ -2,7 +2,7 @@
 import { Test } from '@nestjs/testing';
 import { ValidatorsRegistryInterface } from '@lido-nestjs/validators-registry';
 import { operatorOneValidatorsToExit, clMeta, operatorOneUsedKeys } from '../fixtures';
-import { ValidatorsRegistryService } from '../../src/jobs/validators-registry.service';
+import { ValidatorsRegistryService } from '../../src/jobs/validators-registry/validators-registry.service';
 import { LOGGER_PROVIDER } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
 import { toBoolean, ConfigService } from 'common/config';

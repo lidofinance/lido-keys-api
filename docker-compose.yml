@@ -13,7 +13,7 @@ services:
     volumes:
       - ./.volumes/pgdata-${CHAIN_ID}/:/var/lib/postgresql/data
 
-  main:
+  keys_api:
     build: ./
     restart: always
     environment:
@@ -34,5 +34,9 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - JOB_INTERVAL_REGISTRY=${JOB_INTERVAL_REGISTRY}
+      - JOB_INTERVAL_VALIDATORS_REGISTRY=${JOB_INTERVAL_VALIDATORS_REGISTRY}
+      - VALIDATOR_REGISTRY_ENABLE=${VALIDATOR_REGISTRY_ENABLE}
     ports:
       - '${PORT}:${PORT}'
+    depends_on:
+      - db
