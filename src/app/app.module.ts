@@ -32,6 +32,8 @@ import config from '../mikro-orm.config';
           autoLoadEntities: false,
           cache: { enabled: false },
           debug: false,
+          registerRequestContext: true,
+          allowGlobalContext: false,
         };
       },
       inject: [ConfigService],
