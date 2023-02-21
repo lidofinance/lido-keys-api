@@ -2,7 +2,7 @@
 import { Test } from '@nestjs/testing';
 import { KeysController, KeysService } from '../../src/http/keys';
 import { hexZeroPad } from '@ethersproject/bytes';
-import { RegistryService } from '../../src/jobs/registry.service';
+import { RegistryService } from '../../src/jobs/registry/registry.service';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ConfigService } from '../../src/common/config';
 

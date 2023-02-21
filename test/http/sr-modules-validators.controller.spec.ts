@@ -2,8 +2,8 @@
 import { Test } from '@nestjs/testing';
 import { SRModulesValidatorsController, SRModulesValidatorsService } from '../../src/http/sr-modules-validators';
 import { toBoolean, ConfigService } from '../../src/common/config';
-import { RegistryService } from '../../src/jobs/registry.service';
-import { ValidatorsRegistryService } from '../../src/jobs/validators-registry.service';
+import { RegistryService } from '../../src/jobs/registry/registry.service';
+import { ValidatorsRegistryService } from '../../src/jobs/validators-registry/validators-registry.service';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { elMeta, elMetaNotSynced, clMeta, clBlockSnapshot } from '../fixtures/';
 import { operatorOneUsedKeys } from '../fixtures';

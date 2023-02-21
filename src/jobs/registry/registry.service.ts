@@ -31,11 +31,6 @@ export class RegistryService {
     private readonly entityManager: EntityManager,
   ) {}
 
-  public async onModuleInit(): Promise<void> {
-    // Do not wait for initialization to avoid blocking the main process
-    this.initialize().catch((err) => this.logger.error(err));
-  }
-
   /**
    * Initializes the job
    */

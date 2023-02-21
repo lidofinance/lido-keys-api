@@ -4,7 +4,7 @@ import {
   SRModulesOperatorsKeysController,
   SRModulesOperatorsKeysService,
 } from '../../src/http/sr-modules-operators-keys';
-import { RegistryService } from '../../src/jobs/registry.service';
+import { RegistryService } from '../../src/jobs/registry/registry.service';
 import { ConfigService } from '../../src/common/config';
 import {
   curatedOperators,

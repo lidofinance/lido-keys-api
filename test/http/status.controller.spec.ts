@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test } from '@nestjs/testing';
-import { RegistryService } from '../../src/jobs/registry.service';
-import { ValidatorsRegistryService } from 'jobs/validators-registry.service';
+import { RegistryService } from '../../src/jobs/registry/registry.service';
+import { ValidatorsRegistryService } from 'jobs/validators-registry/validators-registry.service';
 import { ConfigService } from '../../src/common/config';
 import { elMeta, elBlockSnapshot, clMeta, clBlockSnapshot } from '../fixtures';
 import { StatusController, StatusService } from '../../src/http/status';

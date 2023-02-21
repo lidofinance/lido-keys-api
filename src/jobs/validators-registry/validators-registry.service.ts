@@ -30,22 +30,11 @@ export class ValidatorsRegistryService {
     protected readonly jobService: JobService,
   ) {}
 
-  public async onModuleInit(): Promise<void> {
-    // Do not wait for initialization to avoid blocking the main process
-
-    if (this.disabledRegistry()) {
-      this.logger.log('Job for updating validators is disabled');
-      return;
-    }
-
-    this.initialize().catch((err) => this.logger.error(err));
-  }
-
-  private disabledRegistry() {
+  public disabledRegistry() {
     return !this.configService.get('VALIDATOR_REGISTRY_ENABLE');
   }
 
-  private async initialize() {
+  public async initialize() {
     await this.updateValidators();
 
     const cronTime = this.configService.get('JOB_INTERVAL_VALIDATORS_REGISTRY');

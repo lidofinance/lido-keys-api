@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/co
 import { ELBlockSnapshot, ModuleId, SRModule } from 'http/common/entities';
 import { CuratedOperator, RegistryKey as CuratedKey } from 'http/common/entities';
 import { KeyQuery } from 'http/common/entities';
-import { RegistryService } from 'jobs/registry.service';
+import { RegistryService } from 'jobs/registry/registry.service';
 import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
 import { getSRModule } from 'http/common/sr-modules.utils';
 import { SRModuleOperatorsKeysResponse } from './entities';
