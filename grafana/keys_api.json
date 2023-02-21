@@ -596,8 +596,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -755,7 +754,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "dtdhms"
         },
         "overrides": []
       },
@@ -1675,7 +1675,7 @@
           "editorMode": "code",
           "exemplar": true,
           "expr": "increase(cl_api_requests_duration_seconds_count{result=\"error\"}[1m])",
-          "legendFormat": "__auto",
+          "legendFormat": "{{status}}",
           "range": true,
           "refId": "A"
         }
@@ -1746,6 +1746,6 @@
   "timezone": "",
   "title": "Keys API",
   "uid": "my_uid",
-  "version": 9,
+  "version": 3,
   "weekStart": ""
 }
