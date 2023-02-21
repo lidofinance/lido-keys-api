@@ -13,7 +13,7 @@ export class JobsService implements OnModuleInit {
 
   public async onModuleInit(): Promise<void> {
     // Do not wait for initialization to avoid blocking the main process
-    this.initialize();
+    this.initialize().catch((err) => this.logger.error(err));
   }
 
   /**
