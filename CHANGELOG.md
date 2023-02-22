@@ -1,3 +1,35 @@
+# [0.5.0](https://github.com/lidofinance/lido-keys-api/compare/0.4.1...0.5.0) (2023-02-22)
+
+
+### Bug Fixes
+
+* add grafana prometheus ([0203180](https://github.com/lidofinance/lido-keys-api/commit/020318009e83be75dfac6c07073723705fb03486))
+* bump max-old-space-size ([d9ec404](https://github.com/lidofinance/lido-keys-api/commit/d9ec404a0e28dbb1b50de5c00b1dcb8454115f36))
+* bump max-old-space-size ([612746f](https://github.com/lidofinance/lido-keys-api/commit/612746f8afb46efc2d8e6c8dcb8e461bb5880771))
+* bump memory limit ([281e38b](https://github.com/lidofinance/lido-keys-api/commit/281e38b26d20a9b6ba23f33b5712126f6f69b7d9))
+* catch job error ([09166db](https://github.com/lidofinance/lido-keys-api/commit/09166dbb3cc5709371c541f5531c300c86818155))
+* db config ([950f38e](https://github.com/lidofinance/lido-keys-api/commit/950f38eee47c1f5c76eb0e219e9a1af924fcd209))
+* db config ([ba741fd](https://github.com/lidofinance/lido-keys-api/commit/ba741fde7ba21b725a7ebd5a56ea44f6058c381f))
+* metrics ([6fe2bcb](https://github.com/lidofinance/lido-keys-api/commit/6fe2bcbce5ca1c92e8da9487f2fa5753dd5037c6))
+* mikroorm config ([31280bf](https://github.com/lidofinance/lido-keys-api/commit/31280bfeac5741e47f56f1d8a8e30aa463700501))
+* README ([eeab718](https://github.com/lidofinance/lido-keys-api/commit/eeab7180ce05479d9297f2489f0879f34579ff47))
+* remove commenta ([9fc7879](https://github.com/lidofinance/lido-keys-api/commit/9fc787942c5013bed186245384022120d00727aa))
+* remove secrets from log ([266879a](https://github.com/lidofinance/lido-keys-api/commit/266879a5da18941c355ebc728bc1c6b372d56737))
+* remove secrets from log ([6356395](https://github.com/lidofinance/lido-keys-api/commit/6356395dde0a2cae9abe490d351514497597606c))
+* sample ([74f2813](https://github.com/lidofinance/lido-keys-api/commit/74f28139a16e39165a7512f2ecf34f22eb7a48f2))
+* small fixes ([04c5f01](https://github.com/lidofinance/lido-keys-api/commit/04c5f01fb06aa5a74f416cc40310bab75cf00a2a))
+* updated packages ([fe15201](https://github.com/lidofinance/lido-keys-api/commit/fe152010690456c6e5425ba6ba2acb7e760f65bd))
+* used value in metrics ([d92220a](https://github.com/lidofinance/lido-keys-api/commit/d92220ad4015a45c676420fd71046c1a7daa423d))
+
+
+### Features
+
+* add alerts ([8a059b4](https://github.com/lidofinance/lido-keys-api/commit/8a059b445429ed69d3b80e021f1d76441119796b))
+* disable validators registry by flag ([6302a7b](https://github.com/lidofinance/lido-keys-api/commit/6302a7bd71135da04171630bccc0c8be75b9f496))
+* run jobs in sequence ([52e92a9](https://github.com/lidofinance/lido-keys-api/commit/52e92a9b598aaea22215777bd854037a31c22471))
+
+
+
 ## [0.4.1](https://github.com/lidofinance/lido-keys-api/compare/0.4.0...0.4.1) (2023-02-17)
 
 
