@@ -15,6 +15,7 @@ tests:
         exp_alerts:
           - exp_labels:
               severity: warning
+              service: keys_api
               app_team: tooling
             exp_annotations:
               summary: Execution Layer RPC errors
@@ -24,6 +25,7 @@ tests:
         exp_alerts:
           - exp_labels:
               severity: warning
+              service: keys_api
               app_team: tooling
             exp_annotations:
               summary: Execution Layer RPC errors
@@ -43,6 +45,7 @@ tests:
         exp_alerts:
           - exp_labels:
               severity: warning
+              service: keys_api
               app_team: tooling
             exp_annotations:
               summary: Consensus Layer API errors
@@ -52,6 +55,7 @@ tests:
         exp_alerts:
           - exp_labels:
               severity: warning
+              service: keys_api
               app_team: tooling
             exp_annotations:
               summary: Consensus Layer API errors

@@ -5,6 +5,7 @@ groups:
         expr: sum by (instance, project) (increase(el_rpc_requests_duration_seconds_count{result="error", service="lido-keys-api"}[5m])) > 40
         labels:
           severity: warning
+          service: keys_api
           app_team: tooling
         annotations:
           summary: Execution Layer RPC errors
@@ -14,6 +15,7 @@ groups:
         expr: sum by (instance, project) (increase(cl_api_requests_duration_seconds_count{result="error", service="lido-keys-api"}[5m])) > 60
         labels:
           severity: warning
+          service: keys_api
           app_team: tooling
         annotations:
           summary: Consensus Layer API errors
