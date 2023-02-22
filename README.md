@@ -1,6 +1,6 @@
 ## Lido Node Operators Keys Service
 
-Simple Lido keys and validators HTTP API. It will be possible to launch it on someone machine and fetch actual Lido keys from all sources. API also provides http methods for Automating Validator Exits.
+Simple Lido keys and validators HTTP API.
 
 ## How it works
 
@@ -486,6 +486,35 @@ interface Response {
   clBlockSnapshot: CLBlockSnapshot;
 }
 ```
+
+## Installation
+
+`$ yarn install`
+
+## Running
+
+`$ yarn start:dev`
+
+For running locally in container run
+
+1. `docker-compose -f docker-compose.yml build`
+2. `docker-compose -f docker-compose.yml up`
+3. `docker-compose -f docker-compose.metrics.yml build`
+4. `docker-compose -f docker-compose.metrics.yml up`
+
+To configure grafana go to `http://localhost:8000/dashboards` and dashboards from `./grafana` folder.
+
+## Tests
+
+Unit tests
+
+`$ yarn test`
+
+## Environment variable
+
+Check `sample.env` file.
+
+Pay attention that API by default running job for fetching and updating Validators. If you are not planning to use `validators` endpoints, you could disable this job by setting `VALIDATOR_REGISTRY_ENABLE=false`.
 
 ## Release flow
 

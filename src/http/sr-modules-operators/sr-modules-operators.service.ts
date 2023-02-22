@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
 import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
-import { RegistryService } from 'jobs/registry.service';
+import { RegistryService } from 'jobs/registry/registry.service';
 import { ModuleId } from 'http/common/entities/';
 import { ELBlockSnapshot, SRModule, CuratedOperator } from 'http/common/entities/';
 import { getSRModule, getSRModuleByType } from 'http/common/sr-modules.utils';

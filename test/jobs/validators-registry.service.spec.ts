@@ -2,20 +2,24 @@
 import { Test } from '@nestjs/testing';
 import { ValidatorsRegistryInterface } from '@lido-nestjs/validators-registry';
 import { operatorOneValidatorsToExit, clMeta, operatorOneUsedKeys } from '../fixtures';
-import { ValidatorsRegistryService } from '../../src/jobs/validators-registry.service';
+import { ValidatorsRegistryService } from '../../src/jobs/validators-registry/validators-registry.service';
 import { LOGGER_PROVIDER } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
-import { ConfigService } from 'common/config';
+import { toBoolean, ConfigService } from 'common/config';
 import { JobService } from 'common/job';
 
 describe('getOldestValidators', () => {
   let validatorsRegistryInterface: ValidatorsRegistryInterface;
   let validatorsRegistry: ValidatorsRegistryService;
+  const OLD_ENV = process.env;
 
   class JobServiceMock {}
 
   class ConfigServiceMock {
     get(value) {
+      if (value == 'VALIDATOR_REGISTRY_ENABLE') {
+        return toBoolean(process.env[value]);
+      }
       return process.env[value];
     }
   }
@@ -29,6 +33,8 @@ describe('getOldestValidators', () => {
   class PrometheusServiceMock {}
 
   beforeEach(async () => {
+    process.env = { ...OLD_ENV };
+
     const moduleRef = await Test.createTestingModule({
       providers: [
         ValidatorsRegistryService,
@@ -60,6 +66,8 @@ describe('getOldestValidators', () => {
   });
 
   test('percent has a higher priority', async () => {
+    process.env['VALIDATOR_REGISTRY_ENABLE'] = 'true';
+
     // this function should return validators with specified and specified statuses  and in specified order
     const getValidatorsMock = jest
       .spyOn(validatorsRegistryInterface, 'getValidators')
@@ -67,7 +75,7 @@ describe('getOldestValidators', () => {
 
     expect(operatorOneValidatorsToExit.length).toBe(6);
 
-    const { meta, validators } = await validatorsRegistry.getOldestValidators({
+    const result = await validatorsRegistry.getOldestValidators({
       pubkeys: operatorOneUsedKeys.map((k) => k.key),
       // we dont check in this function  statuses
       statuses: [],
@@ -76,13 +84,10 @@ describe('getOldestValidators', () => {
     });
 
     // 50%
-    expect(validators.length).toBe(3);
-
-    expect(validators).toEqual([
-      operatorOneValidatorsToExit[0],
-      operatorOneValidatorsToExit[1],
-      operatorOneValidatorsToExit[2],
-    ]);
+    expect(result).toEqual({
+      validators: [operatorOneValidatorsToExit[0], operatorOneValidatorsToExit[1], operatorOneValidatorsToExit[2]],
+      meta: clMeta,
+    });
 
     expect(getValidatorsMock).toBeCalledTimes(1);
     expect(getValidatorsMock).toBeCalledWith(
@@ -93,6 +98,7 @@ describe('getOldestValidators', () => {
   });
 
   test('percent is not provided', async () => {
+    process.env['VALIDATOR_REGISTRY_ENABLE'] = 'true';
     // this function should return validators with specified and specified statuses  and in specified order
     const getValidatorsMock = jest
       .spyOn(validatorsRegistryInterface, 'getValidators')
@@ -100,7 +106,7 @@ describe('getOldestValidators', () => {
 
     expect(operatorOneValidatorsToExit.length).toBe(6);
 
-    const { meta, validators } = await validatorsRegistry.getOldestValidators({
+    const result = await validatorsRegistry.getOldestValidators({
       pubkeys: operatorOneUsedKeys.map((k) => k.key),
       // we dont check in this function  statuses
       statuses: [],
@@ -108,16 +114,16 @@ describe('getOldestValidators', () => {
       percent: undefined,
     });
 
-    // 50%
-    expect(validators.length).toBe(5);
-
-    expect(validators).toEqual([
-      operatorOneValidatorsToExit[0],
-      operatorOneValidatorsToExit[1],
-      operatorOneValidatorsToExit[2],
-      operatorOneValidatorsToExit[3],
-      operatorOneValidatorsToExit[4],
-    ]);
+    expect(result).toEqual({
+      validators: [
+        operatorOneValidatorsToExit[0],
+        operatorOneValidatorsToExit[1],
+        operatorOneValidatorsToExit[2],
+        operatorOneValidatorsToExit[3],
+        operatorOneValidatorsToExit[4],
+      ],
+      meta: clMeta,
+    });
 
     expect(getValidatorsMock).toBeCalledTimes(1);
     expect(getValidatorsMock).toBeCalledWith(

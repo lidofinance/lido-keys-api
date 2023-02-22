@@ -30,12 +30,11 @@ export class ValidatorsRegistryService {
     protected readonly jobService: JobService,
   ) {}
 
-  public async onModuleInit(): Promise<void> {
-    // Do not wait for initialization to avoid blocking the main process
-    this.initialize().catch((err) => this.logger.error(err));
+  public disabledRegistry() {
+    return !this.configService.get('VALIDATOR_REGISTRY_ENABLE');
   }
 
-  private async initialize() {
+  public async initialize() {
     await this.updateValidators();
 
     const cronTime = this.configService.get('JOB_INTERVAL_VALIDATORS_REGISTRY');
@@ -64,9 +63,15 @@ export class ValidatorsRegistryService {
 
   /**
    *
-   * @param filter Filters to get from validators database keys
+   * @param filter Filters to get from validators database keys.
+   * Return oldest validators and meta.
+   * null if ValidatorsRegistry is disabled
    */
-  public async getOldestValidators(filter: ValidatorsFilter): Promise<ConsensusValidatorsAndMetadata> {
+  public getOldestValidators = async (filter: ValidatorsFilter): Promise<ConsensusValidatorsAndMetadata | null> => {
+    if (this.disabledRegistry()) {
+      this.logger.warn('ValidatorsRegistry is disabled in API');
+      return null;
+    }
     // we suppose in this function at least percent is set
     // should we move setting a default percent in this function ?
     const where = {
@@ -91,9 +96,14 @@ export class ValidatorsRegistryService {
     }
 
     return { validators, meta };
-  }
+  };
 
   public async getMetaDataFromStorage(): Promise<ConsensusMeta | null> {
+    if (this.disabledRegistry()) {
+      this.logger.warn('ValidatorsRegistry is disabled in API');
+      return null;
+    }
+
     return this.validatorsRegistry.getMeta();
   }
 

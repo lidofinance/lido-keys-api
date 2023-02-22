@@ -1,0 +1,56 @@
+rule_files:
+  - keys-api-outdated-validators.rule.yml
+
+evaluation_interval: 1m
+
+tests:
+  # Outdated validators list. Outdated
+  - interval: 15m
+    input_series:
+      - series: lido_keys_api_validators_registry_last_update_block_timestamp{}
+        values: 0 0 0 900
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: KeysApiOutdatedValidators
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              app_team: tooling
+            exp_annotations:
+              summary: Validators are outdated
+              description: Validators were not updated for 30m 0s
+      - eval_time: 45m
+        alertname: KeysApiOutdatedValidators
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              app_team: tooling
+            exp_annotations:
+              summary: Validators are outdated
+              description: Validators were not updated for 30m 0s
+
+  # Outdated validators list. Up to date
+  - interval: 15m
+    input_series:
+      - series: lido_keys_api_validators_registry_last_update_block_timestamp{}
+        values: 0 0 1 901
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: KeysApiOutdatedValidators
+        exp_alerts: []
+      - eval_time: 45m
+        alertname: KeysApiOutdatedValidators
+        exp_alerts: []
+
+  # Outdated validators list. Initial start
+  - interval: 15m
+    input_series:
+      - series: lido_keys_api_validators_registry_last_update_block_timestamp{}
+        values: _ _ _ 901
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: KeysApiOutdatedValidators
+        exp_alerts: []
+      - eval_time: 45m
+        alertname: KeysApiOutdatedValidators
+        exp_alerts: []

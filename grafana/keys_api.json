@@ -1,4 +1,53 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "9.1.5"
+    },
+    {
+      "type": "panel",
+      "id": "heatmap",
+      "name": "Heatmap",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -25,8 +74,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 49,
-  "iteration": 1675758540317,
+  "id": null,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -46,7 +94,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -90,16 +138,16 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.5.15",
+      "pluginVersion": "9.1.5",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "time() - process_start_time_seconds{env=\"$env\", source=\"$source\", service=\"lido-keys-api\"}",
+          "expr": "time() - process_start_time_seconds",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{source}}",
@@ -113,7 +161,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "version",
       "fieldConfig": {
@@ -158,16 +206,16 @@
         },
         "textMode": "name"
       },
-      "pluginVersion": "8.5.15",
+      "pluginVersion": "9.1.5",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "build_info{env=\"$env\", source=\"$source\", service=\"lido-keys-api\"}",
+          "expr": "build_info{name=\"lido-keys-api\"}",
           "instant": true,
           "legendFormat": "{{version}}",
           "range": false,
@@ -180,7 +228,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Environment",
       "fieldConfig": {
@@ -225,16 +273,16 @@
         },
         "textMode": "name"
       },
-      "pluginVersion": "8.5.15",
+      "pluginVersion": "9.1.5",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "build_info{env=\"$env\", source=\"$source\", service=\"lido-keys-api\"}",
+          "expr": "build_info{name=\"lido-keys-api\"}",
           "instant": true,
           "legendFormat": "{{env}}",
           "range": false,
@@ -247,7 +295,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Network name",
       "fieldConfig": {
@@ -295,16 +343,16 @@
         },
         "textMode": "name"
       },
-      "pluginVersion": "8.5.15",
+      "pluginVersion": "9.1.5",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
-          "editorMode": "builder",
+          "editorMode": "code",
           "exemplar": false,
-          "expr": "build_info{env=\"$env\", source=\"$source\", service=\"lido-keys-api\"}",
+          "expr": "build_info{name=\"lido-keys-api\"}",
           "instant": true,
           "interval": "",
           "legendFormat": "{{network}}",
@@ -316,7 +364,7 @@
       "type": "stat"
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -324,199 +372,198 @@
         "y": 3
       },
       "id": 38,
-      "panels": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "noLhFRTVz"
-          },
-          "description": "Block number for which the last update was made.",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 3,
-            "w": 3,
-            "x": 0,
-            "y": 2
-          },
-          "id": 46,
-          "options": {
-            "colorMode": "background",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": ["lastNotNull"],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "8.5.15",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "noLhFRTVz"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "lido_keys_api_last_block_number{env=\"$env\", source=\"$source\", service=\"lido-keys-api\"}",
-              "instant": true,
-              "range": false,
-              "refId": "A"
-            }
-          ],
-          "title": "Block number",
-          "type": "stat"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "noLhFRTVz"
-          },
-          "description": "Block timestamp for which the last ValidatorsRegistry update was made.",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "dtdhms"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 3,
-            "w": 4,
-            "x": 3,
-            "y": 2
-          },
-          "id": 28,
-          "options": {
-            "colorMode": "background",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": ["lastNotNull"],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "8.5.15",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "noLhFRTVz"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "time() - lido_keys_api_last_update_timestamp{env=\"$env\", source=\"$source\", service=\"lido-keys-api\"}",
-              "instant": true,
-              "legendFormat": "",
-              "range": false,
-              "refId": "A"
-            }
-          ],
-          "title": "Block timestamp",
-          "type": "stat"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "noLhFRTVz"
-          },
-          "description": "Nonce of Staking Router module  during last update",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 3,
-            "w": 24,
-            "x": 0,
-            "y": 5
-          },
-          "id": 50,
-          "maxPerRow": 6,
-          "options": {
-            "colorMode": "background",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": ["lastNotNull"],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "8.5.15",
-          "repeat": "srModuleId",
-          "repeatDirection": "h",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "noLhFRTVz"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "lido_keys_api_nonce_value{env=\"$env\", source=\"$source\", srModuleId=\"${srModuleId}\"}",
-              "instant": true,
-              "range": false,
-              "refId": "A"
-            }
-          ],
-          "title": "Nonce SR Module \"${srModuleId}\"",
-          "type": "stat"
-        }
-      ],
+      "panels": [],
       "title": "Keys update",
       "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Block number for which the last update was made.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 0,
+        "y": 4
+      },
+      "id": 46,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "lido_keys_api_last_block_number",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Block number",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Block timestamp for which the last ValidatorsRegistry update was made.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dtdhms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 3,
+        "y": 4
+      },
+      "id": 28,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "time() - lido_keys_api_last_update_timestamp",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Last update",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Nonce of Staking Router module  during last update",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 50,
+      "maxPerRow": 6,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.1.5",
+      "repeat": "srModuleId",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "lido_keys_api_nonce_value{srModuleId=\"${srModuleId}\"}",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Nonce SR Module \"${srModuleId}\"",
+      "type": "stat"
     },
     {
       "collapsed": true,
@@ -524,14 +571,14 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 4
+        "y": 10
       },
       "id": 66,
       "panels": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "fieldConfig": {
             "defaults": {
@@ -549,8 +596,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -575,7 +621,7 @@
             "h": 7,
             "w": 18,
             "x": 0,
-            "y": 5
+            "y": 11
           },
           "id": 54,
           "interval": "1h",
@@ -589,16 +635,16 @@
             "showHeader": true,
             "sortBy": []
           },
-          "pluginVersion": "8.5.15",
+          "pluginVersion": "9.1.5",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "noLhFRTVz"
+                "uid": "${DS_PROMETHEUS}"
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum by(source, operator, srModuleId, used) (lido_keys_api_keys_by_sr_module_and_operator{source=\"$source\", env=\"$env\"})",
+              "expr": "sum by(operator, srModuleId, used) (lido_keys_api_keys_by_sr_module_and_operator{})",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -620,7 +666,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 5
+        "y": 11
       },
       "id": 58,
       "panels": [],
@@ -630,7 +676,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Block number for which the last ValidatorsRegistry update was made",
       "fieldConfig": {
@@ -655,7 +701,7 @@
         "h": 2,
         "w": 3,
         "x": 0,
-        "y": 6
+        "y": 12
       },
       "id": 62,
       "options": {
@@ -670,16 +716,16 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.5.15",
+      "pluginVersion": "9.1.5",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "lido_keys_api_validators_registry_last_block_number{env=\"$env\", source=\"$source\", service=\"lido-keys-api\"}",
+          "expr": "lido_keys_api_validators_registry_last_block_number",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -691,7 +737,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Block timestamp for which the last ValidatorsRegistry update was mad",
       "fieldConfig": {
@@ -708,7 +754,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "dtdhms"
         },
         "overrides": []
       },
@@ -716,7 +763,7 @@
         "h": 2,
         "w": 3,
         "x": 3,
-        "y": 6
+        "y": 12
       },
       "id": 64,
       "options": {
@@ -731,28 +778,28 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.5.15",
+      "pluginVersion": "9.1.5",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "lido_keys_api_validators_registry_last_update_block_timestamp{env=\"$env\", source=\"$source\", service=\"lido-keys-api\"}",
+          "expr": "time() - lido_keys_api_validators_registry_last_update_block_timestamp",
           "instant": true,
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "Block timestamp",
+      "title": "Last update",
       "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Slot for which the last ValidatorsRegistry update was made.",
       "fieldConfig": {
@@ -777,7 +824,7 @@
         "h": 2,
         "w": 4,
         "x": 6,
-        "y": 6
+        "y": 12
       },
       "id": 68,
       "options": {
@@ -792,16 +839,16 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.5.15",
+      "pluginVersion": "9.1.5",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "lido_keys_api_validators_registry_last_slot{env=\"$env\", source=\"$source\", service=\"lido-keys-api\"}",
+          "expr": "lido_keys_api_validators_registry_last_slot",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -816,7 +863,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 14
       },
       "id": 16,
       "panels": [],
@@ -835,14 +882,29 @@
       "dataFormat": "tsbuckets",
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Node operator registry keys API response duration",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 9
+        "y": 15
       },
       "heatmap": {},
       "hideZeroBuckets": true,
@@ -852,15 +914,53 @@
         "show": false
       },
       "maxDataPoints": 100,
+      "options": {
+        "calculate": false,
+        "calculation": {},
+        "cellGap": 2,
+        "cellValues": {},
+        "color": {
+          "exponent": 0.5,
+          "fill": "#b4ff00",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Oranges",
+          "steps": 128
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "legend": {
+          "show": false
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "showValue": "never",
+        "tooltip": {
+          "show": true,
+          "yHistogram": true
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false,
+          "unit": "s"
+        }
+      },
+      "pluginVersion": "9.1.5",
       "reverseYBuckets": false,
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(http_requests_duration_seconds_bucket{source=\"$source\", env=\"$env\", service=\"lido-keys-api\"}[1m])) by(le)",
+          "expr": "sum(rate(http_requests_duration_seconds_bucket[1m])) by(le)",
           "format": "heatmap",
           "hide": false,
           "legendFormat": "{{le}}",
@@ -888,7 +988,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -897,6 +997,8 @@
             "mode": "fixed"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -973,7 +1075,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 9
+        "y": 15
       },
       "id": 4,
       "maxDataPoints": 100,
@@ -981,7 +1083,8 @@
         "legend": {
           "calcs": ["last"],
           "displayMode": "table",
-          "placement": "right"
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -992,10 +1095,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum by(instance, statusCode) (increase(http_requests_duration_seconds_count{env=\"$env\", source=\"$source\", service=\"lido-keys-api\"}[$__interval]))",
+          "expr": "sum by(instance, statusCode) (increase(http_requests_duration_seconds_count[$__interval]))",
           "legendFormat": "{{statusCode}}",
           "range": true,
           "refId": "A"
@@ -1005,212 +1108,136 @@
       "type": "timeseries"
     },
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 21
       },
-      "id": 20,
-      "panels": [],
-      "title": "Logs",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "-NjMFgoVz"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 0,
-        "y": 16
-      },
-      "id": 12,
-      "options": {
-        "dedupStrategy": "none",
-        "enableLogDetails": true,
-        "prettifyLogMessage": false,
-        "showCommonLabels": false,
-        "showLabels": false,
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": false
-      },
-      "targets": [
+      "id": 24,
+      "panels": [
         {
-          "datasource": {
-            "type": "loki",
-            "uid": "-NjMFgoVz"
-          },
-          "expr": "{container_name=\"lido-keys-api\", env=\"$env\", source=\"$source\"} | json | level=~\"$log_level\" | line_format `\n  {{- /**/}}[{{.level}}]\n  {{- /**/}} {{.message}}\n  {{- if .context_method}} | {{.context_method}}{{end}}\n  {{- if .context_statusCode}} | {{.context_statusCode}}{{end}}\n  {{- if .context_originalUrl}} | {{.context_originalUrl}}{{end -}}\n` |~ \"$search\"",
-          "hide": false,
-          "queryType": "range",
-          "refId": "A"
-        }
-      ],
-      "title": "All logs",
-      "type": "logs"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "-NjMFgoVz"
-      },
-      "fieldConfig": {
-        "defaults": {
+          "cards": {},
           "color": {
-            "mode": "palette-classic"
+            "cardColor": "#b4ff00",
+            "colorScale": "sqrt",
+            "colorScheme": "interpolateOranges",
+            "exponent": 0.5,
+            "mode": "spectrum"
           },
-          "custom": {
-            "axisLabel": "messages",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "bars",
-            "fillOpacity": 100,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "stepBefore",
-            "lineWidth": 0,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+          "dataFormat": "tsbuckets",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
           },
-          "mappings": [],
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "error"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "info"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "warn"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": ["error"],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
+          "description": "The job duration",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "hideFrom": {
                   "legend": false,
                   "tooltip": false,
-                  "viz": true
+                  "viz": false
+                },
+                "scaleDistribution": {
+                  "type": "linear"
                 }
               }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 16
-      },
-      "id": 22,
-      "options": {
-        "legend": {
-          "calcs": ["mean", "sum"],
-          "displayMode": "table",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "-NjMFgoVz"
+            },
+            "overrides": []
           },
-          "expr": "sum by(level) (count_over_time({container_name=\"lido-keys-api\", env=\"$env\", source=\"$source\"} | json | level=~\"$log_level\" |~ \"$search\" | __error__ = \"\" [$__interval]))",
-          "legendFormat": "{{level}}",
-          "queryType": "range",
-          "refId": "A"
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 0,
+            "y": 22
+          },
+          "heatmap": {},
+          "hideZeroBuckets": true,
+          "highlightCards": true,
+          "id": 26,
+          "interval": "30",
+          "legend": {
+            "show": false
+          },
+          "maxDataPoints": 100,
+          "maxPerRow": 3,
+          "options": {
+            "calculate": false,
+            "calculation": {},
+            "cellGap": 2,
+            "cellValues": {},
+            "color": {
+              "exponent": 0.5,
+              "fill": "#b4ff00",
+              "mode": "scheme",
+              "reverse": false,
+              "scale": "exponential",
+              "scheme": "Oranges",
+              "steps": 128
+            },
+            "exemplars": {
+              "color": "rgba(255,0,255,0.7)"
+            },
+            "filterValues": {
+              "le": 1e-9
+            },
+            "legend": {
+              "show": false
+            },
+            "rowsFrame": {
+              "layout": "auto"
+            },
+            "showValue": "never",
+            "tooltip": {
+              "show": true,
+              "yHistogram": true
+            },
+            "yAxis": {
+              "axisPlacement": "left",
+              "reverse": false,
+              "unit": "s"
+            }
+          },
+          "pluginVersion": "9.1.5",
+          "repeat": "job",
+          "repeatDirection": "h",
+          "reverseYBuckets": false,
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum(rate(lido_keys_api_job_duration_seconds_bucket{exported_job=\"${job:raw}\"}[1m])) by (le)",
+              "format": "heatmap",
+              "legendFormat": "{{le}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Job \"${job}\" duration",
+          "tooltip": {
+            "show": true,
+            "showHistogram": true
+          },
+          "type": "heatmap",
+          "xAxis": {
+            "show": true
+          },
+          "yAxis": {
+            "format": "s",
+            "logBase": 1,
+            "show": true
+          },
+          "yBucketBound": "auto"
         }
       ],
-      "title": "Logs messages counter",
-      "type": "timeseries"
+      "title": "Jobs",
+      "type": "row"
     },
     {
       "collapsed": false,
@@ -1219,85 +1246,6 @@
         "w": 24,
         "x": 0,
         "y": 22
-      },
-      "id": 24,
-      "panels": [],
-      "title": "Jobs",
-      "type": "row"
-    },
-    {
-      "cards": {},
-      "color": {
-        "cardColor": "#b4ff00",
-        "colorScale": "sqrt",
-        "colorScheme": "interpolateOranges",
-        "exponent": 0.5,
-        "mode": "spectrum"
-      },
-      "dataFormat": "tsbuckets",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "noLhFRTVz"
-      },
-      "description": "The job duration",
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 23
-      },
-      "heatmap": {},
-      "hideZeroBuckets": true,
-      "highlightCards": true,
-      "id": 26,
-      "interval": "30",
-      "legend": {
-        "show": false
-      },
-      "maxDataPoints": 100,
-      "maxPerRow": 3,
-      "pluginVersion": "8.5.15",
-      "repeat": "job",
-      "repeatDirection": "h",
-      "reverseYBuckets": false,
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "noLhFRTVz"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "sum(rate(lido_keys_api_job_duration_seconds_bucket{env=\"$env\", source=\"$source\", exported_job=\"${job:raw}\"}[1m])) by (le)",
-          "format": "heatmap",
-          "legendFormat": "{{le}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Job \"${job}\" duration",
-      "tooltip": {
-        "show": true,
-        "showHistogram": true
-      },
-      "type": "heatmap",
-      "xAxis": {
-        "show": true
-      },
-      "yAxis": {
-        "format": "s",
-        "logBase": 1,
-        "show": true
-      },
-      "yBucketBound": "auto"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 31
       },
       "id": 34,
       "panels": [],
@@ -1316,14 +1264,29 @@
       "dataFormat": "tsbuckets",
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "The request duration to the EL RPC provider",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 32
+        "y": 23
       },
       "heatmap": {},
       "hideZeroBuckets": true,
@@ -1333,16 +1296,54 @@
         "show": false
       },
       "maxDataPoints": 100,
+      "options": {
+        "calculate": false,
+        "calculation": {},
+        "cellGap": 2,
+        "cellValues": {},
+        "color": {
+          "exponent": 0.5,
+          "fill": "#b4ff00",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Oranges",
+          "steps": 128
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "legend": {
+          "show": false
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "showValue": "never",
+        "tooltip": {
+          "show": true,
+          "yHistogram": true
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false,
+          "unit": "s"
+        }
+      },
+      "pluginVersion": "9.1.5",
       "reverseYBuckets": false,
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(el_rpc_requests_duration_seconds_bucket{env=\"$env\", source=\"$source\", service=\"lido-keys-api\"}[1m])) by(le)",
+          "expr": "sum(rate(el_rpc_requests_duration_seconds_bucket[1m])) by(le)",
           "instant": false,
           "legendFormat": "{{le}}",
           "range": true,
@@ -1368,7 +1369,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -1377,6 +1378,8 @@
             "seriesBy": "max"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "axisSoftMax": 10,
@@ -1427,7 +1430,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 32
+        "y": 23
       },
       "id": 40,
       "maxDataPoints": 840,
@@ -1435,7 +1438,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -1446,10 +1450,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "increase(el_rpc_requests_duration_seconds_count{env=\"$env\", source=\"$source\", service=\"lido-keys-api\", result=\"error\"}[1m])",
+          "expr": "increase(el_rpc_requests_duration_seconds_count{result=\"error\"}[1m])",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1464,7 +1468,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 29
       },
       "id": 36,
       "panels": [],
@@ -1483,14 +1487,29 @@
       "dataFormat": "tsbuckets",
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "The request duration to the CL API",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 39
+        "y": 30
       },
       "heatmap": {},
       "hideZeroBuckets": true,
@@ -1499,16 +1518,54 @@
       "legend": {
         "show": false
       },
+      "options": {
+        "calculate": false,
+        "calculation": {},
+        "cellGap": 2,
+        "cellValues": {},
+        "color": {
+          "exponent": 0.5,
+          "fill": "#b4ff00",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Oranges",
+          "steps": 128
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "legend": {
+          "show": false
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "showValue": "never",
+        "tooltip": {
+          "show": true,
+          "yHistogram": true
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false,
+          "unit": "s"
+        }
+      },
+      "pluginVersion": "9.1.5",
       "reverseYBuckets": false,
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(cl_api_requests_duration_seconds_bucket{env=\"$env\", source=\"$source\", service=\"lido-keys-api\"}[1m])) by (le)",
+          "expr": "sum(rate(cl_api_requests_duration_seconds_bucket[1m])) by (le)",
           "format": "heatmap",
           "legendFormat": "{{le}}",
           "range": true,
@@ -1534,7 +1591,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "noLhFRTVz"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Number of request errors to the CL API",
       "fieldConfig": {
@@ -1543,6 +1600,8 @@
             "mode": "thresholds"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "errors/minute",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -1592,14 +1651,15 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 39
+        "y": 30
       },
       "id": 44,
       "options": {
         "legend": {
           "calcs": ["lastNotNull"],
           "displayMode": "table",
-          "placement": "right"
+          "placement": "right",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -1610,12 +1670,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "noLhFRTVz"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "increase(cl_api_requests_duration_seconds_count{env=\"$env\", source=\"$source\", service=\"lido-keys-api\", result=\"error\"}[1m])",
-          "legendFormat": "__auto",
+          "expr": "increase(cl_api_requests_duration_seconds_count{result=\"error\"}[1m])",
+          "legendFormat": "{{status}}",
           "range": true,
           "refId": "A"
         }
@@ -1625,138 +1685,16 @@
     }
   ],
   "refresh": "",
-  "schemaVersion": 36,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
-        "allValue": "[a-z]{4,}",
-        "current": {
-          "selected": false,
-          "text": ["All"],
-          "value": ["$__all"]
-        },
-        "hide": 0,
-        "includeAll": true,
-        "label": "Log level",
-        "multi": true,
-        "name": "log_level",
-        "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          },
-          {
-            "selected": false,
-            "text": "error",
-            "value": "error"
-          },
-          {
-            "selected": false,
-            "text": "warn",
-            "value": "warn"
-          },
-          {
-            "selected": false,
-            "text": "info",
-            "value": "info"
-          },
-          {
-            "selected": false,
-            "text": "debug",
-            "value": "debug"
-          }
-        ],
-        "query": "error,warn,info,debug",
-        "queryValue": "",
-        "skipUrlSync": false,
-        "type": "custom"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "eth-keysapi-1",
-          "value": "eth-keysapi-1"
-        },
+        "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "noLhFRTVz"
-        },
-        "definition": "label_values(build_info{service=\"lido-keys-api\"}, source)",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Source",
-        "multi": false,
-        "name": "source",
-        "options": [],
-        "query": {
-          "query": "label_values(build_info{service=\"lido-keys-api\"}, source)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "testnet",
-          "value": "testnet"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "noLhFRTVz"
-        },
-        "definition": "label_values(build_info{source=\"$source\", service=\"lido-keys-api\"}, env)",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Env",
-        "multi": false,
-        "name": "env",
-        "options": [],
-        "query": {
-          "query": "label_values(build_info{source=\"$source\", service=\"lido-keys-api\"}, env)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": true,
-          "text": "",
-          "value": ""
-        },
-        "hide": 0,
-        "label": "Search in logs",
-        "name": "search",
-        "options": [
-          {
-            "selected": true,
-            "text": "",
-            "value": ""
-          }
-        ],
-        "query": "",
-        "skipUrlSync": false,
-        "type": "textbox"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "noLhFRTVz"
+          "uid": "${DS_PROMETHEUS}"
         },
         "definition": "label_values(lido_keys_api_job_duration_seconds_bucket,exported_job)",
         "hide": 2,
@@ -1776,14 +1714,10 @@
         "type": "query"
       },
       {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
+        "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "noLhFRTVz"
+          "uid": "${DS_PROMETHEUS}"
         },
         "definition": "label_values(lido_keys_api_nonce_value, srModuleId)",
         "hide": 2,
@@ -1811,7 +1745,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "Keys API",
-  "uid": "bBoEsycVk",
-  "version": 38,
+  "uid": "my_uid",
+  "version": 3,
   "weekStart": ""
 }

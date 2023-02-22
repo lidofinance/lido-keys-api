@@ -31,11 +31,6 @@ export class RegistryService {
     private readonly entityManager: EntityManager,
   ) {}
 
-  public async onModuleInit(): Promise<void> {
-    // Do not wait for initialization to avoid blocking the main process
-    this.initialize().catch((err) => this.logger.error(err));
-  }
-
   /**
    * Initializes the job
    */
@@ -56,7 +51,10 @@ export class RegistryService {
   private async updateKeys(): Promise<void> {
     await this.jobService.wrapJob({ name: 'Update keys from NodeOperatorRegistry' }, async () => {
       await this.keyRegistryService.update('latest');
-      await this.updateMetaForMetrics();
+
+      // Update cached data to quick access
+      await Promise.all([this.updateMetaForMetrics(), this.updateOperatorsMap()]);
+
       this.updateMetrics();
     });
   }
@@ -64,6 +62,7 @@ export class RegistryService {
   protected lastTimestamp: number | undefined = undefined;
   protected lastBlockNumber: number | undefined = undefined;
   protected lastNonce: number | undefined = undefined;
+  protected operatorsMap: Record<number, RegistryOperator> = {};
 
   /**
    * Updates timestamp of the last registry update
@@ -73,6 +72,18 @@ export class RegistryService {
     this.lastTimestamp = meta?.timestamp ?? this.lastTimestamp;
     this.lastBlockNumber = meta?.blockNumber ?? this.lastBlockNumber;
     this.lastNonce = meta?.keysOpIndex ?? this.lastNonce;
+  }
+
+  /**
+   * Updates cached operators map
+   */
+  protected async updateOperatorsMap(): Promise<void> {
+    const operators = await this.operatorStorageService.findAll();
+
+    this.operatorsMap = operators.reduce((operatorsMap, operator) => {
+      operatorsMap[operator.index] = operator;
+      return operatorsMap;
+    }, {});
   }
 
   public async getKeyWithMetaByPubkey(pubkey: string): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
@@ -174,6 +185,30 @@ export class RegistryService {
     this.lastBlockNumber && this.prometheusService.registryBlockNumber.set(this.lastBlockNumber);
     // this value will be different for all SR modules
     this.lastNonce && this.prometheusService.registryNonce.set({ srModuleId: 1 }, this.lastNonce);
+
+    const operators = Object.values(this.operatorsMap);
+
+    this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.reset();
+
+    operators.forEach((operator) => {
+      this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
+        {
+          operator: operator.index,
+          srModuleId: 1,
+          used: 'true',
+        },
+        operator.usedSigningKeys,
+      );
+
+      this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
+        {
+          operator: operator.index,
+          srModuleId: 1,
+          used: 'false',
+        },
+        operator.totalSigningKeys - operator.usedSigningKeys,
+      );
+    });
 
     this.logger.log('Registry metrics updated');
   }
