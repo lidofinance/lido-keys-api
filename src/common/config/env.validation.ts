@@ -154,16 +154,6 @@ export class EnvironmentVariables {
   @IsBoolean()
   @Transform(({ value }) => toBoolean(value))
   VALIDATOR_REGISTRY_ENABLE = true;
-
-  // Enable fetching unused keys
-  @IsOptional()
-  @IsBoolean()
-  @Transform(({ value }) => toBoolean(value))
-  FETCHING_UNUSED_KEYS_ENABLE = true;
-
-  @IsOptional()
-  @IsString()
-  JOB_INTERVAL_REGISTRY_KEYS_OPERATOR_METRIC = CronExpression.EVERY_30_SECONDS;
 }
 
 export function validate(config: Record<string, unknown>) {

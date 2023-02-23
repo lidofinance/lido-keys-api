@@ -5,6 +5,7 @@ groups:
         expr: time() - lido_keys_api_last_update_timestamp{} >= 5 * 60
         labels:
           severity: warning
+          service: keys_api
           app_team: tooling
         annotations:
           summary: Keys are outdated
