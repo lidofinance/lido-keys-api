@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { JobsService } from './jobs.service';
-import { RegistryModule } from './registry/registry.module';
-import { ValidatorsRegistryModule } from './validators-registry/validators-registry.module';
+import { KeysUpdateModule } from './keys-update/keys-update.module';
+import { ValidatorsUpdateModule } from './validators-update/validators-update.module';
 
 @Module({
-  imports: [RegistryModule, ValidatorsRegistryModule],
+  imports: [KeysUpdateModule, ValidatorsUpdateModule],
   providers: [JobsService],
 })
 export class JobsModule {}

@@ -22,4 +22,13 @@ export class ExecutionProviderService {
     const { chainId } = await this.provider.getNetwork();
     return chainId;
   }
+
+  /**
+   *
+   * Returns block hash
+   */
+  public async getBlockHash(blockHashOrBlockTag: number | string): Promise<string> {
+    const block = await this.provider.getBlock(blockHashOrBlockTag);
+    return block.hash;
+  }
 }

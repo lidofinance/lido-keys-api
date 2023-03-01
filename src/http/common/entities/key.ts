@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { RegistryKey as LibRegistryKey } from '@lido-nestjs/registry';
+import { SRModuleKey } from './sr-module-key';
 
 export class Key {
-  constructor(key: LibRegistryKey) {
+  constructor(key: SRModuleKey) {
     this.key = key.key;
     this.depositSignature = key.depositSignature;
     this.operatorIndex = key.operatorIndex;

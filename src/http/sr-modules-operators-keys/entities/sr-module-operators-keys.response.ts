@@ -1,6 +1,6 @@
 import { ApiProperty, getSchemaPath, ApiExtraModels } from '@nestjs/swagger';
 import { SRModule } from 'http/common/entities/';
-import { RegistryKey as CuratedKey } from 'http/common/entities/';
+import { CuratedKey } from 'http/common/entities/';
 import { CuratedOperator } from 'http/common/entities/';
 import { ELMeta } from 'http/common/entities/';
 

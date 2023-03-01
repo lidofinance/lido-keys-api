@@ -1,17 +1,17 @@
-import { RegistryService } from 'jobs/registry/registry.service';
-import { ValidatorsRegistryService } from 'jobs/validators-registry/validators-registry.service';
 import { ConfigService } from 'common/config';
 import { CLBlockSnapshot, ELBlockSnapshot } from 'http/common/entities';
 import { APP_VERSION } from 'app/app.constants';
 import { Status } from './entities';
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
+import { CuratedModuleService } from 'staking-router-modules';
+import { ValidatorsService } from 'validators';
 
 @Injectable()
 export class StatusService {
   constructor(
-    protected readonly registryService: RegistryService,
-    protected readonly validatorsRegistryService: ValidatorsRegistryService,
+    protected readonly curatedService: CuratedModuleService,
+    protected readonly validatorsService: ValidatorsService,
     protected readonly configService: ConfigService,
     private readonly entityManager: EntityManager,
   ) {}
@@ -20,8 +20,8 @@ export class StatusService {
     const chainId = this.configService.get('CHAIN_ID');
 
     const { registryMeta, validatorsMeta } = await this.entityManager.transactional(async () => {
-      const registryMeta = await this.registryService.getMetaDataFromStorage();
-      const validatorsMeta = await this.validatorsRegistryService.getMetaDataFromStorage();
+      const registryMeta = await this.curatedService.getMetaDataFromStorage();
+      const validatorsMeta = await this.validatorsService.getMetaDataFromStorage();
 
       return { registryMeta, validatorsMeta };
     });

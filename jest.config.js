@@ -5,12 +5,7 @@ module.exports = {
   testRegex: '.*\\.spec\\.ts$',
   collectCoverageFrom: ['src/**/*.ts'],
   rootDir: ".",
-  moduleNameMapper: {
-    '^jobs/(.*)$': '<rootDir>/src/jobs/$1',
-    '^app/(.*)$': '<rootDir>/src/app/$1',
-    '^common/(.*)$': '<rootDir>/src/common/$1',
-    '^http/(.*)$': '<rootDir>/src/http/$1',
-  },
+  modulePaths: ["<rootDir>/src"],
   transform: {
     '^.+\\.ts?$': 'ts-jest',
   },

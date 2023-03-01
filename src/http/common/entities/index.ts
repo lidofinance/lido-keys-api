@@ -3,10 +3,13 @@ export * from './cl-block-snapshot';
 export * from './el-block-snapshot';
 export * from './cl-meta';
 export * from './el-meta';
+// oneOf type for SR modules meta
+export * from './sr-module-meta';
 
 // keys
 export * from './key';
-export * from './registry-key';
+export * from './curated-key'; // shouldnt exports SRModuleKey should be used everywhere instead
+export * from './sr-module-key';
 
 // modules
 export * from './sr-module';

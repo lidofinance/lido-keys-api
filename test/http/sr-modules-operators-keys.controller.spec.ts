@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test } from '@nestjs/testing';
-import {
-  SRModulesOperatorsKeysController,
-  SRModulesOperatorsKeysService,
-} from '../../src/http/sr-modules-operators-keys';
-import { RegistryService } from '../../src/jobs/registry/registry.service';
-import { ConfigService } from '../../src/common/config';
+import { SRModulesOperatorsKeysController, SRModulesOperatorsKeysService } from 'http/sr-modules-operators-keys';
+import { KeysUpdateService } from 'jobs/keys-update';
+import { ConfigService } from 'common/config';
 import {
   curatedOperators,
   expectedOperatorsResponse,
@@ -14,12 +11,18 @@ import {
   elBlockSnapshot,
   curatedModuleGoerli,
   curatedKeys,
+  stakingModulesMainnet,
+  curatedModuleGoerliResponse,
+  curatedModuleMainnetResponse,
 } from '../fixtures';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { CuratedModuleService } from 'staking-router-modules';
+import { ModuleId } from 'http/common/entities';
 
 describe('SRModulesOperatorsController', () => {
   let operatorsKeysController: SRModulesOperatorsKeysController;
-  let registryService: RegistryService;
+  let keysUpdateService: KeysUpdateService;
+  let curatedModuleService: CuratedModuleService;
 
   class ConfigServiceMock {
     get(value) {
@@ -27,7 +30,17 @@ describe('SRModulesOperatorsController', () => {
     }
   }
 
-  class RegistryServiceMock {
+  class KeysUpdateServiceMock {
+    getStakingModules() {
+      return stakingModulesMainnet;
+    }
+
+    getStakingModule(moduleId: ModuleId) {
+      return curatedModuleMainnet;
+    }
+  }
+
+  class CuratedModuleServiceMock {
     getData(filters) {
       return Promise.resolve({ operators: curatedOperators, keys: curatedKeys, meta: elMeta });
     }
@@ -44,8 +57,12 @@ describe('SRModulesOperatorsController', () => {
       providers: [
         SRModulesOperatorsKeysService,
         {
-          provide: RegistryService,
-          useClass: RegistryServiceMock,
+          provide: CuratedModuleService,
+          useClass: CuratedModuleServiceMock,
+        },
+        {
+          provide: KeysUpdateService,
+          useClass: KeysUpdateServiceMock,
         },
         {
           provide: ConfigService,
@@ -62,30 +79,38 @@ describe('SRModulesOperatorsController', () => {
     }).compile();
 
     operatorsKeysController = moduleRef.get<SRModulesOperatorsKeysController>(SRModulesOperatorsKeysController);
-    registryService = moduleRef.get<RegistryService>(RegistryService);
+    keysUpdateService = moduleRef.get<KeysUpdateService>(KeysUpdateService);
+    curatedModuleService = moduleRef.get<CuratedModuleService>(CuratedModuleService);
   });
 
   describe('get', () => {
-    test('module not found', () => {
+    test('module not found', async () => {
       process.env['CHAIN_ID'] = '1';
-      const getDataMock = jest.spyOn(registryService, 'getData');
-      expect(operatorsKeysController.getOperatorsKeys('0x12345', {})).rejects.toThrowError(
+      const getDataMock = jest.spyOn(curatedModuleService, 'getData');
+      const getStakingModuleMock = jest
+        .spyOn(keysUpdateService, 'getStakingModule')
+        .mockImplementation(() => undefined);
+
+      await expect(operatorsKeysController.getOperatorsKeys('0x12345', {})).rejects.toThrowError(
         `Module with moduleId 0x12345 is not supported`,
       );
+      expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getDataMock).toBeCalledTimes(0);
     });
 
     test('EL meta is null', async () => {
       process.env['CHAIN_ID'] = '1';
-      const getDataMock = jest.spyOn(registryService, 'getData').mockImplementation(() =>
+      const getDataMock = jest.spyOn(curatedModuleService, 'getData').mockImplementation(() =>
         // In normal situation it is impossible to get null meta and not empty operators and keys
         // but in API we just need to check meta is not null
         Promise.resolve({ operators: expectedOperatorsResponse, keys: curatedKeys, meta: null }),
       );
+      const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
       const result = await operatorsKeysController.getOperatorsKeys('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {});
 
       expect(getDataMock).toBeCalledTimes(1);
       expect(getDataMock).lastCalledWith({});
+      expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(result).toEqual({
         data: null,
         meta: null,
@@ -94,7 +119,8 @@ describe('SRModulesOperatorsController', () => {
 
     test('successfully get data on mainnet', async () => {
       process.env['CHAIN_ID'] = '1';
-      const getDataMock = jest.spyOn(registryService, 'getData');
+      const getDataMock = jest.spyOn(curatedModuleService, 'getData');
+      const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
       const result = await operatorsKeysController.getOperatorsKeys('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
         used: true,
         operatorIndex: 1,
@@ -105,11 +131,12 @@ describe('SRModulesOperatorsController', () => {
         used: true,
         operatorIndex: 1,
       });
+      expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(result).toEqual({
         data: {
           operators: expectedOperatorsResponse,
           keys: curatedKeys,
-          module: curatedModuleMainnet,
+          module: curatedModuleMainnetResponse,
         },
         meta: {
           elBlockSnapshot,
@@ -119,7 +146,10 @@ describe('SRModulesOperatorsController', () => {
 
     test('successfully get data on goerli', async () => {
       process.env['CHAIN_ID'] = '5';
-      const getDataMock = jest.spyOn(registryService, 'getData');
+      const getDataMock = jest.spyOn(curatedModuleService, 'getData');
+      const getStakingModuleMock = jest
+        .spyOn(keysUpdateService, 'getStakingModule')
+        .mockImplementation(() => curatedModuleGoerli);
       const result = await operatorsKeysController.getOperatorsKeys('0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320', {
         used: true,
         operatorIndex: 1,
@@ -130,11 +160,12 @@ describe('SRModulesOperatorsController', () => {
         used: true,
         operatorIndex: 1,
       });
+      expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(result).toEqual({
         data: {
           operators: expectedOperatorsResponse,
           keys: curatedKeys,
-          module: curatedModuleGoerli,
+          module: curatedModuleGoerliResponse,
         },
         meta: {
           elBlockSnapshot,
@@ -144,7 +175,8 @@ describe('SRModulesOperatorsController', () => {
 
     test('successfully get data by module id is SR module id', async () => {
       process.env['CHAIN_ID'] = '1';
-      const getDataMock = jest.spyOn(registryService, 'getData');
+      const getDataMock = jest.spyOn(curatedModuleService, 'getData');
+      const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
       const result = await operatorsKeysController.getOperatorsKeys(1, { used: true, operatorIndex: 1 });
 
       expect(getDataMock).toBeCalledTimes(1);
@@ -152,11 +184,12 @@ describe('SRModulesOperatorsController', () => {
         used: true,
         operatorIndex: 1,
       });
+      expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(result).toEqual({
         data: {
           operators: expectedOperatorsResponse,
           keys: curatedKeys,
-          module: curatedModuleMainnet,
+          module: curatedModuleMainnetResponse,
         },
         meta: {
           elBlockSnapshot,
@@ -166,16 +199,18 @@ describe('SRModulesOperatorsController', () => {
 
     test('successfully get data without filters', async () => {
       process.env['CHAIN_ID'] = '1';
-      const getDataMock = jest.spyOn(registryService, 'getData');
+      const getDataMock = jest.spyOn(curatedModuleService, 'getData');
+      const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
       const result = await operatorsKeysController.getOperatorsKeys(1, {});
 
       expect(getDataMock).toBeCalledTimes(1);
       expect(getDataMock).lastCalledWith({});
+      expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(result).toEqual({
         data: {
           operators: expectedOperatorsResponse,
           keys: curatedKeys,
-          module: curatedModuleMainnet,
+          module: curatedModuleMainnetResponse,
         },
         meta: {
           elBlockSnapshot,

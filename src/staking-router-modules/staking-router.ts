@@ -1,15 +1,11 @@
 import { Global, Module } from '@nestjs/common';
-import { RegistryService } from './registry.service';
-import { LoggerModule } from 'common/logger';
-import { JobModule } from 'common/job';
 import { ExecutionProvider } from 'common/execution-provider';
 import { KeyRegistryModule } from '@lido-nestjs/registry';
+import { CuratedModuleService } from './curated-module.service';
 
 @Global()
 @Module({
   imports: [
-    LoggerModule,
-    JobModule,
     KeyRegistryModule.forFeatureAsync({
       inject: [ExecutionProvider],
       async useFactory(provider) {
@@ -17,7 +13,7 @@ import { KeyRegistryModule } from '@lido-nestjs/registry';
       },
     }),
   ],
-  providers: [RegistryService],
-  exports: [RegistryService],
+  providers: [CuratedModuleService],
+  exports: [CuratedModuleService],
 })
-export class RegistryModule {}
+export class StakingRouter {}

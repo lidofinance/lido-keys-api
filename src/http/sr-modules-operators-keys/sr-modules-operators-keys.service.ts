@@ -1,34 +1,34 @@
 import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
 import { ELBlockSnapshot, ModuleId, SRModule } from 'http/common/entities';
-import { CuratedOperator, RegistryKey as CuratedKey } from 'http/common/entities';
+import { CuratedOperator, CuratedKey } from 'http/common/entities';
 import { KeyQuery } from 'http/common/entities';
-import { RegistryService } from 'jobs/registry/registry.service';
-import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
-import { getSRModule } from 'http/common/sr-modules.utils';
+import { ConfigService } from 'common/config';
 import { SRModuleOperatorsKeysResponse } from './entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
+import { KeysUpdateService } from 'jobs/keys-update';
 
 @Injectable()
 export class SRModulesOperatorsKeysService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected readonly registry: RegistryService,
+    protected readonly curatedService: CuratedModuleService,
     protected readonly configService: ConfigService,
+    protected keysUpdateService: KeysUpdateService,
   ) {}
 
   public async get(moduleId: ModuleId, filters: KeyQuery): Promise<SRModuleOperatorsKeysResponse> {
-    // At first we should find module by id in our list, in future without chainId
-    const chainId = this.configService.get('CHAIN_ID');
-    const module = getSRModule(moduleId, chainId);
+    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
 
-    if (!module) {
+    if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
     }
-    // We supppose if module in list, Keys API knows how to work with it
+
+    // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type == CURATED_ONCHAIN_V1_TYPE) {
-      const { keys, operators, meta } = await this.registry.getData(filters);
+    if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
+      const { keys, operators, meta } = await this.curatedService.getData(filters);
 
       if (!meta) {
         this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
@@ -46,7 +46,7 @@ export class SRModulesOperatorsKeysService {
         data: {
           operators: curatedOperators,
           keys: curatedKeys,
-          module: new SRModule(meta.keysOpIndex, module),
+          module: new SRModule(meta.keysOpIndex, stakingModule),
         },
 
         meta: {

@@ -1,14 +1,14 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
-import { ValidatorsRegistryService } from './validators-registry/validators-registry.service';
-import { RegistryService } from './registry/registry.service';
+import { ValidatorsUpdateService } from './validators-update/validators-update.service';
+import { KeysUpdateService } from './keys-update';
 
 @Injectable()
 export class JobsService implements OnModuleInit {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected readonly registryService: RegistryService,
-    protected readonly validatorRegistryService: ValidatorsRegistryService,
+    protected readonly keysUpdateService: KeysUpdateService,
+    protected readonly validatorUpdateService: ValidatorsUpdateService,
   ) {}
 
   public async onModuleInit(): Promise<void> {
@@ -20,13 +20,13 @@ export class JobsService implements OnModuleInit {
    * Initializes jobs
    */
   protected async initialize(): Promise<void> {
-    await this.registryService.initialize();
+    await this.keysUpdateService.initialize();
 
-    if (this.validatorRegistryService.disabledRegistry()) {
+    if (this.validatorUpdateService.disabledRegistry()) {
       this.logger.log('Job for updating validators is disabled');
       return;
     }
 
-    await this.validatorRegistryService.initialize();
+    await this.validatorUpdateService.initialize();
   }
 }

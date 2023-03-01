@@ -1,5 +1,5 @@
 import { Injectable, Inject, InternalServerErrorException, NotFoundException, LoggerService } from '@nestjs/common';
-import { ConfigService, CURATED_ONCHAIN_V1_TYPE } from 'common/config';
+import { ConfigService } from 'common/config';
 import {
   ExitValidatorListResponse,
   ExitValidator,
@@ -8,12 +8,12 @@ import {
   Query as ValidatorsQuery,
 } from './entities';
 import { CLBlockSnapshot, ModuleId } from 'http/common/entities/';
-import { ValidatorsRegistryService } from 'jobs/validators-registry/validators-registry.service';
-import { getSRModule } from 'http/common/sr-modules.utils';
-import { RegistryService } from 'jobs/registry/registry.service';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { VALIDATORS_STATUSES_FOR_EXIT, DEFAULT_EXIT_PERCENT } from './constants';
 import { ConsensusMeta, Validator } from '@lido-nestjs/validators-registry';
+import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
+import { ValidatorsService } from 'validators';
+import { KeysUpdateService } from 'jobs/keys-update';
 
 const VALIDATORS_REGISRY_DISABLED_ERROR = 'Validators Registry is disabled. Check environment variables';
 
@@ -21,9 +21,10 @@ const VALIDATORS_REGISRY_DISABLED_ERROR = 'Validators Registry is disabled. Chec
 export class SRModulesValidatorsService {
   constructor(
     protected readonly configService: ConfigService,
-    protected readonly registryService: RegistryService,
-    protected readonly validatorsRegistryService: ValidatorsRegistryService,
+    protected readonly curatedService: CuratedModuleService,
+    protected readonly validatorsService: ValidatorsService,
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
+    protected keysUpdateService: KeysUpdateService,
   ) {}
 
   async getOldestLidoValidators(
@@ -36,17 +37,16 @@ export class SRModulesValidatorsService {
       throw new InternalServerErrorException(VALIDATORS_REGISRY_DISABLED_ERROR);
     }
 
-    // At first, we should find module by id in our list, in future without chainId
-    const chainId = this.configService.get('CHAIN_ID');
-    const module = getSRModule(moduleId, chainId);
+    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
 
-    if (!module) {
+    if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
     }
-    // We supppose if module in list, Keys API knows how to work with it
+
+    // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type === CURATED_ONCHAIN_V1_TYPE) {
+    if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
       const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
 
       if (!clMeta) {
@@ -80,17 +80,16 @@ export class SRModulesValidatorsService {
       throw new InternalServerErrorException(VALIDATORS_REGISRY_DISABLED_ERROR);
     }
 
-    // At first, we should find module by id in our list, in future without chainId
-    const chainId = this.configService.get('CHAIN_ID');
-    const module = getSRModule(moduleId, chainId);
+    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
 
-    if (!module) {
+    if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
     }
-    // We supppose if module in list, Keys API knows how to work with it
+
+    // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (module.type === CURATED_ONCHAIN_V1_TYPE) {
+    if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
       const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
 
       if (!clMeta) {
@@ -119,7 +118,7 @@ export class SRModulesValidatorsService {
     filters: ValidatorsQuery,
   ): Promise<{ validators: Validator[]; meta: ConsensusMeta | null }> {
     // get used keys for operator
-    const { keys, meta: elMeta } = await this.registryService.getKeysWithMeta({
+    const { keys, meta: elMeta } = await this.curatedService.getKeysWithMeta({
       used: true,
       operatorIndex: operatorId,
     });
@@ -139,7 +138,7 @@ export class SRModulesValidatorsService {
     const percent =
       filters?.max_amount == undefined && filters?.percent == undefined ? DEFAULT_EXIT_PERCENT : filters?.percent;
 
-    const result = await this.validatorsRegistryService.getOldestValidators({
+    const result = await this.validatorsService.getOldestValidators({
       pubkeys,
       statuses: VALIDATORS_STATUSES_FOR_EXIT,
       max_amount: filters?.max_amount,
