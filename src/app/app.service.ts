@@ -18,7 +18,9 @@ export class AppService implements OnModuleInit {
   ) {}
 
   public async onModuleInit(): Promise<void> {
-    await this.validateNetwork();
+    if (this.configService.get('VALIDATOR_REGISTRY_ENABLE')) {
+      await this.validateNetwork();
+    }
 
     const env = this.configService.get('NODE_ENV');
     const version = APP_VERSION;
