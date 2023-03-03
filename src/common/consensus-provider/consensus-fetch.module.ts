@@ -12,6 +12,10 @@ import { ConsensusFetchService } from './consensus-fetch.service';
     {
       provide: FETCH_GLOBAL_OPTIONS_TOKEN,
       async useFactory(configService: ConfigService, prometheusService: PrometheusService) {
+        if (!configService.get('VALIDATOR_REGISTRY_ENABLE')) {
+          return {};
+        }
+
         return {
           baseUrls: configService.get('CL_API_URLS'),
           retryPolicy: {

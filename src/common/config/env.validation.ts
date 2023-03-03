@@ -9,6 +9,7 @@ import {
   ArrayMinSize,
   IsInt,
   IsBoolean,
+  ValidateIf,
 } from 'class-validator';
 import { Environment, LogLevel, LogFormat } from './interfaces';
 import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
@@ -101,11 +102,6 @@ export class EnvironmentVariables {
   @Transform(({ value }) => value.split(','))
   PROVIDERS_URLS!: NonEmptyArray<string>;
 
-  @IsArray()
-  @ArrayMinSize(1)
-  @Transform(({ value }) => value.split(','))
-  CL_API_URLS!: string[];
-
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
   CHAIN_ID!: number;
@@ -154,6 +150,12 @@ export class EnvironmentVariables {
   @IsBoolean()
   @Transform(({ value }) => toBoolean(value))
   VALIDATOR_REGISTRY_ENABLE = true;
+
+  @ValidateIf((e) => e.VALIDATOR_REGISTRY_ENABLE === true)
+  @IsArray()
+  @ArrayMinSize(1)
+  @Transform(({ value }) => value.split(','))
+  CL_API_URLS: string[] = [];
 }
 
 export function validate(config: Record<string, unknown>) {
