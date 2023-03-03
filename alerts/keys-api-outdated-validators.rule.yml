@@ -5,6 +5,7 @@ groups:
         expr: time() - lido_keys_api_validators_registry_last_update_block_timestamp{} >=  60 * 30
         labels:
           severity: warning
+          service: keys_api
           app_team: tooling
         annotations:
           summary: Validators are outdated
