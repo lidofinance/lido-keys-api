@@ -7,6 +7,7 @@ COPY ./tsconfig*.json ./
 COPY ./src ./src
 
 RUN yarn install --frozen-lockfile --non-interactive && yarn cache clean
+RUN yarn typechain
 RUN yarn build
 
 FROM node:18.14.0-alpine3.17
