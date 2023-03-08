@@ -23,7 +23,7 @@ export class ValidatorsService {
     protected readonly validatorsRegistry: ValidatorsRegistryInterface,
     protected readonly configService: ConfigService,
   ) {}
-
+  // TODO: is - for bool
   public disabledRegistry() {
     return !this.configService.get('VALIDATOR_REGISTRY_ENABLE');
   }
@@ -89,6 +89,7 @@ export class ValidatorsService {
 
   private getPercentOfValidators(validators: Validator[], percent: number): Validator[] {
     // Does this round method suit to us?
+    // TODO: return at least 1 validator
     const amount = Math.round((validators.length * percent) / 100);
     return validators.slice(0, amount);
   }

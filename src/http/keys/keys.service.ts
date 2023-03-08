@@ -18,7 +18,8 @@ export class KeysService {
   async get(filters: KeyQuery): Promise<KeyListResponse> {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
-    if (stakingModules.length == 0) {
+    if (stakingModules.length === 0) {
+      // TODO: move to constants
       return {
         data: [],
         meta: null,
@@ -33,7 +34,7 @@ export class KeysService {
     // staking router module we need to wrap code below in transaction (with serializable isolation level that is default in mikro orm )
     // to prevent reading keys for different blocks
     // But now we have only one module and in current future we will try to find solution without transactions
-
+    // TODO: rewrite to "for of" after refactoring to stakingRouterModule
     for (let i = 0; i < stakingModules.length; i++) {
       if (stakingModules[i].type == STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
         // If some of modules has null meta, it means update hasnt been finished
@@ -55,7 +56,7 @@ export class KeysService {
         // lets use meta of first module in list
         // currently we sure if stakingModules is not empty, we will have in list Curated Module
         // in future this check should be in each if clause
-        if (i == 0) {
+        if (i === 0) {
           elBlockSnapshot = new ELBlockSnapshot(meta);
         }
 

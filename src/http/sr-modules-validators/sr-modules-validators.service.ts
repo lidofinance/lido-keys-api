@@ -15,7 +15,7 @@ import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-module
 import { ValidatorsService } from 'validators';
 import { KeysUpdateService } from 'jobs/keys-update';
 
-const VALIDATORS_REGISRY_DISABLED_ERROR = 'Validators Registry is disabled. Check environment variables';
+const VALIDATORS_REGISTRY_DISABLED_ERROR = 'Validators Registry is disabled. Check environment variables';
 
 @Injectable()
 export class SRModulesValidatorsService {
@@ -34,7 +34,7 @@ export class SRModulesValidatorsService {
   ): Promise<ExitValidatorListResponse> {
     if (this.disabledRegistry()) {
       this.logger.warn('ValidatorsRegistry is disabled in API');
-      throw new InternalServerErrorException(VALIDATORS_REGISRY_DISABLED_ERROR);
+      throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
 
     const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
@@ -77,7 +77,7 @@ export class SRModulesValidatorsService {
   ): Promise<ExitPresignMessageListResponse> {
     if (this.disabledRegistry()) {
       this.logger.warn('ValidatorsRegistry is disabled in API');
-      throw new InternalServerErrorException(VALIDATORS_REGISRY_DISABLED_ERROR);
+      throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
 
     const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
@@ -147,7 +147,7 @@ export class SRModulesValidatorsService {
 
     if (!result) {
       // if result of this method is null it means Validators Registry is disabled
-      throw new InternalServerErrorException(VALIDATORS_REGISRY_DISABLED_ERROR);
+      throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
 
     const { validators, meta: clMeta } = result;
@@ -168,6 +168,7 @@ export class SRModulesValidatorsService {
       this.logger.warn('Last Execution Layer block number in our database older than last Consensus Layer');
       // add metric or alert on breaking el > cl condition
       // TODO: what answer will be better here?
+      // TODO: describe in doc
       throw new InternalServerErrorException(
         'Last Execution Layer block number in our database older than last Consensus Layer',
       );

@@ -18,7 +18,7 @@ export class CuratedModuleService {
     protected readonly keyStorageService: RegistryKeyStorageService,
     protected readonly metaStorageService: RegistryMetaStorageService,
     protected readonly operatorStorageService: RegistryOperatorStorageService,
-    private readonly entityManager: EntityManager,
+    protected readonly entityManager: EntityManager,
   ) {}
 
   public async updateKeys(blockHashOrBlockTag: string | number): Promise<void> {
