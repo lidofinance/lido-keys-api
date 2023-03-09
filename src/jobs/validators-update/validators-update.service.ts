@@ -24,6 +24,11 @@ export class ValidatorsUpdateService {
     protected readonly validatorsService: ValidatorsService,
   ) {}
 
+  protected lastBlockTimestamp: number | undefined = undefined;
+  protected lastBlockNumber: number | undefined = undefined;
+  protected lastSlot: number | undefined = undefined;
+
+  // TODO: is prefix
   public disabledRegistry() {
     return !this.configService.get('VALIDATOR_REGISTRY_ENABLE');
   }
@@ -51,11 +56,8 @@ export class ValidatorsUpdateService {
     });
   }
 
-  protected lastBlockTimestamp: number | undefined = undefined;
-  protected lastBlockNumber: number | undefined = undefined;
-  protected lastSlot: number | undefined = undefined;
-
   private updateMetrics() {
+    // TODO: IF
     this.lastBlockTimestamp &&
       this.prometheusService.validatorsRegistryLastTimestampUpdate.set(this.lastBlockTimestamp);
     this.lastBlockNumber && this.prometheusService.validatorsRegistryLastBlockNumber.set(this.lastBlockNumber);

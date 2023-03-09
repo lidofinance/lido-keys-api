@@ -31,7 +31,7 @@ const findMigrations = (mainFolder: string, npmPackageNames: string[]): Migratio
       const module = require(filename);
       const ext = path.extname(filename);
       const fileNameWithoutExt = path.basename(filename, ext);
-
+      // TODO: readable var name
       const clazz = module[fileNameWithoutExt];
 
       if (clazz) {

@@ -22,8 +22,9 @@ export class StakingRouterFetchService {
 
     this.loggerService.debug?.(`Modules ${modules}`);
 
-    const trasformedModules = await Promise.all(
+    const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
+        // TODO: only active
         const stakingModuleType = (await this.iStakingModule.getType(
           stakingModule.stakingModuleAddress,
           blockTag,
@@ -49,8 +50,8 @@ export class StakingRouterFetchService {
       }),
     );
 
-    this.loggerService.debug?.(`Staking Router modules list: ${JSON.stringify(trasformedModules)}`);
+    this.loggerService.debug?.(`Staking Router modules list`, transformedModules);
 
-    return trasformedModules;
+    return transformedModules;
   }
 }

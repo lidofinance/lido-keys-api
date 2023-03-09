@@ -34,7 +34,7 @@ export class KeysUpdateService {
    */
   public async initialize(): Promise<void> {
     await this.updateKeys();
-
+    // TODO: registry -> keys-registry
     const cronTime = this.configService.get('JOB_INTERVAL_REGISTRY');
     const job = new CronJob(cronTime, () => this.updateKeys());
     job.start();
@@ -47,7 +47,7 @@ export class KeysUpdateService {
   }
 
   public getStakingModule(moduleId: ModuleId): StakingModule | undefined {
-    return this.stakingModules.find((module) => module.stakingModuleAddress == moduleId || module.id == moduleId);
+    return this.stakingModules.find((module) => module.stakingModuleAddress === moduleId || module.id === moduleId);
   }
 
   /**
@@ -66,7 +66,7 @@ export class KeysUpdateService {
 
       // Here should be a transaction in future that will wrap updateKeys calls of all modules
       // or other way to call updateKeys method consistently
-
+      // TODO: map with Promise.all or "for of"
       this.stakingModules.forEach(async (stakingModule) => {
         if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
           this.logger.debug?.('start updating curated keys');
@@ -107,6 +107,7 @@ export class KeysUpdateService {
    */
   private setMetrics() {
     // common metrics
+    // TODO: refactor to IF
     this.lastTimestamp && this.prometheusService.registryLastUpdate.set(this.lastTimestamp);
     this.lastBlockNumber && this.prometheusService.registryBlockNumber.set(this.lastBlockNumber);
 
@@ -115,6 +116,7 @@ export class KeysUpdateService {
   }
 
   private setCuratedMetrics() {
+    // TODO: refactor to IF
     this.curatedNonce && this.prometheusService.registryNonce.set({ srModuleId: 1 }, this.curatedNonce);
     this.setCuratedOperatorsMetric();
 

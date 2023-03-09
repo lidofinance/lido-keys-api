@@ -5,6 +5,7 @@ import { KeysController } from './keys.controller';
 import { KeysService } from './keys.service';
 
 @Module({
+  // TODO: transfer the desired method from KeysUpdateModule
   imports: [LoggerModule, KeysUpdateModule],
   controllers: [KeysController],
   providers: [KeysService],
