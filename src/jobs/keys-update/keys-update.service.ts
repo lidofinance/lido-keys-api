@@ -34,12 +34,11 @@ export class KeysUpdateService {
    */
   public async initialize(): Promise<void> {
     await this.updateKeys();
-    // TODO: registry -> keys-registry
     const cronTime = this.configService.get('JOB_INTERVAL_REGISTRY');
     const job = new CronJob(cronTime, () => this.updateKeys());
     job.start();
 
-    this.logger.log('Update Staking Router Modules keys', { service: 'registry', cronTime });
+    this.logger.log('Update Staking Router Modules keys', { service: 'keys-registry', cronTime });
   }
 
   public getStakingModules() {
@@ -47,7 +46,7 @@ export class KeysUpdateService {
   }
 
   public getStakingModule(moduleId: ModuleId): StakingModule | undefined {
-    return this.stakingModules.find((module) => module.stakingModuleAddress === moduleId || module.id === moduleId);
+    return this.stakingModules.find((module) => module.stakingModuleAddress == moduleId || module.id == moduleId);
   }
 
   /**
@@ -66,13 +65,15 @@ export class KeysUpdateService {
 
       // Here should be a transaction in future that will wrap updateKeys calls of all modules
       // or other way to call updateKeys method consistently
-      // TODO: map with Promise.all or "for of"
-      this.stakingModules.forEach(async (stakingModule) => {
-        if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-          this.logger.debug?.('start updating curated keys');
-          await this.curatedModuleService.updateKeys(blockHash);
-        }
-      });
+
+      await Promise.all(
+        this.stakingModules.map(async (stakingModule) => {
+          if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
+            this.logger.debug?.('start updating curated keys');
+            await this.curatedModuleService.updateKeys(blockHash);
+          }
+        }),
+      );
 
       // Update cached data to quick access
       await this.updateMetricsCache();
@@ -107,17 +108,21 @@ export class KeysUpdateService {
    */
   private setMetrics() {
     // common metrics
-    // TODO: refactor to IF
-    this.lastTimestamp && this.prometheusService.registryLastUpdate.set(this.lastTimestamp);
-    this.lastBlockNumber && this.prometheusService.registryBlockNumber.set(this.lastBlockNumber);
+    if (this.lastTimestamp) {
+      this.prometheusService.registryLastUpdate.set(this.lastTimestamp);
+    }
+    if (this.lastBlockNumber) {
+      this.prometheusService.registryBlockNumber.set(this.lastBlockNumber);
+    }
 
     // curated metrics
     this.setCuratedMetrics();
   }
 
   private setCuratedMetrics() {
-    // TODO: refactor to IF
-    this.curatedNonce && this.prometheusService.registryNonce.set({ srModuleId: 1 }, this.curatedNonce);
+    if (this.curatedNonce) {
+      this.prometheusService.registryNonce.set({ srModuleId: 1 }, this.curatedNonce);
+    }
     this.setCuratedOperatorsMetric();
 
     this.logger.log('Curated Module metrics updated');

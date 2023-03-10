@@ -22,7 +22,7 @@ export class JobsService implements OnModuleInit {
   protected async initialize(): Promise<void> {
     await this.keysUpdateService.initialize();
 
-    if (this.validatorUpdateService.disabledRegistry()) {
+    if (this.validatorUpdateService.isDisabledRegistry()) {
       this.logger.log('Job for updating validators is disabled');
       return;
     }

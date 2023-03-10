@@ -23,13 +23,12 @@ export class ValidatorsService {
     protected readonly validatorsRegistry: ValidatorsRegistryInterface,
     protected readonly configService: ConfigService,
   ) {}
-  // TODO: is - for bool
-  public disabledRegistry() {
+  public isDisabledRegistry() {
     return !this.configService.get('VALIDATOR_REGISTRY_ENABLE');
   }
 
   public async updateValidators(blockId): Promise<ConsensusMeta | null> {
-    if (this.disabledRegistry()) {
+    if (this.isDisabledRegistry()) {
       this.logger.warn('ValidatorsRegistry is disabled in API');
       return null;
     }
@@ -44,7 +43,7 @@ export class ValidatorsService {
    * null if ValidatorsRegistry is disabled
    */
   public async getOldestValidators(filter: ValidatorsFilter): Promise<ConsensusValidatorsAndMetadata | null> {
-    if (this.disabledRegistry()) {
+    if (this.isDisabledRegistry()) {
       this.logger.warn('ValidatorsRegistry is disabled in API');
       return null;
     }
@@ -60,6 +59,8 @@ export class ValidatorsService {
 
     const { validators, meta } = await this.validatorsRegistry.getValidators(filter.pubkeys, where, options);
 
+    console.log(filter, filter.percent, typeof filter.percent, filter.percent == 0);
+
     // the lower the index, the older the validator
     // if percent is provided, we will get percent oldest validators from db
     if (filter.percent) {
@@ -71,15 +72,17 @@ export class ValidatorsService {
       return { validators: nextValidatorsToExit, meta };
     }
 
-    // TODO: if percent is 0 and max_amount is set, what should we use ?
-    // or if we took percent 5 of 9 validators, validators amount will be 0
-    // what should we return ?
+    // TODO: if provided percent is 0 what should we do ?
+    // return default value in this case is unpredictable. so lets return []
+    if (filter.percent == 0) {
+      return { validators: [], meta };
+    }
 
     return { validators, meta };
   }
 
   public async getMetaDataFromStorage(): Promise<ConsensusMeta | null> {
-    if (this.disabledRegistry()) {
+    if (this.isDisabledRegistry()) {
       this.logger.warn('ValidatorsRegistry is disabled in API');
       return null;
     }
@@ -88,9 +91,10 @@ export class ValidatorsService {
   }
 
   private getPercentOfValidators(validators: Validator[], percent: number): Validator[] {
-    // Does this round method suit to us?
-    // TODO: return at least 1 validator
-    const amount = Math.round((validators.length * percent) / 100);
-    return validators.slice(0, amount);
+    // TODO: Does this ceil method suit to our purposes?
+    const amount = (validators.length * percent) / 100;
+    // or const roundedAmount = amount < 1 ? 1 : Math.round(amount);
+    const ceilAmount = Math.ceil(amount);
+    return validators.slice(0, ceilAmount);
   }
 }
