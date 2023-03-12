@@ -2,7 +2,7 @@
 import { Test } from '@nestjs/testing';
 import { ValidatorsRegistryInterface } from '@lido-nestjs/validators-registry';
 import { operatorOneValidatorsToExit, clMeta, operatorOneUsedKeys } from '../fixtures';
-import { ValidatorsRegistryService } from '../../src/jobs/validators-registry/validators-registry.service';
+import { ValidatorsService } from 'validators';
 import { LOGGER_PROVIDER } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
 import { toBoolean, ConfigService } from 'common/config';
@@ -10,7 +10,7 @@ import { JobService } from 'common/job';
 
 describe('getOldestValidators', () => {
   let validatorsRegistryInterface: ValidatorsRegistryInterface;
-  let validatorsRegistry: ValidatorsRegistryService;
+  let validatorsRegistry: ValidatorsService;
   const OLD_ENV = process.env;
 
   class JobServiceMock {}
@@ -37,7 +37,7 @@ describe('getOldestValidators', () => {
 
     const moduleRef = await Test.createTestingModule({
       providers: [
-        ValidatorsRegistryService,
+        ValidatorsService,
         { provide: ValidatorsRegistryInterface, useClass: ValidatorsRegistryInterfaceMock },
         {
           provide: ConfigService,
@@ -62,7 +62,7 @@ describe('getOldestValidators', () => {
     }).compile();
 
     validatorsRegistryInterface = moduleRef.get<ValidatorsRegistryInterface>(ValidatorsRegistryInterface);
-    validatorsRegistry = moduleRef.get<ValidatorsRegistryService>(ValidatorsRegistryService);
+    validatorsRegistry = moduleRef.get<ValidatorsService>(ValidatorsService);
   });
 
   test('percent has a higher priority', async () => {

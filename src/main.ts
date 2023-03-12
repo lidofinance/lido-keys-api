@@ -55,7 +55,7 @@ async function bootstrap() {
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup(SWAGGER_URL, app, swaggerDocument);
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   // app
   await app.listen(appPort, '0.0.0.0', () => logger.log(`Listening on ${appPort}`));

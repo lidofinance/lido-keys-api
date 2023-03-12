@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test } from '@nestjs/testing';
-import { KeysController, KeysService } from '../../src/http/keys';
+import { KeysController, KeysService } from 'http/keys';
 import { hexZeroPad } from '@ethersproject/bytes';
-import { RegistryService } from '../../src/jobs/registry/registry.service';
+import { KeysUpdateService } from 'jobs/keys-update/keys-update.service';
+import { CuratedModuleService } from 'staking-router-modules/';
+
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { ConfigService } from '../../src/common/config';
+import { ConfigService } from 'common/config';
 
 import {
   curatedKeys,
@@ -12,11 +14,16 @@ import {
   curatedKeysWithAddressGoerli,
   elMeta,
   elBlockSnapshot,
+  stakingModulesMainnet,
+  stakingModulesGoerli,
+  curatedModuleMainnet,
 } from '../fixtures';
+import { StakingModule } from 'common/contracts';
 
 describe('Keys controller', () => {
   let keysController: KeysController;
-  let registryService: RegistryService;
+  let keysUpdateService: KeysUpdateService;
+  let curatedModuleService: CuratedModuleService;
   const OLD_ENV = process.env;
 
   class ConfigServiceMock {
@@ -25,7 +32,7 @@ describe('Keys controller', () => {
     }
   }
 
-  class RegistryServiceMock {
+  class CuratedModuleServiceMock {
     getKeysWithMeta(filters) {
       return Promise.resolve({ keys: curatedKeys, meta: elMeta });
     }
@@ -38,6 +45,12 @@ describe('Keys controller', () => {
     }
   }
 
+  class KeysUpdateServiceMock {
+    getStakingModules() {
+      return stakingModulesMainnet;
+    }
+  }
+
   beforeEach(async () => {
     jest.resetModules();
     process.env = { ...OLD_ENV };
@@ -47,8 +60,12 @@ describe('Keys controller', () => {
       providers: [
         KeysService,
         {
-          provide: RegistryService,
-          useClass: RegistryServiceMock,
+          provide: CuratedModuleService,
+          useClass: CuratedModuleServiceMock,
+        },
+        {
+          provide: KeysUpdateService,
+          useClass: KeysUpdateServiceMock,
         },
         {
           provide: ConfigService,
@@ -64,7 +81,8 @@ describe('Keys controller', () => {
       ],
     }).compile();
     keysController = moduleRef.get<KeysController>(KeysController);
-    registryService = moduleRef.get<RegistryService>(RegistryService);
+    keysUpdateService = moduleRef.get<KeysUpdateService>(KeysUpdateService);
+    curatedModuleService = moduleRef.get<CuratedModuleService>(CuratedModuleService);
   });
 
   afterAll(() => {
@@ -75,10 +93,12 @@ describe('Keys controller', () => {
     test('keys on Mainnet', async () => {
       process.env['CHAIN_ID'] = '1';
 
-      const getKeysWithMetaMock = jest.spyOn(registryService, 'getKeysWithMeta');
+      const getKeysWithMetaMock = jest.spyOn(curatedModuleService, 'getKeysWithMeta');
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
 
       const result = await keysController.get({ used: true, operatorIndex: 1 });
 
+      expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
 
@@ -93,10 +113,14 @@ describe('Keys controller', () => {
     test('keys on Goerli', async () => {
       process.env['CHAIN_ID'] = '5';
 
-      const getKeysWithMetaMock = jest.spyOn(registryService, 'getKeysWithMeta');
+      const getKeysWithMetaMock = jest.spyOn(curatedModuleService, 'getKeysWithMeta');
+      const getStakingModulesMock = jest
+        .spyOn(keysUpdateService, 'getStakingModules')
+        .mockImplementation(() => stakingModulesGoerli);
 
       const result = await keysController.get({ used: true, operatorIndex: 1 });
 
+      expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
 
@@ -112,13 +136,14 @@ describe('Keys controller', () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeysWithMetaMock = jest
-        .spyOn(registryService, 'getKeysWithMeta')
+        .spyOn(curatedModuleService, 'getKeysWithMeta')
         .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
 
       const result = await keysController.get({ used: true, operatorIndex: 1 });
 
+      expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(result).toEqual({ data: [], meta: null });
-
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
     });
@@ -126,13 +151,14 @@ describe('Keys controller', () => {
     test('request without query', async () => {
       process.env['CHAIN_ID'] = '1';
 
-      const getKeysWithMetaMock = jest.spyOn(registryService, 'getKeysWithMeta');
+      const getKeysWithMetaMock = jest.spyOn(curatedModuleService, 'getKeysWithMeta');
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
 
       const result = await keysController.get({});
 
+      expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({});
-
       expect(result).toEqual({
         data: curatedKeysWithAddressMainnet,
         meta: {
@@ -140,16 +166,43 @@ describe('Keys controller', () => {
         },
       });
     });
+
+    test('Staking Modules list is empty', async () => {
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules').mockImplementation(() => []);
+      const getKeysWithMetaMock = jest.spyOn(curatedModuleService, 'getKeysWithMeta');
+      const result = await keysController.get({});
+
+      expect(result).toEqual({ data: [], meta: null });
+      expect(getStakingModulesMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaMock).toBeCalledTimes(0);
+    });
+
+    test('Staking Modules list contains only unknown modules', async () => {
+      const unknownType: any = 'unknown-address';
+      const unknownModule: StakingModule = { ...curatedModuleMainnet, type: unknownType };
+      const getStakingModulesMock = jest
+        .spyOn(keysUpdateService, 'getStakingModules')
+        .mockImplementation(() => [unknownModule]);
+      const getKeysWithMetaMock = jest.spyOn(curatedModuleService, 'getKeysWithMeta');
+
+      const result = await keysController.get({});
+
+      expect(result).toEqual({ data: [], meta: null });
+      expect(getStakingModulesMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaMock).toBeCalledTimes(0);
+    });
   });
 
   describe('getByPubkey', () => {
     test('keys on Mainnet', async () => {
       process.env['CHAIN_ID'] = '1';
 
-      const getKeyWithMetaByPubkeyMock = jest.spyOn(registryService, 'getKeyWithMetaByPubkey');
+      const getKeyWithMetaByPubkeyMock = jest.spyOn(curatedModuleService, 'getKeyWithMetaByPubkey');
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
 
       const result = await keysController.getByPubkey(hexZeroPad('0x13', 98));
 
+      expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
 
@@ -164,10 +217,14 @@ describe('Keys controller', () => {
     test('keys on Goerli', async () => {
       process.env['CHAIN_ID'] = '5';
 
-      const getKeyWithMetaByPubkeyMock = jest.spyOn(registryService, 'getKeyWithMetaByPubkey');
+      const getKeyWithMetaByPubkeyMock = jest.spyOn(curatedModuleService, 'getKeyWithMetaByPubkey');
+      const getStakingModulesMock = jest
+        .spyOn(keysUpdateService, 'getStakingModules')
+        .mockImplementation(() => stakingModulesGoerli);
 
       const result = await keysController.getByPubkey(hexZeroPad('0x13', 98));
 
+      expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
 
@@ -183,13 +240,14 @@ describe('Keys controller', () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeyWithMetaByPubkeyMock = jest
-        .spyOn(registryService, 'getKeyWithMetaByPubkey')
+        .spyOn(curatedModuleService, 'getKeyWithMetaByPubkey')
         .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
 
       const result = await keysController.getByPubkey(hexZeroPad('0x13', 98));
 
       expect(result).toEqual({ data: [], meta: null });
-
+      expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
     });
@@ -198,13 +256,40 @@ describe('Keys controller', () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeyWithMetaByPubkeyMock = jest
-        .spyOn(registryService, 'getKeyWithMetaByPubkey')
+        .spyOn(curatedModuleService, 'getKeyWithMetaByPubkey')
         .mockImplementation(() => Promise.resolve({ keys: [], meta: elMeta }));
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
 
-      expect(keysController.getByPubkey('')).rejects.toThrowError(`There are no keys with  public key in db.`);
+      await expect(keysController.getByPubkey('')).rejects.toThrowError(`There are no keys with  public key in db.`);
 
+      expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledWith('');
+    });
+
+    test('Staking Modules list is empty', async () => {
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules').mockImplementation(() => []);
+      const getKeyWithMetaByPubkeyMock = jest.spyOn(curatedModuleService, 'getKeyWithMetaByPubkey');
+      const result = await keysController.getByPubkey(hexZeroPad('0x13', 98));
+
+      expect(result).toEqual({ data: [], meta: null });
+      expect(getStakingModulesMock).toBeCalledTimes(1);
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(0);
+    });
+
+    test('Staking Modules list contains only unknown modules', async () => {
+      const unknownType: any = 'unknown-address';
+      const unknownModule: StakingModule = { ...curatedModuleMainnet, type: unknownType };
+      const getStakingModulesMock = jest
+        .spyOn(keysUpdateService, 'getStakingModules')
+        .mockImplementation(() => [unknownModule]);
+      const getKeyWithMetaByPubkeyMock = jest.spyOn(curatedModuleService, 'getKeyWithMetaByPubkey');
+
+      const result = await keysController.getByPubkey(hexZeroPad('0x13', 98));
+
+      expect(result).toEqual({ data: [], meta: null });
+      expect(getStakingModulesMock).toBeCalledTimes(1);
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(0);
     });
   });
 
@@ -212,13 +297,14 @@ describe('Keys controller', () => {
     test('keys on Mainnet', async () => {
       process.env['CHAIN_ID'] = '1';
 
-      const getKeysWithMetaByPubkeysMock = jest.spyOn(registryService, 'getKeysWithMetaByPubkeys');
+      const getKeysWithMetaByPubkeysMock = jest.spyOn(curatedModuleService, 'getKeysWithMetaByPubkeys');
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
 
       const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
 
       expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(1);
       expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
-
+      expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(result).toEqual({
         data: curatedKeysWithAddressMainnet,
         meta: {
@@ -230,13 +316,15 @@ describe('Keys controller', () => {
     test('keys on Goerli', async () => {
       process.env['CHAIN_ID'] = '5';
 
-      const getKeysWithMetaByPubkeysMock = jest.spyOn(registryService, 'getKeysWithMetaByPubkeys');
-
+      const getKeysWithMetaByPubkeysMock = jest.spyOn(curatedModuleService, 'getKeysWithMetaByPubkeys');
+      const getStakingModulesMock = jest
+        .spyOn(keysUpdateService, 'getStakingModules')
+        .mockImplementation(() => stakingModulesGoerli);
       const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
 
       expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(1);
       expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
-
+      expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(result).toEqual({
         data: curatedKeysWithAddressGoerli,
         meta: {
@@ -249,15 +337,41 @@ describe('Keys controller', () => {
       process.env['CHAIN_ID'] = '1';
 
       const getKeysWithMetaByPubkeysMock = jest
-        .spyOn(registryService, 'getKeysWithMetaByPubkeys')
+        .spyOn(curatedModuleService, 'getKeysWithMetaByPubkeys')
         .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
 
       const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
 
       expect(result).toEqual({ data: [], meta: null });
-
+      expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(1);
       expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+    });
+
+    test('Staking Modules list is empty', async () => {
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules').mockImplementation(() => []);
+      const getKeysWithMetaByPubkeysMock = jest.spyOn(curatedModuleService, 'getKeysWithMetaByPubkeys');
+      const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+
+      expect(result).toEqual({ data: [], meta: null });
+      expect(getStakingModulesMock).toBeCalledTimes(1);
+      expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(0);
+    });
+
+    test('Staking Modules list contains only unknown modules', async () => {
+      const unknownType: any = 'unknown-address';
+      const unknownModule: StakingModule = { ...curatedModuleMainnet, type: unknownType };
+      const getStakingModulesMock = jest
+        .spyOn(keysUpdateService, 'getStakingModules')
+        .mockImplementation(() => [unknownModule]);
+      const getKeyWithMetaByPubkeyMock = jest.spyOn(curatedModuleService, 'getKeyWithMetaByPubkey');
+
+      const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+
+      expect(result).toEqual({ data: [], meta: null });
+      expect(getStakingModulesMock).toBeCalledTimes(1);
+      expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(0);
     });
   });
 });

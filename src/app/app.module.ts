@@ -5,13 +5,15 @@ import { ConfigModule, ConfigService } from 'common/config';
 import { SentryInterceptor } from 'common/sentry';
 import { HealthModule } from 'common/health';
 import { AppService } from './app.service';
-import { HTTPModule } from '../http';
+import { HTTPModule } from 'http/';
 import { ExecutionProviderModule } from 'common/execution-provider';
 import { ConsensusProviderModule } from 'common/consensus-provider';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { JobsModule } from '../jobs';
+import { JobsModule } from 'jobs';
 import { ScheduleModule } from '@nestjs/schedule';
-import config from '../mikro-orm.config';
+import config from 'mikro-orm.config';
+import { StakingRouterModule } from 'staking-router-modules';
+import { ValidatorsModule } from 'validators';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import config from '../mikro-orm.config';
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
+    StakingRouterModule,
+    ValidatorsModule,
     JobsModule,
     HTTPModule,
   ],

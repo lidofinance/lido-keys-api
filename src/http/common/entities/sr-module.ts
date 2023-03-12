@@ -1,13 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { StakingRouterModule } from 'common/config';
+import { StakingModule } from 'common/contracts';
 
 export class SRModule {
-  constructor(nonce: number, module: StakingRouterModule) {
+  constructor(nonce: number, module: StakingModule) {
     this.nonce = nonce;
     this.type = module.type;
     this.id = module.id;
     this.stakingModuleAddress = module.stakingModuleAddress;
-    this.moduleFee = module?.moduleFee ?? null;
+    // todo: maybe rename field stakingModuleFee
+    this.moduleFee = module?.stakingModuleFee ?? null;
     this.treasuryFee = module?.treasuryFee ?? null;
     this.targetShare = module?.targetShare ?? null;
     this.status = module?.status ?? null;
@@ -79,4 +80,6 @@ export class SRModule {
     nullable: true,
   })
   lastDepositBlock: number | null;
+
+  //   exitedValidatorsCount: number;
 }

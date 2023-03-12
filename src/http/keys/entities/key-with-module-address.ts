@@ -1,10 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Key } from 'http/common/entities/';
-
-import { RegistryKey } from '@lido-nestjs/registry';
+import { Key, SRModuleKey } from 'http/common/entities/';
 
 export class KeyWithModuleAddress extends Key {
-  constructor(key: RegistryKey, moduleAddress: string) {
+  constructor(key: SRModuleKey, moduleAddress: string) {
     super(key);
     this.moduleAddress = moduleAddress;
   }

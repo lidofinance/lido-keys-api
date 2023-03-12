@@ -31,11 +31,11 @@ const findMigrations = (mainFolder: string, npmPackageNames: string[]): Migratio
       const module = require(filename);
       const ext = path.extname(filename);
       const fileNameWithoutExt = path.basename(filename, ext);
+      // TODO: readable var name
+      const migrationClass = module[fileNameWithoutExt];
 
-      const clazz = module[fileNameWithoutExt];
-
-      if (clazz) {
-        return { name: fileNameWithoutExt, class: clazz };
+      if (migrationClass) {
+        return { name: fileNameWithoutExt, class: migrationClass };
       }
 
       return null;

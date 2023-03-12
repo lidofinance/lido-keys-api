@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test } from '@nestjs/testing';
-import { RegistryService } from '../../src/jobs/registry/registry.service';
-import { ValidatorsRegistryService } from 'jobs/validators-registry/validators-registry.service';
-import { ConfigService } from '../../src/common/config';
+import { CuratedModuleService } from 'staking-router-modules';
+import { ValidatorsService } from 'validators';
+import { ConfigService } from 'common/config';
 import { elMeta, elBlockSnapshot, clMeta, clBlockSnapshot } from '../fixtures';
-import { StatusController, StatusService } from '../../src/http/status';
+import { StatusController, StatusService } from 'http/status';
 import { APP_VERSION } from 'app/app.constants';
 import { EntityManager } from '@mikro-orm/postgresql';
 
 describe('SRModulesOperatorsController', () => {
   let statusController: StatusController;
-  let registryService: RegistryService;
-  let validatorsService: ValidatorsRegistryService;
+  let curatedModuleService: CuratedModuleService;
+  let validatorsService: ValidatorsService;
 
   class ConfigServiceMock {
     get(value) {
@@ -19,13 +19,13 @@ describe('SRModulesOperatorsController', () => {
     }
   }
 
-  class RegistryServiceMock {
+  class CuratedModuleServiceMock {
     getMetaDataFromStorage() {
       return Promise.resolve(elMeta);
     }
   }
 
-  class ValidatorsRegistryServiceMock {
+  class ValidatorsServiceMock {
     getMetaDataFromStorage() {
       return Promise.resolve(clMeta);
     }
@@ -48,12 +48,12 @@ describe('SRModulesOperatorsController', () => {
       providers: [
         StatusService,
         {
-          provide: RegistryService,
-          useClass: RegistryServiceMock,
+          provide: CuratedModuleService,
+          useClass: CuratedModuleServiceMock,
         },
         {
-          provide: ValidatorsRegistryService,
-          useClass: ValidatorsRegistryServiceMock,
+          provide: ValidatorsService,
+          useClass: ValidatorsServiceMock,
         },
         {
           provide: ConfigService,
@@ -67,8 +67,8 @@ describe('SRModulesOperatorsController', () => {
     }).compile();
 
     statusController = moduleRef.get<StatusController>(StatusController);
-    registryService = moduleRef.get<RegistryService>(RegistryService);
-    validatorsService = moduleRef.get<ValidatorsRegistryService>(ValidatorsRegistryService);
+    curatedModuleService = moduleRef.get<CuratedModuleService>(CuratedModuleService);
+    validatorsService = moduleRef.get<ValidatorsService>(ValidatorsService);
   });
 
   afterAll(() => {
@@ -79,7 +79,7 @@ describe('SRModulesOperatorsController', () => {
     test('get', async () => {
       process.env['CHAIN_ID'] = '1';
 
-      const getELMetaDataMock = jest.spyOn(registryService, 'getMetaDataFromStorage');
+      const getELMetaDataMock = jest.spyOn(curatedModuleService, 'getMetaDataFromStorage');
       const getCLMetaDataMock = jest.spyOn(validatorsService, 'getMetaDataFromStorage');
 
       const result = await statusController.get();
