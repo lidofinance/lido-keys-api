@@ -12,7 +12,7 @@ export class Query {
   @Transform(({ value }) => Number(value))
   @ApiProperty({
     required: false,
-    description: 'Percent of validators to exit. Default value is 10.',
+    description: 'Percent of validators to exit. Default value is 10. Percent has a higher priority than max_amount',
   })
   percent?: number;
 }

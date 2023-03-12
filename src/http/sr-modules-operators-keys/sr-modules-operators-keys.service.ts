@@ -28,7 +28,10 @@ export class SRModulesOperatorsKeysService {
     // it is also important to have consistent module info and meta
 
     if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-      const { keys, operators, meta } = await this.curatedService.getData(filters);
+      const { keys, operators, meta } = await this.curatedService.getData({
+        used: filters.used,
+        operatorIndex: filters.operatorIndex,
+      });
 
       if (!meta) {
         this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);

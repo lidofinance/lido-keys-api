@@ -1,7 +1,7 @@
 import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
 import { ConfigService } from 'common/config';
 import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse } from './entities';
-import { ELBlockSnapshot, Key, SRModule, ModuleId, CuratedKey } from 'http/common/entities';
+import { ELBlockSnapshot, Key, SRModule, ModuleId, CuratedKey, KeyQuery } from 'http/common/entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { KeysUpdateService } from 'jobs/keys-update';
@@ -15,7 +15,7 @@ export class SRModulesKeysService {
     protected keysUpdateService: KeysUpdateService,
   ) {}
 
-  async getGroupedByModuleKeys(filters): Promise<GroupedByModuleKeyListResponse> {
+  async getGroupedByModuleKeys(filters: KeyQuery): Promise<GroupedByModuleKeyListResponse> {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
     if (stakingModules.length == 0) {
@@ -37,7 +37,10 @@ export class SRModulesKeysService {
     // stakingModules list contains only module types we know
     for (let i = 0; i < stakingModules.length; i++) {
       if (stakingModules[i].type == STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-        const { keys: curatedKeys, meta } = await this.curatedService.getKeysWithMeta(filters);
+        const { keys: curatedKeys, meta } = await this.curatedService.getKeysWithMeta({
+          used: filters.used,
+          operatorIndex: filters.operatorIndex,
+        });
 
         if (!meta) {
           this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
@@ -78,7 +81,7 @@ export class SRModulesKeysService {
     };
   }
 
-  async getModuleKeys(moduleId: ModuleId, filters): Promise<SRModuleKeyListResponse> {
+  async getModuleKeys(moduleId: ModuleId, filters: KeyQuery): Promise<SRModuleKeyListResponse> {
     const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
 
     if (!stakingModule) {
@@ -89,7 +92,10 @@ export class SRModulesKeysService {
     // it is also important to have consistent module info and meta
 
     if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-      const { keys, meta } = await this.curatedService.getKeysWithMeta(filters);
+      const { keys, meta } = await this.curatedService.getKeysWithMeta({
+        used: filters.used,
+        operatorIndex: filters.operatorIndex,
+      });
 
       if (!meta) {
         this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);

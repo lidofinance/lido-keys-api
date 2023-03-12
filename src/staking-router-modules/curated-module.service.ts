@@ -9,7 +9,11 @@ import {
   RegistryOperatorStorageService,
 } from '@lido-nestjs/registry';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { KeyQuery } from 'http/common/entities';
+
+export interface KeysFilter {
+  used?: boolean;
+  operatorIndex?: number;
+}
 
 @Injectable()
 export class CuratedModuleService {
@@ -49,10 +53,19 @@ export class CuratedModuleService {
     return { keys, meta };
   }
 
-  // TODO: add interface to filters
-  public async getKeysWithMeta(filters): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
+  public async getKeysWithMeta(filters: KeysFilter): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
     const { keys, meta } = await this.entityManager.transactional(async () => {
-      const keys = await this.keyStorageService.find(filters);
+      const where = {};
+      if (filters.operatorIndex) {
+        where['operatorIndex'] = filters.operatorIndex;
+      }
+
+      if (filters.used) {
+        where['used'] = filters.used;
+      }
+
+      const keys = await this.keyStorageService.find(where);
+
       const meta = await this.getMetaDataFromStorage();
 
       return { keys, meta };
@@ -89,15 +102,25 @@ export class CuratedModuleService {
     return { operator, meta };
   }
 
-  public async getData(filters: KeyQuery): Promise<{
+  public async getData(filters: KeysFilter): Promise<{
     operators: RegistryOperator[];
     keys: RegistryKey[];
     meta: RegistryMeta | null;
   }> {
     const { operators, keys, meta } = await this.entityManager.transactional(async () => {
-      const operatorFilters = filters.operatorIndex ? { index: filters.operatorIndex } : {};
-      const operators = await this.operatorStorageService.find(operatorFilters);
-      const keys = await this.keyStorageService.find(filters);
+      const keysWhere = {};
+      const operatorsWhere = {};
+      if (filters.operatorIndex) {
+        keysWhere['operatorIndex'] = filters.operatorIndex;
+        operatorsWhere['index'] = filters.operatorIndex;
+      }
+
+      if (filters.used) {
+        keysWhere['used'] = filters.used;
+      }
+
+      const operators = await this.operatorStorageService.find(operatorsWhere);
+      const keys = await this.keyStorageService.find(keysWhere);
       const meta = await this.getMetaDataFromStorage();
 
       return { operators, keys, meta };

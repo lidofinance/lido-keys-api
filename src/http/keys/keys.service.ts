@@ -38,7 +38,10 @@ export class KeysService {
     for (let i = 0; i < stakingModules.length; i++) {
       if (stakingModules[i].type == STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
         // If some of modules has null meta, it means update hasnt been finished
-        const { keys: curatedKeys, meta } = await this.curatedService.getKeysWithMeta(filters);
+        const { keys: curatedKeys, meta } = await this.curatedService.getKeysWithMeta({
+          used: filters.used,
+          operatorIndex: filters.operatorIndex,
+        });
         if (!meta) {
           this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
           return {
