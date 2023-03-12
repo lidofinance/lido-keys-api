@@ -16,4 +16,4 @@ import { CuratedModuleService } from './curated-module.service';
   providers: [CuratedModuleService],
   exports: [CuratedModuleService],
 })
-export class StakingRouter {}
+export class StakingRouterModule {}
