@@ -55,7 +55,7 @@ export class StakingRouterFetchService {
       }),
     );
 
-    const activeModules: StakingModule[] = transformedModules2.filter((module): module is StakingModule => !!module);
+    const activeModules: StakingModule[] = transformedModules.filter((module): module is StakingModule => !!module);
 
     this.loggerService.debug?.(`Staking Router modules list`, activeModules);
 
