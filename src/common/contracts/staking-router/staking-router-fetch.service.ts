@@ -31,14 +31,14 @@ export class StakingRouterFetchService {
     this.loggerService.debug?.('Staking router module address', stakingRouterAddress);
 
     const contract = this.getContract(stakingRouterAddress);
-    const modules = await contract.getStakingModules(blockTag as any);
+    const modules = await contract.getStakingModules({ blockTag } as any);
 
     this.loggerService.log(`Fetched ${modules.length} modules`);
     this.loggerService.debug?.(`Modules ${modules}`);
 
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
-        const isActive = await contract.getStakingModuleIsActive(stakingModule.id, blockTag as any);
+        const isActive = await contract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
 
         // until the end of voting work with old version of Node Operator Registry
         // this version doesnt correspond to IStakingModule interface
