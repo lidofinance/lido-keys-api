@@ -23,4 +23,6 @@ export interface StakingModule {
   exitedValidatorsCount: number;
   // type of staking router module
   type: STAKING_MODULE_TYPE;
+  // is module active
+  // active: boolean;
 }

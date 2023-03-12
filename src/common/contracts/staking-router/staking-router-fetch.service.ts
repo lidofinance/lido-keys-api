@@ -6,6 +6,7 @@ import { STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { LidoLocatorService } from 'common/contracts/lido-locator';
 import { StakingRouter__factory } from 'generated';
 import { ExecutionProvider } from 'common/execution-provider';
+import { BlockTag } from '../interfaces';
 
 @Injectable()
 export class StakingRouterFetchService {
@@ -24,23 +25,20 @@ export class StakingRouterFetchService {
    *
    * @returns Staking Router modules list
    */
-  public async getStakingModules(blockTag: number | string): Promise<StakingModule[]> {
+  public async getStakingModules(blockTag: BlockTag): Promise<StakingModule[]> {
     const stakingRouterAddress = await this.lidoLocatorService.getStakingRouter(blockTag);
 
-    this.loggerService.debug?.('Lido Locator', stakingRouterAddress);
+    this.loggerService.debug?.('Staking router module address', stakingRouterAddress);
 
     const contract = this.getContract(stakingRouterAddress);
-    const modules = await contract.getStakingModules({ blockTag });
+    const modules = await contract.getStakingModules(blockTag as any);
 
+    this.loggerService.log(`Fetched ${modules.length} modules`);
     this.loggerService.debug?.(`Modules ${modules}`);
 
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
-        const isActive = contract.getStakingModuleIsActive(stakingModule.id, { blockTag });
-
-        if (!isActive) {
-          return null;
-        }
+        const isActive = await contract.getStakingModuleIsActive(stakingModule.id, blockTag as any);
 
         // until the end of voting work with old version of Node Operator Registry
         // this version doesnt correspond to IStakingModule interface
@@ -58,7 +56,8 @@ export class StakingRouterFetchService {
         // lets put type by id as we know that list contains only NOR contract
 
         if (stakingModule.id != 1) {
-          throw new Error(`Staking Module id ${stakingModule.id} is unknown`);
+          this.loggerService.error(new Error(`Staking Module id ${stakingModule.id} is unknown`));
+          process.exit(1);
         }
 
         const stakingModuleType = STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE;
@@ -75,14 +74,11 @@ export class StakingRouterFetchService {
           lastDepositAt: stakingModule.lastDepositAt.toNumber(),
           lastDepositBlock: stakingModule.lastDepositBlock.toNumber(),
           exitedValidatorsCount: stakingModule.exitedValidatorsCount.toNumber(),
+          // active: isActive,
         };
       }),
     );
 
-    const activeModules: StakingModule[] = transformedModules.filter((module): module is StakingModule => !!module);
-
-    this.loggerService.debug?.(`Staking Router modules list`, activeModules);
-
-    return activeModules;
+    return transformedModules;
   }
 }

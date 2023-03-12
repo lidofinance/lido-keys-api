@@ -46,6 +46,7 @@ export class KeysUpdateService {
   }
 
   public getStakingModule(moduleId: ModuleId): StakingModule | undefined {
+    // here should be == , moduleId can be string and number
     return this.stakingModules.find((module) => module.stakingModuleAddress == moduleId || module.id == moduleId);
   }
 
@@ -60,7 +61,7 @@ export class KeysUpdateService {
       const blockHash = await this.executionProvider.getBlockHash('latest');
 
       // get staking router modules
-      const modules = await this.stakingRouterFetchService.getStakingModules(blockHash);
+      const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: blockHash });
       this.stakingModules = modules;
 
       // Here should be a transaction in future that will wrap updateKeys calls of all modules
