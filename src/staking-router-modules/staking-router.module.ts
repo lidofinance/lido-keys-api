@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ExecutionProvider } from 'common/execution-provider';
 import { KeyRegistryModule } from '@lido-nestjs/registry';
 import { CuratedModuleService } from './curated-module.service';
+import { LidoLocatorModule } from 'common/contracts/lido-locator/lido-locator.module';
 
 @Global()
 @Module({
@@ -16,4 +17,4 @@ import { CuratedModuleService } from './curated-module.service';
   providers: [CuratedModuleService],
   exports: [CuratedModuleService],
 })
-export class StakingRouter {}
+export class StakingRouterModule {}

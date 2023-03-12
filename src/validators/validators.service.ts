@@ -59,8 +59,6 @@ export class ValidatorsService {
 
     const { validators, meta } = await this.validatorsRegistry.getValidators(filter.pubkeys, where, options);
 
-    console.log(filter, filter.percent, typeof filter.percent, filter.percent == 0);
-
     // the lower the index, the older the validator
     // if percent is provided, we will get percent oldest validators from db
     if (filter.percent) {

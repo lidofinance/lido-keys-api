@@ -1,43 +1,67 @@
-import { StakingRouter, STAKING_ROUTER_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
 import { Injectable, Inject, LoggerService } from '@nestjs/common';
 import { StakingModule } from './staking-module';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { IStakingModuleService } from 'common/contracts/i-staking-module';
 import { STAKING_MODULE_TYPE } from 'staking-router-modules';
+import { LidoLocatorService } from 'common/contracts/lido-locator';
+import { StakingRouter__factory } from 'generated';
+import { ExecutionProvider } from 'common/execution-provider';
 
 @Injectable()
 export class StakingRouterFetchService {
   constructor(
-    @Inject(STAKING_ROUTER_CONTRACT_TOKEN) protected readonly contract: StakingRouter,
     @Inject(LOGGER_PROVIDER) protected readonly loggerService: LoggerService,
     protected readonly iStakingModule: IStakingModuleService,
+    protected readonly lidoLocatorService: LidoLocatorService,
+    protected readonly provider: ExecutionProvider,
   ) {}
+
+  private getContract(contractAddress: string) {
+    return StakingRouter__factory.connect(contractAddress, this.provider);
+  }
 
   /**
    *
    * @returns Staking Router modules list
    */
   public async getStakingModules(blockTag: number | string): Promise<StakingModule[]> {
-    const modules = await this.contract.getStakingModules({ blockTag });
+    const stakingRouterAddress = await this.lidoLocatorService.getStakingRouter(blockTag);
+
+    this.loggerService.debug?.('Lido Locator', stakingRouterAddress);
+
+    const contract = this.getContract(stakingRouterAddress);
+    const modules = await contract.getStakingModules({ blockTag });
 
     this.loggerService.debug?.(`Modules ${modules}`);
 
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
-        const isActive = this.contract.getStakingModuleIsActive(stakingModule.id, { blockTag });
+        const isActive = contract.getStakingModuleIsActive(stakingModule.id, { blockTag });
 
         if (!isActive) {
           return null;
         }
 
-        const stakingModuleType = (await this.iStakingModule.getType(
-          stakingModule.stakingModuleAddress,
-          blockTag,
-        )) as STAKING_MODULE_TYPE;
+        // until the end of voting work with old version of Node Operator Registry
+        // this version doesnt correspond to IStakingModule interface
+        // currently skip this section
 
-        if (!Object.values(STAKING_MODULE_TYPE).includes(stakingModuleType)) {
-          throw new Error(`Staking Module type ${stakingModuleType} is unknown`);
+        // const stakingModuleType = (await this.iStakingModule.getType(
+        //   stakingModule.stakingModuleAddress,
+        //   blockTag,
+        // )) as STAKING_MODULE_TYPE;
+
+        // if (!Object.values(STAKING_MODULE_TYPE).includes(stakingModuleType)) {
+        //   throw new Error(`Staking Module type ${stakingModuleType} is unknown`);
+        // }
+
+        // lets put type by id as we know that list contains only NOR contract
+
+        if (stakingModule.id != 1) {
+          throw new Error(`Staking Module id ${stakingModule.id} is unknown`);
         }
+
+        const stakingModuleType = STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE;
 
         return {
           id: stakingModule.id,

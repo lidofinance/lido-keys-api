@@ -12,7 +12,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { JobsModule } from 'jobs';
 import { ScheduleModule } from '@nestjs/schedule';
 import config from 'mikro-orm.config';
-import { StakingRouter } from 'staking-router-modules';
+import { StakingRouterModule } from 'staking-router-modules';
 import { ValidatorsModule } from 'validators';
 
 @Module({
@@ -41,7 +41,7 @@ import { ValidatorsModule } from 'validators';
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
-    StakingRouter,
+    StakingRouterModule,
     ValidatorsModule,
     JobsModule,
     HTTPModule,
