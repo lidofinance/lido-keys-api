@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import {
   KeyRegistryService,
   RegistryKeyStorageService,
@@ -9,14 +8,10 @@ import {
   RegistryOperatorStorageService,
 } from '@lido-nestjs/registry';
 import { EntityManager } from '@mikro-orm/postgresql';
+import { KeysFilter } from './interfaces/keys-filter';
+import { StakingModuleInterface } from './interfaces/staking-module.interface';
 
-export interface KeysFilter {
-  used?: boolean;
-  operatorIndex?: number;
-}
-
-@Injectable()
-export class CuratedModuleService {
+export class CuratedModuleService implements StakingModuleInterface {
   constructor(
     protected readonly keyRegistryService: KeyRegistryService,
     protected readonly keyStorageService: RegistryKeyStorageService,
