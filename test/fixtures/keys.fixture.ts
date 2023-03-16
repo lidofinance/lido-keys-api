@@ -1,6 +1,6 @@
 import { hexZeroPad } from '@ethersproject/bytes';
 import { RegistryKey } from '@lido-nestjs/registry';
-import { Key } from 'http/common/entities';
+import { Key } from 'http/common/response-entities';
 import { KeyWithModuleAddress } from 'http/keys/entities';
 
 // keys from db of  Registry (in future curated ) library

@@ -2,8 +2,8 @@ import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/co
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ConfigService } from 'common/config';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
-import { ELBlockSnapshot, SRModule } from 'http/common/entities';
-import { ModuleId } from 'http/common/entities/';
+import { ELBlockSnapshot, SRModule } from 'http/common/response-entities';
+import { ModuleId } from 'http/common/response-entities';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { KeysUpdateService } from 'jobs/keys-update';
 

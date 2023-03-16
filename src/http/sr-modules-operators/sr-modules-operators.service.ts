@@ -1,28 +1,28 @@
 import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
 import { ConfigService } from 'common/config';
-import { ModuleId } from 'http/common/entities/';
-import { ELBlockSnapshot, SRModule, CuratedOperator } from 'http/common/entities/';
+import { ELBlockSnapshot, SRModule } from 'http/common/response-entities';
 import {
   GroupedByModuleOperatorListResponse,
   SRModuleOperatorListResponse,
   SRModuleOperatorResponse,
 } from './entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
-import { KeysUpdateService } from 'jobs/keys-update';
-import { SRModuleOperator } from 'http/common/entities/sr-module-operator';
+import { StakingRouterService, STAKING_MODULE_TYPE, ModuleId } from 'staking-router-modules';
+import {
+  StakingModuleOperatorResponse,
+  srModuleOperatorMapper,
+} from 'http/common/response-entities/operators/sr-module-operator';
 
 @Injectable()
 export class SRModulesOperatorsService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected configService: ConfigService,
-    protected curatedService: CuratedModuleService,
-    protected keysUpdateService: KeysUpdateService,
+    protected stakingRouterService: StakingRouterService,
   ) {}
 
   public async getAll(): Promise<GroupedByModuleOperatorListResponse> {
-    const stakingModules = await this.keysUpdateService.getStakingModules();
+    const stakingModules = await this.stakingRouterService.getStakingModulesTooling();
 
     if (stakingModules.length == 0) {
       return {
@@ -31,39 +31,38 @@ export class SRModulesOperatorsService {
       };
     }
 
-    const collectedData: { operators: SRModuleOperator[]; module: SRModule }[] = [];
+    const collectedData: { operators: StakingModuleOperatorResponse[]; module: SRModule }[] = [];
     let elBlockSnapshot: ELBlockSnapshot | null = null;
 
     // Because of current lido-nestjs/registry implementation in case of more than one
     // staking router module we need to wrap code below in transaction (with serializable isolation level that is default in mikro orm )
     // to prevent reading keys for different blocks
     // But now we have only one module and in current future we will try to find solution without transactions
+    // TODO: keep in mind that here should be a transaction
 
-    for (let i = 0; i < stakingModules.length; i++) {
-      if (stakingModules[i].type == STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-        const { operators: curatedOperators, meta } = await this.curatedService.getOperatorsWithMeta();
+    for (const [index, { stakingModule, tooling }] of stakingModules.entries()) {
+      const { operators: moduleOperators, meta } = await tooling.getOperatorsWithMeta();
 
-        if (!meta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          return {
-            data: [],
-            meta: null,
-          };
-        }
-
-        const operators: CuratedOperator[] = curatedOperators.map((op) => new CuratedOperator(op));
-
-        // meta should be the same for all modules
-        // so in answer we can use meta of any module
-        // lets use meta of first module in list
-        // currently we sure if stakingModules is not empty, we will have in list Curated Module
-        // in future this check should be in each if clause
-        if (i == 0) {
-          elBlockSnapshot = new ELBlockSnapshot(meta);
-        }
-
-        collectedData.push({ operators, module: new SRModule(meta.keysOpIndex, stakingModules[i]) });
+      if (!meta) {
+        this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+        return {
+          data: [],
+          meta: null,
+        };
       }
+
+      const operators: StakingModuleOperatorResponse[] = moduleOperators.map((op) =>
+        srModuleOperatorMapper(stakingModule.type, op),
+      );
+
+      // meta should be the same for all modules
+      // so in answer we can use meta of any module
+      // lets use meta of first module in list
+      if (index == 0) {
+        elBlockSnapshot = new ELBlockSnapshot(meta);
+      }
+
+      collectedData.push({ operators, module: new SRModule(meta.keysOpIndex, stakingModule) });
     }
 
     // we check stakingModules list types so this condition should never be true

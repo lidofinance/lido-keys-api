@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CLMeta } from 'http/common/entities';
+import { CLMeta } from 'http/common/response-entities';
 import { ExitValidator } from './exit-validator';
 
 export class ExitValidatorListResponse {

@@ -2,7 +2,7 @@ import { Controller, Get, Version, Param, Query, Body, Post, ParseArrayPipe } fr
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
-import { ModuleId, KeyQuery } from 'http/common/entities/';
+import { ModuleId, KeyQuery } from 'http/common/response-entities';
 
 @Controller('modules')
 @ApiTags('sr-module-keys')

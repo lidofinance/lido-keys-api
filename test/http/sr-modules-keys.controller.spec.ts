@@ -18,7 +18,7 @@ import {
   curatedModuleGoerliResponse,
 } from '../fixtures';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { ModuleId } from 'http/common/entities';
+import { ModuleId } from 'http/common/response-entities';
 import { StakingModule } from 'common/contracts';
 
 describe('SRModulesKeysController controller', () => {

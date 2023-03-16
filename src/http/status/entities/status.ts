@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CLBlockSnapshot, ELBlockSnapshot } from 'http/common/entities';
+import { CLBlockSnapshot, ELBlockSnapshot } from 'http/common/response-entities';
 
 export class Status {
   @ApiProperty({

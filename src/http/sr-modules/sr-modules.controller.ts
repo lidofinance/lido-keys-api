@@ -2,7 +2,7 @@ import { Controller, Get, Version, Param } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleListResponse, SRModuleResponse } from './entities';
 import { SRModulesService } from './sr-modules.service';
-import { ModuleId } from 'http/common/entities/';
+import { ModuleId } from 'http/common/response-entities';
 
 @Controller('modules')
 @ApiTags('modules')

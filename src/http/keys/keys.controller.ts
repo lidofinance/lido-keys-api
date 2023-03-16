@@ -13,7 +13,7 @@ import {
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
 import { KeyListResponse } from './entities';
-import { KeyQuery } from 'http/common/entities';
+import { KeyQuery } from 'http/common/response-entities';
 
 @Controller('keys')
 @ApiTags('keys')

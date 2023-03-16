@@ -1,15 +1,16 @@
 import { ApiProperty, getSchemaPath, ApiExtraModels } from '@nestjs/swagger';
-import { SRModule, CuratedOperator, ELMeta } from 'http/common/entities/';
-import { SRModuleOperator } from 'http/common/entities/sr-module-operator';
+import { SRModule } from 'http/common/response-entities/staking-module';
+import { ELMeta } from 'http/common/response-entities/meta';
+import { StakingModuleOperatorResponse, CuratedOperatorResponse } from 'http/common/response-entities/operators';
 
-@ApiExtraModels(CuratedOperator)
+@ApiExtraModels(CuratedOperatorResponse)
 export class OperatorListAndSRModule {
   @ApiProperty({
     type: 'array',
-    items: { oneOf: [{ $ref: getSchemaPath(CuratedOperator) }] },
+    items: { oneOf: [{ $ref: getSchemaPath(CuratedOperatorResponse) }] },
     description: 'Operators of staking router module',
   })
-  operators!: SRModuleOperator[];
+  operators!: StakingModuleOperatorResponse[];
 
   @ApiProperty({
     description: 'Detailed Staking Router information',

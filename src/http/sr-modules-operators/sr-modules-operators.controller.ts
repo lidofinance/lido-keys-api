@@ -5,7 +5,7 @@ import {
   SRModuleOperatorListResponse,
   SRModuleOperatorResponse,
 } from './entities';
-import { ModuleId } from 'http/common/entities/';
+import { ModuleId } from 'http/common/response-entities';
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
 
 @Controller('/')

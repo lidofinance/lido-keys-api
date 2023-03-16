@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { RegistryOperator } from '@lido-nestjs/registry';
+import { OperatorEntity } from 'staking-router-modules';
 
-export class Operator {
-  constructor(operator: RegistryOperator) {
+export class OperatorResponse {
+  constructor(operator: OperatorEntity) {
     this.index = operator.index;
     this.active = operator.active;
   }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ELMeta } from 'http/common/entities/';
+import { ELMeta } from 'http/common/response-entities/meta';
 import { OperatorListAndSRModule } from './sr-module-operators.response';
 
 export class GroupedByModuleOperatorListResponse {

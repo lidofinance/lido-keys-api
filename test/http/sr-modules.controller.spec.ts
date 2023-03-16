@@ -17,7 +17,7 @@ import {
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { KeysUpdateService } from 'jobs/keys-update/keys-update.service';
 import { CuratedModuleService } from 'staking-router-modules/';
-import { ModuleId } from 'http/common/entities';
+import { ModuleId } from 'http/common/response-entities';
 import { StakingModule } from 'common/contracts';
 
 describe('SRModules controller', () => {

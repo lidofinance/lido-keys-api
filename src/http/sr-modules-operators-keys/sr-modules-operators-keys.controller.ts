@@ -1,7 +1,7 @@
 import { Controller, Get, Version, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { SRModuleOperatorsKeysResponse } from './entities';
-import { ModuleId, KeyQuery } from 'http/common/entities/';
+import { ModuleId, KeyQuery } from 'http/common/response-entities';
 import { SRModulesOperatorsKeysService } from './sr-modules-operators-keys.service';
 
 @Controller('/modules')

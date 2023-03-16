@@ -7,13 +7,13 @@ import {
   ExitPresignMessage,
   Query as ValidatorsQuery,
 } from './entities';
-import { CLBlockSnapshot, ModuleId } from 'http/common/entities/';
+import { CLBlockSnapshot, ModuleId } from 'http/common/response-entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { VALIDATORS_STATUSES_FOR_EXIT, DEFAULT_EXIT_PERCENT } from './constants';
 import { ConsensusMeta, Validator } from '@lido-nestjs/validators-registry';
-import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
+import { StakingRouterService, StakingModuleInterface } from 'staking-router-modules';
 import { ValidatorsService } from 'validators';
-import { KeysUpdateService } from 'jobs/keys-update';
+import { StakingModule } from 'common/contracts';
 
 const VALIDATORS_REGISTRY_DISABLED_ERROR = 'Validators Registry is disabled. Check environment variables';
 
@@ -21,10 +21,9 @@ const VALIDATORS_REGISTRY_DISABLED_ERROR = 'Validators Registry is disabled. Che
 export class SRModulesValidatorsService {
   constructor(
     protected readonly configService: ConfigService,
-    protected readonly curatedService: CuratedModuleService,
+    protected readonly stakingRouterService: StakingRouterService,
     protected readonly validatorsService: ValidatorsService,
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected keysUpdateService: KeysUpdateService,
   ) {}
 
   async getOldestLidoValidators(
@@ -37,37 +36,30 @@ export class SRModulesValidatorsService {
       throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
 
-    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
+    const stakingModule = this.stakingRouterService.getStakingModuleTooling(moduleId);
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
     }
 
-    // We suppose if module in list, Keys API knows how to work with it
-    // it is also important to have consistent module info and meta
+    const { validators, meta: clMeta } = await this.getOperatorOldestValidators(stakingModule, operatorId, filters);
 
-    if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-      const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
-
-      if (!clMeta) {
-        return {
-          data: [],
-          meta: null,
-        };
-      }
-
-      const data = this.createExitValidatorList(validators);
-      const clBlockSnapshot = new CLBlockSnapshot(clMeta);
-
+    if (!clMeta) {
       return {
-        data,
-        meta: {
-          clBlockSnapshot: clBlockSnapshot,
-        },
+        data: [],
+        meta: null,
       };
     }
 
-    throw new NotFoundException(`Modules with other types are not supported`);
+    const data = this.createExitValidatorList(validators);
+    const clBlockSnapshot = new CLBlockSnapshot(clMeta);
+
+    return {
+      data,
+      meta: {
+        clBlockSnapshot: clBlockSnapshot,
+      },
+    };
   }
 
   async getVoluntaryExitMessages(
@@ -80,7 +72,7 @@ export class SRModulesValidatorsService {
       throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
 
-    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
+    const stakingModule = this.stakingRouterService.getStakingModuleTooling(moduleId);
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
@@ -89,36 +81,33 @@ export class SRModulesValidatorsService {
     // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-      const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
+    const { validators, meta: clMeta } = await this.getOperatorOldestValidators(stakingModule, operatorId, filters);
 
-      if (!clMeta) {
-        return {
-          data: [],
-          meta: null,
-        };
-      }
-
-      const data = this.createExitPresignMessageList(validators, clMeta);
-      const clBlockSnapshot = new CLBlockSnapshot(clMeta);
-
+    if (!clMeta) {
       return {
-        data,
-        meta: {
-          clBlockSnapshot: clBlockSnapshot,
-        },
+        data: [],
+        meta: null,
       };
     }
 
-    throw new NotFoundException(`Modules with other types are not supported`);
+    const data = this.createExitPresignMessageList(validators, clMeta);
+    const clBlockSnapshot = new CLBlockSnapshot(clMeta);
+
+    return {
+      data,
+      meta: {
+        clBlockSnapshot: clBlockSnapshot,
+      },
+    };
   }
 
   private async getOperatorOldestValidators(
+    stakingModule: { stakingModule: StakingModule; tooling: StakingModuleInterface },
     operatorId: number,
     filters: ValidatorsQuery,
   ): Promise<{ validators: Validator[]; meta: ConsensusMeta | null }> {
     // get used keys for operator
-    const { keys, meta: elMeta } = await this.curatedService.getKeysWithMeta({
+    const { keys, meta: elMeta } = await stakingModule.tooling.getKeysWithMeta({
       used: true,
       operatorIndex: operatorId,
     });

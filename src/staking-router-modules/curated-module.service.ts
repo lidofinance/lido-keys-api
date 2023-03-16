@@ -8,8 +8,7 @@ import {
   RegistryOperatorStorageService,
 } from '@lido-nestjs/registry';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { KeysFilter } from './interfaces/keys-filter';
-import { StakingModuleInterface } from './interfaces/staking-module.interface';
+import { StakingModuleInterface, KeysFilter } from './interfaces';
 
 export class CuratedModuleService implements StakingModuleInterface {
   constructor(

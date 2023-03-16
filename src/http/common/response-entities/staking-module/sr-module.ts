@@ -7,7 +7,7 @@ export class SRModule {
     this.type = module.type;
     this.id = module.id;
     this.stakingModuleAddress = module.stakingModuleAddress;
-    // todo: maybe rename field stakingModuleFee
+    // TODO: maybe rename field stakingModuleFee
     this.moduleFee = module?.stakingModuleFee ?? null;
     this.treasuryFee = module?.treasuryFee ?? null;
     this.targetShare = module?.targetShare ?? null;

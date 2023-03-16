@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { StakingModule } from 'common/contracts';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import {
   KeyRegistryService,
@@ -8,9 +7,9 @@ import {
   RegistryOperatorStorageService,
 } from '@lido-nestjs/registry';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { ModuleId } from 'http/common/entities';
-import { StakingModuleInterface, STAKING_MODULE_TYPE } from './interfaces';
+import { StakingModuleInterface, STAKING_MODULE_TYPE, ModuleId } from './interfaces';
 import { CuratedModuleService } from './curated-module.service';
+import { StakingModule } from 'common/contracts';
 
 @Injectable()
 export class StakingRouterService {
@@ -33,21 +32,19 @@ export class StakingRouterService {
     this.entityManager,
   );
 
-  // TODO: how to work with isActive false
-
+  // TODO: how to work with isActive false modules
   protected stakingModules: StakingModule[] = [];
-  // undefined is imposible as we check all modules types when fetch SR modules from contract
+  // TODO: no type check in this case. why?
   protected stakingModulesTooling: { stakingModule: StakingModule; tooling: StakingModuleInterface }[] = [];
   protected tooling = [{ type: STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE, tooling: this.curatedModule }];
 
   /**
    * Set staking router modules
    */
-  public setStakingModules(modules: StakingModule[]) {
-    // maybe mapping Staking Module and implementation
+  public setStakingModules(modules: StakingModule[]): void {
     this.stakingModules = modules;
-    //
     this.stakingModulesTooling = modules.map((module) => {
+      // undefined in tooling field is imposible as we check all modules types when fetch SR modules from contract
       return { stakingModule: module, tooling: this.tooling[module.type] };
     });
   }
@@ -65,7 +62,7 @@ export class StakingRouterService {
    * Can be used in for of cycle during update and in endpoints that capture info from all staking modules
    * @returns Staking modules with class instances. tooling value can be undefined if module is inactive and we dont know it is type
    */
-  public getStakingModulesTooling(): { stakingModule: StakingModule; tooling: StakingModuleInterface | undefined }[] {
+  public getStakingModulesTooling(): { stakingModule: StakingModule; tooling: StakingModuleInterface }[] {
     return this.stakingModulesTooling;
   }
 
@@ -85,10 +82,10 @@ export class StakingRouterService {
    * @param moduleId id or contract address of Staking Module
    * @returns Stakign module with tooling.
    */
-  public getStakingModuleWithTooling(moduleId: ModuleId):
+  public getStakingModuleTooling(moduleId: ModuleId):
     | {
         stakingModule: StakingModule;
-        tooling: StakingModuleInterface | undefined;
+        tooling: StakingModuleInterface;
       }
     | undefined {
     return this.stakingModulesTooling.find(
@@ -96,8 +93,8 @@ export class StakingRouterService {
     );
   }
 
-  // retunr undefined if empty list of staking modules
-  public mainStakingModule(): StakingModule | undefined {
-    return this.stakingModules[0];
+  // return undefined if empty list of staking modules
+  public mainStakingModule(): { stakingModule: StakingModule; tooling: StakingModuleInterface } | undefined {
+    return this.stakingModulesTooling[0];
   }
 }

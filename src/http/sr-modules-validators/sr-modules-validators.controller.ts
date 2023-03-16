@@ -1,7 +1,7 @@
 import { Controller, Get, Version, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModulesValidatorsService } from './sr-modules-validators.service';
-import { ModuleId } from 'http/common/entities/';
+import { ModuleId } from 'http/common/response-entities';
 import { Query as ValidatorsQuery } from './entities/query';
 import { ExitPresignMessageListResponse, ExitValidatorListResponse } from './entities';
 

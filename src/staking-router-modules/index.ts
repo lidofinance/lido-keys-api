@@ -1,3 +1,3 @@
 export * from './staking-router.module';
-export * from './curated-module.service';
-export * from './staking-module-type';
+export * from './staking-router.service';
+export { ModuleId, StakingModuleInterface, STAKING_MODULE_TYPE, OperatorEntity } from './interfaces';

@@ -2,7 +2,7 @@ import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/co
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { KeyListResponse, KeyWithModuleAddress } from './entities';
 import { ConfigService } from 'common/config';
-import { ELBlockSnapshot, KeyQuery } from 'http/common/entities';
+import { ELBlockSnapshot, KeyQuery } from 'http/common/response-entities';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules/';
 import { KeysUpdateService } from 'jobs/keys-update';
 

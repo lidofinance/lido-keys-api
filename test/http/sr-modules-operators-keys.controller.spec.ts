@@ -17,7 +17,7 @@ import {
 } from '../fixtures';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { CuratedModuleService } from 'staking-router-modules';
-import { ModuleId } from 'http/common/entities';
+import { ModuleId } from 'http/common/response-entities';
 
 describe('SRModulesOperatorsController', () => {
   let operatorsKeysController: SRModulesOperatorsKeysController;

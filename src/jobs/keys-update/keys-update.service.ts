@@ -5,11 +5,10 @@ import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
 import { JobService } from 'common/job';
-import { CuratedModuleService, STAKING_MODULE_TYPE } from '../../staking-router-modules/';
-import { RegistryOperator, RegistryMeta } from '@lido-nestjs/registry';
 import { StakingRouterFetchService, StakingModule } from 'common/contracts';
 import { ExecutionProviderService } from 'common/execution-provider';
-import { ModuleId } from 'http/common/entities';
+import { StakingRouterService } from 'staking-router-modules/';
+import { Operator, StakingModuleInterface } from 'staking-router-modules/interfaces';
 
 @Injectable()
 export class KeysUpdateService {
@@ -18,16 +17,17 @@ export class KeysUpdateService {
     protected readonly prometheusService: PrometheusService,
     protected readonly configService: ConfigService,
     protected readonly jobService: JobService,
-    protected readonly curatedModuleService: CuratedModuleService,
     protected readonly stakingRouterFetchService: StakingRouterFetchService,
     protected readonly executionProvider: ExecutionProviderService,
+    protected readonly stakingRouterService: StakingRouterService,
   ) {}
 
   protected lastTimestamp: number | undefined = undefined;
   protected lastBlockNumber: number | undefined = undefined;
-  protected curatedNonce: number | undefined = undefined;
-  protected curatedOperators: RegistryOperator[] = [];
-  protected stakingModules: StakingModule[] = [];
+  // will store by module id to be the same for all chains
+  protected operatorsModuleMap: Record<number, Operator[]> = {};
+  // undefined is possible if meta is null
+  protected nonceModuleMap: Record<number, number | undefined> = {};
 
   /**
    * Initializes the job
@@ -41,15 +41,6 @@ export class KeysUpdateService {
     this.logger.log('Update Staking Router Modules keys', { service: 'keys-registry', cronTime });
   }
 
-  public getStakingModules() {
-    return this.stakingModules;
-  }
-
-  public getStakingModule(moduleId: ModuleId): StakingModule | undefined {
-    // here should be == , moduleId can be string and number
-    return this.stakingModules.find((module) => module.stakingModuleAddress == moduleId || module.id == moduleId);
-  }
-
   /**
    * Collects updates from the registry contract and saves the changes to the database
    */
@@ -57,58 +48,61 @@ export class KeysUpdateService {
   private async updateKeys(): Promise<void> {
     await this.jobService.wrapJob({ name: 'Update Staking Router Modules keys' }, async () => {
       // get blockHash for 'latest' block
-
       const blockHash = await this.executionProvider.getBlockHash('latest');
-
-      // get staking router modules
+      // get staking router modules from SR contract and assign every module with type known to our tooling
       const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: blockHash });
-      this.stakingModules = modules;
+      // cache modules
+      this.stakingRouterService.setStakingModules(modules);
+
+      // Get modules with tooling
+      const stakingModulesTooling = this.stakingRouterService.getStakingModulesTooling();
 
       // Here should be a transaction in future that will wrap updateKeys calls of all modules
       // or other way to call updateKeys method consistently
 
-      await Promise.all(
-        this.stakingModules.map(async (stakingModule) => {
-          if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-            this.logger.debug?.('start updating curated keys');
-            await this.curatedModuleService.updateKeys(blockHash);
-          }
-        }),
-      );
+      for (const { stakingModule, tooling } of stakingModulesTooling) {
+        this.logger.debug?.(
+          `Start updating keys of staking module with id ${stakingModule.id} and type ${stakingModule.type}`,
+        );
+        await tooling.updateKeys(blockHash);
+      }
 
       // Update cached data to quick access
-      await this.updateMetricsCache();
+      await this.updateMetricsCache(stakingModulesTooling);
 
-      this.setMetrics();
+      this.setMetrics(stakingModulesTooling);
     });
   }
 
   /**
    * Update cache data above
    */
-  private async updateMetricsCache() {
-    const meta = await this.updateCuratedMetricsCache();
-    // update meta
-    // timestamp and block number is common for all modules
-    this.lastTimestamp = meta?.timestamp ?? this.lastTimestamp;
-    this.lastBlockNumber = meta?.blockNumber ?? this.lastBlockNumber;
-  }
+  private async updateMetricsCache(
+    stakingModulesTooling: { stakingModule: StakingModule; tooling: StakingModuleInterface }[],
+  ) {
+    // List of operators with used/unused keys metric possible for every module
+    for (const [index, { stakingModule, tooling }] of stakingModulesTooling.entries()) {
+      const { operators, meta } = await tooling.getOperatorsWithMeta();
 
-  private async updateCuratedMetricsCache(): Promise<RegistryMeta | null> {
-    const { operators, meta } = await this.curatedModuleService.getOperatorsWithMeta();
-    // should set for each module
-    this.curatedNonce = meta?.keysOpIndex ?? this.curatedNonce;
-    // update curated module operators map
-    this.curatedOperators = operators;
+      // TODO: is it write here to use old value if meta is null ?
+      // if meta is undefined is means db is empty or something wrong happened
+      this.nonceModuleMap[stakingModule.id] = meta?.keysOpIndex; //  ?? this.nonceModuleMap[stakingModule.id];
+      this.operatorsModuleMap[stakingModule.id] = operators;
 
-    return meta;
+      // Timestamp and block number is common for all modules
+      // Will get meta from 0 service
+      if (index == 0) {
+        this.lastTimestamp = meta?.timestamp; // ?? this.lastTimestamp;
+        this.lastBlockNumber = meta?.blockNumber; // ?? this.lastBlockNumber;
+      }
+    }
   }
 
   /**
    * Updates prometheus metrics
    */
-  private setMetrics() {
-    // common metrics
+  private setMetrics(stakingModulesTooling: { stakingModule: StakingModule }[]) {
+    // update common metrics
     if (this.lastTimestamp) {
       this.prometheusService.registryLastUpdate.set(this.lastTimestamp);
     }
@@ -116,27 +110,31 @@ export class KeysUpdateService {
       this.prometheusService.registryBlockNumber.set(this.lastBlockNumber);
     }
 
-    // curated metrics
-    this.setCuratedMetrics();
-  }
+    // update staking router modules metrics
+    for (const { stakingModule } of stakingModulesTooling) {
+      const nonce = this.nonceModuleMap[stakingModule.id];
+      if (nonce) {
+        this.prometheusService.registryNonce.set({ srModuleId: stakingModule.id }, nonce);
+      }
 
-  private setCuratedMetrics() {
-    if (this.curatedNonce) {
-      this.prometheusService.registryNonce.set({ srModuleId: 1 }, this.curatedNonce);
+      this.setCuratedOperatorsMetric(stakingModule.id);
+
+      this.logger.log(`Staking Module ${stakingModule.id} metrics updated`);
     }
-    this.setCuratedOperatorsMetric();
-
-    this.logger.log('Curated Module metrics updated');
   }
 
-  private setCuratedOperatorsMetric() {
+  private setCuratedOperatorsMetric(stakingModuleId: number) {
     this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.reset();
 
-    this.curatedOperators.forEach((operator) => {
+    this.operatorsModuleMap[stakingModuleId].forEach((operator) => {
+      // TODO: is it okay use in label operatorIndex ?
+      // number of operators can increase, so number of metrics too
+      // here it * 2 * stModules.lenth
+
       this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
         {
           operator: operator.index,
-          srModuleId: 1,
+          srModuleId: stakingModuleId,
           used: 'true',
         },
         operator.usedSigningKeys,

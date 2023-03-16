@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Operator } from 'http/common/entities/';
+import { OperatorResponse } from './operator-repsonse';
 import { RegistryOperator } from '@lido-nestjs/registry';
 
-export class CuratedOperator extends Operator {
+export class CuratedOperatorResponse extends OperatorResponse {
   constructor(operator: RegistryOperator) {
     super(operator);
     this.name = operator.name;

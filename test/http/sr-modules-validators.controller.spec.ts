@@ -17,7 +17,7 @@ import { operatorOneUsedKeys } from '../fixtures';
 import { operatorOneValidatorsToExit, operatorOnePresignMessageList, operatorOneValidatorsExitList } from '../fixtures';
 import { ValidatorStatus } from '@lido-nestjs/validators-registry';
 import { CuratedModuleService } from 'staking-router-modules/';
-import { ModuleId } from 'http/common/entities';
+import { ModuleId } from 'http/common/response-entities';
 
 const VALIDATORS_TO_EXIT_STATUSES = [
   ValidatorStatus.ACTIVE_ONGOING,

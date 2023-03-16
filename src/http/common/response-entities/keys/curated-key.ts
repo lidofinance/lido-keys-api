@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Key } from 'http/common/entities/';
+import { Key } from './key';
 import { RegistryKey } from '@lido-nestjs/registry';
 
 export class CuratedKey extends Key {

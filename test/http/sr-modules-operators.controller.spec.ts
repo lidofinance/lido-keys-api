@@ -18,7 +18,7 @@ import {
   curatedModuleMainnetResponse,
 } from '../fixtures';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { ModuleId } from 'http/common/entities';
+import { ModuleId } from 'http/common/response-entities';
 import { CuratedModuleService } from 'staking-router-modules';
 import { StakingModule } from 'common/contracts';
 

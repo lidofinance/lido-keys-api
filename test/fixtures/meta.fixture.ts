@@ -1,4 +1,4 @@
-import { CLBlockSnapshot, ELBlockSnapshot } from 'http/common/entities';
+import { CLBlockSnapshot, ELBlockSnapshot } from 'http/common/response-entities';
 
 export const elMeta = {
   blockNumber: 14275000,
