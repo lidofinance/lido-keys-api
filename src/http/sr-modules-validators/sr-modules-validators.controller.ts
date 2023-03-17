@@ -11,11 +11,11 @@ export class SRModulesValidatorsController {
   constructor(protected readonly validatorsService: SRModulesValidatorsService) {}
 
   @Version('1')
-  @Get(':module_id/validators/exits_presign/:operator_id')
+  @Get(':module_id/validators/validator-exits-to-prepare/:operator_id')
   @ApiOperation({ summary: 'Get list of N oldest lido validators' })
   @ApiResponse({
     status: 200,
-    description: 'Staking Router module keys.',
+    description: 'N oldest lido validators for operator.',
     type: ExitValidatorListResponse,
   })
   @ApiParam({
@@ -36,11 +36,11 @@ export class SRModulesValidatorsController {
   }
 
   @Version('1')
-  @Get(':module_id/validators/exits_presign/:operator_id/messages')
-  @ApiOperation({ summary: 'Get list of N oldest lido validators' })
+  @Get(':module_id/validators/generate-unsigned-exit-messages/:operator_id')
+  @ApiOperation({ summary: 'Get list of exit messages for N oldest lido validators' })
   @ApiResponse({
     status: 200,
-    description: 'Staking Router module keys.',
+    description: 'Exit messages for N oldest lido validators of operator',
     type: ExitPresignMessageListResponse,
   })
   @ApiParam({

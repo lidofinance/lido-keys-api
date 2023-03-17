@@ -306,7 +306,7 @@ interface Response {
 
 ### /validators
 
-**GET** `/api/v1/modules/{module_id}/validators/exits_presign/{operator_id}`
+**GET** `/api/v1/modules/{module_id}/validators/validator-exits-to-prepare/{operator_id}`
 
 `module_id` - staking router module contact address or id;
 
@@ -342,11 +342,11 @@ interface Response {
 }
 ```
 
-**GET** `/api/v1/modules/{module_id}/validators/exits_presign/{operator_id}/messages`
+**GET** `/api/v1/modules/{module_id}/validators/generate-unsigned-exit-messages/{operator_id}`
 
 `module_id` - staking router module contact address or id;
 
-Generate pre-sign messages for N oldest validators for earliest epoch when voluntary exit can be processed.
+Return unsigned exit messages for N oldest validators for earliest epoch when voluntary exit can be processed.
 
 Query:
 
