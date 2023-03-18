@@ -10,6 +10,9 @@ import { ConsensusValidatorEntity } from '@lido-nestjs/validators-registry/dist/
 
 dotenv.config();
 
+// https://github.com/mikro-orm/mikro-orm/issues/1842
+// disableForeignKeys = false
+
 // TODO move this to nestjs packages
 const findMigrations = (mainFolder: string, npmPackageNames: string[]): MigrationObject[] => {
   const cwd = process.cwd();
@@ -54,7 +57,7 @@ const getMigrationOptions = (mainMigrationsFolder: string, npmPackageNames: stri
     tableName: 'mikro_orm_migrations', // name of database table with log of executed transactions
     path: mainMigrationsFolder, // path to the folder with migrations
     transactional: true, // wrap each migration in a transaction
-    disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
+    disableForeignKeys: false, // wrap statements with `set foreign_key_checks = 0` or equivalent
     allOrNothing: true, // wrap all migrations in master transaction
     dropTables: true, // allow to disable table dropping
     safe: false, // allow to disable table and column dropping
