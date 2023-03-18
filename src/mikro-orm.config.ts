@@ -12,11 +12,15 @@ dotenv.config();
 
 // https://github.com/mikro-orm/mikro-orm/issues/1842
 // disableForeignKeys = false
+// default — true
+const MIKRO_ORM_DISABLE_FOREIGN_KEYS =
+  process.env.MIKRO_ORM_DISABLE_FOREIGN_KEYS === 'true' || process.env.MIKRO_ORM_DISABLE_FOREIGN_KEYS === undefined
+    ? true
+    : false;
 
 // TODO move this to nestjs packages
 const findMigrations = (mainFolder: string, npmPackageNames: string[]): MigrationObject[] => {
   const cwd = process.cwd();
-
   const folders = [mainFolder, ...npmPackageNames.map((npmPackage) => `./node_modules/${npmPackage}/dist/migrations/`)];
   const filenames = folders
     .map((folder) => {
@@ -57,7 +61,7 @@ const getMigrationOptions = (mainMigrationsFolder: string, npmPackageNames: stri
     tableName: 'mikro_orm_migrations', // name of database table with log of executed transactions
     path: mainMigrationsFolder, // path to the folder with migrations
     transactional: true, // wrap each migration in a transaction
-    disableForeignKeys: false, // wrap statements with `set foreign_key_checks = 0` or equivalent
+    disableForeignKeys: MIKRO_ORM_DISABLE_FOREIGN_KEYS, // wrap statements with `set foreign_key_checks = 0` or equivalent
     allOrNothing: true, // wrap all migrations in master transaction
     dropTables: true, // allow to disable table dropping
     safe: false, // allow to disable table and column dropping
