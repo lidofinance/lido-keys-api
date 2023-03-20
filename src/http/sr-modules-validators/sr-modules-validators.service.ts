@@ -182,7 +182,7 @@ export class SRModulesValidatorsService {
   }
 
   private createExitPresignMessageList(validators: Validator[], clMeta: ConsensusMeta): ExitPresignMessage[] {
-    return validators.map((v) => ({ validatorIndex: v.index, epoch: clMeta.epoch }));
+    return validators.map((v) => ({ validator_index: String(v.index), epoch: String(clMeta.epoch) }));
   }
 
   private disabledRegistry() {
