@@ -87,6 +87,7 @@ export class KeysService {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
     if (stakingModules.length == 0) {
+      // TODO: maybe return special message with code 425 like empty state
       return {
         data: [],
         meta: null,
@@ -151,6 +152,7 @@ export class KeysService {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
     if (stakingModules.length == 0) {
+      this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
       return {
         data: [],
         meta: null,

@@ -1,18 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { IsInt, IsOptional, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class Query {
-  @Transform(({ value }) => Number(value))
   @ApiProperty({
     required: false,
     description: 'Number of validators to exit. If validators number less than amount, return all validators.',
   })
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  @IsOptional()
   max_amount?: number;
 
-  @Transform(({ value }) => Number(value))
   @ApiProperty({
     required: false,
     description: 'Percent of validators to exit. Default value is 10. Percent has a higher priority than max_amount',
   })
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  @IsOptional()
   percent?: number;
 }

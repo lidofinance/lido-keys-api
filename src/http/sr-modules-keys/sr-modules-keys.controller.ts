@@ -1,8 +1,9 @@
-import { Controller, Get, Version, Param, Query, Body, Post, ParseArrayPipe } from '@nestjs/common';
+import { Controller, Get, Version, Param, Query, Body, Post, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
 import { ModuleId, KeyQuery } from 'http/common/entities/';
+import { KeysFindBody } from 'http/common/entities/pubkeys';
 
 @Controller('modules')
 @ApiTags('sr-module-keys')
@@ -49,10 +50,7 @@ export class SRModulesKeysController {
     name: 'module_id',
     description: 'Staking router module_id or contract address.',
   })
-  getModuleKeysByPubkeys(
-    @Param('module_id') moduleId: ModuleId,
-    @Body(new ParseArrayPipe({ items: String })) pubkeys: string[],
-  ) {
-    return this.srModulesService.getModuleKeysByPubkeys(moduleId, pubkeys);
+  getModuleKeysByPubkeys(@Param('module_id') moduleId: ModuleId, @Body() keys: KeysFindBody) {
+    return this.srModulesService.getModuleKeysByPubkeys(moduleId, keys.pubkeys);
   }
 }

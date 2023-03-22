@@ -1,9 +1,10 @@
-import { Controller, Get, Version, Param, Query } from '@nestjs/common';
+import { Controller, Get, Version, Param, Query, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModulesValidatorsService } from './sr-modules-validators.service';
 import { ModuleId } from 'http/common/entities/';
 import { Query as ValidatorsQuery } from './entities/query';
 import { ExitPresignMessageListResponse, ExitValidatorListResponse } from './entities';
+import { OperatorIdParam } from 'http/common/entities/operator-id-param';
 
 @Controller('modules')
 @ApiTags('validators')
@@ -23,16 +24,12 @@ export class SRModulesValidatorsController {
     example: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
     description: 'Staking router module_id or contract address.',
   })
-  @ApiParam({
-    name: 'operator_id',
-    description: 'Operator index',
-  })
   getOldestValidators(
     @Param('module_id') moduleId: ModuleId,
-    @Param('operator_id') operatorId,
+    @Param() operator: OperatorIdParam,
     @Query() query: ValidatorsQuery,
   ) {
-    return this.validatorsService.getOldestLidoValidators(moduleId, operatorId, query);
+    return this.validatorsService.getOldestLidoValidators(moduleId, operator.operator_id, query);
   }
 
   @Version('1')
@@ -48,15 +45,11 @@ export class SRModulesValidatorsController {
     example: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
     description: 'Staking router module_id or contract address.',
   })
-  @ApiParam({
-    name: 'operator_id',
-    description: 'Operator index',
-  })
   getMessagesForOldestValidators(
     @Param('module_id') moduleId: ModuleId,
-    @Param('operator_id') operatorId,
+    @Param() operator: OperatorIdParam,
     @Query() query: ValidatorsQuery,
   ) {
-    return this.validatorsService.getVoluntaryExitMessages(moduleId, operatorId, query);
+    return this.validatorsService.getVoluntaryExitMessages(moduleId, operator.operator_id, query);
   }
 }

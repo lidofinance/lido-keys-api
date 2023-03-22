@@ -1,4 +1,4 @@
-import { Controller, Get, Version, Param, Query } from '@nestjs/common';
+import { Controller, Get, Version, Param, Query, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { SRModuleOperatorsKeysResponse } from './entities';
 import { ModuleId, KeyQuery } from 'http/common/entities/';

@@ -30,7 +30,7 @@ export class JobService {
     } catch (error) {
       endTimer({ result: 'error' });
       this.logger.warn('Job terminated with an error', meta);
-      this.logger.error(error);
+      this.logger.error(JSON.stringify(error));
     } finally {
       this.logger.log('Job ended', meta);
     }

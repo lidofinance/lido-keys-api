@@ -281,7 +281,9 @@ describe('SRModulesOperatorsController', () => {
       process.env['CHAIN_ID'] = '1';
       const getOperatorByIndexMock = jest.spyOn(curatedModuleService, 'getOperatorByIndex');
       const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
-      const result = await operatorsController.getModuleOperator('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1);
+      const result = await operatorsController.getModuleOperator('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
+        operator_id: 1,
+      });
       expect(getOperatorByIndexMock).toBeCalledTimes(1);
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getOperatorByIndexMock).lastCalledWith(1);
@@ -302,7 +304,9 @@ describe('SRModulesOperatorsController', () => {
       const getStakingModuleMock = jest
         .spyOn(keysUpdateService, 'getStakingModule')
         .mockImplementation(() => curatedModuleGoerli);
-      const result = await operatorsController.getModuleOperator('0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320', 1);
+      const result = await operatorsController.getModuleOperator('0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320', {
+        operator_id: 1,
+      });
       expect(getOperatorByIndexMock).toBeCalledTimes(1);
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getOperatorByIndexMock).lastCalledWith(1);
@@ -324,7 +328,7 @@ describe('SRModulesOperatorsController', () => {
         .spyOn(keysUpdateService, 'getStakingModule')
         .mockImplementation(() => undefined);
 
-      await expect(operatorsController.getModuleOperator('0x12345', 1)).rejects.toThrowError(
+      await expect(operatorsController.getModuleOperator('0x12345', { operator_id: 1 })).rejects.toThrowError(
         `Module with moduleId 0x12345 is not supported`,
       );
       expect(getStakingModuleMock).toBeCalledTimes(1);
@@ -337,7 +341,9 @@ describe('SRModulesOperatorsController', () => {
         .spyOn(curatedModuleService, 'getOperatorByIndex')
         .mockImplementation(() => Promise.resolve({ operator: curatedOperatorIndexOne, meta: null }));
       const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
-      const result = await operatorsController.getModuleOperator('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1);
+      const result = await operatorsController.getModuleOperator('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
+        operator_id: 1,
+      });
 
       expect(getOperatorByIndexMock).toBeCalledTimes(1);
       expect(getStakingModuleMock).toBeCalledTimes(1);
@@ -356,7 +362,7 @@ describe('SRModulesOperatorsController', () => {
       const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
 
       await expect(
-        operatorsController.getModuleOperator('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1),
+        operatorsController.getModuleOperator('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', { operator_id: 1 }),
       ).rejects.toThrowError(
         'Operator with index 1 is not found for module with moduleId 0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
       );

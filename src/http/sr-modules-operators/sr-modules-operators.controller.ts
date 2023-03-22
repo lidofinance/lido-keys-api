@@ -7,6 +7,7 @@ import {
 } from './entities';
 import { ModuleId } from 'http/common/entities/';
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
+import { OperatorIdParam } from 'http/common/entities/operator-id-param';
 
 @Controller('/')
 @ApiTags('operators')
@@ -52,12 +53,9 @@ export class SRModulesOperatorsController {
     name: 'module_id',
     description: 'Staking router module_id or contract address.',
   })
-  @ApiParam({
-    name: 'operator_index',
-    description: 'Operator index',
-  })
-  @Get('modules/:module_id/operators/:operator_index')
-  getModuleOperator(@Param('module_id') moduleId: ModuleId, @Param('operator_index') operatorIndex: number) {
-    return this.srModulesOperators.getModuleOperator(moduleId, operatorIndex);
+  @Get('modules/:module_id/operators/:operator_id')
+  // here should be validaton
+  getModuleOperator(@Param('module_id') moduleId: ModuleId, @Param() operator: OperatorIdParam) {
+    return this.srModulesOperators.getModuleOperator(moduleId, operator.operator_id);
   }
 }

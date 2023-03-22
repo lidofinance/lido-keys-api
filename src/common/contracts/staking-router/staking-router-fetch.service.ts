@@ -4,7 +4,7 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { IStakingModuleService } from 'common/contracts/i-staking-module';
 import { STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { LidoLocatorService } from 'common/contracts/lido-locator';
-import { StakingRouter__factory } from 'generated';
+import { StakingRouter__factory } from 'generated'; //Registry__factory,
 import { ExecutionProvider } from 'common/execution-provider';
 import { BlockTag } from '../interfaces';
 import { Trace } from 'common/decorators/trace';
@@ -20,7 +20,7 @@ export class StakingRouterFetchService {
     protected readonly provider: ExecutionProvider,
   ) {}
 
-  private getContract(contractAddress: string) {
+  private getSRContract(contractAddress: string) {
     return StakingRouter__factory.connect(contractAddress, this.provider);
   }
 
@@ -34,15 +34,15 @@ export class StakingRouterFetchService {
 
     this.loggerService.log('Staking router module address', stakingRouterAddress);
 
-    const contract = this.getContract(stakingRouterAddress);
-    const modules = await contract.getStakingModules({ blockTag } as any);
+    const srContract = this.getSRContract(stakingRouterAddress);
+    const modules = await srContract.getStakingModules({ blockTag } as any);
 
     this.loggerService.log(`Fetched ${modules.length} modules`);
     this.loggerService.log('Modules:', modules);
 
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
-        const isActive = await contract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
+        const isActive = await srContract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
 
         // until the end of voting work with old version of Node Operator Registry
         // this version doesnt correspond to IStakingModule interface
