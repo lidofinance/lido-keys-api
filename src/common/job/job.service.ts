@@ -19,7 +19,7 @@ export class JobService {
    */
   @UseRequestContext()
   async wrapJob<R, M extends { name: string }>(meta: M, jobFn: () => Promise<R>): Promise<R | undefined> {
-    this.logger.debug?.('Job started', meta);
+    this.logger.log('Job started', meta);
     const endTimer = this.prometheusService.jobDuration.startTimer({ job: meta.name });
 
     try {
@@ -32,7 +32,7 @@ export class JobService {
       this.logger.warn('Job terminated with an error', meta);
       this.logger.error(error);
     } finally {
-      this.logger.debug?.('Job ended', meta);
+      this.logger.log('Job ended', meta);
     }
   }
 }

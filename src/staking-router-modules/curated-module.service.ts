@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   KeyRegistryService,
   RegistryKeyStorageService,
@@ -9,6 +9,10 @@ import {
   RegistryOperatorStorageService,
 } from '@lido-nestjs/registry';
 import { EntityManager } from '@mikro-orm/postgresql';
+import { Trace } from 'common/decorators/trace';
+import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
+
+const TRACE_TIMEOUT = 15 * 60 * 1000;
 
 export interface KeysFilter {
   used?: boolean;
@@ -18,6 +22,7 @@ export interface KeysFilter {
 @Injectable()
 export class CuratedModuleService {
   constructor(
+    @Inject(LOGGER_PROVIDER) protected readonly loggerService: LoggerService,
     protected readonly keyRegistryService: KeyRegistryService,
     protected readonly keyStorageService: RegistryKeyStorageService,
     protected readonly metaStorageService: RegistryMetaStorageService,
@@ -25,6 +30,7 @@ export class CuratedModuleService {
     protected readonly entityManager: EntityManager,
   ) {}
 
+  @Trace(TRACE_TIMEOUT)
   public async updateKeys(blockHashOrBlockTag: string | number): Promise<void> {
     await this.keyRegistryService.update(blockHashOrBlockTag);
   }

@@ -7,6 +7,9 @@ import { LidoLocatorService } from 'common/contracts/lido-locator';
 import { StakingRouter__factory } from 'generated';
 import { ExecutionProvider } from 'common/execution-provider';
 import { BlockTag } from '../interfaces';
+import { Trace } from 'common/decorators/trace';
+
+const TRACE_TIMEOUT = 30 * 1000;
 
 @Injectable()
 export class StakingRouterFetchService {
@@ -25,16 +28,17 @@ export class StakingRouterFetchService {
    *
    * @returns Staking Router modules list
    */
+  @Trace(TRACE_TIMEOUT)
   public async getStakingModules(blockTag: BlockTag): Promise<StakingModule[]> {
     const stakingRouterAddress = await this.lidoLocatorService.getStakingRouter(blockTag);
 
-    this.loggerService.debug?.('Staking router module address', stakingRouterAddress);
+    this.loggerService.log('Staking router module address', stakingRouterAddress);
 
     const contract = this.getContract(stakingRouterAddress);
     const modules = await contract.getStakingModules({ blockTag } as any);
 
     this.loggerService.log(`Fetched ${modules.length} modules`);
-    this.loggerService.debug?.(`Modules ${modules}`);
+    this.loggerService.log(`Modules ${modules}`);
 
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {

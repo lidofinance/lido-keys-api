@@ -14,7 +14,7 @@ Service is based on modular architecture. We will have separate library for each
 
 ### /keys
 
-**GET** `/api/v1/keys`
+**GET** `/v1/keys`
 
 Endpoint returns list of keys for all modules.
 
@@ -53,7 +53,7 @@ interface Response {
 Response of this endpoint could be very large but we can’t have a pagination here since data could be updated in the process.
 :::
 
-**GET** `/api/v1/keys/{pubkey}`
+**GET** `/v1/keys/{pubkey}`
 
 Return key by public key with basic fields. `pubkey` should be in lowercase.
 
@@ -66,7 +66,7 @@ interface Response {
 }
 ```
 
-**POST** `/api/v1/keys/find`
+**POST** `/v1/keys/find`
 
 Returns all keys found in db.
 
@@ -92,7 +92,7 @@ interface Response {
 
 ### /modules
 
-**GET** `/api/v1/modules`
+**GET** `/v1/modules`
 
 Endpoint returns list of staking router modules.
 
@@ -132,7 +132,7 @@ interface Reponse {
 }
 ```
 
-**GET** `/api/v1/modules/{module_id}`
+**GET** `/v1/modules/{module_id}`
 
 `module_id` - staking router module contact address or id;
 
@@ -176,7 +176,7 @@ interface Reponse {
 
 ### /modules/keys/
 
-**GET** `/api/v1/modules/keys/`
+**GET** `/v1/modules/keys/`
 
 Return keys for all modules grouped by staking router module.
 
@@ -222,7 +222,7 @@ interface Response {
 }
 ```
 
-**GET** `/api/v1/modules/{module_id}/keys`
+**GET** `/v1/modules/{module_id}/keys`
 
 `module_id` - staking router module contact address or id;
 
@@ -262,7 +262,7 @@ interface Response {
 }
 ```
 
-**POST** `/api/v1/modules/{module_id}/keys/find`
+**POST** `/v1/modules/{module_id}/keys/find`
 
 `module_id` - staking router module contact address or id;
 
@@ -306,7 +306,7 @@ interface Response {
 
 ### /validators
 
-**GET** `/api/v1/modules/{module_id}/validators/validator-exits-to-prepare/{operator_id}`
+**GET** `/v1/modules/{module_id}/validators/validator-exits-to-prepare/{operator_id}`
 
 `module_id` - staking router module contact address or id;
 
@@ -342,7 +342,7 @@ interface Response {
 }
 ```
 
-**GET** `/api/v1/modules/{module_id}/validators/generate-unsigned-exit-messages/{operator_id}`
+**GET** `/v1/modules/{module_id}/validators/generate-unsigned-exit-messages/{operator_id}`
 
 `module_id` - staking router module contact address or id;
 
@@ -380,7 +380,7 @@ interface Response {
 
 ### /operators
 
-**GET** `/api/v1/operators`
+**GET** `/v1/operators`
 
 List of operators grouped by staking router module
 
@@ -414,7 +414,7 @@ interface Response {
 }
 ```
 
-**GET** `/api/v1/modules/{module_id}/operators/`
+**GET** `/v1/modules/{module_id}/operators/`
 
 `module_id` - staking router module contact address or id;
 
@@ -432,7 +432,7 @@ interface Response {
 }
 ```
 
-**GET** `/api/v1/modules/{module_id}/operators/{operator_index}`
+**GET** `/v1/modules/{module_id}/operators/{operator_index}`
 
 `module_id` - staking router module contact address or id;
 `operator_index` - operator index;
@@ -451,7 +451,7 @@ interface Response {
 }
 ```
 
-**GET** `/api/v1/modules/{module_id}/operators/keys`
+**GET** `/v1/modules/{module_id}/operators/keys`
 
 `module_id` - staking router module contact address or id;
 

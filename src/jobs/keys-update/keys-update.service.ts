@@ -10,11 +10,14 @@ import { RegistryOperator, RegistryMeta } from '@lido-nestjs/registry';
 import { StakingRouterFetchService, StakingModule } from 'common/contracts';
 import { ExecutionProviderService } from 'common/execution-provider';
 import { ModuleId } from 'http/common/entities';
+import { Trace } from 'common/decorators/trace';
+
+const METRICS_TIMEOUT = 30 * 1000;
 
 @Injectable()
 export class KeysUpdateService {
   constructor(
-    @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
+    @Inject(LOGGER_PROVIDER) protected readonly loggerService: LoggerService,
     protected readonly prometheusService: PrometheusService,
     protected readonly configService: ConfigService,
     protected readonly jobService: JobService,
@@ -38,7 +41,7 @@ export class KeysUpdateService {
     const job = new CronJob(cronTime, () => this.updateKeys());
     job.start();
 
-    this.logger.log('Update Staking Router Modules keys', { service: 'keys-registry', cronTime });
+    this.loggerService.log('Update Staking Router Modules keys', { service: 'keys-registry', cronTime });
   }
 
   public getStakingModules() {
@@ -57,7 +60,6 @@ export class KeysUpdateService {
   private async updateKeys(): Promise<void> {
     await this.jobService.wrapJob({ name: 'Update Staking Router Modules keys' }, async () => {
       // get blockHash for 'latest' block
-
       const blockHash = await this.executionProvider.getBlockHash('latest');
 
       // get staking router modules
@@ -70,7 +72,7 @@ export class KeysUpdateService {
       await Promise.all(
         this.stakingModules.map(async (stakingModule) => {
           if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-            this.logger.debug?.('start updating curated keys');
+            this.loggerService.log('Start updating curated keys');
             await this.curatedModuleService.updateKeys(blockHash);
           }
         }),
@@ -86,6 +88,7 @@ export class KeysUpdateService {
   /**
    * Update cache data above
    */
+  @Trace(METRICS_TIMEOUT)
   private async updateMetricsCache() {
     const meta = await this.updateCuratedMetricsCache();
     // update meta
@@ -126,7 +129,7 @@ export class KeysUpdateService {
     }
     this.setCuratedOperatorsMetric();
 
-    this.logger.log('Curated Module metrics updated');
+    this.loggerService.log('Curated Module metrics updated');
   }
 
   private setCuratedOperatorsMetric() {
