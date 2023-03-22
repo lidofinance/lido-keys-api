@@ -38,7 +38,7 @@ export class StakingRouterFetchService {
     const modules = await contract.getStakingModules({ blockTag } as any);
 
     this.loggerService.log(`Fetched ${modules.length} modules`);
-    this.loggerService.log(`Modules ${modules}`);
+    this.loggerService.log('Modules:', modules);
 
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
