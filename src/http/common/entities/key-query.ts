@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsInt, IsBoolean, IsOptional, Min } from 'class-validator';
 
-const toBoolean = (value): boolean => {
+const toBoolean = (value, propertyName: string): boolean => {
   if (value === 'true') {
     return true;
   }
@@ -12,7 +12,7 @@ const toBoolean = (value): boolean => {
     return false;
   }
 
-  throw new BadRequestException(['used must be a boolean value']);
+  throw new BadRequestException([`${propertyName.toLocaleLowerCase()} must be a boolean value`]);
 };
 
 export class KeyQuery {
@@ -23,7 +23,7 @@ export class KeyQuery {
   })
   @IsOptional()
   @IsBoolean()
-  @Transform(({ value }) => toBoolean(value))
+  @Transform(({ value }) => toBoolean(value, 'used'))
   used?: boolean;
 
   @ApiProperty({
