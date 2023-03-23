@@ -4,7 +4,7 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { IStakingModuleService } from 'common/contracts/i-staking-module';
 import { STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { LidoLocatorService } from 'common/contracts/lido-locator';
-import { StakingRouter__factory } from 'generated'; //Registry__factory,
+import { StakingRouter__factory } from 'generated';
 import { ExecutionProvider } from 'common/execution-provider';
 import { BlockTag } from '../interfaces';
 import { Trace } from 'common/decorators/trace';
