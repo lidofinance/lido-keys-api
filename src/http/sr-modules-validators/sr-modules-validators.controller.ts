@@ -1,4 +1,4 @@
-import { Controller, Get, Version, Param, Query, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Version, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModulesValidatorsService } from './sr-modules-validators.service';
 import { ModuleId } from 'http/common/entities/';
