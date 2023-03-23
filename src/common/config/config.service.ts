@@ -1,5 +1,6 @@
 import { ConfigService as ConfigServiceSource } from '@nestjs/config';
 import { EnvironmentVariables } from './env.validation';
+import { readFileSync } from 'fs';
 
 export class ConfigService extends ConfigServiceSource<EnvironmentVariables> {
   /**
@@ -12,6 +13,15 @@ export class ConfigService extends ConfigServiceSource<EnvironmentVariables> {
   }
 
   public get<T extends keyof EnvironmentVariables>(key: T): EnvironmentVariables[T] {
-    return super.get(key, { infer: true }) as EnvironmentVariables[T];
+    const value = super.get(key, { infer: true }) as EnvironmentVariables[T]
+    if (value !== undefined) {
+      return value;
+    }
+
+    const filePath = super.get('DB_PASSWORD_FILE', { infer: true })
+    if (!filePath) {
+      return value
+    }
+    return readFileSync(filePath, 'utf-8') as EnvironmentVariables[T];
   }
 }
