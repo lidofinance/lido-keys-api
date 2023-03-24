@@ -22,7 +22,7 @@ export interface KeysFilter {
 @Injectable()
 export class CuratedModuleService {
   constructor(
-    @Inject(LOGGER_PROVIDER) protected readonly loggerService: LoggerService,
+    @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly keyRegistryService: KeyRegistryService,
     protected readonly keyStorageService: RegistryKeyStorageService,
     protected readonly metaStorageService: RegistryMetaStorageService,

@@ -1,11 +1,12 @@
 import { CronJob } from 'cron';
 import { Inject, Injectable } from '@nestjs/common';
-import { OneAtTime } from '@lido-nestjs/decorators';
+// import { OneAtTime } from '@lido-nestjs/decorators';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
 import { JobService } from 'common/job';
 import { ValidatorsService } from 'validators';
+import { OneAtTime } from 'common/decorators/oneAtTime';
 
 export interface ValidatorsFilter {
   pubkeys: string[];
@@ -36,7 +37,7 @@ export class ValidatorsUpdateService {
     await this.updateValidators();
 
     const cronTime = this.configService.get('JOB_INTERVAL_VALIDATORS_REGISTRY');
-    const job = new CronJob(cronTime, () => this.updateValidators());
+    const job = new CronJob(cronTime, () => this.updateValidators().catch((error) => this.logger.error(error)));
     job.start();
 
     this.logger.log('Service initialized', { service: 'validators-registry', cronTime });

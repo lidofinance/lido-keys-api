@@ -13,9 +13,9 @@ export function Trace(ms: number) {
 
     let dateExecuting: Date | null;
 
-    descriptor.value = async function (this: { loggerService?: LoggerService }, ...args) {
+    descriptor.value = async function (this: { logger?: LoggerService }, ...args) {
       const timer = setTimeout(() => {
-        this.loggerService?.error(`TRACE_TIMEOUT ${propertyName} ERROR`, {
+        this.logger?.error(`TRACE_TIMEOUT ${propertyName} ERROR`, {
           propertyName,
           timeExecuting: dateExecuting ? seconds(dateExecuting, new Date()) : null,
           timeout: ms,

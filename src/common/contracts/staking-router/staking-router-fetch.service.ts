@@ -14,7 +14,7 @@ const TRACE_TIMEOUT = 30 * 1000;
 @Injectable()
 export class StakingRouterFetchService {
   constructor(
-    @Inject(LOGGER_PROVIDER) protected readonly loggerService: LoggerService,
+    @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly iStakingModule: IStakingModuleService,
     protected readonly lidoLocatorService: LidoLocatorService,
     protected readonly provider: ExecutionProvider,
@@ -32,17 +32,17 @@ export class StakingRouterFetchService {
   public async getStakingModules(blockTag: BlockTag): Promise<StakingModule[]> {
     const stakingRouterAddress = await this.lidoLocatorService.getStakingRouter(blockTag);
 
-    this.loggerService.log('Staking router module address', stakingRouterAddress);
+    this.logger.log('Staking router module address', stakingRouterAddress);
 
     const contract = this.getContract(stakingRouterAddress);
     const modules = await contract.getStakingModules({ blockTag } as any);
 
-    this.loggerService.log(`Fetched ${modules.length} modules`);
-    this.loggerService.log('Modules:', modules);
+    this.logger.log(`Fetched ${modules.length} modules`);
+    this.logger.log('Modules:', modules);
 
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
-        const isActive = await contract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
+        // const isActive = await contract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
 
         // until the end of voting work with old version of Node Operator Registry
         // this version doesnt correspond to IStakingModule interface
@@ -60,7 +60,7 @@ export class StakingRouterFetchService {
         // lets put type by id as we know that list contains only NOR contract
 
         if (stakingModule.id != 1) {
-          this.loggerService.error(new Error(`Staking Module id ${stakingModule.id} is unknown`));
+          this.logger.error(new Error(`Staking Module id ${stakingModule.id} is unknown`));
           process.exit(1);
         }
 
