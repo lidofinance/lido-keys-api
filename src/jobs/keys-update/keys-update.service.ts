@@ -39,7 +39,10 @@ export class KeysUpdateService {
   public async initialize(): Promise<void> {
     await this.updateKeys();
     const cronTime = this.configService.get('JOB_INTERVAL_REGISTRY');
-    const job = new CronJob(cronTime, () => this.updateKeys().catch((error) => this.logger.error(error)));
+    const job = new CronJob(cronTime, () => {
+      this.logger.log(`Cron job cycle start`, { cronTime, name: 'KeysUpdateService' });
+      this.updateKeys().catch((error) => this.logger.error(error));
+    });
     job.start();
 
     this.logger.log('Update Staking Router Modules keys', { service: 'keys-registry', cronTime });
