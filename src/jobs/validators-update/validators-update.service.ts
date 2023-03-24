@@ -37,7 +37,10 @@ export class ValidatorsUpdateService {
     await this.updateValidators();
 
     const cronTime = this.configService.get('JOB_INTERVAL_VALIDATORS_REGISTRY');
-    const job = new CronJob(cronTime, () => this.updateValidators().catch((error) => this.logger.error(error)));
+    const job = new CronJob(cronTime, () => {
+      this.logger.log(`Cron job cycle start`, { cronTime, name: 'ValidatorsUpdateService' });
+      this.updateValidators().catch((error) => this.logger.error(error));
+    });
     job.start();
 
     this.logger.log('Service initialized', { service: 'validators-registry', cronTime });
