@@ -10,7 +10,7 @@ const TRACE_TIMEOUT = 30 * 1000;
 export class ExecutionProviderService {
   constructor(
     protected readonly provider: SimpleFallbackJsonRpcBatchProvider,
-    @Inject(LOGGER_PROVIDER) protected readonly loggerService: LoggerService,
+    @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
   ) {}
 
   /**
