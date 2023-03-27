@@ -1088,7 +1088,7 @@
     "@types/node-fetch" "^2.5.12"
     node-fetch "^2.6.7"
 
-"@lido-nestjs/logger@1.3.0", "@lido-nestjs/logger@^1.3.0":
+"@lido-nestjs/logger@1.3.0":
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@lido-nestjs/logger/-/logger-1.3.0.tgz#ac7607cc4f42acf41794f0c6677e518dce076430"
   integrity sha512-vU43NfeR2aT1vQznF34SbfObB+pLY9XmIIEYC8NmvHpnvcklv8bcwbc1QpYOgOT3vHoEL8CDhTP6gwI0yYna9w==
@@ -1097,7 +1097,7 @@
     traverse "^0.6.7"
     winston "^3.4.0"
 
-"@lido-nestjs/logger@1.3.1":
+"@lido-nestjs/logger@1.3.1", "@lido-nestjs/logger@^1.3.1":
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/@lido-nestjs/logger/-/logger-1.3.1.tgz#2f881058d748c344bbedfb5207dfab89b4ef236d"
   integrity sha512-WNkE/dB+WlauikLu9Jkck5J2cNlDWe7/Cs7MU4vFLO8R3YVS0JJfcbst2kyYk8oMKqxRbpanJA4h3NJmnhYHxg==

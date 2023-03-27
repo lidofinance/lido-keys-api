@@ -1,19 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Version,
-  Query,
-  Body,
-  Param,
-  HttpCode,
-  HttpStatus,
-  ParseArrayPipe,
-} from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Version, Query, Body, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
 import { KeyListResponse } from './entities';
 import { KeyQuery } from 'http/common/entities';
+import { KeysFindBody } from 'http/common/entities/pubkeys';
 
 @Controller('keys')
 @ApiTags('keys')
@@ -26,11 +16,6 @@ export class KeysController {
     status: HttpStatus.OK,
     description: 'List of all keys',
     type: KeyListResponse,
-  })
-  @ApiQuery({
-    name: 'used',
-    required: false,
-    description: 'Filter to get used keys. Possible values: true/false',
   })
   @ApiOperation({ summary: 'Get list of all keys' })
   get(@Query() filters: KeyQuery) {
@@ -49,6 +34,7 @@ export class KeysController {
     type: KeyListResponse,
   })
   @ApiOperation({ summary: 'Get detailed information about pubkey' })
+  // TODO: add check that pubkey has a right pattern
   getByPubkey(@Param('pubkey') pubkey: string) {
     return this.keysService.getByPubkey(pubkey);
   }
@@ -61,8 +47,9 @@ export class KeysController {
     description: 'Staking Router module keys.',
     type: KeyListResponse,
   })
-  @ApiOperation({ summary: 'Get list of found keys in db from pubkey list' })
-  getByPubkeys(@Body(new ParseArrayPipe({ items: String })) pubkeys: string[]) {
-    return this.keysService.getByPubkeys(pubkeys);
+  @ApiOperation({ summary: 'Get list of found keys in DB from pubkey list' })
+  getByPubkeys(@Body() keys: KeysFindBody) {
+    // TODO: add check that pubkey has a right pattern
+    return this.keysService.getByPubkeys(keys.pubkeys);
   }
 }

@@ -432,10 +432,10 @@ interface Response {
 }
 ```
 
-**GET** `/v1/modules/{module_id}/operators/{operator_index}`
+**GET** `/v1/modules/{module_id}/operators/{operator_id}`
 
 `module_id` - staking router module contact address or id;
-`operator_index` - operator index;
+`operator_id` - operator index;
 
 List of SR module operators
 

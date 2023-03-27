@@ -300,7 +300,7 @@ describe('Keys controller', () => {
       const getKeysWithMetaByPubkeysMock = jest.spyOn(curatedModuleService, 'getKeysWithMetaByPubkeys');
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
 
-      const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+      const result = await keysController.getByPubkeys({ pubkeys: [hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)] });
 
       expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(1);
       expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
@@ -320,7 +320,7 @@ describe('Keys controller', () => {
       const getStakingModulesMock = jest
         .spyOn(keysUpdateService, 'getStakingModules')
         .mockImplementation(() => stakingModulesGoerli);
-      const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+      const result = await keysController.getByPubkeys({ pubkeys: [hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)] });
 
       expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(1);
       expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
@@ -341,7 +341,7 @@ describe('Keys controller', () => {
         .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
 
-      const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+      const result = await keysController.getByPubkeys({ pubkeys: [hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)] });
 
       expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
@@ -352,7 +352,7 @@ describe('Keys controller', () => {
     test('Staking Modules list is empty', async () => {
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules').mockImplementation(() => []);
       const getKeysWithMetaByPubkeysMock = jest.spyOn(curatedModuleService, 'getKeysWithMetaByPubkeys');
-      const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+      const result = await keysController.getByPubkeys({ pubkeys: [hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)] });
 
       expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
@@ -367,7 +367,7 @@ describe('Keys controller', () => {
         .mockImplementation(() => [unknownModule]);
       const getKeyWithMetaByPubkeyMock = jest.spyOn(curatedModuleService, 'getKeyWithMetaByPubkey');
 
-      const result = await keysController.getByPubkeys([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
+      const result = await keysController.getByPubkeys({ pubkeys: [hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)] });
 
       expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);

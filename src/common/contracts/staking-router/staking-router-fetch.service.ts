@@ -20,7 +20,7 @@ export class StakingRouterFetchService {
     protected readonly provider: ExecutionProvider,
   ) {}
 
-  private getContract(contractAddress: string) {
+  private getSRContract(contractAddress: string) {
     return StakingRouter__factory.connect(contractAddress, this.provider);
   }
 
@@ -34,8 +34,8 @@ export class StakingRouterFetchService {
 
     this.logger.log('Staking router module address', stakingRouterAddress);
 
-    const contract = this.getContract(stakingRouterAddress);
-    const modules = await contract.getStakingModules({ blockTag } as any);
+    const srContract = this.getSRContract(stakingRouterAddress);
+    const modules = await srContract.getStakingModules({ blockTag } as any);
 
     this.logger.log(`Fetched ${modules.length} modules`);
     this.logger.log('Modules:', modules);
@@ -43,7 +43,6 @@ export class StakingRouterFetchService {
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
         // const isActive = await contract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
-
         // until the end of voting work with old version of Node Operator Registry
         // this version doesnt correspond to IStakingModule interface
         // currently skip this section

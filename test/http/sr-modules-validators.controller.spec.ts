@@ -114,7 +114,7 @@ describe('SRModulesValidators controller', () => {
         .mockImplementation(() => undefined);
       const getValidatorsMock = jest.spyOn(validatorsService, 'getOldestValidators');
 
-      await expect(validatorsController.getOldestValidators('0x12345', 1, {})).rejects.toThrowError(
+      await expect(validatorsController.getOldestValidators('0x12345', { operator_id: 1 }, {})).rejects.toThrowError(
         `Module with moduleId 0x12345 is not supported`,
       );
       expect(getStakingModuleMock).toBeCalledTimes(1);
@@ -137,7 +137,11 @@ describe('SRModulesValidators controller', () => {
         .spyOn(validatorsService, 'getOldestValidators')
         .mockImplementation(() => Promise.resolve({ validators: operatorOneValidatorsToExit, meta: clMeta }));
 
-      const res = await validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {});
+      const res = await validatorsController.getOldestValidators(
+        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+        { operator_id: 1 },
+        {},
+      );
 
       expect(res).toEqual({
         data: operatorOneValidatorsExitList,
@@ -171,7 +175,7 @@ describe('SRModulesValidators controller', () => {
         .mockImplementation(() => Promise.resolve({ validators: operatorOneValidatorsToExit, meta: clMeta }));
 
       await expect(
-        validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {}),
+        validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', { operator_id: 1 }, {}),
       ).rejects.toThrowError('Last Execution Layer block number in our database older than last Consensus Layer');
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
@@ -196,7 +200,7 @@ describe('SRModulesValidators controller', () => {
 
       const result = await validatorsController.getOldestValidators(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        1,
+        { operator_id: 1 },
         {},
       );
       expect(result).toEqual({ data: [], meta: null });
@@ -222,7 +226,7 @@ describe('SRModulesValidators controller', () => {
 
       const result = await validatorsController.getOldestValidators(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        1,
+        { operator_id: 1 },
         {},
       );
       expect(result).toEqual({ data: [], meta: null });
@@ -252,9 +256,13 @@ describe('SRModulesValidators controller', () => {
         .spyOn(validatorsService, 'getOldestValidators')
         .mockImplementation(() => Promise.resolve({ validators: operatorOneValidatorsToExit, meta: clMeta }));
 
-      const res = await validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {
-        max_amount: 100,
-      });
+      const res = await validatorsController.getOldestValidators(
+        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+        { operator_id: 1 },
+        {
+          max_amount: 100,
+        },
+      );
 
       expect(res).toEqual({
         data: operatorOneValidatorsExitList,
@@ -286,9 +294,13 @@ describe('SRModulesValidators controller', () => {
         .spyOn(validatorsService, 'getOldestValidators')
         .mockImplementation(() => Promise.resolve({ validators: operatorOneValidatorsToExit, meta: clMeta }));
 
-      const res = await validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {
-        percent: 100,
-      });
+      const res = await validatorsController.getOldestValidators(
+        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+        { operator_id: 1 },
+        {
+          percent: 100,
+        },
+      );
 
       expect(res).toEqual({
         data: operatorOneValidatorsExitList,
@@ -319,10 +331,14 @@ describe('SRModulesValidators controller', () => {
         .spyOn(validatorsService, 'getOldestValidators')
         .mockImplementation(() => Promise.resolve({ validators: operatorOneValidatorsToExit, meta: clMeta }));
 
-      const res = await validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {
-        percent: 100,
-        max_amount: 100,
-      });
+      const res = await validatorsController.getOldestValidators(
+        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+        { operator_id: 1 },
+        {
+          percent: 100,
+          max_amount: 100,
+        },
+      );
 
       expect(res).toEqual({
         data: operatorOneValidatorsExitList,
@@ -352,10 +368,14 @@ describe('SRModulesValidators controller', () => {
       const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
 
       await expect(
-        validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {
-          percent: 100,
-          max_amount: 100,
-        }),
+        validatorsController.getOldestValidators(
+          '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+          { operator_id: 1 },
+          {
+            percent: 100,
+            max_amount: 100,
+          },
+        ),
       ).rejects.toThrowError('Validators Registry is disabled. Check environment variables');
       expect(getStakingModuleMock).toBeCalledTimes(0);
       expect(getKeysWithMetaMock).toBeCalledTimes(0);
@@ -373,9 +393,9 @@ describe('SRModulesValidators controller', () => {
         .spyOn(keysUpdateService, 'getStakingModule')
         .mockImplementation(() => undefined);
 
-      await expect(validatorsController.getMessagesForOldestValidators('0x12345', 1, {})).rejects.toThrowError(
-        `Module with moduleId 0x12345 is not supported`,
-      );
+      await expect(
+        validatorsController.getMessagesForOldestValidators('0x12345', { operator_id: 1 }, {}),
+      ).rejects.toThrowError(`Module with moduleId 0x12345 is not supported`);
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(0);
       expect(getValidatorsMock).toBeCalledTimes(0);
@@ -397,7 +417,7 @@ describe('SRModulesValidators controller', () => {
 
       const res = await validatorsController.getMessagesForOldestValidators(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        1,
+        { operator_id: 1 },
         {},
       );
 
@@ -432,7 +452,11 @@ describe('SRModulesValidators controller', () => {
         .mockImplementation(() => Promise.resolve({ validators: operatorOneValidatorsToExit, meta: clMeta }));
 
       await expect(
-        validatorsController.getMessagesForOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {}),
+        validatorsController.getMessagesForOldestValidators(
+          '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+          { operator_id: 1 },
+          {},
+        ),
       ).rejects.toThrowError('Last Execution Layer block number in our database older than last Consensus Layer');
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
@@ -456,7 +480,7 @@ describe('SRModulesValidators controller', () => {
       const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
       const result = await validatorsController.getMessagesForOldestValidators(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        1,
+        { operator_id: 1 },
         {},
       );
       expect(result).toEqual({ data: [], meta: null });
@@ -481,7 +505,7 @@ describe('SRModulesValidators controller', () => {
 
       const result = await validatorsController.getMessagesForOldestValidators(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        1,
+        { operator_id: 1 },
         {},
       );
       expect(result).toEqual({ data: [], meta: null });
@@ -512,7 +536,7 @@ describe('SRModulesValidators controller', () => {
 
       const res = await validatorsController.getMessagesForOldestValidators(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        1,
+        { operator_id: 1 },
         {
           max_amount: 100,
         },
@@ -549,7 +573,7 @@ describe('SRModulesValidators controller', () => {
 
       const res = await validatorsController.getMessagesForOldestValidators(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        1,
+        { operator_id: 1 },
         {
           percent: 100,
         },
@@ -586,7 +610,7 @@ describe('SRModulesValidators controller', () => {
 
       const res = await validatorsController.getMessagesForOldestValidators(
         '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        1,
+        { operator_id: 1 },
         {
           percent: 100,
           max_amount: 100,
@@ -621,10 +645,14 @@ describe('SRModulesValidators controller', () => {
       const getValidatorsMock = jest.spyOn(validatorsService, 'getOldestValidators');
 
       await expect(
-        validatorsController.getMessagesForOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', 1, {
-          percent: 100,
-          max_amount: 100,
-        }),
+        validatorsController.getMessagesForOldestValidators(
+          '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+          { operator_id: 1 },
+          {
+            percent: 100,
+            max_amount: 100,
+          },
+        ),
       ).rejects.toThrowError('Validators Registry is disabled. Check environment variables');
       expect(getStakingModuleMock).toBeCalledTimes(0);
       expect(getKeysWithMetaMock).toBeCalledTimes(0);

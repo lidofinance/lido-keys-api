@@ -62,11 +62,11 @@ export class CuratedModuleService {
   public async getKeysWithMeta(filters: KeysFilter): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
     const { keys, meta } = await this.entityManager.transactional(async () => {
       const where = {};
-      if (filters.operatorIndex) {
+      if (filters.operatorIndex != undefined) {
         where['operatorIndex'] = filters.operatorIndex;
       }
 
-      if (filters.used) {
+      if (filters.used != undefined) {
         where['used'] = filters.used;
       }
 
@@ -116,12 +116,12 @@ export class CuratedModuleService {
     const { operators, keys, meta } = await this.entityManager.transactional(async () => {
       const keysWhere = {};
       const operatorsWhere = {};
-      if (filters.operatorIndex) {
+      if (filters.operatorIndex != undefined) {
         keysWhere['operatorIndex'] = filters.operatorIndex;
         operatorsWhere['index'] = filters.operatorIndex;
       }
 
-      if (filters.used) {
+      if (filters.used != undefined) {
         keysWhere['used'] = filters.used;
       }
 
