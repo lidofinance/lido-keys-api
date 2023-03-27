@@ -1,6 +1,6 @@
 import { CronJob } from 'cron';
 import { Inject, Injectable } from '@nestjs/common';
-import { OneAtTime } from '@lido-nestjs/decorators';
+// import { OneAtTime } from '@lido-nestjs/decorators';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
@@ -11,13 +11,14 @@ import { StakingRouterFetchService, StakingModule } from 'common/contracts';
 import { ExecutionProviderService } from 'common/execution-provider';
 import { ModuleId } from 'http/common/entities';
 import { Trace } from 'common/decorators/trace';
+import { OneAtTime } from 'common/decorators/oneAtTime';
 
 const METRICS_TIMEOUT = 30 * 1000;
 
 @Injectable()
 export class KeysUpdateService {
   constructor(
-    @Inject(LOGGER_PROVIDER) protected readonly loggerService: LoggerService,
+    @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly prometheusService: PrometheusService,
     protected readonly configService: ConfigService,
     protected readonly jobService: JobService,
@@ -38,10 +39,13 @@ export class KeysUpdateService {
   public async initialize(): Promise<void> {
     await this.updateKeys();
     const cronTime = this.configService.get('JOB_INTERVAL_REGISTRY');
-    const job = new CronJob(cronTime, () => this.updateKeys());
+    const job = new CronJob(cronTime, () => {
+      this.logger.log(`Cron job cycle start`, { cronTime, name: 'KeysUpdateService' });
+      this.updateKeys().catch((error) => this.logger.error(error));
+    });
     job.start();
 
-    this.loggerService.log('Update Staking Router Modules keys', { service: 'keys-registry', cronTime });
+    this.logger.log('Update Staking Router Modules keys', { service: 'keys-registry', cronTime });
   }
 
   public getStakingModules() {
@@ -72,7 +76,7 @@ export class KeysUpdateService {
       await Promise.all(
         this.stakingModules.map(async (stakingModule) => {
           if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-            this.loggerService.log('Start updating curated keys');
+            this.logger.log('Start updating curated keys');
             await this.curatedModuleService.updateKeys(blockHash);
           }
         }),
@@ -129,7 +133,7 @@ export class KeysUpdateService {
     }
     this.setCuratedOperatorsMetric();
 
-    this.loggerService.log('Curated Module metrics updated');
+    this.logger.log('Curated Module metrics updated');
   }
 
   private setCuratedOperatorsMetric() {
