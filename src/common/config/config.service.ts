@@ -13,14 +13,15 @@ export class ConfigService extends ConfigServiceSource<EnvironmentVariables> {
   }
 
   public get<T extends keyof EnvironmentVariables>(key: T): EnvironmentVariables[T] {
-    const value = super.get(key, { infer: true }) as EnvironmentVariables[T]
-    if (value !== undefined) {
+    const value = super.get(key, { infer: true }) as EnvironmentVariables[T];
+
+    if (key !== 'DB_PASSWORD' || value !== undefined) {
       return value;
     }
-
-    const filePath = super.get('DB_PASSWORD_FILE', { infer: true })
+    const filePath = super.get('DB_PASSWORD_FILE', { infer: true });
     if (!filePath) {
-      return value
+      console.error(`DB_PASSWORD or 'DB_PASSWORD_FILE environments are not provided.`);
+      process.exit(1);
     }
     return readFileSync(filePath, 'utf-8') as EnvironmentVariables[T];
   }

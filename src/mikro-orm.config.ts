@@ -65,10 +65,12 @@ const getMigrationOptions = (mainMigrationsFolder: string, npmPackageNames: stri
   };
 };
 
-const DB_PASSWORD = process.env.DB_PASSWORD ?? (process.env.DB_PASSWORD_FILE && readFileSync(process.env.DB_PASSWORD_FILE, 'utf-8').toString())
+const DB_PASSWORD =
+  process.env.DB_PASSWORD ??
+  (process.env.DB_PASSWORD_FILE && readFileSync(process.env.DB_PASSWORD_FILE, 'utf-8').toString());
 if (!DB_PASSWORD) {
-  console.error('Please set encryption password in .env')
-  process.exit()
+  console.error('Please set encryption password in .env');
+  process.exit();
 }
 
 const config: Options = {

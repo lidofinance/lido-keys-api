@@ -116,7 +116,7 @@ export class EnvironmentVariables {
   @IsString()
   DB_PASSWORD!: string;
 
-  @IsOptional()
+  @ValidateIf((e) => e.DB_PASSWORD === undefined)
   @IsString()
   DB_PASSWORD_FILE!: string;
 
