@@ -5,6 +5,7 @@ import { ConfigService } from 'common/config';
 import { ELBlockSnapshot, KeyQuery } from 'http/common/entities';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules/';
 import { KeysUpdateService } from 'jobs/keys-update';
+import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
 
 @Injectable()
 export class KeysService {
@@ -19,11 +20,7 @@ export class KeysService {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
     if (stakingModules.length === 0) {
-      // TODO: move to constants
-      return {
-        data: [],
-        meta: null,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     // keys could be of type CuratedKey | CommunityKey
@@ -44,10 +41,7 @@ export class KeysService {
         });
         if (!meta) {
           this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          return {
-            data: [],
-            meta: null,
-          };
+          throw httpExceptionTooEarlyResp();
         }
 
         const keysWithAddress: KeyWithModuleAddress[] = curatedKeys.map(
@@ -69,10 +63,7 @@ export class KeysService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
-      return {
-        data: [],
-        meta: null,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     return {
@@ -88,10 +79,7 @@ export class KeysService {
 
     if (stakingModules.length == 0) {
       // TODO: maybe return special message with code 425 like empty state
-      return {
-        data: [],
-        meta: null,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     // keys could be of type CuratedKey | CommunityKey
@@ -104,10 +92,7 @@ export class KeysService {
         const { keys: curatedKeys, meta } = await this.curatedService.getKeyWithMetaByPubkey(pubkey);
         if (!meta) {
           this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          return {
-            data: [],
-            meta: null,
-          };
+          throw httpExceptionTooEarlyResp();
         }
 
         const keysWithAddress: KeyWithModuleAddress[] = curatedKeys.map(
@@ -129,10 +114,7 @@ export class KeysService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
-      return {
-        data: [],
-        meta: null,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     const keys = collectedKeys.flat();
@@ -153,10 +135,8 @@ export class KeysService {
 
     if (stakingModules.length == 0) {
       this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
-      return {
-        data: [],
-        meta: null,
-      };
+
+      throw httpExceptionTooEarlyResp();
     }
 
     // keys could be of type CuratedKey | CommunityKey
@@ -169,10 +149,7 @@ export class KeysService {
         const { keys: curatedKeys, meta } = await this.curatedService.getKeysWithMetaByPubkeys(pubkeys);
         if (!meta) {
           this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          return {
-            data: [],
-            meta: null,
-          };
+          throw httpExceptionTooEarlyResp();
         }
 
         const keysWithAddress: KeyWithModuleAddress[] = curatedKeys.map(
@@ -194,10 +171,7 @@ export class KeysService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
-      return {
-        data: [],
-        meta: null,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     return {

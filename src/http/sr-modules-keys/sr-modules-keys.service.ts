@@ -5,6 +5,7 @@ import { ELBlockSnapshot, Key, SRModule, ModuleId, CuratedKey, KeyQuery } from '
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { KeysUpdateService } from 'jobs/keys-update';
+import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
 
 @Injectable()
 export class SRModulesKeysService {
@@ -19,10 +20,7 @@ export class SRModulesKeysService {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
     if (stakingModules.length == 0) {
-      return {
-        data: [],
-        meta: null,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     // keys could be of type CuratedKey | CommunityKey
@@ -44,10 +42,7 @@ export class SRModulesKeysService {
 
         if (!meta) {
           this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          return {
-            data: [],
-            meta: null,
-          };
+          throw httpExceptionTooEarlyResp();
         }
 
         // meta should be the same for all modules
@@ -67,10 +62,7 @@ export class SRModulesKeysService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
-      return {
-        data: [],
-        meta: null,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     return {
@@ -99,10 +91,7 @@ export class SRModulesKeysService {
 
       if (!meta) {
         this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-        return {
-          data: null,
-          meta: null,
-        };
+        throw httpExceptionTooEarlyResp();
       }
 
       const curatedKeys: CuratedKey[] = keys.map((key) => new CuratedKey(key));
@@ -139,10 +128,7 @@ export class SRModulesKeysService {
 
       if (!meta) {
         this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-        return {
-          data: null,
-          meta: null,
-        };
+        throw httpExceptionTooEarlyResp();
       }
 
       const registryKeys: CuratedKey[] = keys.map((key) => new CuratedKey(key));

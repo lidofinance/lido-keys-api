@@ -139,11 +139,9 @@ describe('Keys controller', () => {
         .spyOn(curatedModuleService, 'getKeysWithMeta')
         .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
-
-      const result = await keysController.get({ used: true, operatorIndex: 1 });
+      await expect(keysController.get({ used: true, operatorIndex: 1 })).rejects.toThrowError('Too early response');
 
       expect(getStakingModulesMock).toBeCalledTimes(1);
-      expect(result).toEqual({ data: [], meta: null });
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
     });
@@ -170,9 +168,8 @@ describe('Keys controller', () => {
     test('Staking Modules list is empty', async () => {
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules').mockImplementation(() => []);
       const getKeysWithMetaMock = jest.spyOn(curatedModuleService, 'getKeysWithMeta');
-      const result = await keysController.get({});
+      await expect(keysController.get({})).rejects.toThrowError('Too early response');
 
-      expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(0);
     });
@@ -185,9 +182,7 @@ describe('Keys controller', () => {
         .mockImplementation(() => [unknownModule]);
       const getKeysWithMetaMock = jest.spyOn(curatedModuleService, 'getKeysWithMeta');
 
-      const result = await keysController.get({});
-
-      expect(result).toEqual({ data: [], meta: null });
+      await expect(keysController.get({})).rejects.toThrowError('Too early response');
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(0);
     });
@@ -243,10 +238,8 @@ describe('Keys controller', () => {
         .spyOn(curatedModuleService, 'getKeyWithMetaByPubkey')
         .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
+      await expect(keysController.getByPubkey(hexZeroPad('0x13', 98))).rejects.toThrowError('Too early response');
 
-      const result = await keysController.getByPubkey(hexZeroPad('0x13', 98));
-
-      expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledWith(hexZeroPad('0x13', 98));
@@ -270,9 +263,7 @@ describe('Keys controller', () => {
     test('Staking Modules list is empty', async () => {
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules').mockImplementation(() => []);
       const getKeyWithMetaByPubkeyMock = jest.spyOn(curatedModuleService, 'getKeyWithMetaByPubkey');
-      const result = await keysController.getByPubkey(hexZeroPad('0x13', 98));
-
-      expect(result).toEqual({ data: [], meta: null });
+      await expect(keysController.getByPubkey(hexZeroPad('0x13', 98))).rejects.toThrowError('Too early response');
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(0);
     });
@@ -285,9 +276,8 @@ describe('Keys controller', () => {
         .mockImplementation(() => [unknownModule]);
       const getKeyWithMetaByPubkeyMock = jest.spyOn(curatedModuleService, 'getKeyWithMetaByPubkey');
 
-      const result = await keysController.getByPubkey(hexZeroPad('0x13', 98));
+      await expect(keysController.getByPubkey(hexZeroPad('0x13', 98))).rejects.toThrowError('Too early response');
 
-      expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(0);
     });
@@ -341,9 +331,10 @@ describe('Keys controller', () => {
         .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
 
-      const result = await keysController.getByPubkeys({ pubkeys: [hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)] });
+      await expect(
+        keysController.getByPubkeys({ pubkeys: [hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)] }),
+      ).rejects.toThrowError('Too early response');
 
-      expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(1);
       expect(getKeysWithMetaByPubkeysMock).toBeCalledWith([hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)]);
@@ -352,9 +343,10 @@ describe('Keys controller', () => {
     test('Staking Modules list is empty', async () => {
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules').mockImplementation(() => []);
       const getKeysWithMetaByPubkeysMock = jest.spyOn(curatedModuleService, 'getKeysWithMetaByPubkeys');
-      const result = await keysController.getByPubkeys({ pubkeys: [hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)] });
+      await expect(
+        keysController.getByPubkeys({ pubkeys: [hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)] }),
+      ).rejects.toThrowError('Too early response');
 
-      expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(0);
     });
@@ -367,9 +359,10 @@ describe('Keys controller', () => {
         .mockImplementation(() => [unknownModule]);
       const getKeyWithMetaByPubkeyMock = jest.spyOn(curatedModuleService, 'getKeyWithMetaByPubkey');
 
-      const result = await keysController.getByPubkeys({ pubkeys: [hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)] });
+      await expect(
+        keysController.getByPubkeys({ pubkeys: [hexZeroPad('0x13', 98), hexZeroPad('0x12', 98)] }),
+      ).rejects.toThrowError('Too early response');
 
-      expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeyWithMetaByPubkeyMock).toBeCalledTimes(0);
     });

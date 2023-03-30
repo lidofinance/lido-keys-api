@@ -6,6 +6,7 @@ import { ELBlockSnapshot, SRModule } from 'http/common/entities';
 import { ModuleId } from 'http/common/entities/';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { KeysUpdateService } from 'jobs/keys-update';
+import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
 
 @Injectable()
 export class SRModulesService {
@@ -20,10 +21,7 @@ export class SRModulesService {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
     if (stakingModules.length == 0) {
-      return {
-        data: [],
-        elBlockSnapshot: null,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     const srModulesWithNonce: SRModule[] = [];
@@ -34,10 +32,7 @@ export class SRModulesService {
         const meta = await this.curatedService.getMetaDataFromStorage();
         if (!meta) {
           this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          return {
-            data: [],
-            elBlockSnapshot: null,
-          };
+          throw httpExceptionTooEarlyResp();
         }
 
         srModulesWithNonce.push(new SRModule(meta.keysOpIndex, stakingModules[i]));
@@ -55,10 +50,7 @@ export class SRModulesService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
-      return {
-        data: [],
-        elBlockSnapshot,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     return {
@@ -82,10 +74,7 @@ export class SRModulesService {
 
       if (!meta) {
         this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-        return {
-          data: null,
-          elBlockSnapshot: null,
-        };
+        throw httpExceptionTooEarlyResp();
       }
 
       const elBlockSnapshot = new ELBlockSnapshot(meta);

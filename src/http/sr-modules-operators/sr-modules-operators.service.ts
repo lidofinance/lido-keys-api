@@ -11,6 +11,7 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { KeysUpdateService } from 'jobs/keys-update';
 import { SRModuleOperator } from 'http/common/entities/sr-module-operator';
+import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
 
 @Injectable()
 export class SRModulesOperatorsService {
@@ -25,10 +26,7 @@ export class SRModulesOperatorsService {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
     if (stakingModules.length == 0) {
-      return {
-        data: [],
-        meta: null,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     const collectedData: { operators: SRModuleOperator[]; module: SRModule }[] = [];
@@ -45,10 +43,7 @@ export class SRModulesOperatorsService {
 
         if (!meta) {
           this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          return {
-            data: [],
-            meta: null,
-          };
+          throw httpExceptionTooEarlyResp();
         }
 
         const operators: CuratedOperator[] = curatedOperators.map((op) => new CuratedOperator(op));
@@ -68,10 +63,7 @@ export class SRModulesOperatorsService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
-      return {
-        data: [],
-        meta: null,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     return {
@@ -97,10 +89,7 @@ export class SRModulesOperatorsService {
 
       if (!meta) {
         this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-        return {
-          data: null,
-          meta: null,
-        };
+        throw httpExceptionTooEarlyResp();
       }
 
       const curatedOperators: CuratedOperator[] = operators.map((op) => new CuratedOperator(op));
@@ -132,10 +121,7 @@ export class SRModulesOperatorsService {
 
       if (!meta) {
         this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-        return {
-          data: null,
-          meta: null,
-        };
+        throw httpExceptionTooEarlyResp();
       }
 
       if (!operator) {

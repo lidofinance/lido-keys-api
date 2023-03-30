@@ -1,8 +1,9 @@
-import { Controller, Get, Version, Param, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Version, Param, Query, NotFoundException, HttpStatus } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } from '@nestjs/swagger';
 import { SRModuleOperatorsKeysResponse } from './entities';
 import { ModuleId, KeyQuery } from 'http/common/entities/';
 import { SRModulesOperatorsKeysService } from './sr-modules-operators-keys.service';
+import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
 
 @Controller('/modules')
 @ApiTags('operators-keys')
@@ -15,6 +16,16 @@ export class SRModulesOperatorsKeysController {
     status: 200,
     description: 'List of all SR module operators',
     type: SRModuleOperatorsKeysResponse,
+  })
+  @ApiResponse({
+    status: 425,
+    description: 'Too early response',
+    type: TooEarlyResponse,
+  })
+  @ApiNotFoundResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Provided module is not supported',
+    type: NotFoundException,
   })
   @ApiParam({
     name: 'module_id',

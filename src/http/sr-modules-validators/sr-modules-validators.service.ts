@@ -14,6 +14,7 @@ import { ConsensusMeta, Validator } from '@lido-nestjs/validators-registry';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { ValidatorsService } from 'validators';
 import { KeysUpdateService } from 'jobs/keys-update';
+import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
 
 const VALIDATORS_REGISTRY_DISABLED_ERROR = 'Validators Registry is disabled. Check environment variables';
 
@@ -93,10 +94,7 @@ export class SRModulesValidatorsService {
       const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
 
       if (!clMeta) {
-        return {
-          data: [],
-          meta: null,
-        };
+        throw httpExceptionTooEarlyResp();
       }
 
       const data = this.createExitPresignMessageList(validators, clMeta);
@@ -127,11 +125,7 @@ export class SRModulesValidatorsService {
     // if it is null, it means keys db is empty and Updating Keys Job is not finished yet
     if (!elMeta) {
       this.logger.warn(`EL meta is empty, maybe first Updating Keys Job is not finished yet.`);
-
-      return {
-        validators: [],
-        meta: null,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     const pubkeys = keys.map((pubkey) => pubkey.key);
@@ -156,11 +150,7 @@ export class SRModulesValidatorsService {
     // if it is null, it means keys db is empty and Updating Validators Job is not finished yet
     if (!clMeta) {
       this.logger.warn(`CL meta is empty, maybe first Updating Validators Job is not finished yet.`);
-
-      return {
-        validators: [],
-        meta: null,
-      };
+      throw httpExceptionTooEarlyResp();
     }
 
     // We need EL meta always be actual

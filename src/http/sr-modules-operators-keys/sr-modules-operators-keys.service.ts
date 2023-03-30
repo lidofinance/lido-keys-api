@@ -7,6 +7,7 @@ import { SRModuleOperatorsKeysResponse } from './entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { KeysUpdateService } from 'jobs/keys-update';
+import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
 
 @Injectable()
 export class SRModulesOperatorsKeysService {
@@ -35,10 +36,7 @@ export class SRModulesOperatorsKeysService {
 
       if (!meta) {
         this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-        return {
-          data: null,
-          meta: null,
-        };
+        throw httpExceptionTooEarlyResp();
       }
 
       const curatedKeys: CuratedKey[] = keys.map((key) => new CuratedKey(key));

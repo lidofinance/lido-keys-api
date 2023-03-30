@@ -1,9 +1,10 @@
-import { Controller, Get, Version, Param, Query, Body, Post } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Version, Param, Query, Body, Post, NotFoundException, HttpStatus } from '@nestjs/common';
+import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
 import { ModuleId, KeyQuery } from 'http/common/entities/';
 import { KeysFindBody } from 'http/common/entities/pubkeys';
+import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
 
 @Controller('modules')
 @ApiTags('sr-module-keys')
@@ -17,6 +18,11 @@ export class SRModulesKeysController {
     description: 'Keys for all modules grouped by staking router module.',
     type: GroupedByModuleKeyListResponse,
   })
+  @ApiResponse({
+    status: 425,
+    description: 'Too early response',
+    type: TooEarlyResponse,
+  })
   @Get('keys')
   getGroupedByModuleKeys(@Query() filters: KeyQuery) {
     return this.srModulesService.getGroupedByModuleKeys(filters);
@@ -28,6 +34,16 @@ export class SRModulesKeysController {
     status: 200,
     description: 'List of all modules supported in API',
     type: SRModuleKeyListResponse,
+  })
+  @ApiResponse({
+    status: 425,
+    description: 'Too early response',
+    type: TooEarlyResponse,
+  })
+  @ApiNotFoundResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Provided module is not supported',
+    type: NotFoundException,
   })
   @ApiParam({
     name: 'module_id',
@@ -45,6 +61,16 @@ export class SRModulesKeysController {
     status: 200,
     description: 'Staking Router module keys.',
     type: SRModuleKeyListResponse,
+  })
+  @ApiResponse({
+    status: 425,
+    description: 'Too early response',
+    type: TooEarlyResponse,
+  })
+  @ApiNotFoundResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Provided module is not supported',
+    type: NotFoundException,
   })
   @ApiParam({
     name: 'module_id',
