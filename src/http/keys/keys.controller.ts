@@ -26,7 +26,7 @@ export class KeysController {
   @Get('/')
   @ApiResponse({
     status: 425,
-    description: 'Too early response',
+    description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
   @ApiResponse({
@@ -47,7 +47,7 @@ export class KeysController {
   })
   @ApiResponse({
     status: 425,
-    description: 'Too early response',
+    description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
   @ApiNotFoundResponse({
@@ -71,7 +71,7 @@ export class KeysController {
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
     status: 425,
-    description: 'Too early response',
+    description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
   @ApiResponse({

@@ -22,7 +22,7 @@ export class SRModulesValidatorsController {
   })
   @ApiResponse({
     status: 425,
-    description: 'Too early response',
+    description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
   @ApiNotFoundResponse({
@@ -53,7 +53,7 @@ export class SRModulesValidatorsController {
   })
   @ApiResponse({
     status: 425,
-    description: 'Too early response',
+    description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
   @ApiNotFoundResponse({

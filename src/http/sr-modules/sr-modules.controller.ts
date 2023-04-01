@@ -19,7 +19,7 @@ export class SRModulesController {
   })
   @ApiResponse({
     status: 425,
-    description: 'Too early response',
+    description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
   @Get('/')
@@ -36,7 +36,7 @@ export class SRModulesController {
   })
   @ApiResponse({
     status: 425,
-    description: 'Too early response',
+    description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
   @ApiNotFoundResponse({
