@@ -47,10 +47,32 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
+```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/keys' \
+  -H 'accept: application/json'
 ```
 
 :::warning
 Response of this endpoint could be very large but we can’t have a pagination here since data could be updated in the process.
+:::
+
+:::warning
+If API returns 425 code, it means database is not ready for work
 :::
 
 **GET** `/v1/keys/{pubkey}`
@@ -64,6 +86,24 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
+```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3005/v1/keys/pubkey' \
+  -H 'accept: application/json'
 ```
 
 **POST** `/v1/keys/find`
@@ -88,7 +128,31 @@ interface Response {
     elBlockSnapshot: ElBlockSnapshot;
   };
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
 ```
+
+Example:
+
+```
+curl -X 'POST' \
+  'http://localhost:3000/v1/keys/find' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"pubkeys": ["pubkey0 "]}'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 ### /modules
 
@@ -130,7 +194,29 @@ interface Reponse {
   data: Module[];
   elBlockSnapshot: ElBlockSnapshot;
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 **GET** `/v1/modules/{module_id}`
 
@@ -172,7 +258,29 @@ interface Reponse {
   data: Module;
   elBlockSnapshot: ElBlockSnapshot;
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules/1' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 ### /modules/keys/
 
@@ -220,7 +328,29 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules/keys?used=true&operatorIndex=1' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 **GET** `/v1/modules/{module_id}/keys`
 
@@ -260,7 +390,29 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules/1/keys?used=true&operatorIndex=1' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 **POST** `/v1/modules/{module_id}/keys/find`
 
@@ -302,7 +454,35 @@ interface Response {
     elBlockSnapshot: ElBlockSnapshot;
   };
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
 ```
+
+Example:
+
+```
+curl -X 'POST' \
+  'http://localhost:3000/v1/modules/1/keys/find' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "pubkeys": [
+    "pubkey"
+  ]
+}'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 ### /validators
 
@@ -340,7 +520,29 @@ interface Response {
     clBlockSnapshot: CLBlockSnapshot;
   };
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules/1/validators/validator-exits-to-prepare/1?percent=10' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 **GET** `/v1/modules/{module_id}/validators/generate-unsigned-exit-messages/{operator_id}`
 
@@ -357,8 +559,8 @@ Only one filter is available. If both parameters are provided, `percent` has a h
 
 ```typescript
 interface ExitPresignMessage {
-  validatorIndex: number;
-  epoch: number;
+  validator_index: string;
+  epoch: string;
 }
 
 interface CLBlockSnapshot {
@@ -376,7 +578,29 @@ interface Response {
     clBlockSnapshot: CLBlockSnapshot;
   };
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules/1/validators/generate-unsigned-exit-messages/1?percent=10' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 ### /operators
 
@@ -412,7 +636,29 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/operators' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 **GET** `/v1/modules/{module_id}/operators/`
 
@@ -430,7 +676,29 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules/1/operators' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 **GET** `/v1/modules/{module_id}/operators/{operator_id}`
 
@@ -449,7 +717,29 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3005/v1/modules/1/operators/1' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 **GET** `/v1/modules/{module_id}/operators/keys`
 
@@ -471,11 +761,33 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface TooEarlyResponse {
+  statusCode: number;
+  message: string;
+}
+
+const tooEarlyResponse: TooEarlyResponse = {
+  statusCode: 425,
+  message: 'Too early response',
+};
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3005/v1/modules/1/operators/1' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 ### /status
 
-**GET** /api/v1/status
+**GET** /v1/status
 
 ```typescript
 interface Response {
