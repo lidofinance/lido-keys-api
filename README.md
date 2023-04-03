@@ -41,22 +41,21 @@ interface ModuleKey extends Key {
   moduleAddress: string;
 }
 
-interface Response {
+class Response {
   data: ModuleKey[];
   meta: {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
-
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
 ```
 
 Example:
@@ -80,22 +79,26 @@ If API returns 425 code, it means database is not ready for work
 Return key by public key with basic fields. `pubkey` should be in lowercase.
 
 ```typescript
-interface Response {
+class Response {
   data: ModuleKey[];
   meta: {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
 Example:
@@ -122,22 +125,22 @@ interface RequestBody {
 Response:
 
 ```typescript
-interface Response {
+class Response {
   data: ModuleKey[];
   meta: {
     elBlockSnapshot: ElBlockSnapshot;
   };
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
 ```
 
 Example:
@@ -190,20 +193,20 @@ interface ELBlockSnapshot {
   blockTimestamp: number;
 }
 
-interface Reponse {
+class Reponse {
   data: Module[];
   elBlockSnapshot: ElBlockSnapshot;
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
 ```
 
 Example:
@@ -254,20 +257,24 @@ interface ELBlockSnapshot {
   blockTimestamp: number;
 }
 
-interface Reponse {
+class Reponse {
   data: Module;
   elBlockSnapshot: ElBlockSnapshot;
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundResponse implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
 Example:
@@ -319,7 +326,7 @@ interface Module {
   lastDepositBlock: number;
 }
 
-interface Response {
+class Response {
   data: {
     keys: Key[];
     module: Module;
@@ -329,15 +336,19 @@ interface Response {
   };
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
 Example:
@@ -381,7 +392,7 @@ interface RegistryKey extends Key {
 
 interface CommunityKey extends Key {}
 
-interface Response {
+class Response {
   data: {
     keys: RegistryKey[] | CommunityKey[];
     module: Module;
@@ -391,15 +402,19 @@ interface Response {
   };
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
 Example:
@@ -445,7 +460,7 @@ interface RegistryKey extends Key {
 
 interface CommunityKey extends Key {}
 
-interface Response {
+class Response {
   data: {
     keys: RegistryKey[] | CommunityKey[];
     module: Module;
@@ -455,15 +470,19 @@ interface Response {
   };
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
 Example:
@@ -514,22 +533,26 @@ interface CLBlockSnapshot {
   blockHash: string;
 }
 
-interface Response {
+class Response {
   data: Validator[];
   meta: {
     clBlockSnapshot: CLBlockSnapshot;
   };
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
 Example:
@@ -572,22 +595,26 @@ interface CLBlockSnapshot {
   blockHash: string;
 }
 
-interface Response {
+class Response {
   data: ExitPresignMessage[];
   meta: {
     clBlockSnapshot: CLBlockSnapshot;
   };
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
 Example:
@@ -627,7 +654,7 @@ interface CuratedOperator extends Operator {
 
 interface CommunityOperator extends Operator {}
 
-interface Response {
+class Response {
   data: {
     operators: CuratedOperator[] | CommunityOperator[];
     module: Module;
@@ -637,15 +664,15 @@ interface Response {
   };
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
 ```
 
 Example:
@@ -667,7 +694,7 @@ If API returns 425 code, it means database is not ready for work
 List of SR module operators
 
 ```typescript
-interface Response {
+class Response {
   data: {
     operators: CuratedOperator[] | CommunityOperator[];
     module: Module;
@@ -677,15 +704,19 @@ interface Response {
   };
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
 Example:
@@ -708,7 +739,7 @@ If API returns 425 code, it means database is not ready for work
 List of SR module operators
 
 ```typescript
-interface Response {
+class Response {
   data: {
     operators: CuratedOperator | CommunityOperator;
     module: Module;
@@ -718,15 +749,19 @@ interface Response {
   };
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
 Example:
@@ -751,7 +786,7 @@ Query:
 - `operatorIndex` - filter for keys of operator with index `operatorIndex`;
 
 ```typescript
-interface Response {
+class Response {
   data: {
     keys: RegistryKey[] | CommunityKey[];
     operators: CuratedOperator[] | CommunityOperator[];
@@ -762,15 +797,19 @@ interface Response {
   };
 }
 
-interface TooEarlyResponse {
+interface HttpException {
   statusCode: number;
   message: string;
 }
 
-const tooEarlyResponse: TooEarlyResponse = {
-  statusCode: 425,
-  message: 'Too early response',
-};
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
 Example:
@@ -790,7 +829,7 @@ If API returns 425 code, it means database is not ready for work
 **GET** /v1/status
 
 ```typescript
-interface Response {
+class Response {
   // keys api version
   appVersion: string;
   chainId: number;
