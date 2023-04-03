@@ -21,6 +21,7 @@ export class SRModulesService {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
     if (stakingModules.length == 0) {
+      this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
       throw httpExceptionTooEarlyResp();
     }
 
@@ -50,6 +51,7 @@ export class SRModulesService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
+      this.logger.warn(`Meta for response wasnt set.`);
       throw httpExceptionTooEarlyResp();
     }
 

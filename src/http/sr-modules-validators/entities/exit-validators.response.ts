@@ -15,5 +15,5 @@ export class ExitValidatorListResponse {
     description: 'Meta for voluntary exit endpoints',
     type: () => CLMeta,
   })
-  meta!: CLMeta | null;
+  meta!: CLMeta;
 }

@@ -20,6 +20,7 @@ export class KeysService {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
     if (stakingModules.length === 0) {
+      this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
       throw httpExceptionTooEarlyResp();
     }
 
@@ -54,6 +55,7 @@ export class KeysService {
         // currently we sure if stakingModules is not empty, we will have in list Curated Module
         // in future this check should be in each if clause
         if (i === 0) {
+          this.logger.warn(`Meta for response wasnt set.`);
           elBlockSnapshot = new ELBlockSnapshot(meta);
         }
 
@@ -63,6 +65,7 @@ export class KeysService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
+      this.logger.warn(`Meta for response wasnt set.`);
       throw httpExceptionTooEarlyResp();
     }
 
@@ -78,7 +81,7 @@ export class KeysService {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
     if (stakingModules.length == 0) {
-      // TODO: maybe return special message with code 425 like empty state
+      this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
       throw httpExceptionTooEarlyResp();
     }
 
@@ -114,6 +117,7 @@ export class KeysService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
+      this.logger.warn(`Meta for response wasnt set.`);
       throw httpExceptionTooEarlyResp();
     }
 
@@ -135,7 +139,6 @@ export class KeysService {
 
     if (stakingModules.length == 0) {
       this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
-
       throw httpExceptionTooEarlyResp();
     }
 
@@ -171,6 +174,7 @@ export class KeysService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
+      this.logger.warn(`Meta for response wasnt set.`);
       throw httpExceptionTooEarlyResp();
     }
 

@@ -26,5 +26,5 @@ export class GroupedByModuleKeyListResponse {
     nullable: true,
     type: () => ELMeta,
   })
-  meta!: ELMeta | null;
+  meta!: ELMeta;
 }

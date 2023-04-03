@@ -16,5 +16,5 @@ export class ExitPresignMessageListResponse {
     nullable: true,
     type: () => CLMeta,
   })
-  meta!: CLMeta | null;
+  meta!: CLMeta;
 }

@@ -49,14 +49,6 @@ export class SRModulesValidatorsService {
 
     if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
       const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
-
-      if (!clMeta) {
-        return {
-          data: [],
-          meta: null,
-        };
-      }
-
       const data = this.createExitValidatorList(validators);
       const clBlockSnapshot = new CLBlockSnapshot(clMeta);
 
@@ -92,11 +84,6 @@ export class SRModulesValidatorsService {
 
     if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
       const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
-
-      if (!clMeta) {
-        throw httpExceptionTooEarlyResp();
-      }
-
       const data = this.createExitPresignMessageList(validators, clMeta);
       const clBlockSnapshot = new CLBlockSnapshot(clMeta);
 
@@ -114,7 +101,7 @@ export class SRModulesValidatorsService {
   private async getOperatorOldestValidators(
     operatorId: number,
     filters: ValidatorsQuery,
-  ): Promise<{ validators: Validator[]; meta: ConsensusMeta | null }> {
+  ): Promise<{ validators: Validator[]; meta: ConsensusMeta }> {
     // get used keys for operator
     const { keys, meta: elMeta } = await this.curatedService.getKeysWithMeta({
       used: true,
