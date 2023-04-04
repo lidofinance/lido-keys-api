@@ -554,8 +554,14 @@ class NotFoundException implements HttpException {
   statusCode: number = 404;
 }
 
-class InternalServerErrorException implements HttpException {
+class InternalServerErrorExceptionNotActualData implements HttpException {
   statusCode: number = 500;
+  message: string = 'Last Execution Layer block number in our database older than last Consensus Layer';
+}
+
+class InternalServerErrorExceptionDisable implements HttpException {
+  statusCode: number = 500;
+  message: string = 'Validators Registry is disabled. Check environment variables';
 }
 ```
 
@@ -620,8 +626,14 @@ class NotFoundException implements HttpException {
   statusCode: number = 404;
 }
 
-class InternalServerErrorException implements HttpException {
+class InternalServerErrorExceptionNotActualData implements HttpException {
   statusCode: number = 500;
+  message: string = 'Last Execution Layer block number in our database older than last Consensus Layer';
+}
+
+class InternalServerErrorExceptionDisable implements HttpException {
+  statusCode: number = 500;
+  message: string = 'Validators Registry is disabled. Check environment variables';
 }
 ```
 
