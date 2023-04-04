@@ -553,6 +553,10 @@ class TooEarlyResponse implements HttpException {
 class NotFoundException implements HttpException {
   statusCode: number = 404;
 }
+
+class InternalServerErrorException implements HttpException {
+  statusCode: number = 500;
+}
 ```
 
 Example:
@@ -614,6 +618,10 @@ class TooEarlyResponse implements HttpException {
 
 class NotFoundException implements HttpException {
   statusCode: number = 404;
+}
+
+class InternalServerErrorException implements HttpException {
+  statusCode: number = 500;
 }
 ```
 
