@@ -122,9 +122,8 @@ describe('SRModules controller', () => {
     test('Staking Modules list is empty', async () => {
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules').mockImplementation(() => []);
       const getMetaDataFromStorageMock = jest.spyOn(curatedModuleService, 'getMetaDataFromStorage');
-      const result = await modulesController.getModules();
+      await expect(modulesController.getModules()).rejects.toThrowError('Too early response');
 
-      expect(result).toEqual({ data: [], elBlockSnapshot: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getMetaDataFromStorageMock).toBeCalledTimes(0);
     });
@@ -136,12 +135,22 @@ describe('SRModules controller', () => {
         .spyOn(keysUpdateService, 'getStakingModules')
         .mockImplementation(() => [unknownModule]);
       const getMetaDataFromStorageMock = jest.spyOn(curatedModuleService, 'getMetaDataFromStorage');
+      await expect(modulesController.getModules()).rejects.toThrowError('Too early response');
 
-      const result = await modulesController.getModules();
-
-      expect(result).toEqual({ data: [], elBlockSnapshot: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getMetaDataFromStorageMock).toBeCalledTimes(0);
+    });
+
+    test('EL meta is null', async () => {
+      process.env['CHAIN_ID'] = '1';
+      const getMetaDataFromStorageMock = jest
+        .spyOn(curatedModuleService, 'getMetaDataFromStorage')
+        .mockImplementation(() => Promise.resolve(null));
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
+      await expect(modulesController.getModules()).rejects.toThrowError('Too early response');
+
+      expect(getStakingModulesMock).toBeCalledTimes(1);
+      expect(getMetaDataFromStorageMock).toBeCalledTimes(1);
     });
   });
 
@@ -188,6 +197,18 @@ describe('SRModules controller', () => {
       );
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getMetaDataFromStorageMock).toBeCalledTimes(0);
+    });
+
+    test('EL meta is null', async () => {
+      process.env['CHAIN_ID'] = '1';
+      const getMetaDataFromStorageMock = jest
+        .spyOn(curatedModuleService, 'getMetaDataFromStorage')
+        .mockImplementation(() => Promise.resolve(null));
+      const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
+      await expect(modulesController.getModules()).rejects.toThrowError('Too early response');
+
+      expect(getStakingModulesMock).toBeCalledTimes(1);
+      expect(getMetaDataFromStorageMock).toBeCalledTimes(1);
     });
   });
 });

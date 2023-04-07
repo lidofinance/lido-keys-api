@@ -24,11 +24,11 @@ export class SRModuleOperatorListResponse {
     nullable: true,
     type: () => OperatorListAndSRModule,
   })
-  data!: OperatorListAndSRModule | null;
+  data!: OperatorListAndSRModule;
 
   @ApiProperty({
     nullable: true,
     type: () => ELMeta,
   })
-  meta!: ELMeta | null;
+  meta!: ELMeta;
 }

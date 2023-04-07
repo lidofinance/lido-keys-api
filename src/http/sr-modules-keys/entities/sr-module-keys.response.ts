@@ -24,11 +24,11 @@ export class SRModuleKeyListResponse {
     nullable: true,
     type: () => SRKeyListWithModule,
   })
-  data!: SRKeyListWithModule | null;
+  data!: SRKeyListWithModule;
 
   @ApiProperty({
     nullable: true,
     type: () => ELMeta,
   })
-  meta!: ELMeta | null;
+  meta!: ELMeta;
 }

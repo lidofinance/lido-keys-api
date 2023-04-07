@@ -23,11 +23,11 @@ export class SRModuleOperatorResponse {
     nullable: true,
     type: () => OperatorAndSRModule,
   })
-  data!: OperatorAndSRModule | null;
+  data!: OperatorAndSRModule;
 
   @ApiProperty({
     nullable: true,
     type: () => ELMeta,
   })
-  meta!: ELMeta | null;
+  meta!: ELMeta;
 }

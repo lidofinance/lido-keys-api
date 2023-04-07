@@ -122,7 +122,7 @@ describe('SRModulesValidators controller', () => {
       expect(getValidatorsMock).toBeCalledTimes(0);
     });
 
-    test('EL meta is actual, set percent if percent or max_amount are not provided', async () => {
+    test('EL meta is actual, set 10 percent if percent or max_amount are not provided', async () => {
       process.env['CHAIN_ID'] = '1';
 
       // return used keys
@@ -198,12 +198,9 @@ describe('SRModulesValidators controller', () => {
       const getValidatorsMock = jest.spyOn(validatorsService, 'getOldestValidators');
       const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
 
-      const result = await validatorsController.getOldestValidators(
-        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        { operator_id: 1 },
-        {},
-      );
-      expect(result).toEqual({ data: [], meta: null });
+      await expect(
+        validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', { operator_id: 1 }, {}),
+      ).rejects.toThrowError('Too early response');
 
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
@@ -224,12 +221,9 @@ describe('SRModulesValidators controller', () => {
         .spyOn(validatorsService, 'getOldestValidators')
         .mockImplementation(() => Promise.resolve({ validators: [], meta: null }));
 
-      const result = await validatorsController.getOldestValidators(
-        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        { operator_id: 1 },
-        {},
-      );
-      expect(result).toEqual({ data: [], meta: null });
+      await expect(
+        validatorsController.getOldestValidators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', { operator_id: 1 }, {}),
+      ).rejects.toThrowError('Too early response');
 
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
@@ -478,12 +472,13 @@ describe('SRModulesValidators controller', () => {
         .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
       const getValidatorsMock = jest.spyOn(validatorsService, 'getOldestValidators');
       const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
-      const result = await validatorsController.getMessagesForOldestValidators(
-        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        { operator_id: 1 },
-        {},
-      );
-      expect(result).toEqual({ data: [], meta: null });
+      await expect(
+        validatorsController.getMessagesForOldestValidators(
+          '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+          { operator_id: 1 },
+          {},
+        ),
+      ).rejects.toThrowError('Too early response');
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
@@ -503,12 +498,13 @@ describe('SRModulesValidators controller', () => {
         .spyOn(validatorsService, 'getOldestValidators')
         .mockImplementation(() => Promise.resolve({ validators: [], meta: null }));
 
-      const result = await validatorsController.getMessagesForOldestValidators(
-        '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
-        { operator_id: 1 },
-        {},
-      );
-      expect(result).toEqual({ data: [], meta: null });
+      await expect(
+        validatorsController.getMessagesForOldestValidators(
+          '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+          { operator_id: 1 },
+          {},
+        ),
+      ).rejects.toThrowError('Too early response');
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
@@ -558,7 +554,7 @@ describe('SRModulesValidators controller', () => {
       });
     });
 
-    test('if percent is provided , not set default  percent', async () => {
+    test('if percent is provided, not set default  percent', async () => {
       process.env['CHAIN_ID'] = '1';
 
       // return used keys

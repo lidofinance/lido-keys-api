@@ -37,11 +37,11 @@ export class SRModuleOperatorsKeysResponse {
     nullable: true,
     type: () => SROperatorsKeysModule,
   })
-  data!: SROperatorsKeysModule | null;
+  data!: SROperatorsKeysModule;
 
   @ApiProperty({
     nullable: true,
     type: () => ELMeta,
   })
-  meta!: ELMeta | null;
+  meta!: ELMeta;
 }

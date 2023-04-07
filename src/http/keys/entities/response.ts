@@ -14,5 +14,5 @@ export class KeyListResponse {
     nullable: true,
     description: 'Meta for keys endpoints',
   })
-  meta!: ELMeta | null;
+  meta!: ELMeta;
 }

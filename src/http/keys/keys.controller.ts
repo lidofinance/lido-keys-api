@@ -1,9 +1,21 @@
-import { Controller, Get, Post, Version, Query, Body, Param, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Version,
+  Query,
+  Body,
+  Param,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+} from '@nestjs/common';
+import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
 import { KeyListResponse } from './entities';
 import { KeyQuery } from 'http/common/entities';
 import { KeysFindBody } from 'http/common/entities/pubkeys';
+import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
 
 @Controller('keys')
 @ApiTags('keys')
@@ -12,6 +24,11 @@ export class KeysController {
 
   @Version('1')
   @Get('/')
+  @ApiResponse({
+    status: 425,
+    description: "Meta is null, maybe data hasn't been written in db yet",
+    type: TooEarlyResponse,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'List of all keys',
@@ -29,6 +46,16 @@ export class KeysController {
     description: 'Public key',
   })
   @ApiResponse({
+    status: 425,
+    description: "Meta is null, maybe data hasn't been written in db yet",
+    type: TooEarlyResponse,
+  })
+  @ApiNotFoundResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Provided pubkey was not found',
+    type: NotFoundException,
+  })
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'List of all keys',
     type: KeyListResponse,
@@ -42,6 +69,11 @@ export class KeysController {
   @Version('1')
   @Post('/find')
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: 425,
+    description: "Meta is null, maybe data hasn't been written in db yet",
+    type: TooEarlyResponse,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Staking Router module keys.',

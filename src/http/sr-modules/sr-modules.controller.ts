@@ -1,8 +1,9 @@
-import { Controller, Get, Version, Param } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Version, Param, HttpStatus, NotFoundException } from '@nestjs/common';
+import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleListResponse, SRModuleResponse } from './entities';
 import { SRModulesService } from './sr-modules.service';
 import { ModuleId } from 'http/common/entities/';
+import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
 
 @Controller('modules')
 @ApiTags('modules')
@@ -16,6 +17,11 @@ export class SRModulesController {
     description: 'List of all modules supported in API',
     type: SRModuleListResponse,
   })
+  @ApiResponse({
+    status: 425,
+    description: "Meta is null, maybe data hasn't been written in db yet",
+    type: TooEarlyResponse,
+  })
   @Get('/')
   getModules() {
     return this.srModulesService.getModules();
@@ -27,6 +33,16 @@ export class SRModulesController {
     status: 200,
     description: 'Staking router module detailed information.',
     type: SRModuleResponse,
+  })
+  @ApiResponse({
+    status: 425,
+    description: "Meta is null, maybe data hasn't been written in db yet",
+    type: TooEarlyResponse,
+  })
+  @ApiNotFoundResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Provided module is not supported',
+    type: NotFoundException,
   })
   @Get(':module_id')
   @ApiParam({

@@ -10,24 +10,21 @@ export class SRModuleListResponse {
 
   @ApiProperty({
     type: () => ELBlockSnapshot,
-    nullable: true,
     description: 'Execution layer block information',
   })
-  elBlockSnapshot!: ELBlockSnapshot | null;
+  elBlockSnapshot!: ELBlockSnapshot;
 }
 
 export class SRModuleResponse {
   @ApiProperty({
     type: () => SRModule,
-    nullable: true,
     description: 'Detailed staking router module information',
   })
-  data!: SRModule | null;
+  data!: SRModule;
 
   @ApiProperty({
     type: () => ELBlockSnapshot,
-    nullable: true,
     description: 'Execution layer block information',
   })
-  elBlockSnapshot!: ELBlockSnapshot | null;
+  elBlockSnapshot!: ELBlockSnapshot;
 }

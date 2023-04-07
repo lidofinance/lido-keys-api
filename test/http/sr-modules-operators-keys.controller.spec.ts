@@ -106,15 +106,13 @@ describe('SRModulesOperatorsController', () => {
         Promise.resolve({ operators: expectedOperatorsResponse, keys: curatedKeys, meta: null }),
       );
       const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
-      const result = await operatorsKeysController.getOperatorsKeys('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {});
+      await expect(
+        operatorsKeysController.getOperatorsKeys('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {}),
+      ).rejects.toThrowError('Too early response');
 
       expect(getDataMock).toBeCalledTimes(1);
       expect(getDataMock).lastCalledWith({});
       expect(getStakingModuleMock).toBeCalledTimes(1);
-      expect(result).toEqual({
-        data: null,
-        meta: null,
-      });
     });
 
     test('successfully get data on mainnet', async () => {
@@ -173,7 +171,7 @@ describe('SRModulesOperatorsController', () => {
       });
     });
 
-    test('successfully get data by module id is SR module id', async () => {
+    test('successfully get data by module id, module is is SR module id', async () => {
       process.env['CHAIN_ID'] = '1';
       const getDataMock = jest.spyOn(curatedModuleService, 'getData');
       const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');

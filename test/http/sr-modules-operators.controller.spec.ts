@@ -143,23 +143,22 @@ describe('SRModulesOperatorsController', () => {
         .spyOn(curatedModuleService, 'getOperatorsWithMeta')
         .mockImplementation(() => Promise.resolve({ operators: curatedOperators, meta: null }));
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
-      const result = await operatorsController.get();
+      await expect(operatorsController.get()).rejects.toThrowError('Too early response');
 
       expect(getOperatorsWithMock).toBeCalledTimes(1);
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getOperatorsWithMock).lastCalledWith();
-      expect(result).toEqual({
-        data: [],
-        meta: null,
-      });
+      // expect(result).toEqual({
+      //   data: [],
+      //   meta: null,
+      // });
     });
 
     test('Staking Modules list is empty', async () => {
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules').mockImplementation(() => []);
       const getOperatorsWithMock = jest.spyOn(curatedModuleService, 'getOperatorsWithMeta');
-      const result = await operatorsController.get();
+      await expect(operatorsController.get()).rejects.toThrowError('Too early response');
 
-      expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getOperatorsWithMock).toBeCalledTimes(0);
     });
@@ -172,9 +171,8 @@ describe('SRModulesOperatorsController', () => {
         .mockImplementation(() => [unknownModule]);
       const getOperatorsWithMock = jest.spyOn(curatedModuleService, 'getOperatorsWithMeta');
 
-      const result = await operatorsController.get();
+      await expect(operatorsController.get()).rejects.toThrowError('Too early response');
 
-      expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getOperatorsWithMock).toBeCalledTimes(0);
     });
@@ -229,15 +227,13 @@ describe('SRModulesOperatorsController', () => {
         .spyOn(curatedModuleService, 'getOperatorsWithMeta')
         .mockImplementation(() => Promise.resolve({ operators: curatedOperators, meta: null }));
       const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
-      const result = await operatorsController.getModuleOperators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5');
+      await expect(
+        operatorsController.getModuleOperators('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5'),
+      ).rejects.toThrowError('Too early response');
 
       expect(getOperatorsWithMock).toBeCalledTimes(1);
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getOperatorsWithMock).lastCalledWith();
-      expect(result).toEqual({
-        data: null,
-        meta: null,
-      });
     });
 
     test('module not found', async () => {
@@ -254,7 +250,7 @@ describe('SRModulesOperatorsController', () => {
       expect(getOperatorsWithMock).toBeCalledTimes(0);
     });
 
-    test('moduleId is SR module is', async () => {
+    test('moduleId is SR module', async () => {
       process.env['CHAIN_ID'] = '1';
       const getOperatorsWithMock = jest.spyOn(curatedModuleService, 'getOperatorsWithMeta');
       const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
@@ -341,17 +337,15 @@ describe('SRModulesOperatorsController', () => {
         .spyOn(curatedModuleService, 'getOperatorByIndex')
         .mockImplementation(() => Promise.resolve({ operator: curatedOperatorIndexOne, meta: null }));
       const getStakingModuleMock = jest.spyOn(keysUpdateService, 'getStakingModule');
-      const result = await operatorsController.getModuleOperator('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
-        operator_id: 1,
-      });
+      await expect(
+        operatorsController.getModuleOperator('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
+          operator_id: 1,
+        }),
+      ).rejects.toThrowError('Too early response');
 
       expect(getOperatorByIndexMock).toBeCalledTimes(1);
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getOperatorByIndexMock).lastCalledWith(1);
-      expect(result).toEqual({
-        data: null,
-        meta: null,
-      });
     });
 
     test('operator is not found error', async () => {

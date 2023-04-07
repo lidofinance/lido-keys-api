@@ -151,9 +151,10 @@ describe('SRModulesKeysController controller', () => {
         .spyOn(curatedModuleService, 'getKeysWithMeta')
         .mockImplementation(() => Promise.resolve({ keys: [], meta: null }));
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules');
-      const result = await moduleKeysController.getGroupedByModuleKeys({ used: true, operatorIndex: 1 });
+      await expect(moduleKeysController.getGroupedByModuleKeys({ used: true, operatorIndex: 1 })).rejects.toThrowError(
+        'Too early response',
+      );
 
-      expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledWith({ used: true, operatorIndex: 1 });
@@ -162,9 +163,10 @@ describe('SRModulesKeysController controller', () => {
     test('Staking Modules list is empty', async () => {
       const getStakingModulesMock = jest.spyOn(keysUpdateService, 'getStakingModules').mockImplementation(() => []);
       const getKeysWithMetaMock = jest.spyOn(curatedModuleService, 'getKeysWithMeta');
-      const result = await moduleKeysController.getGroupedByModuleKeys({ used: true, operatorIndex: 1 });
+      await expect(moduleKeysController.getGroupedByModuleKeys({ used: true, operatorIndex: 1 })).rejects.toThrowError(
+        'Too early response',
+      );
 
-      expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(0);
     });
@@ -177,9 +179,10 @@ describe('SRModulesKeysController controller', () => {
         .mockImplementation(() => [unknownModule]);
       const getKeysWithMetaMock = jest.spyOn(curatedModuleService, 'getKeysWithMeta');
 
-      const result = await moduleKeysController.getGroupedByModuleKeys({ used: true, operatorIndex: 1 });
+      await expect(moduleKeysController.getGroupedByModuleKeys({ used: true, operatorIndex: 1 })).rejects.toThrowError(
+        'Too early response',
+      );
 
-      expect(result).toEqual({ data: [], meta: null });
       expect(getStakingModulesMock).toBeCalledTimes(1);
       expect(getKeysWithMetaMock).toBeCalledTimes(0);
     });
@@ -287,12 +290,13 @@ describe('SRModulesKeysController controller', () => {
         .spyOn(keysUpdateService, 'getStakingModule')
         .mockImplementation(() => curatedModuleMainnet);
 
-      const result = await moduleKeysController.getModuleKeys('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
-        used: true,
-        operatorIndex: 1,
-      });
+      await expect(
+        moduleKeysController.getModuleKeys('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5', {
+          used: true,
+          operatorIndex: 1,
+        }),
+      ).rejects.toThrowError('Too early response');
 
-      expect(result).toEqual({ data: null, meta: null });
       expect(getStakingModuleMock).toBeCalledTimes(1);
       expect(getStakingModuleMock).toBeCalledWith('0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5');
       expect(getKeysWithMetaMock).toBeCalledTimes(1);
@@ -402,11 +406,11 @@ describe('SRModulesKeysController controller', () => {
       const getStakingModuleMock = jest
         .spyOn(keysUpdateService, 'getStakingModule')
         .mockImplementation(() => curatedModuleMainnet);
-      const result = await moduleKeysController.getModuleKeysByPubkeys(1, {
-        pubkeys: [hexZeroPad('0x12', 98), hexZeroPad('0x13', 98)],
-      });
-
-      expect(result).toEqual({ data: null, meta: null });
+      await expect(
+        moduleKeysController.getModuleKeysByPubkeys(1, {
+          pubkeys: [hexZeroPad('0x12', 98), hexZeroPad('0x13', 98)],
+        }),
+      ).rejects.toThrowError('Too early response');
 
       expect(getKeysWithMetaByPubkeysMock).toBeCalledTimes(1);
       expect(getKeysWithMetaByPubkeysMock).lastCalledWith([hexZeroPad('0x12', 98), hexZeroPad('0x13', 98)]);

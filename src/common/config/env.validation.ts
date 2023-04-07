@@ -99,7 +99,7 @@ export class EnvironmentVariables {
 
   @IsArray()
   @ArrayMinSize(1)
-  @Transform(({ value }) => value.split(','))
+  @Transform(({ value }) => value.split(',').map((url) => url.replace(/\/$/, '')))
   PROVIDERS_URLS!: NonEmptyArray<string>;
 
   @IsInt()
@@ -154,7 +154,7 @@ export class EnvironmentVariables {
   @ValidateIf((e) => e.VALIDATOR_REGISTRY_ENABLE === true)
   @IsArray()
   @ArrayMinSize(1)
-  @Transform(({ value }) => value.split(','))
+  @Transform(({ value }) => value.split(',').map((url) => url.replace(/\/$/, '')))
   CL_API_URLS: string[] = [];
 }
 
