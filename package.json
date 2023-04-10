@@ -35,7 +35,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/common/contracts/abi/*.json"
+    "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/common/contracts/abi/*.json",
+    "manual:test": "./manual-test/run.sh"
   },
   "dependencies": {
     "@lido-nestjs/consensus": "^1.3.3",
@@ -87,6 +88,7 @@
     "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "fs": "^0.0.1-security",
     "jest": "^27.4.7",
     "prettier": "^2.5.1",
     "supertest": "^6.2.1",
@@ -94,6 +96,7 @@
     "ts-loader": "^9.2.6",
     "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.12.0",
-    "typescript": "^4.5.5"
+    "typescript": "^4.5.5",
+    "yargs": "^17.7.1"
   }
 }
