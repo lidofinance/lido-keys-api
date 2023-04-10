@@ -55,7 +55,6 @@ export class KeysService {
         // currently we sure if stakingModules is not empty, we will have in list Curated Module
         // in future this check should be in each if clause
         if (i === 0) {
-          this.logger.warn(`Meta for response wasnt set.`);
           elBlockSnapshot = new ELBlockSnapshot(meta);
         }
 
