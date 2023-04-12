@@ -7,6 +7,7 @@ import { MigrationObject } from '@mikro-orm/core/typings';
 import { RegistryMeta, RegistryOperator, RegistryKey } from '@lido-nestjs/registry';
 import { ConsensusMetaEntity } from '@lido-nestjs/validators-registry/dist/storage/consensus-meta.entity';
 import { ConsensusValidatorEntity } from '@lido-nestjs/validators-registry/dist/storage/consensus-validator.entity';
+import { readFileSync } from 'fs';
 
 dotenv.config();
 
@@ -71,13 +72,21 @@ const getMigrationOptions = (mainMigrationsFolder: string, npmPackageNames: stri
   };
 };
 
+const DB_PASSWORD =
+  process.env.DB_PASSWORD ??
+  (process.env.DB_PASSWORD_FILE && readFileSync(process.env.DB_PASSWORD_FILE, 'utf-8').toString());
+if (!DB_PASSWORD) {
+  console.error('Please set encryption password in .env');
+  process.exit();
+}
+
 const config: Options = {
   type: 'postgresql',
   dbName: process.env.DB_NAME,
   host: process.env.DB_HOST,
   port: parseInt(process?.env?.DB_PORT ?? '', 10),
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  password: DB_PASSWORD,
   entities: [RegistryKey, RegistryOperator, RegistryMeta, ConsensusValidatorEntity, ConsensusMetaEntity],
   migrations: getMigrationOptions(path.join(__dirname, 'migrations'), [
     '@lido-nestjs/registry',
