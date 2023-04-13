@@ -73,11 +73,16 @@ const getMigrationOptions = (mainMigrationsFolder: string, npmPackageNames: stri
 };
 
 const DB_PASSWORD =
-  process.env.DB_PASSWORD ??
-  (process.env.DB_PASSWORD_FILE && readFileSync(process.env.DB_PASSWORD_FILE, 'utf-8').toString());
+  process.env.DB_PASSWORD ||
+  (process.env.DB_PASSWORD_FILE &&
+    readFileSync(process.env.DB_PASSWORD_FILE, 'utf-8')
+      .toString()
+      .replace(/(\r\n|\n|\r)/gm, '')
+      .trim());
+
 if (!DB_PASSWORD) {
-  console.error('Please set encryption password in .env');
-  process.exit();
+  console.error('Please set postgres password in DB_PASSWORD or in file DB_PASSWORD_FILE');
+  process.exit(1);
 }
 
 const config: Options = {
