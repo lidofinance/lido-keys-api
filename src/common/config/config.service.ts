@@ -29,7 +29,9 @@ export class ConfigService extends ConfigServiceSource<EnvironmentVariables> {
     const password = this.readEnvFromFile(filePath, 'DB_PASSWORD_FILE') as EnvironmentVariables[T];
 
     if (!password) {
-      console.error('Please set postgres password in DB_PASSWORD or in file DB_PASSWORD_FILE');
+      console.error(
+        'File in DB_PASSWORD_FILE doesnt contain a password. Please provide postgresql password via DB_PASSWORD or DB_PASSWORD_FILE envs',
+      );
       process.exit(1);
     }
 
