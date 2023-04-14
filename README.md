@@ -14,7 +14,7 @@ Service is based on modular architecture. We will have separate library for each
 
 ### /keys
 
-**GET** `/api/v1/keys`
+**GET** `/v1/keys`
 
 Endpoint returns list of keys for all modules.
 
@@ -41,32 +41,75 @@ interface ModuleKey extends Key {
   moduleAddress: string;
 }
 
-interface Response {
+class Response {
   data: ModuleKey[];
   meta: {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/keys' \
+  -H 'accept: application/json'
 ```
 
 :::warning
 Response of this endpoint could be very large but we can’t have a pagination here since data could be updated in the process.
 :::
 
-**GET** `/api/v1/keys/{pubkey}`
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
+
+**GET** `/v1/keys/{pubkey}`
 
 Return key by public key with basic fields. `pubkey` should be in lowercase.
 
 ```typescript
-interface Response {
+class Response {
   data: ModuleKey[];
   meta: {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
-**POST** `/api/v1/keys/find`
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3005/v1/keys/pubkey' \
+  -H 'accept: application/json'
+```
+
+**POST** `/v1/keys/find`
 
 Returns all keys found in db.
 
@@ -82,17 +125,41 @@ interface RequestBody {
 Response:
 
 ```typescript
-interface Response {
+class Response {
   data: ModuleKey[];
   meta: {
     elBlockSnapshot: ElBlockSnapshot;
   };
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
 ```
+
+Example:
+
+```
+curl -X 'POST' \
+  'http://localhost:3000/v1/keys/find' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"pubkeys": ["pubkey0 "]}'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 ### /modules
 
-**GET** `/api/v1/modules`
+**GET** `/v1/modules`
 
 Endpoint returns list of staking router modules.
 
@@ -126,13 +193,35 @@ interface ELBlockSnapshot {
   blockTimestamp: number;
 }
 
-interface Reponse {
+class Reponse {
   data: Module[];
   elBlockSnapshot: ElBlockSnapshot;
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
 ```
 
-**GET** `/api/v1/modules/{module_id}`
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
+
+**GET** `/v1/modules/{module_id}`
 
 `module_id` - staking router module contact address or id;
 
@@ -168,15 +257,41 @@ interface ELBlockSnapshot {
   blockTimestamp: number;
 }
 
-interface Reponse {
+class Reponse {
   data: Module;
   elBlockSnapshot: ElBlockSnapshot;
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundResponse implements HttpException {
+  statusCode: number = 404;
+}
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules/1' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 ### /modules/keys/
 
-**GET** `/api/v1/modules/keys/`
+**GET** `/v1/modules/keys/`
 
 Return keys for all modules grouped by staking router module.
 
@@ -211,7 +326,7 @@ interface Module {
   lastDepositBlock: number;
 }
 
-interface Response {
+class Response {
   data: {
     keys: Key[];
     module: Module;
@@ -220,9 +335,35 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
-**GET** `/api/v1/modules/{module_id}/keys`
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules/keys?used=true&operatorIndex=1' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
+
+**GET** `/v1/modules/{module_id}/keys`
 
 `module_id` - staking router module contact address or id;
 
@@ -251,7 +392,7 @@ interface RegistryKey extends Key {
 
 interface CommunityKey extends Key {}
 
-interface Response {
+class Response {
   data: {
     keys: RegistryKey[] | CommunityKey[];
     module: Module;
@@ -260,9 +401,35 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
-**POST** `/api/v1/modules/{module_id}/keys/find`
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules/1/keys?used=true&operatorIndex=1' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
+
+**POST** `/v1/modules/{module_id}/keys/find`
 
 `module_id` - staking router module contact address or id;
 
@@ -293,7 +460,7 @@ interface RegistryKey extends Key {
 
 interface CommunityKey extends Key {}
 
-interface Response {
+class Response {
   data: {
     keys: RegistryKey[] | CommunityKey[];
     module: Module;
@@ -302,11 +469,43 @@ interface Response {
     elBlockSnapshot: ElBlockSnapshot;
   };
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
+
+Example:
+
+```
+curl -X 'POST' \
+  'http://localhost:3000/v1/modules/1/keys/find' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "pubkeys": [
+    "pubkey"
+  ]
+}'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 ### /validators
 
-**GET** `/api/v1/modules/{module_id}/validators/exits_presign/{operator_id}`
+**GET** `/v1/modules/{module_id}/validators/validator-exits-to-prepare/{operator_id}`
 
 `module_id` - staking router module contact address or id;
 
@@ -334,19 +533,55 @@ interface CLBlockSnapshot {
   blockHash: string;
 }
 
-interface Response {
+class Response {
   data: Validator[];
   meta: {
     clBlockSnapshot: CLBlockSnapshot;
   };
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
+
+class InternalServerErrorExceptionNotActualData implements HttpException {
+  statusCode: number = 500;
+  message: string = 'Last Execution Layer block number in our database older than last Consensus Layer';
+}
+
+class InternalServerErrorExceptionDisable implements HttpException {
+  statusCode: number = 500;
+  message: string = 'Validators Registry is disabled. Check environment variables';
+}
 ```
 
-**GET** `/api/v1/modules/{module_id}/validators/exits_presign/{operator_id}/messages`
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules/1/validators/validator-exits-to-prepare/1?percent=10' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
+
+**GET** `/v1/modules/{module_id}/validators/generate-unsigned-exit-messages/{operator_id}`
 
 `module_id` - staking router module contact address or id;
 
-Generate pre-sign messages for N oldest validators for earliest epoch when voluntary exit can be processed.
+Return unsigned exit messages for N oldest validators for earliest epoch when voluntary exit can be processed.
 
 Query:
 
@@ -357,8 +592,8 @@ Only one filter is available. If both parameters are provided, `percent` has a h
 
 ```typescript
 interface ExitPresignMessage {
-  validatorIndex: number;
-  epoch: number;
+  validator_index: string;
+  epoch: string;
 }
 
 interface CLBlockSnapshot {
@@ -370,17 +605,53 @@ interface CLBlockSnapshot {
   blockHash: string;
 }
 
-interface Response {
+class Response {
   data: ExitPresignMessage[];
   meta: {
     clBlockSnapshot: CLBlockSnapshot;
   };
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
+
+class InternalServerErrorExceptionNotActualData implements HttpException {
+  statusCode: number = 500;
+  message: string = 'Last Execution Layer block number in our database older than last Consensus Layer';
+}
+
+class InternalServerErrorExceptionDisable implements HttpException {
+  statusCode: number = 500;
+  message: string = 'Validators Registry is disabled. Check environment variables';
+}
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules/1/validators/generate-unsigned-exit-messages/1?percent=10' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 ### /operators
 
-**GET** `/api/v1/operators`
+**GET** `/v1/operators`
 
 List of operators grouped by staking router module
 
@@ -403,7 +674,7 @@ interface CuratedOperator extends Operator {
 
 interface CommunityOperator extends Operator {}
 
-interface Response {
+class Response {
   data: {
     operators: CuratedOperator[] | CommunityOperator[];
     module: Module;
@@ -412,16 +683,38 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
 ```
 
-**GET** `/api/v1/modules/{module_id}/operators/`
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/operators' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
+
+**GET** `/v1/modules/{module_id}/operators/`
 
 `module_id` - staking router module contact address or id;
 
 List of SR module operators
 
 ```typescript
-interface Response {
+class Response {
   data: {
     operators: CuratedOperator[] | CommunityOperator[];
     module: Module;
@@ -430,17 +723,43 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
-**GET** `/api/v1/modules/{module_id}/operators/{operator_index}`
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/v1/modules/1/operators' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
+
+**GET** `/v1/modules/{module_id}/operators/{operator_id}`
 
 `module_id` - staking router module contact address or id;
-`operator_index` - operator index;
+`operator_id` - operator index;
 
 List of SR module operators
 
 ```typescript
-interface Response {
+class Response {
   data: {
     operators: CuratedOperator | CommunityOperator;
     module: Module;
@@ -449,9 +768,35 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
 
-**GET** `/api/v1/modules/{module_id}/operators/keys`
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3005/v1/modules/1/operators/1' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
+
+**GET** `/v1/modules/{module_id}/operators/keys`
 
 `module_id` - staking router module contact address or id;
 
@@ -461,7 +806,7 @@ Query:
 - `operatorIndex` - filter for keys of operator with index `operatorIndex`;
 
 ```typescript
-interface Response {
+class Response {
   data: {
     keys: RegistryKey[] | CommunityKey[];
     operators: CuratedOperator[] | CommunityOperator[];
@@ -471,14 +816,40 @@ interface Response {
     elBlockSnapshot: ELBlockSnapshot;
   };
 }
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+
+class NotFoundException implements HttpException {
+  statusCode: number = 404;
+}
 ```
+
+Example:
+
+```
+curl -X 'GET' \
+  'http://localhost:3005/v1/modules/1/operators/1' \
+  -H 'accept: application/json'
+```
+
+:::warning
+If API returns 425 code, it means database is not ready for work
+:::
 
 ### /status
 
-**GET** /api/v1/status
+**GET** /v1/status
 
 ```typescript
-interface Response {
+class Response {
   // keys api version
   appVersion: string;
   chainId: number;

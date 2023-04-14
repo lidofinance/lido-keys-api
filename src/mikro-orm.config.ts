@@ -11,10 +11,17 @@ import { readFileSync } from 'fs';
 
 dotenv.config();
 
+// https://github.com/mikro-orm/mikro-orm/issues/1842
+// disableForeignKeys = false
+// default — true
+const MIKRO_ORM_DISABLE_FOREIGN_KEYS =
+  process.env.MIKRO_ORM_DISABLE_FOREIGN_KEYS === 'true' || process.env.MIKRO_ORM_DISABLE_FOREIGN_KEYS === undefined
+    ? true
+    : false;
+
 // TODO move this to nestjs packages
 const findMigrations = (mainFolder: string, npmPackageNames: string[]): MigrationObject[] => {
   const cwd = process.cwd();
-
   const folders = [mainFolder, ...npmPackageNames.map((npmPackage) => `./node_modules/${npmPackage}/dist/migrations/`)];
   const filenames = folders
     .map((folder) => {
@@ -32,11 +39,11 @@ const findMigrations = (mainFolder: string, npmPackageNames: string[]): Migratio
       const module = require(filename);
       const ext = path.extname(filename);
       const fileNameWithoutExt = path.basename(filename, ext);
+      // TODO: readable var name
+      const migrationClass = module[fileNameWithoutExt];
 
-      const clazz = module[fileNameWithoutExt];
-
-      if (clazz) {
-        return { name: fileNameWithoutExt, class: clazz };
+      if (migrationClass) {
+        return { name: fileNameWithoutExt, class: migrationClass };
       }
 
       return null;
@@ -55,7 +62,7 @@ const getMigrationOptions = (mainMigrationsFolder: string, npmPackageNames: stri
     tableName: 'mikro_orm_migrations', // name of database table with log of executed transactions
     path: mainMigrationsFolder, // path to the folder with migrations
     transactional: true, // wrap each migration in a transaction
-    disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
+    disableForeignKeys: MIKRO_ORM_DISABLE_FOREIGN_KEYS, // wrap statements with `set foreign_key_checks = 0` or equivalent
     allOrNothing: true, // wrap all migrations in master transaction
     dropTables: true, // allow to disable table dropping
     safe: false, // allow to disable table and column dropping
@@ -66,11 +73,16 @@ const getMigrationOptions = (mainMigrationsFolder: string, npmPackageNames: stri
 };
 
 const DB_PASSWORD =
-  process.env.DB_PASSWORD ??
-  (process.env.DB_PASSWORD_FILE && readFileSync(process.env.DB_PASSWORD_FILE, 'utf-8').toString());
+  process.env.DB_PASSWORD ||
+  (process.env.DB_PASSWORD_FILE &&
+    readFileSync(process.env.DB_PASSWORD_FILE, 'utf-8')
+      .toString()
+      .replace(/(\r\n|\n|\r)/gm, '')
+      .trim());
+
 if (!DB_PASSWORD) {
-  console.error('Please set encryption password in .env');
-  process.exit();
+  console.error('Please set postgres password in DB_PASSWORD or in file DB_PASSWORD_FILE');
+  process.exit(1);
 }
 
 const config: Options = {

@@ -13,6 +13,8 @@ jobs:
           cache: 'yarn'
       - name: Install dependencies
         run: yarn install --immutable
+      - name: Generate types
+        run: yarn typechain
       - name: Run lint
         run: yarn lint
       - name: Run tests

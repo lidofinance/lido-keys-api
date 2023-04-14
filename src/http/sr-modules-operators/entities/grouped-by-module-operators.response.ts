@@ -13,5 +13,5 @@ export class GroupedByModuleOperatorListResponse {
     nullable: true,
     type: () => ELMeta,
   })
-  meta!: ELMeta | null;
+  meta!: ELMeta;
 }

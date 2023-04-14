@@ -1,6 +1,6 @@
 import { ApiProperty, getSchemaPath, ApiExtraModels } from '@nestjs/swagger';
 import { SRModule } from 'http/common/entities/';
-import { RegistryKey as CuratedKey } from 'http/common/entities/';
+import { CuratedKey } from 'http/common/entities/';
 import { CuratedOperator } from 'http/common/entities/';
 import { ELMeta } from 'http/common/entities/';
 
@@ -37,11 +37,11 @@ export class SRModuleOperatorsKeysResponse {
     nullable: true,
     type: () => SROperatorsKeysModule,
   })
-  data!: SROperatorsKeysModule | null;
+  data!: SROperatorsKeysModule;
 
   @ApiProperty({
     nullable: true,
     type: () => ELMeta,
   })
-  meta!: ELMeta | null;
+  meta!: ELMeta;
 }

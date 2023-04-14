@@ -116,27 +116,27 @@ export const operatorOneValidatorsExitList = [
 
 export const operatorOnePresignMessageList = [
   {
-    validatorIndex: 1,
-    epoch: 2860,
+    validator_index: '1',
+    epoch: '2860',
   },
   {
-    validatorIndex: 4,
-    epoch: 2860,
+    validator_index: '4',
+    epoch: '2860',
   },
   {
-    validatorIndex: 5,
-    epoch: 2860,
+    validator_index: '5',
+    epoch: '2860',
   },
   {
-    validatorIndex: 6,
-    epoch: 2860,
+    validator_index: '6',
+    epoch: '2860',
   },
   {
-    validatorIndex: 7,
-    epoch: 2860,
+    validator_index: '7',
+    epoch: '2860',
   },
   {
-    validatorIndex: 8,
-    epoch: 2860,
+    validator_index: '8',
+    epoch: '2860',
   },
 ];

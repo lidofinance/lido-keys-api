@@ -1,7 +1,6 @@
 import { ApiProperty, getSchemaPath, ApiExtraModels } from '@nestjs/swagger';
 import { SRModule, CuratedOperator, ELMeta } from 'http/common/entities/';
-
-type SRModuleOperator = CuratedOperator;
+import { SRModuleOperator } from 'http/common/entities/sr-module-operator';
 
 @ApiExtraModels(CuratedOperator)
 export class OperatorAndSRModule {
@@ -24,11 +23,11 @@ export class SRModuleOperatorResponse {
     nullable: true,
     type: () => OperatorAndSRModule,
   })
-  data!: OperatorAndSRModule | null;
+  data!: OperatorAndSRModule;
 
   @ApiProperty({
     nullable: true,
     type: () => ELMeta,
   })
-  meta!: ELMeta | null;
+  meta!: ELMeta;
 }

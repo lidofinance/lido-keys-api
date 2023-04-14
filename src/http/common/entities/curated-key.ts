@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Key } from 'http/common/entities/';
-import { RegistryKey as LibRegistryKey } from '@lido-nestjs/registry';
+import { RegistryKey } from '@lido-nestjs/registry';
 
-export class RegistryKey extends Key {
-  constructor(key: LibRegistryKey) {
+export class CuratedKey extends Key {
+  constructor(key: RegistryKey) {
     super(key);
     this.index = key.index;
   }

@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { RegistryMeta } from '@lido-nestjs/registry';
+import { SRModuleMeta } from './sr-module-meta';
 
 export class ELBlockSnapshot {
-  constructor(meta: RegistryMeta) {
+  constructor(meta: SRModuleMeta) {
     this.blockNumber = meta.blockNumber;
     this.blockHash = meta.blockHash;
     this.timestamp = meta.timestamp;

@@ -10,6 +10,7 @@ import {
   IsInt,
   IsBoolean,
   ValidateIf,
+  IsNotEmpty,
 } from 'class-validator';
 import { Environment, LogLevel, LogFormat } from './interfaces';
 import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
@@ -99,7 +100,7 @@ export class EnvironmentVariables {
 
   @IsArray()
   @ArrayMinSize(1)
-  @Transform(({ value }) => value.split(','))
+  @Transform(({ value }) => value.split(',').map((url) => url.replace(/\/$/, '')))
   PROVIDERS_URLS!: NonEmptyArray<string>;
 
   @IsInt()
@@ -114,10 +115,12 @@ export class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   DB_PASSWORD!: string;
 
-  @ValidateIf((e) => e.DB_PASSWORD === undefined)
+  @ValidateIf((e) => !e.DB_PASSWORD)
   @IsString()
+  @IsNotEmpty()
   DB_PASSWORD_FILE!: string;
 
   @IsString()
@@ -159,7 +162,7 @@ export class EnvironmentVariables {
   @ValidateIf((e) => e.VALIDATOR_REGISTRY_ENABLE === true)
   @IsArray()
   @ArrayMinSize(1)
-  @Transform(({ value }) => value.split(','))
+  @Transform(({ value }) => value.split(',').map((url) => url.replace(/\/$/, '')))
   CL_API_URLS: string[] = [];
 }
 

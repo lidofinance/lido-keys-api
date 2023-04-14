@@ -9,7 +9,7 @@
     "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": ".",
+    "baseUrl": "src",
     "incremental": true,
     "strict": true,
     "skipLibCheck": true,
@@ -18,13 +18,6 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "paths": {
-      "app/*": ["src/app/*"],
-      "common/*": ["src/common/*"],
-      "http/*": ["src/http/*"],
-      "jobs/*": ["src/jobs/*"],
-      "migrations/*": ["src/migrations/*"]
-    }
   },
   "include": ["src/**/*", "test/**/*"],
 }
