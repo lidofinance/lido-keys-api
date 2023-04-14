@@ -10,6 +10,7 @@ import {
   IsInt,
   IsBoolean,
   ValidateIf,
+  IsNotEmpty,
 } from 'class-validator';
 import { Environment, LogLevel, LogFormat } from './interfaces';
 import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
@@ -114,10 +115,12 @@ export class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   DB_PASSWORD!: string;
 
-  @ValidateIf((e) => e.DB_PASSWORD === undefined)
+  @ValidateIf((e) => !e.DB_PASSWORD)
   @IsString()
+  @IsNotEmpty()
   DB_PASSWORD_FILE!: string;
 
   @IsString()

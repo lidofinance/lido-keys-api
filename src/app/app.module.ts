@@ -14,11 +14,13 @@ import { ScheduleModule } from '@nestjs/schedule';
 import config from 'mikro-orm.config';
 import { StakingRouterModule } from 'staking-router-modules';
 import { ValidatorsModule } from 'validators';
+import { LoggerModule } from '@lido-nestjs/logger';
 
 @Module({
   imports: [
     HealthModule,
     PrometheusModule,
+    LoggerModule,
     ConfigModule,
     ExecutionProviderModule,
     ConsensusProviderModule,
