@@ -28,7 +28,7 @@ services:
       - CHAIN_ID=${CHAIN_ID}
       - DB_NAME=${DB_NAME}
       - DB_PORT=5432
-      - DB_HOST=db
+      - DB_HOST=${DB_HOST}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - JOB_INTERVAL_REGISTRY=${JOB_INTERVAL_REGISTRY}
