@@ -1029,7 +1029,17 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@lido-nestjs/consensus@^1.3.3", "@lido-nestjs/consensus@workspace:*":
+"@lido-nestjs/consensus@1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/consensus/-/consensus-1.5.0.tgz#a8a75d6ed89c315bf2e944f422aa4e7762b557a3"
+  integrity sha512-hFJ9U3cHFEDYt/hpp9ZwhdYc1msVA+JrHSdQTWIv3Mr2xd7yqNmO08FyS/6fwlwNL77chHgv5S1NOtr/8Lt7fQ==
+  dependencies:
+    "@lido-nestjs/fetch" "1.4.0"
+    lodash.snakecase "^4.1.1"
+    node-abort-controller "^3.0.1"
+    node-fetch "^2.6.7"
+
+"@lido-nestjs/consensus@^1.3.3":
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/@lido-nestjs/consensus/-/consensus-1.3.3.tgz#0069c092b92e6446627e1053225a458fb62002fb"
   integrity sha512-CwSiyEHFCd7a/0zHY40g+ShkCXxNuUKvfr97DS309yPFwbKj6e8p/PnK3eXdwPp7zTRbvz21xn3qzvk51YzJsQ==
@@ -1059,7 +1069,7 @@
   resolved "https://registry.yarnpkg.com/@lido-nestjs/decorators/-/decorators-1.0.0.tgz#def4d0192b032c0d522de1b9bf38d1bec3c63077"
   integrity sha512-6k2eeLV7tFjKiqk26LWZHWfLowVuUbKC6+NunHHZIqEtO4xRWeOwMg6ntm0AEMdZ0WL0F6KDrFV+g7bhWB4cWA==
 
-"@lido-nestjs/di@workspace:*":
+"@lido-nestjs/di@1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@lido-nestjs/di/-/di-1.0.1.tgz#cb1b1f06ca0b8ed93eefa3f9974691658456910e"
   integrity sha512-n/oPivizv6PffyLjtxf8wxm1IteG/YvelHFiz4X6jb4WhrCPpK8J46L/LHTLUmFfcCBXquVcUJqG5Nwy3b2pIg==
@@ -1083,6 +1093,15 @@
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/@lido-nestjs/fetch/-/fetch-1.3.2.tgz#4f92070c57dfeb6338ed71a8f040564d8f3a34ee"
   integrity sha512-ZHk4G0Nt7ze/iaYqJwkzoFX+kqLvYOujkKZwNjzgYsE5BMKEKUedUUM1DcaX06qLzsNK5BEXiP2v/4Bch9OFPQ==
+  dependencies:
+    "@lido-nestjs/middleware" "1.2.0"
+    "@types/node-fetch" "^2.5.12"
+    node-fetch "^2.6.7"
+
+"@lido-nestjs/fetch@1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/fetch/-/fetch-1.4.0.tgz#574c3140b2699df6570d3544520288aa21b513ea"
+  integrity sha512-tWivAb6xf1qfnbaZa77M7TmtaSlvs/OdfR+ZGTe31M1kk2Kl8bXstw2ag8aGRpTgJdesF0aHMQkSaW1gOtInxA==
   dependencies:
     "@lido-nestjs/middleware" "1.2.0"
     "@types/node-fetch" "^2.5.12"
@@ -1122,19 +1141,19 @@
     "@lido-nestjs/utils" "1.3.0"
     cron "^2.0.0"
 
-"@lido-nestjs/utils@1.3.0", "@lido-nestjs/utils@workspace:*":
+"@lido-nestjs/utils@1.3.0":
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@lido-nestjs/utils/-/utils-1.3.0.tgz#8bdc69c3fd18bc57752b1799516096d284f1112b"
   integrity sha512-/5I30Dos9TC18YfZq8O9ele28DpUQQCySB9X9GXPeSmY1AV4w2kIGQrws1wu2gtw7x5mZnW8PtWthJmH1f6vJQ==
 
-"@lido-nestjs/validators-registry@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/validators-registry/-/validators-registry-1.0.4.tgz#c6c7393e5fea0d62fa9af22019bfcb582f80e3cc"
-  integrity sha512-eOGThcd8jFV2N2iJXJFfFJ1LkXaEAVkG1PfwqN+yJKBq186Q+we+/VTJmhNZ3vfoia/X+f3CFrT+giCEJLdyag==
+"@lido-nestjs/validators-registry@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/validators-registry/-/validators-registry-1.2.1.tgz#9c34bd31b04c86f891aa2d0a42b13803747b67c5"
+  integrity sha512-I36S+2n2oRVMoyg/UUVfgJNcukSZ4NY/m5YM4vJ4ZXhD0r/3yBSf3OAvf7hwjR7Yf4GLF1BUo2/sB+A54axgxg==
   dependencies:
-    "@lido-nestjs/consensus" "workspace:*"
-    "@lido-nestjs/di" "workspace:*"
-    "@lido-nestjs/utils" "workspace:*"
+    "@lido-nestjs/consensus" "1.5.0"
+    "@lido-nestjs/di" "1.0.1"
+    "@lido-nestjs/utils" "1.3.0"
     zod "^3.20.2"
 
 "@mikro-orm/cli@^5.5.3":

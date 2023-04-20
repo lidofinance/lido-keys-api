@@ -11,6 +11,7 @@ import {
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Trace } from 'common/decorators/trace';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
+import { IsolationLevel } from '@mikro-orm/core';
 
 const TRACE_TIMEOUT = 15 * 60 * 1000;
 
@@ -36,12 +37,15 @@ export class CuratedModuleService {
   }
 
   public async getKeyWithMetaByPubkey(pubkey: string): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
-    const { keys, meta } = await this.entityManager.transactional(async () => {
-      const keys = await this.keyStorageService.findByPubkey(pubkey.toLocaleLowerCase());
-      const meta = await this.getMetaDataFromStorage();
+    const { keys, meta } = await this.entityManager.transactional(
+      async () => {
+        const keys = await this.keyStorageService.findByPubkey(pubkey.toLocaleLowerCase());
+        const meta = await this.getMetaDataFromStorage();
 
-      return { keys, meta };
-    });
+        return { keys, meta };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
 
     return { keys, meta };
   }
@@ -49,33 +53,38 @@ export class CuratedModuleService {
   public async getKeysWithMetaByPubkeys(
     pubkeys: string[],
   ): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
-    const { keys, meta } = await this.entityManager.transactional(async () => {
-      const keys = await this.getKeysByPubkeys(pubkeys);
-      const meta = await this.getMetaDataFromStorage();
+    const { keys, meta } = await this.entityManager.transactional(
+      async () => {
+        const keys = await this.getKeysByPubkeys(pubkeys);
+        const meta = await this.getMetaDataFromStorage();
 
-      return { keys, meta };
-    });
+        return { keys, meta };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
 
     return { keys, meta };
   }
 
   public async getKeysWithMeta(filters: KeysFilter): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
-    const { keys, meta } = await this.entityManager.transactional(async () => {
-      const where = {};
-      if (filters.operatorIndex != undefined) {
-        where['operatorIndex'] = filters.operatorIndex;
-      }
+    const { keys, meta } = await this.entityManager.transactional(
+      async () => {
+        const where = {};
+        if (filters.operatorIndex != undefined) {
+          where['operatorIndex'] = filters.operatorIndex;
+        }
 
-      if (filters.used != undefined) {
-        where['used'] = filters.used;
-      }
+        if (filters.used != undefined) {
+          where['used'] = filters.used;
+        }
 
-      const keys = await this.keyStorageService.find(where);
+        const keys = await this.keyStorageService.find(where);
+        const meta = await this.getMetaDataFromStorage();
 
-      const meta = await this.getMetaDataFromStorage();
-
-      return { keys, meta };
-    });
+        return { keys, meta };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
 
     return { keys, meta };
   }
@@ -85,12 +94,15 @@ export class CuratedModuleService {
   }
 
   public async getOperatorsWithMeta(): Promise<{ operators: RegistryOperator[]; meta: RegistryMeta | null }> {
-    const { operators, meta } = await this.entityManager.transactional(async () => {
-      const operators = await this.operatorStorageService.findAll();
-      const meta = await this.getMetaDataFromStorage();
+    const { operators, meta } = await this.entityManager.transactional(
+      async () => {
+        const operators = await this.operatorStorageService.findAll();
+        const meta = await this.getMetaDataFromStorage();
 
-      return { operators, meta };
-    });
+        return { operators, meta };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
 
     return { operators, meta };
   }
@@ -98,12 +110,15 @@ export class CuratedModuleService {
   public async getOperatorByIndex(
     index: number,
   ): Promise<{ operator: RegistryOperator | null; meta: RegistryMeta | null }> {
-    const { operator, meta } = await this.entityManager.transactional(async () => {
-      const operator = await this.operatorStorageService.findOneByIndex(index);
-      const meta = await this.getMetaDataFromStorage();
+    const { operator, meta } = await this.entityManager.transactional(
+      async () => {
+        const operator = await this.operatorStorageService.findOneByIndex(index);
+        const meta = await this.getMetaDataFromStorage();
 
-      return { operator, meta };
-    });
+        return { operator, meta };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
 
     return { operator, meta };
   }
@@ -113,24 +128,27 @@ export class CuratedModuleService {
     keys: RegistryKey[];
     meta: RegistryMeta | null;
   }> {
-    const { operators, keys, meta } = await this.entityManager.transactional(async () => {
-      const keysWhere = {};
-      const operatorsWhere = {};
-      if (filters.operatorIndex != undefined) {
-        keysWhere['operatorIndex'] = filters.operatorIndex;
-        operatorsWhere['index'] = filters.operatorIndex;
-      }
+    const { operators, keys, meta } = await this.entityManager.transactional(
+      async () => {
+        const keysWhere = {};
+        const operatorsWhere = {};
+        if (filters.operatorIndex != undefined) {
+          keysWhere['operatorIndex'] = filters.operatorIndex;
+          operatorsWhere['index'] = filters.operatorIndex;
+        }
 
-      if (filters.used != undefined) {
-        keysWhere['used'] = filters.used;
-      }
+        if (filters.used != undefined) {
+          keysWhere['used'] = filters.used;
+        }
 
-      const operators = await this.operatorStorageService.find(operatorsWhere);
-      const keys = await this.keyStorageService.find(keysWhere);
-      const meta = await this.getMetaDataFromStorage();
+        const operators = await this.operatorStorageService.find(operatorsWhere);
+        const keys = await this.keyStorageService.find(keysWhere);
+        const meta = await this.getMetaDataFromStorage();
 
-      return { operators, keys, meta };
-    });
+        return { operators, keys, meta };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
 
     return { operators, keys, meta };
   }
