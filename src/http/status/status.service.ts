@@ -6,6 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { CuratedModuleService } from 'staking-router-modules';
 import { ValidatorsService } from 'validators';
+import { IsolationLevel } from '@mikro-orm/core';
 
 @Injectable()
 export class StatusService {
@@ -19,12 +20,15 @@ export class StatusService {
   public async get(): Promise<Status> {
     const chainId = this.configService.get('CHAIN_ID');
 
-    const { registryMeta, validatorsMeta } = await this.entityManager.transactional(async () => {
-      const registryMeta = await this.curatedService.getMetaDataFromStorage();
-      const validatorsMeta = await this.validatorsService.getMetaDataFromStorage();
+    const { registryMeta, validatorsMeta } = await this.entityManager.transactional(
+      async () => {
+        const registryMeta = await this.curatedService.getMetaDataFromStorage();
+        const validatorsMeta = await this.validatorsService.getMetaDataFromStorage();
 
-      return { registryMeta, validatorsMeta };
-    });
+        return { registryMeta, validatorsMeta };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
 
     const elBlockSnapshot = registryMeta ? new ELBlockSnapshot(registryMeta) : null;
     const clBlockSnapshot = validatorsMeta ? new CLBlockSnapshot(validatorsMeta) : null;
