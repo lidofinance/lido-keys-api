@@ -1,3 +1,14 @@
+## [0.7.1](https://github.com/lidofinance/lido-keys-api/compare/0.7.0...0.7.1) (2023-04-21)
+
+
+### Bug Fixes
+
+* deps ([5c50f05](https://github.com/lidofinance/lido-keys-api/commit/5c50f059ab3abcf494001f0622c24ae3dc791c17))
+* repeatable_read ([1a4348c](https://github.com/lidofinance/lido-keys-api/commit/1a4348c74fe486b8b5d42407d7ef0f7ec8266589))
+* validators lib with repeatable read transactions ([d3756b3](https://github.com/lidofinance/lido-keys-api/commit/d3756b31fe673ea7776524a83c36d7516c375d78))
+
+
+
 # [0.7.0](https://github.com/lidofinance/lido-keys-api/compare/0.6.0...0.7.0) (2023-04-17)
 
 
