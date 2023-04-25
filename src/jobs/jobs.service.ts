@@ -1,19 +1,30 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { ValidatorsUpdateService } from './validators-update/validators-update.service';
 import { KeysUpdateService } from './keys-update';
+import { SchedulerRegistry } from '@nestjs/schedule';
 
 @Injectable()
-export class JobsService implements OnModuleInit {
+export class JobsService implements OnModuleInit, OnModuleDestroy {
+  //, OnModuleDestroy {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly keysUpdateService: KeysUpdateService,
     protected readonly validatorUpdateService: ValidatorsUpdateService,
+    protected readonly schedulerRegistry: SchedulerRegistry,
   ) {}
 
   public async onModuleInit(): Promise<void> {
     // Do not wait for initialization to avoid blocking the main process
     this.initialize().catch((err) => this.logger.error(err));
+  }
+
+  public async onModuleDestroy() {
+    console.log('Jobs Service on module destroy');
+    try {
+      const intervalUpdateKeys = this.schedulerRegistry.getInterval(this.keysUpdateService.UPDATE_KEYS_INTERVAL);
+      clearInterval(intervalUpdateKeys);
+    } catch {}
   }
 
   /**

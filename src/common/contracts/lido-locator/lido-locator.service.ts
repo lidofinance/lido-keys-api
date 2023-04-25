@@ -13,7 +13,7 @@ export class LidoLocatorService {
   ) {}
 
   async getStakingRouter(blockTag: BlockTag) {
-    this.loggerService.log('Contract locator address: ', this.contract.address);
+    this.loggerService.log('Contract locator address', this.contract.address);
     return await this.contract.stakingRouter({ blockTag } as any);
   }
 }
