@@ -14,7 +14,6 @@ import {
 } from 'class-validator';
 import { Environment, LogLevel, LogFormat } from './interfaces';
 import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
-import { CronExpression } from '@nestjs/schedule';
 
 const toNumber =
   ({ defaultValue }) =>

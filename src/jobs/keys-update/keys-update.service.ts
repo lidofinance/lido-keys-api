@@ -37,7 +37,7 @@ export class KeysUpdateService {
   ) {}
 
   // prometheus metrics
-  protected lastTimestamp: number | undefined = undefined;
+  protected lastTimestampSec: number | undefined = undefined;
   protected lastBlockNumber: number | undefined = undefined;
   protected curatedNonce: number | undefined = undefined;
   protected curatedOperators: RegistryOperator[] = [];
@@ -48,30 +48,35 @@ export class KeysUpdateService {
   protected stakingModules: StakingModule[] = [];
 
   // name of interval for updating keys
-  public UPDATE_KEYS_INTERVAL = 'SRModulesKeysUpdate';
+  public UPDATE_KEYS_JOB_NAME = 'SRModulesKeysUpdate';
   // timeout for update keys
-  // if during 10 minutes nothing happen we will exit
-  UPDATE_KEYS_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+  // if during 30 minutes nothing happen we will exit
+  UPDATE_KEYS_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
   updateTimer: undefined | NodeJS.Timeout = undefined;
 
   /**
    * Initializes the job
    */
   public async initialize(): Promise<void> {
-    await this.updateKeys().catch((error) => this.logger.error(error));
-
+    // at first start timer for checking update
+    // if timer isnt cleared in 30 minutes period, we will consider it as nodejs frizzing and exit
     this.checkKeysUpdateTimeout();
+    await this.updateKeys().catch((error) => this.logger.error(error));
 
     const interval_ms = this.configService.get('UPDATE_KEYS_INTERVAL_MS');
     const interval = setInterval(() => this.updateKeys().catch((error) => this.logger.error(error)), interval_ms);
-    this.schedulerRegistry.addInterval(this.UPDATE_KEYS_INTERVAL, interval);
+    this.schedulerRegistry.addInterval(this.UPDATE_KEYS_JOB_NAME, interval);
 
     this.logger.log('Finished KeysUpdateService initialization');
   }
 
   private checkKeysUpdateTimeout() {
+    const currTimestampSec = new Date().getTime() / 1000;
+    // currTimestampSec - this.lastTimestampSec - time since last update in seconds
+    // this.UPDATE_KEYS_TIMEOUT_MS / 1000 - timeout in seconds
+    // so if time since last update is less than timeout, this means keys are updated
     const isUpdated =
-      this.lastTimestamp && new Date().getTime() / 1000 - this.lastTimestamp < this.UPDATE_KEYS_TIMEOUT_MS / 1000;
+      this.lastTimestampSec && currTimestampSec - this.lastTimestampSec < this.UPDATE_KEYS_TIMEOUT_MS / 1000;
 
     if (this.updateTimer && isUpdated) clearTimeout(this.updateTimer);
 
@@ -138,7 +143,7 @@ export class KeysUpdateService {
     const meta = await this.updateCuratedMetricsCache();
     // update meta
     // timestamp and block number is common for all modules
-    this.lastTimestamp = meta?.timestamp ?? this.lastTimestamp;
+    this.lastTimestampSec = meta?.timestamp ?? this.lastTimestampSec;
     this.lastBlockNumber = meta?.blockNumber ?? this.lastBlockNumber;
   }
 
@@ -157,8 +162,8 @@ export class KeysUpdateService {
    */
   private setMetrics() {
     // common metrics
-    if (this.lastTimestamp) {
-      this.prometheusService.registryLastUpdate.set(this.lastTimestamp);
+    if (this.lastTimestampSec) {
+      this.prometheusService.registryLastUpdate.set(this.lastTimestampSec);
     }
     if (this.lastBlockNumber) {
       this.prometheusService.registryBlockNumber.set(this.lastBlockNumber);

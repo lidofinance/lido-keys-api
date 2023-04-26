@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-// import { OneAtTime } from '@lido-nestjs/decorators';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
@@ -36,25 +35,42 @@ export class ValidatorsUpdateService {
   ) {}
 
   // prometheus metrics
-  protected lastBlockTimestamp: number | undefined = undefined;
+  protected lastBlockTimestampSec: number | undefined = undefined;
   protected lastBlockNumber: number | undefined = undefined;
   protected lastSlot: number | undefined = undefined;
 
   // name of interval for updating validators
-  public UPDATE_VALIDATORS_INTERVAL = 'ValidatorsUpdate';
+  public UPDATE_VALIDATORS_JOB_NAME = 'ValidatorsUpdate';
   // timeout for update validators
-  // if during 30 minutes nothing happen we will exit
-  UPDATE_VALIDATORS_TIMEOUT_MS = 30 * 60 * 1000;
+  // if during 60 minutes nothing happen we will exit
+  UPDATE_VALIDATORS_TIMEOUT_MS = 60 * 60 * 1000;
   updateTimer: undefined | NodeJS.Timeout = undefined;
 
   public isDisabledRegistry() {
     return !this.configService.get('VALIDATOR_REGISTRY_ENABLE');
   }
 
+  public async initialize() {
+    // at first start timer for checking update
+    // if timer isnt cleared in 60 minutes period, we will consider it as nodejs frizzing and exit
+    this.checkValidatorsUpdateTimeout();
+    await this.updateValidators().catch((error) => this.logger.error(error));
+
+    const interval_ms = this.configService.get('UPDATE_VALIDATORS_INTERVAL_MS');
+    const interval = setInterval(() => this.updateValidators().catch((error) => this.logger.error(error)), interval_ms);
+    this.schedulerRegistry.addInterval(this.UPDATE_VALIDATORS_JOB_NAME, interval);
+
+    this.logger.log('Finished ValidatorsUpdateService initialization');
+  }
+
   private checkValidatorsUpdateTimeout() {
+    const currTimestampSec = new Date().getTime() / 1000;
+    // currTimestampSec - this.lastBlockTimestampSec - time since last update in seconds
+    // this.UPDATE_KEYS_TIMEOUT_MS / 1000 - timeout in seconds
+    // so if time since last update is less than timeout, this means keys are updated
     const isUpdated =
-      this.lastBlockTimestamp &&
-      new Date().getTime() / 1000 - this.lastBlockTimestamp < this.UPDATE_VALIDATORS_TIMEOUT_MS / 1000;
+      this.lastBlockTimestampSec &&
+      currTimestampSec - this.lastBlockTimestampSec < this.UPDATE_VALIDATORS_TIMEOUT_MS / 1000;
 
     if (this.updateTimer && isUpdated) clearTimeout(this.updateTimer);
 
@@ -68,24 +84,13 @@ export class ValidatorsUpdateService {
     }, this.UPDATE_VALIDATORS_TIMEOUT_MS);
   }
 
-  public async initialize() {
-    await this.updateValidators().catch((error) => this.logger.error(error));
-    this.checkValidatorsUpdateTimeout();
-
-    const interval_ms = this.configService.get('UPDATE_VALIDATORS_INTERVAL_MS');
-    const interval = setInterval(() => this.updateValidators().catch((error) => this.logger.error(error)), interval_ms);
-    this.schedulerRegistry.addInterval(this.UPDATE_VALIDATORS_INTERVAL, interval);
-
-    this.logger.log('Finished ValidatorsUpdateService initialization');
-  }
-
   @OneAtTime()
   private async updateValidators() {
     await this.jobService.wrapJob({ name: 'Update validators from ValidatorsRegistry' }, async () => {
       const meta = await this.validatorsService.updateValidators('finalized');
       // meta shouldnt be null
       // if update didnt happen, meta will be fetched from db
-      this.lastBlockTimestamp = meta?.timestamp ?? this.lastBlockTimestamp;
+      this.lastBlockTimestampSec = meta?.timestamp ?? this.lastBlockTimestampSec;
       this.lastBlockNumber = meta?.blockNumber ?? this.lastBlockNumber;
       this.lastSlot = meta?.slot ?? this.lastSlot;
       this.updateMetrics();
@@ -95,8 +100,8 @@ export class ValidatorsUpdateService {
   }
 
   private updateMetrics() {
-    if (this.lastBlockTimestamp) {
-      this.prometheusService.validatorsRegistryLastTimestampUpdate.set(this.lastBlockTimestamp);
+    if (this.lastBlockTimestampSec) {
+      this.prometheusService.validatorsRegistryLastTimestampUpdate.set(this.lastBlockTimestampSec);
     }
 
     if (this.lastBlockNumber) {

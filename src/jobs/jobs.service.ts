@@ -22,8 +22,12 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
   public async onModuleDestroy() {
     console.log('Jobs Service on module destroy');
     try {
-      const intervalUpdateKeys = this.schedulerRegistry.getInterval(this.keysUpdateService.UPDATE_KEYS_INTERVAL);
+      const intervalUpdateKeys = this.schedulerRegistry.getInterval(this.keysUpdateService.UPDATE_KEYS_JOB_NAME);
       clearInterval(intervalUpdateKeys);
+      const intervalUpdateValidators = this.schedulerRegistry.getInterval(
+        this.validatorUpdateService.UPDATE_VALIDATORS_JOB_NAME,
+      );
+      clearInterval(intervalUpdateValidators);
     } catch {}
   }
 
