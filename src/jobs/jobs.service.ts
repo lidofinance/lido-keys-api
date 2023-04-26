@@ -6,7 +6,6 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 
 @Injectable()
 export class JobsService implements OnModuleInit, OnModuleDestroy {
-  //, OnModuleDestroy {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly keysUpdateService: KeysUpdateService,
