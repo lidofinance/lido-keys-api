@@ -44,7 +44,7 @@ export class ValidatorsUpdateService {
   // timeout for update validators
   // if during 60 minutes nothing happen we will exit
   UPDATE_VALIDATORS_TIMEOUT_MS = 60 * 60 * 1000;
-  updateTimer: undefined | NodeJS.Timeout = undefined;
+  updateDeadlineTimer: undefined | NodeJS.Timeout = undefined;
 
   public isDisabledRegistry() {
     return !this.configService.get('VALIDATOR_REGISTRY_ENABLE');
@@ -72,9 +72,9 @@ export class ValidatorsUpdateService {
       this.lastBlockTimestampSec &&
       currTimestampSec - this.lastBlockTimestampSec < this.UPDATE_VALIDATORS_TIMEOUT_MS / 1000;
 
-    if (this.updateTimer && isUpdated) clearTimeout(this.updateTimer);
+    if (this.updateDeadlineTimer && isUpdated) clearTimeout(this.updateDeadlineTimer);
 
-    this.updateTimer = setTimeout(async () => {
+    this.updateDeadlineTimer = setTimeout(async () => {
       const error = new ValidatorsOutdatedError(
         `There were no validators update more than ${this.UPDATE_VALIDATORS_TIMEOUT_MS / (60 * 1000)} minutes`,
         this.lastBlockNumber,

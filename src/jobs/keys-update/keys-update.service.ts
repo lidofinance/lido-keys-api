@@ -52,7 +52,7 @@ export class KeysUpdateService {
   // timeout for update keys
   // if during 30 minutes nothing happen we will exit
   UPDATE_KEYS_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
-  updateTimer: undefined | NodeJS.Timeout = undefined;
+  updateDeadlineTimer: undefined | NodeJS.Timeout = undefined;
 
   /**
    * Initializes the job
@@ -78,9 +78,9 @@ export class KeysUpdateService {
     const isUpdated =
       this.lastTimestampSec && currTimestampSec - this.lastTimestampSec < this.UPDATE_KEYS_TIMEOUT_MS / 1000;
 
-    if (this.updateTimer && isUpdated) clearTimeout(this.updateTimer);
+    if (this.updateDeadlineTimer && isUpdated) clearTimeout(this.updateDeadlineTimer);
 
-    this.updateTimer = setTimeout(async () => {
+    this.updateDeadlineTimer = setTimeout(async () => {
       const error = new KeyOutdatedError(
         `There were no keys update more than ${this.UPDATE_KEYS_TIMEOUT_MS / (1000 * 60)} minutes`,
         this.lastBlockNumber,
