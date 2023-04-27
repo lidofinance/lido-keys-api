@@ -14,7 +14,6 @@ import {
 } from 'class-validator';
 import { Environment, LogLevel, LogFormat } from './interfaces';
 import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
-import { CronExpression } from '@nestjs/schedule';
 
 const toNumber =
   ({ defaultValue }) =>
@@ -131,14 +130,6 @@ export class EnvironmentVariables {
   DB_PORT!: number;
 
   @IsOptional()
-  @IsString()
-  JOB_INTERVAL_REGISTRY = CronExpression.EVERY_5_SECONDS;
-
-  @IsOptional()
-  @IsString()
-  JOB_INTERVAL_VALIDATORS_REGISTRY = CronExpression.EVERY_10_SECONDS;
-
-  @IsOptional()
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
   PROVIDER_JSON_RPC_MAX_BATCH_SIZE = 100;
@@ -164,6 +155,16 @@ export class EnvironmentVariables {
   @ArrayMinSize(1)
   @Transform(({ value }) => value.split(',').map((url) => url.replace(/\/$/, '')))
   CL_API_URLS: string[] = [];
+
+  @IsOptional()
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
+  UPDATE_KEYS_INTERVAL_MS = 5000;
+
+  @IsOptional()
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
+  UPDATE_VALIDATORS_INTERVAL_MS = 10000;
 }
 
 export function validate(config: Record<string, unknown>) {
