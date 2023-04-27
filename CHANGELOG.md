@@ -1,3 +1,15 @@
+## [0.7.3](https://github.com/lidofinance/lido-keys-api/compare/0.7.2...0.7.3) (2023-04-27)
+
+
+### Bug Fixes
+
+* cron -> interval; check of last updates ([593d97e](https://github.com/lidofinance/lido-keys-api/commit/593d97edf0a47d3c2319f185312d712c916c42bc))
+* timeout, names ([e9a348b](https://github.com/lidofinance/lido-keys-api/commit/e9a348b04cccd672695c2f701d303419d33a1754))
+* timer name ([873d366](https://github.com/lidofinance/lido-keys-api/commit/873d36649bc43da3885beb96c515281a5670bc24))
+* unused commit ([d2368bc](https://github.com/lidofinance/lido-keys-api/commit/d2368bc637a7565b945e3b96453f6b5e2f23adb1))
+
+
+
 ## [0.7.2](https://github.com/lidofinance/lido-keys-api/compare/0.7.1...0.7.2) (2023-04-21)
 
 
@@ -180,10 +192,6 @@
 * increased max heap size threshold and added docker-compose ([10da660](https://github.com/lidofinance/lido-keys-api/commit/10da6606297969e0c3d53a2946246d5e48c17971))
 * operators, status, operator/keys  endpoints, tests. simple refactoring ([d94e91b](https://github.com/lidofinance/lido-keys-api/commit/d94e91ba84a6ce1efa3d681075ce00cbbb24e29e))
 * refactoring name of the service ([6cafd73](https://github.com/lidofinance/lido-keys-api/commit/6cafd735a2a6e779f24df31b7a804df9b00ca5fc))
-
-
-
-## [0.1.1](https://github.com/lidofinance/lido-keys-api/compare/0.1.0...0.1.1) (2023-01-09)
 
 
 
