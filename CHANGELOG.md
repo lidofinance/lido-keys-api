@@ -1,4 +1,78 @@
-# [0.6.0](https://github.com/lidofinance/lido-keys-api/compare/0.5.0...0.6.0) (2023-03-03)
+## [0.7.3](https://github.com/lidofinance/lido-keys-api/compare/0.7.2...0.7.3) (2023-04-27)
+
+
+### Bug Fixes
+
+* cron -> interval; check of last updates ([593d97e](https://github.com/lidofinance/lido-keys-api/commit/593d97edf0a47d3c2319f185312d712c916c42bc))
+* timeout, names ([e9a348b](https://github.com/lidofinance/lido-keys-api/commit/e9a348b04cccd672695c2f701d303419d33a1754))
+* timer name ([873d366](https://github.com/lidofinance/lido-keys-api/commit/873d36649bc43da3885beb96c515281a5670bc24))
+* unused commit ([d2368bc](https://github.com/lidofinance/lido-keys-api/commit/d2368bc637a7565b945e3b96453f6b5e2f23adb1))
+
+
+
+## [0.7.2](https://github.com/lidofinance/lido-keys-api/compare/0.7.1...0.7.2) (2023-04-21)
+
+
+
+## [0.7.1](https://github.com/lidofinance/lido-keys-api/compare/0.7.0...0.7.1) (2023-04-21)
+
+
+### Bug Fixes
+
+* deps ([5c50f05](https://github.com/lidofinance/lido-keys-api/commit/5c50f059ab3abcf494001f0622c24ae3dc791c17))
+* repeatable_read ([1a4348c](https://github.com/lidofinance/lido-keys-api/commit/1a4348c74fe486b8b5d42407d7ef0f7ec8266589))
+* validators lib with repeatable read transactions ([d3756b3](https://github.com/lidofinance/lido-keys-api/commit/d3756b31fe673ea7776524a83c36d7516c375d78))
+
+
+
+# [0.7.0](https://github.com/lidofinance/lido-keys-api/compare/0.6.0...0.7.0) (2023-04-17)
+
+
+### Bug Fixes
+
+* 425 resp ([dda3fa2](https://github.com/lidofinance/lido-keys-api/commit/dda3fa27df035f07e15227ade865fadfaefe21d7))
+* add 500 description for validators ([a8f6405](https://github.com/lidofinance/lido-keys-api/commit/a8f6405ff71a2cbbe1b7bb730649b17739f660a1))
+* add internal error response to swagger for /validators ([419101a](https://github.com/lidofinance/lido-keys-api/commit/419101a2f88a7e20738433607aff7e18cd297fb7))
+* add support of staking router ([63045ae](https://github.com/lidofinance/lido-keys-api/commit/63045ae97cea6f4704e0b7a04484a511c699a1b6))
+* add typechain to test flow ([0f7be5a](https://github.com/lidofinance/lido-keys-api/commit/0f7be5ace3e77403264bee9ff1327365f20d34e8))
+* comments ([5b4e924](https://github.com/lidofinance/lido-keys-api/commit/5b4e9243c6f4ac1111b510305faf0a160897b078))
+* disableForeignKeys ([4fb282c](https://github.com/lidofinance/lido-keys-api/commit/4fb282cd07feb0a735e0621cb75ea963b789a849))
+* disableForeignKeys by env ([9f89923](https://github.com/lidofinance/lido-keys-api/commit/9f89923fc921cabff3f174cb048957b53f298051))
+* dockerfile ([ee2f0b4](https://github.com/lidofinance/lido-keys-api/commit/ee2f0b4b248282276e312a771de954ddc2a87d83))
+* dockerfile ([dc8541b](https://github.com/lidofinance/lido-keys-api/commit/dc8541b2689a566338d2159ffca849d8586fbd57))
+* error with validation pipe ([37e2a31](https://github.com/lidofinance/lido-keys-api/commit/37e2a3158a54c267d6d96c42f9364a6225f1bbdb))
+* file env validation ([a3fd0c1](https://github.com/lidofinance/lido-keys-api/commit/a3fd0c1df4810f61d94ddb149715c5dbbc066280))
+* fix description in tooEarlyResp ([4c8fb94](https://github.com/lidofinance/lido-keys-api/commit/4c8fb94f8d70edb9f9eae95ce272ffcd3ade0c43))
+* fix types ([0f4c1f9](https://github.com/lidofinance/lido-keys-api/commit/0f4c1f90ac78116a4d1470ee7d2dc1f86eef6ed5))
+* log ([80b42c0](https://github.com/lidofinance/lido-keys-api/commit/80b42c09fd9502c4a55810dc2083bb8445c990c3))
+* log ([faf6c7f](https://github.com/lidofinance/lido-keys-api/commit/faf6c7fab69c703399d52970c4cb54622b12ddb9))
+* logger names ([b0a3283](https://github.com/lidofinance/lido-keys-api/commit/b0a3283828fbb5b1a9cc8bf053015df9f4aa99be))
+* message ([9d800c9](https://github.com/lidofinance/lido-keys-api/commit/9d800c9eac0270c42a00cbea09fbb111c4e5026c))
+* port publishing in demo compose ([5b59659](https://github.com/lidofinance/lido-keys-api/commit/5b59659a0621aa9d8c1f7ba36617aa6897784d18))
+* property name in validation ([90e6a02](https://github.com/lidofinance/lido-keys-api/commit/90e6a02eb7f61f1464db4641e39685490ce07b17))
+* readme ([08840dd](https://github.com/lidofinance/lido-keys-api/commit/08840dd4259d39b1c8720a4fe1642fe74f324430))
+* readme ([dcca44d](https://github.com/lidofinance/lido-keys-api/commit/dcca44d1847a933c9f03633c9927279c4c7c66fb))
+* registry and constants dependencies update ([ae33bbc](https://github.com/lidofinance/lido-keys-api/commit/ae33bbc28bbf18f087d6a400d10a93e51c3d93d2))
+* remove trailing slash in endpoint ([b2995a8](https://github.com/lidofinance/lido-keys-api/commit/b2995a85d18cd91cad213b1cb69f6b8d2ddd341c))
+* remove wrong log ([cca2b2c](https://github.com/lidofinance/lido-keys-api/commit/cca2b2cfd2c01f10dcb31ad6ecb38b69a3fc3268))
+* small fixes ([55447a2](https://github.com/lidofinance/lido-keys-api/commit/55447a20db1fec5aa95e2ff9cfaa4bed02985e0e))
+* SR abi update ([1a3b493](https://github.com/lidofinance/lido-keys-api/commit/1a3b493f7ba7e2eca92073921d280152fac87053))
+* trailing slash from el cl providers ([5d02c3e](https://github.com/lidofinance/lido-keys-api/commit/5d02c3ed9c875028c06829bcfa2e5800a73b2378))
+* unused ([0a7a2f6](https://github.com/lidofinance/lido-keys-api/commit/0a7a2f659751a383a647e2a61403a19e119a1a1e))
+* update contract. ([0cf38a6](https://github.com/lidofinance/lido-keys-api/commit/0cf38a6ed483b6c0f1a58d877691b898463e8bf5))
+* validation ([687a920](https://github.com/lidofinance/lido-keys-api/commit/687a920ad60218935a2388813a829207e1d2e811))
+* validatorIndex -> validator_index as in eth doc; validator_index and epoch to string. ([483fb3f](https://github.com/lidofinance/lido-keys-api/commit/483fb3f56bae929963b51d743cd53835d69f3744))
+* validators endpoints name. ([29cf425](https://github.com/lidofinance/lido-keys-api/commit/29cf4259def573e4652f276a8ac0e8b1ffaab14a))
+
+
+### Features
+
+* locator ([ea8f09b](https://github.com/lidofinance/lido-keys-api/commit/ea8f09b28d5f89abdc7b8a290664da636670b774))
+* trace timeout decorator ([bc5d0a0](https://github.com/lidofinance/lido-keys-api/commit/bc5d0a058c037c2d5b6919e9bf26becd5984ebfb))
+
+
+
+# [0.6.0](https://github.com/lidofinance/lido-keys-api/compare/0.5.0...0.6.0) (2023-03-07)
 
 
 ### Bug Fixes
@@ -118,47 +192,6 @@
 * increased max heap size threshold and added docker-compose ([10da660](https://github.com/lidofinance/lido-keys-api/commit/10da6606297969e0c3d53a2946246d5e48c17971))
 * operators, status, operator/keys  endpoints, tests. simple refactoring ([d94e91b](https://github.com/lidofinance/lido-keys-api/commit/d94e91ba84a6ce1efa3d681075ce00cbbb24e29e))
 * refactoring name of the service ([6cafd73](https://github.com/lidofinance/lido-keys-api/commit/6cafd735a2a6e779f24df31b7a804df9b00ca5fc))
-
-
-
-## [0.1.1](https://github.com/lidofinance/lido-keys-api/compare/0.1.0...0.1.1) (2023-01-09)
-
-
-
-# [0.1.0](https://github.com/lidofinance/lido-keys-api/compare/86d7f85dac21e3ade4c2aaaaa76d733095481fab...0.1.0) (2023-01-09)
-
-
-### Bug Fixes
-
-* add find method for modules endpoint ([eaa2a8b](https://github.com/lidofinance/lido-keys-api/commit/eaa2a8bd58afccf4d657eaf7ebc3a7d7daae79d1))
-* add modules endpoints ([deefcca](https://github.com/lidofinance/lido-keys-api/commit/deefcca1d7b2b36026bab74aa09a6c97fa495c7f))
-* add temporary solution for test running ([0c14d88](https://github.com/lidofinance/lido-keys-api/commit/0c14d8827350e22a8e85b2525f8c7bf5ef7db9b1))
-* add tests for find modules' method ([e1893d5](https://github.com/lidofinance/lido-keys-api/commit/e1893d5b790aa32397c498efc78534cb9fb20d17))
-* add transaction ([0869b64](https://github.com/lidofinance/lido-keys-api/commit/0869b642ddff3062f84028d819893bf0985ed010))
-* chains import ([3303a42](https://github.com/lidofinance/lido-keys-api/commit/3303a42f7fd6458e76cd61802b65cbe07882bfad))
-* change LogLevel ([9d314cc](https://github.com/lidofinance/lido-keys-api/commit/9d314cc9c0170d99fcc2b8a297d65dd19c7edee8))
-* changed provider name, add network label to build_info ([d82bafd](https://github.com/lidofinance/lido-keys-api/commit/d82bafd1ba7a11f2db47f8d54064f055e6ea86a6))
-* envs ([8cdc282](https://github.com/lidofinance/lido-keys-api/commit/8cdc28256331c017bf8827f477a21d4f3f839326))
-* fix keys controller query parsing. ([e85d779](https://github.com/lidofinance/lido-keys-api/commit/e85d7799ea7c242eeefdd15c374f3a08b925ddc8))
-* job name and el metrics ([560b275](https://github.com/lidofinance/lido-keys-api/commit/560b2757100e60dab59fbb5c2a286861a8ae95f8))
-* keys/find endpoint ([ed0d2ad](https://github.com/lidofinance/lido-keys-api/commit/ed0d2ad3fa93d92feceb731fd4a1ce199a385116))
-* lint cleanup ([676a20d](https://github.com/lidofinance/lido-keys-api/commit/676a20d636b68ca50df127a17f1a250d9e44362b))
-* migration env name ([058bb92](https://github.com/lidofinance/lido-keys-api/commit/058bb92838f6095360fdc8fcd7d464a2c0278ae0))
-* migration env name ([cc37781](https://github.com/lidofinance/lido-keys-api/commit/cc3778156e1243f1225349558a5f97b2692fb5b0))
-* naming, add meta to modules endpoints ([ecbfbec](https://github.com/lidofinance/lido-keys-api/commit/ecbfbecb769d1bd04255a5ed24044e3adc3dfa78))
-* readme ([0894edc](https://github.com/lidofinance/lido-keys-api/commit/0894edcc2595077da8c0a33f54217eaa05231a5e))
-* some changes after review ([e4dc7ec](https://github.com/lidofinance/lido-keys-api/commit/e4dc7eca44838eac95bf709e2f0047c730bd43c2))
-* typos, readme, add chainId check during app start ([f1b62d9](https://github.com/lidofinance/lido-keys-api/commit/f1b62d9b6be37289508e1da0215fe321964e9e47))
-* undefined meta, readme ([3b8e83c](https://github.com/lidofinance/lido-keys-api/commit/3b8e83cfb983e12e397a4eb8ab21fa33679eb7cc))
-* yarn lockfile ([f2b9a38](https://github.com/lidofinance/lido-keys-api/commit/f2b9a38f1633e791c7872791a944e9a500140203))
-
-
-### Features
-
-* add endpoints ([86d7f85](https://github.com/lidofinance/lido-keys-api/commit/86d7f85dac21e3ade4c2aaaaa76d733095481fab))
-* add tests ([4ce49d2](https://github.com/lidofinance/lido-keys-api/commit/4ce49d291f20190740ae3612470c242ca43ca686))
-* add workflow for build image ([b6ce0b8](https://github.com/lidofinance/lido-keys-api/commit/b6ce0b8d8bd75393d6fb893c4ee0583cc291bdd0))
-* added migrations support ([82a8f39](https://github.com/lidofinance/lido-keys-api/commit/82a8f392f5f99f82ab6e0f50e9f55bff6dac41fe))
 
 
 
