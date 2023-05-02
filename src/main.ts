@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -35,8 +35,30 @@ async function bootstrap() {
   app.enableVersioning({ type: VersioningType.URI });
 
   // logger
-  const logger = app.get(LOGGER_PROVIDER);
+  const logger: Logger = app.get(LOGGER_PROVIDER);
   app.useLogger(logger);
+
+  // enable onShutdownHooks for MikroORM to close DB connection
+  // when application exits normally
+  app.enableShutdownHooks();
+
+  // handling uncaught exceptions when application exits abnormally
+  process.on('uncaughtException', async (error) => {
+    logger.log('uncaught exception');
+    const orm = app.get(MikroORM);
+    if (orm) {
+      if (orm.em.isInTransaction()) {
+        logger.log('rolling back active DB transactions');
+        await orm.em.rollback();
+      }
+
+      logger.log('closing DB connection');
+      await orm.close();
+    }
+    logger.log('application will exit in 5 seconds');
+    setTimeout(() => process.exit(1), 5000);
+    logger.error(error);
+  });
 
   // sentry
   const release = `${APP_NAME}@${APP_VERSION}`;
