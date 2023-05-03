@@ -1,3 +1,12 @@
+## [0.8.1](https://github.com/lidofinance/lido-keys-api/compare/0.8.0...0.8.1) (2023-05-03)
+
+
+### Bug Fixes
+
+* image ([68ff8d9](https://github.com/lidofinance/lido-keys-api/commit/68ff8d9c9f36de4400dfd6951f42db92f26c350b))
+
+
+
 # [0.8.0](https://github.com/lidofinance/lido-keys-api/compare/0.7.3...0.8.0) (2023-05-03)
 
 
@@ -159,15 +168,6 @@
 ### Features
 
 * add metrics dashboard ([1f2896c](https://github.com/lidofinance/lido-keys-api/commit/1f2896c4cf6124ea50b953aed7aef9adceed9e86))
-
-
-
-# [0.3.0](https://github.com/lidofinance/lido-keys-api/compare/0.2.0...0.3.0) (2023-02-09)
-
-
-### Features
-
-* new node version for docker ([a59750f](https://github.com/lidofinance/lido-keys-api/commit/a59750f5ae3cd247f825339e76174f0c16b0406b))
 
 
 
