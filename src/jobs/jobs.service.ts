@@ -3,6 +3,7 @@ import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { ValidatorsUpdateService } from './validators-update/validators-update.service';
 import { KeysUpdateService } from './keys-update';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { PrometheusService } from 'common/prometheus';
 
 @Injectable()
 export class JobsService implements OnModuleInit, OnModuleDestroy {
@@ -11,6 +12,7 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
     protected readonly keysUpdateService: KeysUpdateService,
     protected readonly validatorUpdateService: ValidatorsUpdateService,
     protected readonly schedulerRegistry: SchedulerRegistry,
+    protected readonly prometheusService: PrometheusService,
   ) {}
 
   public async onModuleInit(): Promise<void> {
@@ -37,9 +39,11 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
     await this.keysUpdateService.initialize();
 
     if (this.validatorUpdateService.isDisabledRegistry()) {
+      this.prometheusService.validatorsEnabled.set(0);
       this.logger.log('Job for updating validators is disabled');
       return;
     }
+    this.prometheusService.validatorsEnabled.set(1);
 
     await this.validatorUpdateService.initialize();
   }
