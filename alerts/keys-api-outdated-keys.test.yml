@@ -14,7 +14,7 @@ tests:
         alertname: KeysApiOutdatedKeys
         exp_alerts:
           - exp_labels:
-              severity: warning
+              severity: critical
               service: keys_api
               app_team: tooling
             exp_annotations:
@@ -24,7 +24,7 @@ tests:
         alertname: KeysApiOutdatedKeys
         exp_alerts:
           - exp_labels:
-              severity: warning
+              severity: critical
               service: keys_api
               app_team: tooling
             exp_annotations:
