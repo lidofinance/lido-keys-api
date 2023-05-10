@@ -2,7 +2,8 @@ groups:
   - name: Keys API. Keys
     rules:
       - alert: KeysApiOutdatedKeys
-        expr: time() - lido_keys_api_last_update_timestamp{} >= 5 * 60
+        expr: time()  - lido_keys_api_last_update_timestamp{} >= 5 * 60
+        for: 3m
         labels:
           severity: critical
           service: keys_api
