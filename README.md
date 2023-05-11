@@ -858,6 +858,15 @@ class Response {
 }
 ```
 
+## Requirements
+
+1. 2 core CPU
+2. 5 GB RAM
+   - Keys-API-DB — 500MB
+   - Keys-API — 4GB
+3. EL Full node
+4. CL node for applications like Ejector that use [validators API](https://hackmd.io/fv8btyNTTOGLZI6LqYyYIg?view#validators). KAPI currently doesn't work with Nimbus client. If you use Teku client, please use archive mode.
+
 ## Installation
 
 `$ yarn install`
