@@ -48,7 +48,7 @@ tests:
   - interval: 1m
     input_series:
       - series: lido_keys_api_last_update_timestamp{}
-        values: 0 0 0 0 0 0 0 0 0 0 200 0 0 481
+        values: 0x9 200 0 0 481
     alert_rule_test:
       - eval_time: 8m
         alertname: KeysApiOutdatedKeys
