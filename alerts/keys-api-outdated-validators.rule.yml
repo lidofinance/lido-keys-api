@@ -2,11 +2,11 @@ groups:
   - name: Keys API. Validators
     rules:
       - alert: KeysApiOutdatedValidators
-        expr: time() - lido_keys_api_validators_registry_last_update_block_timestamp{} >=  60 * 30
+        expr: validators_registry_enabled{} == 1 AND (time() - lido_keys_api_validators_registry_last_update_block_timestamp{} >= 1800)
         labels:
-          severity: warning
+          severity: critical
           service: keys_api
           app_team: tooling
         annotations:
           summary: Validators are outdated
-          description: Validators were not updated for {{ $value | humanizeDuration }}
+          description: Validators were not updated for more than 30 minutes
