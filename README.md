@@ -858,6 +858,15 @@ class Response {
 }
 ```
 
+## Requirements
+
+1. 2 core CPU
+2. 5 GB RAM
+   - Keys-API-DB — 500MB
+   - Keys-API — 4GB
+3. EL Full node
+4. CL node for applications like Ejector that use [validators API](https://hackmd.io/fv8btyNTTOGLZI6LqYyYIg?view#validators). KAPI currently doesn't work with Nimbus client. If you use Teku client, please use archive mode.
+
 ## Installation
 
 `$ yarn install`
@@ -874,6 +883,8 @@ For running locally in container run
 4. `docker-compose -f docker-compose.metrics.yml up`
 
 To configure grafana go to `http://localhost:8000/dashboards` and dashboards from `./grafana` folder.
+
+For running KAPI you can also use image from this page https://docs.lido.fi/guides/tooling#keys-api. Please always use the SHA256 hash of the Docker image for the latest release: lidofinance/lido-keys-api@<latest-hash>.
 
 ## Tests
 

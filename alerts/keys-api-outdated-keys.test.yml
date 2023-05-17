@@ -4,7 +4,7 @@ rule_files:
 evaluation_interval: 1m
 
 tests:
-  # Outdated keys list. Outdated
+  # Outdated keys
   - interval: 5m
     input_series:
       - series: lido_keys_api_last_update_timestamp{}
@@ -14,7 +14,7 @@ tests:
         alertname: KeysApiOutdatedKeys
         exp_alerts:
           - exp_labels:
-              severity: warning
+              severity: critical
               service: keys_api
               app_team: tooling
             exp_annotations:
@@ -24,18 +24,18 @@ tests:
         alertname: KeysApiOutdatedKeys
         exp_alerts:
           - exp_labels:
-              severity: warning
+              severity: critical
               service: keys_api
               app_team: tooling
             exp_annotations:
               summary: Keys are outdated
               description: Keys were not updated for 8m 20s
 
-  #Outdated keys list. Up to date
+  # Actual keys
   - interval: 5m
     input_series:
       - series: lido_keys_api_last_update_timestamp{}
-        values: 0 300 600 601
+        values: 0 0 600 601
     alert_rule_test:
       - eval_time: 10m
         alertname: KeysApiOutdatedKeys
@@ -44,18 +44,22 @@ tests:
         alertname: KeysApiOutdatedKeys
         exp_alerts: []
 
-  # Outdated keys list. Initial start
-  - interval: 10m
+  # fire alert only if it active 3 minutes
+  - interval: 1m
     input_series:
       - series: lido_keys_api_last_update_timestamp{}
-        values: _ _ _ 1501
+        values: 0x9 200 0 0 481
     alert_rule_test:
-      - eval_time: 10m
+      - eval_time: 8m
         alertname: KeysApiOutdatedKeys
-        exp_alerts: []
-      - eval_time: 20m
-        alertname: KeysApiOutdatedKeys
-        exp_alerts: []
-      - eval_time: 30m
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: keys_api
+              app_team: tooling
+            exp_annotations:
+              summary: Keys are outdated
+              description: Keys were not updated for 8m 0s
+      - eval_time: 13m
         alertname: KeysApiOutdatedKeys
         exp_alerts: []

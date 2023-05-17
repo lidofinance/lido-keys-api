@@ -95,4 +95,10 @@ export class PrometheusService {
     name: 'validators_registry_last_slot',
     help: 'Slot for which the last ValidatorsRegistry update was made.',
   });
+
+  public validatorsEnabled = this.getOrCreateMetric('Gauge', {
+    prefix: true,
+    name: 'validators_registry_enabled',
+    help: 'Validators registry is enabled',
+  });
 }
