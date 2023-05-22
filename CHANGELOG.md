@@ -1,3 +1,16 @@
+## [0.8.2](https://github.com/lidofinance/lido-keys-api/compare/0.8.1...0.8.2) (2023-05-18)
+
+
+### Bug Fixes
+
+* add for expr in outdated keys alert ([b6c0866](https://github.com/lidofinance/lido-keys-api/commit/b6c086670ec21b66b60497d319e85434f2a231d7))
+* add reference on lido.fi in readme ([51c9172](https://github.com/lidofinance/lido-keys-api/commit/51c91727ec2269944de0f6e722a100c47c9a0679))
+* keys аlert outdated warn -> critical; validators alert outdated disable possibility. ([5c037c6](https://github.com/lidofinance/lido-keys-api/commit/5c037c64f193659c88e8058abd9c56136923ef31))
+* README ([6418e73](https://github.com/lidofinance/lido-keys-api/commit/6418e7337afd77c0e616c23d5b0bc441ad1d9986))
+* use shorthand for test ([44edaba](https://github.com/lidofinance/lido-keys-api/commit/44edabad4d79df20fffea12d24e10eb5e86cd0af))
+
+
+
 ## [0.8.1](https://github.com/lidofinance/lido-keys-api/compare/0.8.0...0.8.1) (2023-05-03)
 
 
@@ -151,23 +164,6 @@
 ### Bug Fixes
 
 * db config ([e7a62aa](https://github.com/lidofinance/lido-keys-api/commit/e7a62aaf1ef06ababf634251c0529e1f5beaeb59))
-
-
-
-# [0.4.0](https://github.com/lidofinance/lido-keys-api/compare/0.3.0...0.4.0) (2023-02-09)
-
-
-### Bug Fixes
-
-* GROUPED_ONCHAIN_V1_TYPE -> CURATED_ONCHAIN_V1_TYPE ([e756f04](https://github.com/lidofinance/lido-keys-api/commit/e756f04163d7d92f7fa21f0eb298057e1d3091a9))
-* sr-module response undefined values -> null ([f9302ce](https://github.com/lidofinance/lido-keys-api/commit/f9302ce01b1a15c74ad26f0a09c8dac4cc315796))
-* strictNullChecks: true ([d14418d](https://github.com/lidofinance/lido-keys-api/commit/d14418debb7fefb00f27306647532bb9f33afbe7))
-* update api ([d2e6f50](https://github.com/lidofinance/lido-keys-api/commit/d2e6f5084ca60c2e108ca3150591d13ba549c788))
-
-
-### Features
-
-* add metrics dashboard ([1f2896c](https://github.com/lidofinance/lido-keys-api/commit/1f2896c4cf6124ea50b953aed7aef9adceed9e86))
 
 
 
