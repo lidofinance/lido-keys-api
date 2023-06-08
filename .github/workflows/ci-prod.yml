@@ -44,4 +44,4 @@ jobs:
           APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
           TARGET_REPO: "lidofinance/infra-mainnet"
           TAG: "${{ steps.tag_name.outputs.TAG }}"
-          TARGET_WORKFLOW: "build_mainnet_lido_keys_api.yaml"
+          TARGET_WORKFLOW: "build_both_critical_and_mainnet_lido_keys_api.yaml"
