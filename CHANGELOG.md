@@ -1,3 +1,6 @@
+# This file is no longer used by semantic-release
+For the latest release notes, please see the [GitHub releases page](https://github.com/lidofinance/lido-keys-api/releases).
+
 # [0.8.0](https://github.com/lidofinance/lido-keys-api/compare/0.7.3...0.8.0) (2023-05-03)
 
 
