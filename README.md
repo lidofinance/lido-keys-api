@@ -898,6 +898,11 @@ Check `sample.env` file.
 
 Pay attention that API by default running job for fetching and updating Validators. If you are not planning to use `validators` endpoints, you could disable this job by setting `VALIDATOR_REGISTRY_ENABLE=false`.
 
+## Benchmarks
+
+To see record output in file and send metrics to prometheus run command
+`K6_PROMETHEUS_RW_SERVER_URL=http://localhost:9090/api/v1/write k6 run --out json=benchmarks/output.json -o experimental-prometheus-rw --tag testid=<SET-HERE-A-UNIQUE-ID> benchmarks/200.script.js`
+
 ## Release flow
 
 To create new release:

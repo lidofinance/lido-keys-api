@@ -44,3 +44,6 @@ lerna-debug.log*
 
 # Tests
 /.jest
+
+# benchmarks
+/benchmarks/output.json
