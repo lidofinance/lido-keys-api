@@ -4,7 +4,7 @@ import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
 import { JobService } from 'common/job';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from '../../staking-router-modules/';
-import { RegistryOperator, RegistryMeta } from '@lido-nestjs/registry';
+import { RegistryOperator, RegistryMeta } from 'common/registry';
 import { StakingRouterFetchService, StakingModule } from 'common/contracts';
 import { ExecutionProviderService } from 'common/execution-provider';
 import { ModuleId } from 'http/common/entities';
