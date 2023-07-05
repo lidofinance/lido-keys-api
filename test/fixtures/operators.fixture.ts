@@ -1,4 +1,4 @@
-import { RegistryOperator } from '@lido-nestjs/registry';
+import { RegistryOperator } from 'common/registry';
 
 // operators that return library
 export const curatedOperators: RegistryOperator[] = [

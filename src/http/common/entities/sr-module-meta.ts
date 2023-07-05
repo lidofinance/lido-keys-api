@@ -1,3 +1,3 @@
-import { RegistryMeta } from '@lido-nestjs/registry';
+import { RegistryMeta } from 'common/registry';
 
 export type SRModuleMeta = RegistryMeta;

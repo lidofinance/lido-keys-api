@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 import * as glob from 'glob';
 import * as path from 'path';
 import { MigrationObject } from '@mikro-orm/core/typings';
-import { RegistryMeta, RegistryOperator, RegistryKey } from '@lido-nestjs/registry';
+import { RegistryMeta, RegistryOperator, RegistryKey } from 'common/registry';
 import { ConsensusMetaEntity } from '@lido-nestjs/validators-registry/dist/storage/consensus-meta.entity';
 import { ConsensusValidatorEntity } from '@lido-nestjs/validators-registry/dist/storage/consensus-validator.entity';
 import { readFileSync } from 'fs';
@@ -93,10 +93,7 @@ const config: Options = {
   user: process.env.DB_USER,
   password: DB_PASSWORD,
   entities: [RegistryKey, RegistryOperator, RegistryMeta, ConsensusValidatorEntity, ConsensusMetaEntity],
-  migrations: getMigrationOptions(path.join(__dirname, 'migrations'), [
-    '@lido-nestjs/registry',
-    '@lido-nestjs/validators-registry',
-  ]),
+  migrations: getMigrationOptions(path.join(__dirname, 'migrations'), ['@lido-nestjs/validators-registry']),
 };
 
 export default config;

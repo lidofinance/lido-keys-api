@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { RegistryOperator } from '@lido-nestjs/registry';
+import { RegistryOperator } from 'common/registry';
 
 export class Operator {
   constructor(operator: RegistryOperator) {

@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { ExecutionProvider } from 'common/execution-provider';
-import { KeyRegistryModule } from '@lido-nestjs/registry';
+import { KeyRegistryModule } from 'common/registry';
 import { CuratedModuleService } from './curated-module.service';
 
 @Global()

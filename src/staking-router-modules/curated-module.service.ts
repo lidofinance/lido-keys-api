@@ -7,7 +7,7 @@ import {
   RegistryMeta,
   RegistryOperator,
   RegistryOperatorStorageService,
-} from '@lido-nestjs/registry';
+} from 'common/registry';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Trace } from 'common/decorators/trace';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
