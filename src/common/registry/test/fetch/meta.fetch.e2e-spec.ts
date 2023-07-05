@@ -3,7 +3,7 @@ import { getDefaultProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryMetaFetchService } from '../../';
 
 describe('Operators', () => {
-  const provider = getDefaultProvider(process.env.EL_RPC_URL);
+  const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
   let fetchService: RegistryMetaFetchService;
 
   beforeEach(async () => {

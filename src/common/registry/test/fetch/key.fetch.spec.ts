@@ -8,7 +8,7 @@ import { key, keyFields } from '../fixtures/key.fixture';
 import { RegistryFetchModule, RegistryKeyFetchService } from '../../';
 
 describe('Keys', () => {
-  const provider = getDefaultProvider(process.env.EL_RPC_URL);
+  const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
   let fetchService: RegistryKeyFetchService;
 
   const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');

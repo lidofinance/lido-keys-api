@@ -8,7 +8,7 @@ import { LIDO_CONTRACT_TOKEN, Lido } from '@lido-nestjs/contracts';
 import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
 
 describe('Sync module initializing', () => {
-  const provider = getDefaultProvider(process.env.EL_RPC_URL);
+  const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
 
   jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
 

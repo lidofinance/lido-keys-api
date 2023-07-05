@@ -23,7 +23,7 @@ import { registryServiceMock } from '../mock-utils';
 import { MikroORM } from '@mikro-orm/core';
 
 describe('Registry', () => {
-  const provider = new JsonRpcBatchProvider(process.env.EL_RPC_URL);
+  const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
 
   let registryService: KeyRegistryService;
   let registryStorageService: RegistryStorageService;
@@ -44,7 +44,7 @@ describe('Registry', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),

@@ -20,10 +20,10 @@ describe('Registry', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       BatchProviderModule.forRoot({
-        url: process.env.EL_RPC_URL as string,
+        url: process.env.PROVIDERS_URLS as string,
         requestPolicy: {
           jsonRpcMaxBatchSize: 50,
           maxConcurrentRequests: 10,

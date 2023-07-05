@@ -30,7 +30,7 @@ describe('Async module initializing', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forRootAsync({
@@ -47,7 +47,7 @@ describe('Async module initializing', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeatureAsync({

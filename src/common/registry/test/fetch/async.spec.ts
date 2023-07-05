@@ -10,7 +10,7 @@ class TestService {
   provider: BaseProvider;
 
   constructor() {
-    this.provider = getDefaultProvider(process.env.EL_RPC_URL);
+    this.provider = getDefaultProvider(process.env.PROVIDERS_URLS);
     jest.spyOn(this.provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
   }
 }

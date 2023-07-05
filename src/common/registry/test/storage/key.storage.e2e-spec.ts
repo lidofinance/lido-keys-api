@@ -14,7 +14,7 @@ describe('Keys', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       RegistryStorageModule.forFeature(),
     ];

@@ -4,7 +4,7 @@ import { isAddress } from '@ethersproject/address';
 import { RegistryFetchModule, RegistryOperatorFetchService } from '../../';
 
 describe('Operators', () => {
-  const provider = getDefaultProvider(process.env.EL_RPC_URL);
+  const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
   let fetchService: RegistryOperatorFetchService;
 
   beforeEach(async () => {

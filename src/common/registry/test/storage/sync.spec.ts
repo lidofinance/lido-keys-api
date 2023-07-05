@@ -22,7 +22,7 @@ describe('Sync module initializing', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       RegistryStorageModule.forRoot({}),
     ]);
@@ -34,7 +34,7 @@ describe('Sync module initializing', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       RegistryStorageModule.forFeature(),
     ]);

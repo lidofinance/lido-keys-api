@@ -39,7 +39,7 @@ describe('Async module initializing', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       RegistryStorageModule.forRootAsync({
         async useFactory() {
@@ -57,7 +57,7 @@ describe('Async module initializing', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       RegistryStorageModule.forFeatureAsync({
         async useFactory() {

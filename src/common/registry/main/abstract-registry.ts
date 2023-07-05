@@ -4,7 +4,7 @@ import { EntityManager } from '@mikro-orm/knex';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { OneAtTime } from '@lido-nestjs/decorators';
 
-import EventEmitter from 'events';
+// import EventEmitter from 'events';
 import { CronJob } from 'cron';
 
 import { RegistryMetaFetchService } from '../fetch/meta.fetch';
@@ -47,41 +47,41 @@ export abstract class AbstractRegistryService {
     @Inject(REGISTRY_GLOBAL_OPTIONS_TOKEN)
     public options?: RegistryOptions,
   ) {
-    this.eventEmitter = new EventEmitter();
-    this.cronJob = new CronJob(options?.subscribeInterval || '*/10 * * * * *', () => this.cronHandler());
+    // this.eventEmitter = new EventEmitter();
+    // this.cronJob = new CronJob(options?.subscribeInterval || '*/10 * * * * *', () => this.cronHandler());
   }
 
-  eventEmitter: EventEmitter;
+  // eventEmitter: EventEmitter;
   cronJob: CronJob;
 
-  @OneAtTime()
-  protected async cronHandler() {
-    try {
-      const result = await this.update('latest');
-      if (!result) return;
-      this.eventEmitter.emit('result', result);
-    } catch (error) {
-      this.eventEmitter.emit('error', error);
-    }
-  }
+  // @OneAtTime()
+  // protected async cronHandler() {
+  //   try {
+  //     const result = await this.update('latest');
+  //     if (!result) return;
+  //     this.eventEmitter.emit('result', result);
+  //   } catch (error) {
+  //     this.eventEmitter.emit('error', error);
+  //   }
+  // }
 
-  protected collectListenerCount() {
-    return this.eventEmitter.listenerCount('result') + this.eventEmitter.listenerCount('error');
-  }
+  // protected collectListenerCount() {
+  //   return this.eventEmitter.listenerCount('result') + this.eventEmitter.listenerCount('error');
+  // }
 
-  public subscribe(cb: (error: null | Error, payload: RegistryKey[]) => void) {
-    this.cronJob.start();
-    const resultCb = (result: RegistryKey[]) => cb(null, result);
-    this.eventEmitter.addListener('result', resultCb);
-    this.eventEmitter.addListener('error', cb);
-    return () => {
-      this.eventEmitter.off('result', resultCb);
-      this.eventEmitter.off('error', cb);
-      if (!this.collectListenerCount()) {
-        this.cronJob.stop();
-      }
-    };
-  }
+  // public subscribe(cb: (error: null | Error, payload: RegistryKey[]) => void) {
+  //   this.cronJob.start();
+  //   const resultCb = (result: RegistryKey[]) => cb(null, result);
+  //   this.eventEmitter.addListener('result', resultCb);
+  //   this.eventEmitter.addListener('error', cb);
+  //   return () => {
+  //     this.eventEmitter.off('result', resultCb);
+  //     this.eventEmitter.off('error', cb);
+  //     if (!this.collectListenerCount()) {
+  //       this.cronJob.stop();
+  //     }
+  //   };
+  // }
 
   /** collects changed data from the contract and store it to the db */
   public async update(blockHashOrBlockTag: string | number) {

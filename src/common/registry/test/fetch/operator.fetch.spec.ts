@@ -7,7 +7,7 @@ import { operator, operatorFields } from '../fixtures/operator.fixture';
 import { RegistryFetchModule, RegistryOperatorFetchService } from '../../';
 
 describe('Operators', () => {
-  const provider = new JsonRpcBatchProvider(process.env.EL_RPC_URL);
+  const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
   let fetchService: RegistryOperatorFetchService;
 
   const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');

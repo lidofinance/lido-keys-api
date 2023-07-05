@@ -9,7 +9,7 @@ import { RegistryKeyStorageService, KeyRegistryModule, KeyRegistryService, Regis
 import { MikroORM } from '@mikro-orm/core';
 
 describe('Key', () => {
-  const provider = new JsonRpcBatchProvider(process.env.EL_RPC_URL);
+  const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
   let validatorService: KeyRegistryService;
   let keyStorage: RegistryKeyStorageService;
   let storageService: RegistryStorageService;
@@ -24,7 +24,7 @@ describe('Key', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),

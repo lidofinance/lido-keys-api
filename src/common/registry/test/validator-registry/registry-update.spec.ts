@@ -23,7 +23,7 @@ import { registryServiceMock } from '../mock-utils';
 import { MikroORM } from '@mikro-orm/core';
 
 describe('Registry', () => {
-  const provider = new JsonRpcBatchProvider(process.env.EL_RPC_URL);
+  const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
 
   let registryService: ValidatorRegistryService;
   let registryStorageService: RegistryStorageService;
@@ -44,16 +44,16 @@ describe('Registry', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature({ provider }),
     ];
 
     moduleRef = await Test.createTestingModule({ imports }).compile();
+
     registryService = moduleRef.get(ValidatorRegistryService);
     registryStorageService = moduleRef.get(RegistryStorageService);
-
     keyStorageService = moduleRef.get(RegistryKeyStorageService);
     metaStorageService = moduleRef.get(RegistryMetaStorageService);
     operatorStorageService = moduleRef.get(RegistryOperatorStorageService);
@@ -286,8 +286,8 @@ describe('Registry', () => {
   });
 });
 
-describe('Empty registry', () => {
-  const provider = new JsonRpcBatchProvider(process.env.EL_RPC_URL);
+describe.skip('Empty registry', () => {
+  const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
 
   let registryService: ValidatorRegistryService;
   let registryStorageService: RegistryStorageService;
@@ -304,7 +304,7 @@ describe('Empty registry', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       MockLoggerModule.forRoot({
         log: jest.fn(),

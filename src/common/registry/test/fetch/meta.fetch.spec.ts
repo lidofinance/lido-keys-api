@@ -6,7 +6,7 @@ import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryMetaFetchService } from '../../';
 
 describe('Meta', () => {
-  const provider = new JsonRpcBatchProvider(process.env.EL_RPC_URL);
+  const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
   let fetchService: RegistryMetaFetchService;
 
   const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');

@@ -3,7 +3,7 @@ import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryKeyFetchService } from '../../';
 
 describe('Keys', () => {
-  const provider = new JsonRpcBatchProvider(process.env.EL_RPC_URL);
+  const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
   let fetchService: RegistryKeyFetchService;
 
   beforeEach(async () => {

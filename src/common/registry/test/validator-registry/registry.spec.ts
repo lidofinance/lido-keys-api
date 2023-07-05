@@ -14,7 +14,7 @@ import {
 import { MikroORM } from '@mikro-orm/core';
 
 describe('Validator', () => {
-  const provider = new JsonRpcBatchProvider(process.env.EL_RPC_URL);
+  const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
   let validatorService: ValidatorRegistryService;
   let keyStorage: RegistryKeyStorageService;
   let storageService: RegistryStorageService;
@@ -29,7 +29,7 @@ describe('Validator', () => {
         dbName: ':memory:',
         type: 'sqlite',
         allowGlobalContext: true,
-        entities: ['../**/*.entity.ts'],
+        entities: ['./**/*.entity.ts'],
       }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature({ provider }),
