@@ -74,7 +74,7 @@ export abstract class AbstractRegistryService {
     }
 
     const blockHash = currMeta.blockHash;
-
+    // 1 operator
     const previousOperators = await this.getOperatorsFromStorage();
     const currentOperators = await this.getOperatorsFromContract(blockHash);
 
@@ -83,19 +83,14 @@ export abstract class AbstractRegistryService {
       currentOperators: currentOperators.length,
     });
 
-    const updatedKeys = await this.getUpdatedKeysFromContract(previousOperators, currentOperators, blockHash);
-
-    this.logger.log('Fetched updated keys', {
-      updatedKeys: updatedKeys.length,
-    });
-
-    await this.save(updatedKeys, currentOperators, currMeta);
+    await this.saveOperatorsAndMeta(currentOperators, currMeta);
 
     this.logger.log('Saved data to the DB', {
       operators: currentOperators.length,
-      updatedKeys: updatedKeys.length,
       currMeta,
     });
+
+    await this.syncKeysUpdatedKeysWithContract(previousOperators, currentOperators, blockHash);
 
     return currMeta;
   }
@@ -128,7 +123,7 @@ export abstract class AbstractRegistryService {
   abstract getToIndex(currOperator: RegistryOperator): number;
 
   /** returns updated keys from the contract */
-  public async getUpdatedKeysFromContract(
+  public async syncKeysUpdatedKeysWithContract(
     previousOperators: RegistryOperator[],
     currentOperators: RegistryOperator[],
     blockHash: string,
@@ -137,41 +132,40 @@ export abstract class AbstractRegistryService {
      * TODO: optimize a number of queries
      * it's possible to update keys faster by using different strategies depending on the reason for the update
      */
-    const keysByOperator = await Promise.all(
-      currentOperators.map(async (currOperator, currentIndex) => {
-        // check if the operator in the registry has changed since the last update
-        const prevOperator = previousOperators[currentIndex] ?? null;
-        const isSameOperator = compareOperators(prevOperator, currOperator);
+    for (const [currentIndex, currOperator] of currentOperators.entries()) {
+      // check if the operator in the registry has changed since the last update
+      const prevOperator = previousOperators[currentIndex] ?? null;
+      const isSameOperator = compareOperators(prevOperator, currOperator);
 
-        // skip updating keys from 0 to `usedSigningKeys` of previous collected data
-        // since the contract guarantees that these keys cannot be changed
-        const unchangedKeysMaxIndex = isSameOperator ? prevOperator.usedSigningKeys : 0;
+      // skip updating keys from 0 to `usedSigningKeys` of previous collected data
+      // since the contract guarantees that these keys cannot be changed
+      const unchangedKeysMaxIndex = isSameOperator ? prevOperator.usedSigningKeys : 0;
 
-        // get the right border up to which the keys should be updated
-        // it's different for different scenarios
-        const toIndex = this.getToIndex(currOperator);
+      // get the right border up to which the keys should be updated
+      // it's different for different scenarios
+      const toIndex = this.getToIndex(currOperator);
 
-        // fromIndex may become larger than toIndex if used keys are deleted
-        // this should not happen in mainnet, but sometimes keys can be deleted in testnet by modification of the contract
-        const fromIndex = unchangedKeysMaxIndex <= toIndex ? unchangedKeysMaxIndex : 0;
+      // fromIndex may become larger than toIndex if used keys are deleted
+      // this should not happen in mainnet, but sometimes keys can be deleted in testnet by modification of the contract
+      const fromIndex = unchangedKeysMaxIndex <= toIndex ? unchangedKeysMaxIndex : 0;
 
-        const operatorIndex = currOperator.index;
-        const overrides = { blockTag: { blockHash } };
+      const operatorIndex = currOperator.index;
+      const overrides = { blockTag: { blockHash } };
 
-        const result = await this.keyFetch.fetch(operatorIndex, fromIndex, toIndex, overrides);
+      const result = await this.keyFetch.fetch(operatorIndex, fromIndex, toIndex, overrides);
 
-        this.logger.log('Keys fetched', {
-          operatorIndex,
-          fromIndex,
-          toIndex,
-          fetchedKeys: result.length,
-        });
+      this.logger.log('Keys fetched', {
+        operatorIndex,
+        fromIndex,
+        toIndex,
+        fetchedKeys: result.length,
+      });
 
-        return result;
-      }),
-    );
+      await this.saveKeys(result);
+    }
 
-    return keysByOperator.flat().filter((key) => key);
+    // TODO: why?
+    // return keysByOperator.flat().filter((key) => key);
   }
 
   /** storage */
@@ -191,8 +185,24 @@ export abstract class AbstractRegistryService {
     return await this.keyStorage.findAll();
   }
 
+  public async saveKeys(keys: RegistryKey[]) {
+    await this.entityManager.transactional(async (entityManager) => {
+      await Promise.all(
+        // 500 — SQLite limit in insert operation
+        chunk(keys, 499).map(async (keysChunk) => {
+          await entityManager
+            .createQueryBuilder(RegistryKey)
+            .insert(keysChunk)
+            .onConflict(['index', 'operator_index'])
+            .merge()
+            .execute();
+        }),
+      );
+    });
+  }
+
   /** saves all the data to the db */
-  public async save(updatedKeys: RegistryKey[], currentOperators: RegistryOperator[], currMeta: RegistryMeta) {
+  public async saveOperatorsAndMeta(currentOperators: RegistryOperator[], currMeta: RegistryMeta) {
     // save all data in a transaction
     await this.entityManager.transactional(async (entityManager) => {
       await Promise.all(
@@ -203,18 +213,6 @@ export abstract class AbstractRegistryService {
             index: { $gte: operator.totalSigningKeys },
             operatorIndex: operator.index,
           });
-        }),
-      );
-
-      await Promise.all(
-        // 500 — SQLite limit in insert operation
-        chunk(updatedKeys, 499).map(async (keysChunk) => {
-          await entityManager
-            .createQueryBuilder(RegistryKey)
-            .insert(keysChunk)
-            .onConflict(['index', 'operator_index'])
-            .merge()
-            .execute();
         }),
       );
 
