@@ -74,7 +74,8 @@ describe('Registry', () => {
 
   describe('update', () => {
     test('same data', async () => {
-      const saveRegistryMock = jest.spyOn(registryService, 'save');
+      const saveRegistryMock = jest.spyOn(registryService, 'saveOperatorsAndMeta');
+      const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
         keys,
@@ -84,11 +85,13 @@ describe('Registry', () => {
 
       await registryService.update('latest');
       expect(saveRegistryMock).toBeCalledTimes(0);
+      expect(saveKeyRegistryMock).toBeCalledTimes(0);
       await compareTestMeta(registryService, { keys, meta, operators });
     });
 
     test('new key without keysOpIndex updating', async () => {
-      const saveRegistryMock = jest.spyOn(registryService, 'save');
+      const saveRegistryMock = jest.spyOn(registryService, 'saveOperatorsAndMeta');
+      const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
         keys: [...keys, newKey],
@@ -98,6 +101,7 @@ describe('Registry', () => {
 
       await registryService.update('latest');
       expect(saveRegistryMock).toBeCalledTimes(0);
+      expect(saveKeyRegistryMock).toBeCalledTimes(0);
     });
 
     test('keys is not mutating', async () => {
@@ -108,7 +112,8 @@ describe('Registry', () => {
         ...meta,
         keysOpIndex: meta.keysOpIndex + 1,
       };
-      const saveRegistryMock = jest.spyOn(registryService, 'save');
+      const saveRegistryMock = jest.spyOn(registryService, 'saveOperatorsAndMeta');
+      const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
         keys: newKeys,
@@ -118,6 +123,7 @@ describe('Registry', () => {
 
       await registryService.update('latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestMetaData(registryService, { meta: newMeta });
       await compareTestMetaKeys(registryService, { keys });
       await compareTestMetaOperators(registryService, { operators });
@@ -134,7 +140,8 @@ describe('Registry', () => {
         keysOpIndex: meta.keysOpIndex + 1,
       };
 
-      const saveRegistryMock = jest.spyOn(registryService, 'save');
+      const saveRegistryMock = jest.spyOn(registryService, 'saveOperatorsAndMeta');
+      const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
         keys: newKeys,
@@ -144,6 +151,7 @@ describe('Registry', () => {
 
       await registryService.update('latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestMetaData(registryService, { meta: newMeta });
       await compareTestMetaKeys(registryService, { keys: newKeys });
       await compareTestMetaOperators(registryService, {
@@ -159,7 +167,8 @@ describe('Registry', () => {
         keysOpIndex: meta.keysOpIndex + 1,
       };
 
-      const saveRegistryMock = jest.spyOn(registryService, 'save');
+      const saveRegistryMock = jest.spyOn(registryService, 'saveOperatorsAndMeta');
+      const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
         keys,
@@ -169,6 +178,7 @@ describe('Registry', () => {
 
       await registryService.update('latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestMetaData(registryService, { meta: newMeta });
       await compareTestMetaKeys(registryService, { keys: keys });
       await compareTestMetaOperators(registryService, {
@@ -184,7 +194,8 @@ describe('Registry', () => {
         keysOpIndex: meta.keysOpIndex + 1,
       };
 
-      const saveRegistryMock = jest.spyOn(registryService, 'save');
+      const saveRegistryMock = jest.spyOn(registryService, 'saveOperatorsAndMeta');
+      const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
         keys,
@@ -194,6 +205,7 @@ describe('Registry', () => {
 
       await registryService.update('latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestMetaData(registryService, { meta: newMeta });
       await compareTestMetaKeys(registryService, { keys: keys });
       await compareTestMetaOperators(registryService, {
@@ -210,7 +222,8 @@ describe('Registry', () => {
         keysOpIndex: meta.keysOpIndex + 1,
       };
 
-      const saveRegistryMock = jest.spyOn(registryService, 'save');
+      const saveRegistryMock = jest.spyOn(registryService, 'saveOperatorsAndMeta');
+      const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
         keys,
@@ -220,6 +233,7 @@ describe('Registry', () => {
 
       await registryService.update('latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestMetaData(registryService, { meta: newMeta });
       await compareTestMetaKeys(registryService, { keys: keys });
       await compareTestMetaOperators(registryService, {
@@ -236,7 +250,8 @@ describe('Registry', () => {
         keysOpIndex: meta.keysOpIndex + 1,
       };
 
-      const saveRegistryMock = jest.spyOn(registryService, 'save');
+      const saveRegistryMock = jest.spyOn(registryService, 'saveOperatorsAndMeta');
+      const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
         keys,
@@ -246,6 +261,7 @@ describe('Registry', () => {
 
       await registryService.update('latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestMetaData(registryService, { meta: newMeta });
       await compareTestMetaOperators(registryService, {
         operators: newOperators,

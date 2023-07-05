@@ -74,7 +74,7 @@ export abstract class AbstractRegistryService {
     }
 
     const blockHash = currMeta.blockHash;
-    // 1 operator
+
     const previousOperators = await this.getOperatorsFromStorage();
     const currentOperators = await this.getOperatorsFromContract(blockHash);
 
@@ -85,7 +85,7 @@ export abstract class AbstractRegistryService {
 
     await this.saveOperatorsAndMeta(currentOperators, currMeta);
 
-    this.logger.log('Saved data to the DB', {
+    this.logger.log('Saved data operators and meta to the DB', {
       operators: currentOperators.length,
       currMeta,
     });
@@ -153,19 +153,20 @@ export abstract class AbstractRegistryService {
       const overrides = { blockTag: { blockHash } };
 
       const result = await this.keyFetch.fetch(operatorIndex, fromIndex, toIndex, overrides);
+      const operatorKeys = result.filter((key) => key);
 
       this.logger.log('Keys fetched', {
         operatorIndex,
         fromIndex,
         toIndex,
+        operatorKeys: operatorKeys.length,
         fetchedKeys: result.length,
       });
 
-      await this.saveKeys(result);
-    }
+      await this.saveKeys(operatorKeys);
 
-    // TODO: why?
-    // return keysByOperator.flat().filter((key) => key);
+      this.logger.log('Keys saved', { operatorIndex });
+    }
   }
 
   /** storage */
