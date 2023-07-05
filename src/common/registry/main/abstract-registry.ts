@@ -90,7 +90,7 @@ export abstract class AbstractRegistryService {
       currMeta,
     });
 
-    await this.syncKeysUpdatedKeysWithContract(previousOperators, currentOperators, blockHash);
+    await this.syncUpdatedKeysWithContract(previousOperators, currentOperators, blockHash);
 
     return currMeta;
   }
@@ -122,8 +122,8 @@ export abstract class AbstractRegistryService {
   /** returns the right border of the update keys range */
   abstract getToIndex(currOperator: RegistryOperator): number;
 
-  /** returns updated keys from the contract */
-  public async syncKeysUpdatedKeysWithContract(
+  /** sync keys with contract */
+  public async syncUpdatedKeysWithContract(
     previousOperators: RegistryOperator[],
     currentOperators: RegistryOperator[],
     blockHash: string,
