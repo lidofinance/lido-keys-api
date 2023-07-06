@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { jsonTransport, simpleTransport, LoggerModule as Logger } from '@lido-nestjs/logger';
 import { ConfigModule, ConfigService, LogFormat } from 'common/config';
+import { isMainThread } from 'worker_threads';
 
 @Module({
   imports: [
@@ -15,7 +16,11 @@ import { ConfigModule, ConfigService, LogFormat } from 'common/config';
 
         const transports = isJSON ? jsonTransport({ secrets }) : simpleTransport({ secrets });
 
-        return { level, transports };
+        return {
+          level,
+          transports,
+          defaultMeta: { process: isMainThread ? 'main' : 'worker' },
+        };
       },
     }),
   ],

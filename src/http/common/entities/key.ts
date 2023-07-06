@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { SRModuleKey } from './sr-module-key';
 
 export class Key {
-  constructor(key: SRModuleKey) {
+  constructor(key: Key) {
     this.key = key.key;
     this.depositSignature = key.depositSignature;
     this.operatorIndex = key.operatorIndex;

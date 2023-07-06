@@ -4,6 +4,7 @@ import { ValidatorsUpdateService } from './validators-update/validators-update.s
 import { KeysUpdateService } from './keys-update';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { PrometheusService } from 'common/prometheus';
+import { isMainThread } from 'worker_threads';
 
 @Injectable()
 export class JobsService implements OnModuleInit, OnModuleDestroy {
@@ -16,8 +17,13 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   public async onModuleInit(): Promise<void> {
-    // Do not wait for initialization to avoid blocking the main process
-    this.initialize().catch((err) => this.logger.error(err));
+    if (!isMainThread) {
+      // Do not wait for initialization to avoid blocking the main process
+      this.initialize().catch((err) => this.logger.error(err));
+      this.logger.log('worker thread');
+      return;
+    }
+    this.logger.log('main thread');
   }
 
   public async onModuleDestroy() {

@@ -10,31 +10,33 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
       - ./.volumes/pgdata-${CHAIN_ID}/:/var/lib/postgresql/data
-
-  keys_api:
-    build: ./
-    restart: always
-    environment:
-      - NODE_ENV=production
-      - PORT=${PORT}
-      - CORS_WHITELIST_REGEXP=${CORS_WHITELIST_REGEXP}
-      - GLOBAL_THROTTLE_TTL=${GLOBAL_THROTTLE_TTL}
-      - GLOBAL_THROTTLE_LIMIT=${GLOBAL_THROTTLE_LIMIT}
-      - GLOBAL_CACHE_TTL=${GLOBAL_CACHE_TTL}
-      - LOG_LEVEL=${LOG_LEVEL}
-      - LOG_FORMAT=${LOG_FORMAT}
-      - PROVIDERS_URLS=${PROVIDERS_URLS}
-      - CL_API_URLS=${CL_API_URLS}
-      - CHAIN_ID=${CHAIN_ID}
-      - DB_NAME=${DB_NAME}
-      - DB_PORT=5432
-      - DB_HOST=db
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - JOB_INTERVAL_REGISTRY=${JOB_INTERVAL_REGISTRY}
-      - VALIDATOR_REGISTRY_ENABLE=${VALIDATOR_REGISTRY_ENABLE}
-      - JOB_INTERVAL_VALIDATORS_REGISTRY=${JOB_INTERVAL_VALIDATORS_REGISTRY}
     ports:
-      - '${PORT}:${PORT}'
-    depends_on:
-      - db
+      - '${DB_PORT}:5432'
+#
+#  keys_api:
+#    build: ./
+#    restart: always
+#    environment:
+#      - NODE_ENV=production
+#      - PORT=${PORT}
+#      - CORS_WHITELIST_REGEXP=${CORS_WHITELIST_REGEXP}
+#      - GLOBAL_THROTTLE_TTL=${GLOBAL_THROTTLE_TTL}
+#      - GLOBAL_THROTTLE_LIMIT=${GLOBAL_THROTTLE_LIMIT}
+#      - GLOBAL_CACHE_TTL=${GLOBAL_CACHE_TTL}
+#      - LOG_LEVEL=${LOG_LEVEL}
+#      - LOG_FORMAT=${LOG_FORMAT}
+#      - PROVIDERS_URLS=${PROVIDERS_URLS}
+#      - CL_API_URLS=${CL_API_URLS}
+#      - CHAIN_ID=${CHAIN_ID}
+#      - DB_NAME=${DB_NAME}
+#      - DB_PORT=5432
+#      - DB_HOST=db
+#      - DB_USER=${DB_USER}
+#      - DB_PASSWORD=${DB_PASSWORD}
+#      - JOB_INTERVAL_REGISTRY=${JOB_INTERVAL_REGISTRY}
+#      - VALIDATOR_REGISTRY_ENABLE=${VALIDATOR_REGISTRY_ENABLE}
+#      - JOB_INTERVAL_VALIDATORS_REGISTRY=${JOB_INTERVAL_VALIDATORS_REGISTRY}
+#    ports:
+#      - '${PORT}:${PORT}'
+#    depends_on:
+#      - db

@@ -1,11 +1,7 @@
-import { APP_INTERCEPTOR } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 import { PrometheusModule } from 'common/prometheus';
 import { ConfigModule, ConfigService } from 'common/config';
-import { SentryInterceptor } from 'common/sentry';
 import { HealthModule } from 'common/health';
-import { AppService } from './app.service';
-import { HTTPModule } from 'http/';
 import { ExecutionProviderModule } from 'common/execution-provider';
 import { ConsensusProviderModule } from 'common/consensus-provider';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
@@ -15,7 +11,6 @@ import config from 'mikro-orm.config';
 import { StakingRouterModule } from 'staking-router-modules';
 import { ValidatorsModule } from 'validators';
 import { LoggerModule } from '@lido-nestjs/logger';
-import { WorkerModule } from '../worker/worker.module';
 
 @Module({
   imports: [
@@ -43,13 +38,11 @@ import { WorkerModule } from '../worker/worker.module';
       },
       inject: [ConfigService],
     }),
-    //ScheduleModule.forRoot(),
+    ScheduleModule.forRoot(),
     StakingRouterModule,
     ValidatorsModule,
-    //JobsModule,
-    HTTPModule,
-    WorkerModule,
+    JobsModule,
   ],
-  providers: [{ provide: APP_INTERCEPTOR, useClass: SentryInterceptor }, AppService],
+  providers: [],
 })
-export class AppModule {}
+export class WorkerAppModule {}
