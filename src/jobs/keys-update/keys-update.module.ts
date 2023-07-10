@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { KeysUpdateService } from './keys-update.service';
 import { LoggerModule } from 'common/logger';
 import { JobModule } from 'common/job';
-import { StakingRouterFetchModule } from 'common/contracts';
+import { StakingRouterModule } from 'staking-router-modules';
 
 @Module({
-  imports: [LoggerModule, JobModule, StakingRouterFetchModule],
+  imports: [LoggerModule, JobModule, StakingRouterModule],
   providers: [KeysUpdateService],
   exports: [KeysUpdateService],
 })

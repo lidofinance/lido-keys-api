@@ -1,5 +1,6 @@
 import { STAKING_MODULE_TYPE } from 'staking-router-modules';
 
+// type for data we get from staking router getStakingModules
 export interface StakingModule {
   // unique id of the staking module
   id: number;

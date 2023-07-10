@@ -1,5 +1,5 @@
 import { Injectable, Inject, LoggerService } from '@nestjs/common';
-import { StakingModule } from './staking-module';
+import { StakingModule } from 'staking-router-modules/interfaces/staking-module';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { IStakingModuleService } from 'common/contracts/i-staking-module';
 import { STAKING_MODULE_TYPE } from 'staking-router-modules';
@@ -43,28 +43,18 @@ export class StakingRouterFetchService {
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
         // const isActive = await contract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
-        // until the end of voting work with old version of Node Operator Registry
-        // this version doesnt correspond to IStakingModule interface
-        // currently skip this section
+        const stakingModuleType = (await this.iStakingModule.getType(
+          stakingModule.stakingModuleAddress,
+          blockTag,
+        )) as STAKING_MODULE_TYPE;
 
-        // const stakingModuleType = (await this.iStakingModule.getType(
-        //   stakingModule.stakingModuleAddress,
-        //   blockTag,
-        // )) as STAKING_MODULE_TYPE;
-
-        // if (!Object.values(STAKING_MODULE_TYPE).includes(stakingModuleType)) {
-        //   throw new Error(`Staking Module type ${stakingModuleType} is unknown`);
-        // }
-
-        // lets put type by id as we know that list contains only NOR contract
-
-        if (stakingModule.id != 1) {
+        // TODO: reconsider way of checking this module type without
+        if (!Object.values(STAKING_MODULE_TYPE).includes(stakingModuleType)) {
           this.logger.error(new Error(`Staking Module id ${stakingModule.id} is unknown`));
           process.exit(1);
         }
 
-        const stakingModuleType = STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE;
-
+        // At the moment part that update curated keys work only with hardcoded contract address
         return {
           id: stakingModule.id,
           stakingModuleAddress: stakingModule.stakingModuleAddress,
