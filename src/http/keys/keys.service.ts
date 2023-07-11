@@ -16,7 +16,7 @@ export class KeysService {
     protected keysUpdateService: KeysUpdateService,
   ) {}
 
-  async get(filters: KeyQuery): Promise<KeyListResponse> {
+  async get(filters: KeyQuery): Promise<any> {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
     if (stakingModules.length === 0) {
@@ -25,51 +25,27 @@ export class KeysService {
     }
 
     // keys could be of type CuratedKey | CommunityKey
-    const collectedKeys: KeyWithModuleAddress[][] = [];
+    // const collectedKeys: KeyWithModuleAddress[][] = [];
     let elBlockSnapshot: ELBlockSnapshot | null = null;
+    const { keysStream, meta } = await this.curatedService.getKeysWithMetaStream({
+      used: filters.used,
+      operatorIndex: filters.operatorIndex,
+    });
 
-    // Because of current lido-nestjs/registry implementation in case of more than one
-    // staking router module we need to wrap code below in transaction (with serializable isolation level that is default in mikro orm )
-    // to prevent reading keys for different blocks
-    // But now we have only one module and in current future we will try to find solution without transactions
-    // TODO: rewrite to "for of" after refactoring to stakingRouterModule
-    for (let i = 0; i < stakingModules.length; i++) {
-      if (stakingModules[i].type == STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-        // If some of modules has null meta, it means update hasnt been finished
-        const { keys: curatedKeys, meta } = await this.curatedService.getKeysWithMeta({
-          used: filters.used,
-          operatorIndex: filters.operatorIndex,
-        });
-        if (!meta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          throw httpExceptionTooEarlyResp();
-        }
-
-        const keysWithAddress: KeyWithModuleAddress[] = curatedKeys.map(
-          (key) => new KeyWithModuleAddress(key, stakingModules[i].stakingModuleAddress),
-        );
-
-        // meta should be the same for all modules
-        // so in answer we can use meta of any module
-        // lets use meta of first module in list
-        // currently we sure if stakingModules is not empty, we will have in list Curated Module
-        // in future this check should be in each if clause
-        if (i === 0) {
-          elBlockSnapshot = new ELBlockSnapshot(meta);
-        }
-
-        collectedKeys.push(keysWithAddress);
-      }
+    if (!meta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+      throw httpExceptionTooEarlyResp();
     }
 
-    // we check stakingModules list types so this condition should never be true
+    elBlockSnapshot = new ELBlockSnapshot(meta);
+
     if (!elBlockSnapshot) {
       this.logger.warn(`Meta for response wasnt set.`);
       throw httpExceptionTooEarlyResp();
     }
 
     return {
-      data: collectedKeys.flat(),
+      keysStream,
       meta: {
         elBlockSnapshot,
       },
