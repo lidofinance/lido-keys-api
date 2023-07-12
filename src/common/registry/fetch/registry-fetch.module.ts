@@ -4,11 +4,24 @@ import { RegistryFetchModuleSyncOptions, RegistryFetchModuleAsyncOptions } from 
 import { RegistryOperatorFetchService } from './operator.fetch';
 import { RegistryMetaFetchService } from './meta.fetch';
 import { RegistryKeyFetchService } from './key.fetch';
+import { RegistryKeyBatchFetchService } from './key-batch.fetch';
 import { RegistryFetchService } from './registry-fetch.service';
 
 @Module({
-  providers: [RegistryFetchService, RegistryOperatorFetchService, RegistryMetaFetchService, RegistryKeyFetchService],
-  exports: [RegistryFetchService, RegistryOperatorFetchService, RegistryMetaFetchService, RegistryKeyFetchService],
+  providers: [
+    RegistryFetchService,
+    RegistryOperatorFetchService,
+    RegistryMetaFetchService,
+    RegistryKeyFetchService,
+    RegistryKeyBatchFetchService,
+  ],
+  exports: [
+    RegistryFetchService,
+    RegistryOperatorFetchService,
+    RegistryMetaFetchService,
+    RegistryKeyFetchService,
+    RegistryKeyBatchFetchService,
+  ],
 })
 export class RegistryFetchModule {
   static forRoot(options?: RegistryFetchModuleSyncOptions): DynamicModule {
