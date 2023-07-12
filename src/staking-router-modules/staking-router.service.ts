@@ -12,16 +12,7 @@ import { StakingModuleInterface } from './interfaces/staking-module.interface';
 import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions';
 import { KeyWithModuleAddress } from 'http/keys/entities';
 import { ELBlockSnapshot, ModuleId } from 'http/common/entities';
-
-type StakingModuleImpl = typeof CuratedModuleService;
-
-export const config: // = {
-Record<STAKING_MODULE_TYPE, StakingModuleImpl> = {
-  [STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE]: CuratedModuleService,
-  // In future will be added dvt staking module with the same implementation
-  // now kapi will now correctly work with it as module contract address is hardcoded
-  // [STAKING_MODULE_TYPE.DVT_ONCHAIN_V1_TYPE]: CuratedModuleService,
-};
+import { config } from './staking-module-impl-config';
 
 @Injectable()
 export class StakingRouterService {
@@ -45,7 +36,6 @@ export class StakingRouterService {
   public async update(): Promise<void> {
     // read list of modules
     // start updating by block hash
-
     // get blockHash for 'latest' block
     const blockHash = await this.executionProvider.getBlockHash('latest');
 
@@ -53,14 +43,12 @@ export class StakingRouterService {
     const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: blockHash });
     this.stakingModules = modules;
 
-    // TODO: will transaction and rollback work
+    //TODO: will transaction and rollback work
     await this.entityManager.transactional(async () => {
       for (const module of modules) {
         const impl = config[module.type];
         const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
         await moduleInstance.updateKeys(blockHash);
-
-        throw httpExceptionTooEarlyResp();
       }
     });
   }
@@ -81,6 +69,7 @@ export class StakingRouterService {
     const { keys, elBlockSnapshot } = await this.entityManager.transactional(async () => {
       const collectedKeys: KeyWithModuleAddress[][] = [];
       let elBlockSnapshot: ELBlockSnapshot | null = null;
+
       for (const module of this.stakingModules) {
         const impl = config[module.type];
         const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
@@ -98,6 +87,7 @@ export class StakingRouterService {
         // TODO: consider split el meta and staking module meta. first one will be common for all staking modules
         // now we need to read el meta common for all modules. lets use first module for it
         // if (module.id == this.stakingModules[0]?.id) {
+
         elBlockSnapshot = new ELBlockSnapshot(meta);
         // }
 

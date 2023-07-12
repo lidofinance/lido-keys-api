@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { StakingModule } from 'common/contracts';
+import { StakingModule } from 'staking-router-modules/interfaces/staking-module';
 
 export class SRModule {
   constructor(nonce: number, module: StakingModule) {

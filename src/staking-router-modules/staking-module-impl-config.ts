@@ -1,8 +1,10 @@
 import { CuratedModuleService } from './curated-module.service';
 import { STAKING_MODULE_TYPE } from './interfaces/staking-module-type';
 
-// at the moment consider that type is unique for contract address and chain id
-export const config = {
+type StakingModuleImpl = typeof CuratedModuleService;
+
+export const config: // = {
+Record<STAKING_MODULE_TYPE, StakingModuleImpl> = {
   [STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE]: CuratedModuleService,
   // In future will be added dvt staking module with the same implementation
   // now kapi will now correctly work with it as module contract address is hardcoded
