@@ -4801,6 +4801,19 @@ jsonfile@^6.0.1:
   optionalDependencies:
     graceful-fs "^4.1.6"
 
+jsonparse@~1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/jsonparse/-/jsonparse-1.0.0.tgz#2622f4e66c08e1aac7edbeb76053c9b7e1211f76"
+  integrity sha512-X8/pl4Q98FceotM1YzNYRcdRpYKgKB6nOKW9oNZk4qssFGfSxA6tUyPgEYsZA+MAQ8nR6nBZwE2GKpeeOIeN3A==
+
+jsonstream@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/jsonstream/-/jsonstream-1.0.3.tgz#ff2d49c4f479b5bbcdf9f9e56c841cf87f0efa1d"
+  integrity sha512-yMDWHPGzQRwdiXy6itGgemEviwAoDp5i78y7rdzUa9RVe01vLJku+byVtqxwwSvp1y9LYHWYd+8MkYvbeilCug==
+  dependencies:
+    jsonparse "~1.0.0"
+    through ">=2.2.7 <3"
+
 kleur@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
@@ -6484,7 +6497,7 @@ throat@^6.0.1:
   resolved "https://registry.yarnpkg.com/throat/-/throat-6.0.1.tgz#d514fedad95740c12c2d7fc70ea863eb51ade375"
   integrity sha512-8hmiGIJMDlwjg7dlJ4yKGLK8EsYqKgPWbG3b4wjJddKNwc7N7Dpn08Df4szr/sZdMVeOstrdYSsqzX6BYbcB+w==
 
-through@^2.3.6:
+"through@>=2.2.7 <3", through@^2.3.6:
   version "2.3.8"
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==

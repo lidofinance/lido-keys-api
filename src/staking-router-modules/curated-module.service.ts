@@ -101,7 +101,6 @@ export class CuratedModuleService {
 
     const keysStream = await this.keyStorageService.fetchKeysByChunks(where, {});
     const meta = await this.getMetaDataFromStorage();
-
     return { keysStream, meta };
   }
 

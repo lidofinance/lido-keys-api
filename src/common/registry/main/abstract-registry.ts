@@ -22,6 +22,7 @@ import { REGISTRY_GLOBAL_OPTIONS_TOKEN } from './constants';
 import { RegistryOptions } from './interfaces/module.interface';
 import { chunk } from '@lido-nestjs/utils';
 import { RegistryKeyBatchFetchService } from '../fetch/key-batch.fetch';
+import { IsolationLevel } from '@mikro-orm/core';
 
 @Injectable()
 export abstract class AbstractRegistryService {
@@ -86,14 +87,19 @@ export abstract class AbstractRegistryService {
       currentOperators: currentOperators.length,
     });
 
-    await this.saveOperatorsAndMeta(currentOperators, currMeta);
+    await this.entityManager.transactional(
+      async () => {
+        await this.saveOperatorsAndMeta(currentOperators, currMeta);
 
-    this.logger.log('Saved data operators and meta to the DB', {
-      operators: currentOperators.length,
-      currMeta,
-    });
+        this.logger.log('Saved data operators and meta to the DB', {
+          operators: currentOperators.length,
+          currMeta,
+        });
 
-    await this.syncUpdatedKeysWithContract(previousOperators, currentOperators, blockHash);
+        await this.syncUpdatedKeysWithContract(previousOperators, currentOperators, blockHash);
+      },
+      { isolationLevel: IsolationLevel.READ_COMMITTED },
+    );
 
     return currMeta;
   }
