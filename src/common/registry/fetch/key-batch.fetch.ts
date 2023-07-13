@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Registry, REGISTRY_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
-import { RegistryKey } from './interfaces/key.interface';
+import { KeyBatchRecord, RegistryKey } from './interfaces/key.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';
 
 /**
@@ -20,6 +20,7 @@ export class RegistryKeyBatchFetchService {
 
     private operatorsService: RegistryOperatorFetchService,
   ) {}
+
   /**
    * Split one big string into array of strings
    * `0x${key1}{key2}...` -> `[`0x${key1}`, `0x${key2}`]`
@@ -54,14 +55,7 @@ export class RegistryKeyBatchFetchService {
     return this.splitMergedRecord(unformattedKeys, KEYS_CAPACITY);
   }
 
-  public formatKeys(
-    operatorIndex: number,
-    unformattedRecords: [string, string, boolean[]] & {
-      pubkeys: string;
-      signatures: string;
-      used: boolean[];
-    },
-  ): RegistryKey[] {
+  public formatKeys(operatorIndex: number, unformattedRecords: KeyBatchRecord): RegistryKey[] {
     const keys = this.unformattedKeysToArray(unformattedRecords[0]);
     const signatures = this.unformattedSignaturesToArray(unformattedRecords[1]);
     const usedStatuses = unformattedRecords[2];
@@ -108,7 +102,7 @@ export class RegistryKeyBatchFetchService {
     const batchSize = 1100;
 
     const numberOfBatches = Math.ceil(totalAmount / batchSize);
-    const promises: ReturnType<typeof this.contract.getSigningKeys>[] = [];
+    const promises: Promise<KeyBatchRecord>[] = [];
 
     for (let i = 0; i < numberOfBatches; i++) {
       const currentFromIndex = fromIndex + i * batchSize;
@@ -119,13 +113,8 @@ export class RegistryKeyBatchFetchService {
     }
 
     const results = await Promise.all(promises);
-    // TODO: .flat()
-    let finalResult = [];
-    for (const result of results) {
-      finalResult = finalResult.concat(result as any);
-    }
-    // TODO: better types
-    return finalResult as unknown as ReturnType<typeof this.contract.getSigningKeys>;
+
+    return results.flat() as KeyBatchRecord;
   }
 
   /**

@@ -3,6 +3,7 @@ export * from './fetch/registry-fetch.service';
 
 export * from './fetch/key.constants';
 export * from './fetch/key.fetch';
+export * from './fetch/key-batch.fetch';
 
 export * from './fetch/meta.fetch';
 
