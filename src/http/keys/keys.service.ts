@@ -16,7 +16,8 @@ export class KeysService {
     protected keysUpdateService: KeysUpdateService,
   ) {}
 
-  async get(filters: KeyQuery): Promise<KeyListResponse> {
+  async get(filters: KeyQuery) {
+    // Promise<KeyListResponse> {
     const stakingModules = await this.keysUpdateService.getStakingModules();
 
     if (stakingModules.length === 0) {
@@ -41,8 +42,10 @@ export class KeysService {
           operatorIndex: filters.operatorIndex,
         });
         if (!meta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          throw httpExceptionTooEarlyResp();
+          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.!!!!!`);
+          // throw httpExceptionTooEarlyResp();
+
+          return { data: [], meta: {} };
         }
 
         const keysWithAddress: KeyWithModuleAddress[] = curatedKeys.map(

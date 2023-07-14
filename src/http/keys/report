@@ -1,0 +1,131 @@
+Тест на ветке develop
+
+перед запуском КАПИ меняю мету 
+```sql
+~
+
+
+kapi=# UPDATE "registry_meta" SET "keys_op_index" = 16, "block_number"= 7;
+
+тест на тестнете провожу 
+в методе который будет в эндпоинте вызываться засыпаю после ключей на 2 минуты
+```typescript=
+  public async getKeysWithMeta(filters: KeysFilter): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
+    const { keys, meta } = await this.entityManager.transactional(
+      async () => {
+        const where = {};
+        if (filters.operatorIndex != undefined) {
+          where['operatorIndex'] = filters.operatorIndex;
+        }
+
+        if (filters.used != undefined) {
+          where['used'] = filters.used;
+        }
+
+        const keys = await this.keyStorageService.find(where);
+        console.log('haha');
+        await this.sleep(120000);
+        const meta = await this.getMetaDataFromStorage();
+
+        return { keys, meta };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
+
+    return { keys, meta };
+  }
+
+```
+
+Запускаю сервис , жду пока запуститься джоба, она должна будет все данные обновить  (дополнительно в app.module debug: true у mikro orm)
+
+Делаю запрос curl "http://localhost:3000/v1/keys?operatorIndex=1&used=false"
+проверяю уровень изоляции 
+[query] begin isolation level repeatable read
+[query] select "r0".* from "registry_key" as "r0" where "r0"."operator_index" = 1 and "r0"."used" = false [took 5 ms]
+haha
+
+ожидаю от теста: ?
+если мета изменится , то получается repeatable_read  НЕ защищает нас от commit другой транзакции 
+если не изменится , то получается repeatable_read  Защищает нас от commit другой транзакции  (нужно получается другие эндпоинты проверить)
+
+
+часть результата 
+{"key":"0x9538f0af0ac73b8cbac4083cedb468ba11a62310cab8ecd759a16486069bc7af8c6edcae1cabe860ce2444fbe6c0bc73",
+"depositSignature":"0x8aaaa1c4ddcf6180d1faf6c233155a07a1e885848f57de1a0b7e0f62401f63f7f089068bd73771ed42dc7f5a73e52e1b1244787344397b83a2cf943233d17927f149f93c7d7981da122241171c19a90d6101b412edcd06cc42af1c75f1d685d3",
+"operatorIndex":1,"used":false,"moduleAddress":"0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320"}],
+"meta":{"elBlockSnapshot":
+{"blockNumber":7,"blockHash":"0x5e0da48e5bef051429d5dd786b1e0997ac38f51b3e99143e4bad6968183cfacb","timestamp":1689350760}}}
+
+получается мета не поменялась ->  то получается repeatable_read  Защищает нас от commit другой транзакци
+
+// след тест почти такой же 
+
+удалила все таблицы и убрала too early response из эндпоинта 
+
+```typescript=
+  async get(filters: KeyQuery) {
+    // Promise<KeyListResponse> {
+    const stakingModules = await this.keysUpdateService.getStakingModules();
+
+    if (stakingModules.length === 0) {
+      this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
+      throw httpExceptionTooEarlyResp();
+    }
+
+    // keys could be of type CuratedKey | CommunityKey
+    const collectedKeys: KeyWithModuleAddress[][] = [];
+    let elBlockSnapshot: ELBlockSnapshot | null = null;
+
+    // Because of current lido-nestjs/registry implementation in case of more than one
+    // staking router module we need to wrap code below in transaction (with serializable isolation level that is default in mikro orm )
+    // to prevent reading keys for different blocks
+    // But now we have only one module and in current future we will try to find solution without transactions
+    // TODO: rewrite to "for of" after refactoring to stakingRouterModule
+    for (let i = 0; i < stakingModules.length; i++) {
+      if (stakingModules[i].type == STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
+        // If some of modules has null meta, it means update hasnt been finished
+        const { keys: curatedKeys, meta } = await this.curatedService.getKeysWithMeta({
+          used: filters.used,
+          operatorIndex: filters.operatorIndex,
+        });
+        if (!meta) {
+          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.!!!!!`);
+          // throw httpExceptionTooEarlyResp();
+
+          return { data: [], meta: {} };
+        }
+
+        const keysWithAddress: KeyWithModuleAddress[] = curatedKeys.map(
+          (key) => new KeyWithModuleAddress(key, stakingModules[i].stakingModuleAddress),
+        );
+
+        // meta should be the same for all modules
+        // so in answer we can use meta of any module
+        // lets use meta of first module in list
+        // currently we sure if stakingModules is not empty, we will have in list Curated Module
+        // in future this check should be in each if clause
+        if (i === 0) {
+          elBlockSnapshot = new ELBlockSnapshot(meta);
+        }
+
+        collectedKeys.push(keysWithAddress);
+      }
+    }
+
+    // we check stakingModules list types so this condition should never be true
+    if (!elBlockSnapshot) {
+      this.logger.warn(`Meta for response wasnt set.`);
+      throw httpExceptionTooEarlyResp();
+    }
+
+    return {
+      data: collectedKeys.flat(),
+      meta: {
+        elBlockSnapshot,
+      },
+    };
+  }
+
+```
+

@@ -36,6 +36,10 @@ export class CuratedModuleService {
     await this.keyRegistryService.update(blockHashOrBlockTag);
   }
 
+  sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   public async getKeyWithMetaByPubkey(pubkey: string): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
     const { keys, meta } = await this.entityManager.transactional(
       async () => {
@@ -79,6 +83,8 @@ export class CuratedModuleService {
         }
 
         const keys = await this.keyStorageService.find(where);
+        console.log('sleeep');
+        await this.sleep(120000);
         const meta = await this.getMetaDataFromStorage();
 
         return { keys, meta };
