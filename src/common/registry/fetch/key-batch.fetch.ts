@@ -3,14 +3,7 @@ import { Registry, REGISTRY_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { KeyBatchRecord, RegistryKey } from './interfaces/key.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';
-
-/**
- * keys 96 = 48byte
- * signatures 192 = 96byte
- * https://github.com/lidofinance/lido-dao/blob/539a0faf33807d04444047d0905dce2b45260dfa/contracts/0.4.24/lib/SigningKeys.sol#L213-L238
- */
-const KEYS_CAPACITY = 96;
-const SIGNATURE_CAPACITY = 192;
+import { KEYS_LENGTH, SIGNATURE_LENGTH } from './key-batch.constants';
 
 @Injectable()
 export class RegistryKeyBatchFetchService {
@@ -48,14 +41,14 @@ export class RegistryKeyBatchFetchService {
   }
 
   protected unformattedSignaturesToArray(unformattedSignatures: string) {
-    return this.splitMergedRecord(unformattedSignatures, SIGNATURE_CAPACITY);
+    return this.splitMergedRecord(unformattedSignatures, SIGNATURE_LENGTH);
   }
 
   protected unformattedKeysToArray(unformattedKeys: string) {
-    return this.splitMergedRecord(unformattedKeys, KEYS_CAPACITY);
+    return this.splitMergedRecord(unformattedKeys, KEYS_LENGTH);
   }
 
-  public formatKeys(operatorIndex: number, unformattedRecords: KeyBatchRecord): RegistryKey[] {
+  public formatKeys(operatorIndex: number, unformattedRecords: KeyBatchRecord, startIndex: number): RegistryKey[] {
     const keys = this.unformattedKeysToArray(unformattedRecords[0]);
     const signatures = this.unformattedSignaturesToArray(unformattedRecords[1]);
     const usedStatuses = unformattedRecords[2];
@@ -64,13 +57,16 @@ export class RegistryKeyBatchFetchService {
       throw new Error('format keys error');
     }
 
-    return usedStatuses.map((used, index) => ({
-      operatorIndex,
-      index,
-      key: keys[index],
-      depositSignature: signatures[index],
-      used,
-    }));
+    return usedStatuses.map((used, chunkIndex) => {
+      const index = startIndex + chunkIndex;
+      return {
+        operatorIndex,
+        index,
+        key: keys[chunkIndex],
+        depositSignature: signatures[chunkIndex],
+        used,
+      };
+    });
   }
 
   /** fetches operator's keys */
@@ -83,7 +79,7 @@ export class RegistryKeyBatchFetchService {
     if (fromIndex > toIndex && toIndex !== -1) {
       throw new Error('fromIndex is greater than or equal to toIndex');
     }
-    // TODO:  when it is not necessary to invoke key collection (range = 0)
+
     if (toIndex == null || toIndex === -1) {
       const operator = await this.operatorsService.fetchOne(operatorIndex, overrides);
 
@@ -91,30 +87,32 @@ export class RegistryKeyBatchFetchService {
     }
 
     const [offset, limit] = this.convertIndicesToOffsetAndTotal(fromIndex, toIndex);
-
     const unformattedKeys = await this.fetchSigningKeysInBatches(operatorIndex, offset, limit);
 
-    return this.formatKeys(operatorIndex, unformattedKeys);
+    return unformattedKeys;
   }
 
-  async fetchSigningKeysInBatches(operatorIndex: number, fromIndex: number, totalAmount: number) {
+  public async fetchSigningKeysInBatches(operatorIndex: number, fromIndex: number, totalAmount: number) {
     // TODO: move to constants/config cause this limit depends on eth node
     const batchSize = 1100;
 
     const numberOfBatches = Math.ceil(totalAmount / batchSize);
-    const promises: Promise<KeyBatchRecord>[] = [];
+    const promises: Promise<RegistryKey[]>[] = [];
 
     for (let i = 0; i < numberOfBatches; i++) {
       const currentFromIndex = fromIndex + i * batchSize;
       const currentBatchSize = Math.min(batchSize, totalAmount - i * batchSize);
 
-      const promise = this.contract.getSigningKeys(operatorIndex, currentFromIndex, currentBatchSize);
+      const promise = (async () => {
+        const keys = await this.contract.getSigningKeys(operatorIndex, currentFromIndex, currentBatchSize);
+        return this.formatKeys(operatorIndex, keys, currentFromIndex);
+      })();
+
       promises.push(promise);
     }
 
     const results = await Promise.all(promises);
-
-    return results.flat() as KeyBatchRecord;
+    return results.flat();
   }
 
   /**
