@@ -68,6 +68,7 @@
     "class-validator": "^0.13.2",
     "ethers": "^5.5.4",
     "fastify-swagger": "^4.13.1",
+    "jsonstream": "^1.0.3",
     "prom-client": "^14.0.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
