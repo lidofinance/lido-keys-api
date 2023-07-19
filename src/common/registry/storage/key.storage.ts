@@ -16,6 +16,27 @@ export class RegistryKeyStorageService {
     return await this.repository.find(where, options);
   }
 
+  async *fetchKeysByChunks(where: FilterQuery<RegistryKey>, options: any): AsyncGenerator<any, void, unknown> {
+    const batchSize = 10000;
+    let offset = 0;
+    // TODO: transaction
+    while (true) {
+      const query = this.repository.createQueryBuilder().select('*').where(where).limit(batchSize).offset(offset);
+
+      const chunk = await query.execute();
+
+      if (chunk.length === 0) {
+        break;
+      }
+
+      offset += batchSize;
+
+      for (const record of chunk) {
+        yield record;
+      }
+    }
+  }
+
   /** find all keys */
   async findAll(): Promise<RegistryKey[]> {
     return await this.repository.findAll({

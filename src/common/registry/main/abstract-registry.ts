@@ -21,6 +21,8 @@ import { compareOperators } from '../utils/operator.utils';
 import { REGISTRY_GLOBAL_OPTIONS_TOKEN } from './constants';
 import { RegistryOptions } from './interfaces/module.interface';
 import { chunk } from '@lido-nestjs/utils';
+import { RegistryKeyBatchFetchService } from '../fetch/key-batch.fetch';
+import { IsolationLevel } from '@mikro-orm/core';
 
 @Injectable()
 export abstract class AbstractRegistryService {
@@ -32,6 +34,7 @@ export abstract class AbstractRegistryService {
     protected readonly metaStorage: RegistryMetaStorageService,
 
     protected readonly keyFetch: RegistryKeyFetchService,
+    protected readonly keyBatchFetch: RegistryKeyBatchFetchService,
     protected readonly keyStorage: RegistryKeyStorageService,
 
     protected readonly operatorFetch: RegistryOperatorFetchService,
@@ -56,6 +59,7 @@ export abstract class AbstractRegistryService {
     const previousBlockNumber = prevMeta?.blockNumber ?? -1;
     const currentBlockNumber = currMeta.blockNumber;
 
+    // TODO: maybe blockhash instead blocknumber?
     if (previousBlockNumber > currentBlockNumber) {
       this.logger.warn('Previous data is newer than current data');
       return;
@@ -83,14 +87,19 @@ export abstract class AbstractRegistryService {
       currentOperators: currentOperators.length,
     });
 
-    await this.saveOperatorsAndMeta(currentOperators, currMeta);
+    await this.entityManager.transactional(
+      async () => {
+        await this.saveOperatorsAndMeta(currentOperators, currMeta);
 
-    this.logger.log('Saved data operators and meta to the DB', {
-      operators: currentOperators.length,
-      currMeta,
-    });
+        this.logger.log('Saved data operators and meta to the DB', {
+          operators: currentOperators.length,
+          currMeta,
+        });
 
-    await this.syncUpdatedKeysWithContract(previousOperators, currentOperators, blockHash);
+        await this.syncUpdatedKeysWithContract(previousOperators, currentOperators, blockHash);
+      },
+      { isolationLevel: IsolationLevel.READ_COMMITTED },
+    );
 
     return currMeta;
   }
@@ -128,6 +137,8 @@ export abstract class AbstractRegistryService {
     currentOperators: RegistryOperator[],
     blockHash: string,
   ) {
+    // TODO: disable console time after testing
+    console.time('FETCH_OPERATORS');
     /**
      * TODO: optimize a number of queries
      * it's possible to update keys faster by using different strategies depending on the reason for the update
@@ -140,7 +151,6 @@ export abstract class AbstractRegistryService {
       // skip updating keys from 0 to `usedSigningKeys` of previous collected data
       // since the contract guarantees that these keys cannot be changed
       const unchangedKeysMaxIndex = isSameOperator ? prevOperator.usedSigningKeys : 0;
-
       // get the right border up to which the keys should be updated
       // it's different for different scenarios
       const toIndex = this.getToIndex(currOperator);
@@ -151,8 +161,8 @@ export abstract class AbstractRegistryService {
 
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
-
-      const result = await this.keyFetch.fetch(operatorIndex, fromIndex, toIndex, overrides);
+      // TODO: use feature flag
+      const result = await this.keyBatchFetch.fetch(operatorIndex, fromIndex, toIndex, overrides);
       const operatorKeys = result.filter((key) => key);
 
       this.logger.log('Keys fetched', {
@@ -167,6 +177,8 @@ export abstract class AbstractRegistryService {
 
       this.logger.log('Keys saved', { operatorIndex });
     }
+
+    console.timeEnd('FETCH_OPERATORS');
   }
 
   /** storage */

@@ -89,6 +89,21 @@ export class CuratedModuleService {
     return { keys, meta };
   }
 
+  public async getKeysWithMetaStream(filters: KeysFilter): Promise<any> {
+    const where = {};
+    if (filters.operatorIndex != undefined) {
+      where['operatorIndex'] = filters.operatorIndex;
+    }
+
+    if (filters.used != undefined) {
+      where['used'] = filters.used;
+    }
+
+    const keysStream = await this.keyStorageService.fetchKeysByChunks(where, {});
+    const meta = await this.getMetaDataFromStorage();
+    return { keysStream, meta };
+  }
+
   public async getMetaDataFromStorage(): Promise<RegistryMeta | null> {
     return await this.metaStorageService.get();
   }
