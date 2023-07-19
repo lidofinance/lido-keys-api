@@ -20,11 +20,13 @@ import { KeyQuery } from 'http/common/entities';
 import { KeysFindBody } from 'http/common/entities/pubkeys';
 import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
 import * as JSONStream from 'jsonstream';
+import { EntityManager } from '@mikro-orm/knex';
+import { IsolationLevel } from '@mikro-orm/core';
 
 @Controller('keys')
 @ApiTags('keys')
 export class KeysController {
-  constructor(protected readonly keysService: KeysService) {}
+  constructor(protected readonly keysService: KeysService, protected readonly entityManager: EntityManager) {}
 
   @Version('1')
   @Get('/stream')
@@ -40,44 +42,49 @@ export class KeysController {
   })
   @ApiOperation({ summary: 'Get list of all keys' })
   async get(@Query() filters: KeyQuery, @Res() reply: FastifyReply) {
-    const { keysStream, meta } = await this.keysService.get(filters);
+    await this.entityManager.transactional(
+      async () => {
+        const { keysStream, meta } = await this.keysService.get(filters);
 
-    // res.set('Content-Type', 'application/json');
-    // res.set('Content-Disposition', 'attachment; filename=data.json');
+        // res.set('Content-Type', 'application/json');
+        // res.set('Content-Disposition', 'attachment; filename=data.json');
 
-    // const transformStream = new Transform({
-    //   transform(chunk, encoding, callback) {
-    //     // Преобразование данных
-    //     console.log(chunk);
-    //     this.push(chunk);
-    //     callback();
-    //   },
-    // });
-    // console.log(keysStream);
-    // // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // // @ts-ignore
-    // keysStream.pipe(res);
-    // const dataStream = new Readable({
-    //   read() {
-    //     this.push('some data\n');
-    //     this.push(null); // Конец стрима
-    //   },
-    // });
-    // reply.type('text/plain').send(dataStream);
-    // reply.type('text/plain').send(keysStream);
+        // const transformStream = new Transform({
+        //   transform(chunk, encoding, callback) {
+        //     // Преобразование данных
+        //     console.log(chunk);
+        //     this.push(chunk);
+        //     callback();
+        //   },
+        // });
+        // console.log(keysStream);
+        // // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // // @ts-ignore
+        // keysStream.pipe(res);
+        // const dataStream = new Readable({
+        //   read() {
+        //     this.push('some data\n');
+        //     this.push(null); // Конец стрима
+        //   },
+        // });
+        // reply.type('text/plain').send(dataStream);
+        // reply.type('text/plain').send(keysStream);
 
-    // const jsonStream = JSONStream.stringifyObject();
-    const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "keys": [', ',', ']}');
-    // Передаем стрим в качестве ответа
-    reply.type('application/json').send(jsonStream);
+        // const jsonStream = JSONStream.stringifyObject();
+        const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "keys": [', ',', ']}');
+        // Передаем стрим в качестве ответа
+        reply.type('application/json').send(jsonStream);
 
-    // Наполняем стрим данными
-    // jsonStream.write(['meta', { meta: 1 }]);
-    for await (const keysBatch of keysStream) {
-      jsonStream.write(keysBatch);
-    }
+        // Наполняем стрим данными
+        // jsonStream.write(['meta', { meta: 1 }]);
+        for await (const keysBatch of keysStream) {
+          jsonStream.write(keysBatch);
+        }
 
-    jsonStream.end();
+        jsonStream.end();
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
   }
 
   @Version('1')
