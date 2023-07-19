@@ -46,42 +46,17 @@ export class KeysController {
       async () => {
         const { keysStream, meta } = await this.keysService.get(filters);
 
-        // res.set('Content-Type', 'application/json');
-        // res.set('Content-Disposition', 'attachment; filename=data.json');
-
-        // const transformStream = new Transform({
-        //   transform(chunk, encoding, callback) {
-        //     // Преобразование данных
-        //     console.log(chunk);
-        //     this.push(chunk);
-        //     callback();
-        //   },
-        // });
-        // console.log(keysStream);
-        // // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // // @ts-ignore
-        // keysStream.pipe(res);
-        // const dataStream = new Readable({
-        //   read() {
-        //     this.push('some data\n');
-        //     this.push(null); // Конец стрима
-        //   },
-        // });
-        // reply.type('text/plain').send(dataStream);
-        // reply.type('text/plain').send(keysStream);
-
-        // const jsonStream = JSONStream.stringifyObject();
         const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "keys": [', ',', ']}');
-        // Передаем стрим в качестве ответа
+
         reply.type('application/json').send(jsonStream);
-
-        // Наполняем стрим данными
-        // jsonStream.write(['meta', { meta: 1 }]);
-        for await (const keysBatch of keysStream) {
-          jsonStream.write(keysBatch);
+        // TODO: is it necessary to check the error? or 'finally' is ok?
+        try {
+          for await (const keysBatch of keysStream) {
+            jsonStream.write(keysBatch);
+          }
+        } finally {
+          jsonStream.end();
         }
-
-        jsonStream.end();
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
