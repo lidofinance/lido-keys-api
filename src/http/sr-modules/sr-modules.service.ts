@@ -5,8 +5,8 @@ import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { ELBlockSnapshot, SRModule } from 'http/common/entities';
 import { ModuleId } from 'http/common/entities/';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
-import { KeysUpdateService } from 'jobs/keys-update';
 import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
+import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 
 @Injectable()
 export class SRModulesService {
@@ -14,14 +14,14 @@ export class SRModulesService {
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected configService: ConfigService,
     protected curatedService: CuratedModuleService,
-    protected keysUpdateService: KeysUpdateService,
+    protected stakingRouterService: StakingRouterService,
   ) {}
 
   async getModules(): Promise<SRModuleListResponse> {
-    const stakingModules = await this.keysUpdateService.getStakingModules();
+    const stakingModules = this.stakingRouterService.getStakingModules();
 
     if (stakingModules.length == 0) {
-      this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
+      this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
       throw httpExceptionTooEarlyResp();
     }
 
@@ -32,7 +32,7 @@ export class SRModulesService {
       if (stakingModules[i].type == STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
         const meta = await this.curatedService.getMetaDataFromStorage();
         if (!meta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+          this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
           throw httpExceptionTooEarlyResp();
         }
 
@@ -51,7 +51,7 @@ export class SRModulesService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
-      this.logger.warn(`Meta for response wasnt set.`);
+      this.logger.warn("Meta for response wasn't set.");
       throw httpExceptionTooEarlyResp();
     }
 
@@ -62,7 +62,7 @@ export class SRModulesService {
   }
 
   async getModule(moduleId: ModuleId): Promise<SRModuleResponse> {
-    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
+    const stakingModule = this.stakingRouterService.getStakingModule(moduleId);
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
@@ -75,7 +75,7 @@ export class SRModulesService {
       const meta = await this.curatedService.getMetaDataFromStorage();
 
       if (!meta) {
-        this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+        this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
         throw httpExceptionTooEarlyResp();
       }
 
@@ -87,6 +87,6 @@ export class SRModulesService {
       };
     }
 
-    throw new NotFoundException(`Modules with other types are not supported`);
+    throw new NotFoundException('Modules with other types are not supported');
   }
 }

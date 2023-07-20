@@ -12,16 +12,13 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { Trace } from 'common/decorators/trace';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { IsolationLevel } from '@mikro-orm/core';
+import { StakingModuleInterface } from './interfaces/staking-module.interface';
+import { KeysFilter } from './interfaces/keys-filter';
 
 const TRACE_TIMEOUT = 15 * 60 * 1000;
 
-export interface KeysFilter {
-  used?: boolean;
-  operatorIndex?: number;
-}
-
 @Injectable()
-export class CuratedModuleService {
+export class CuratedModuleService implements StakingModuleInterface {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly keyRegistryService: KeyRegistryService,

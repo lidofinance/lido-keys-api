@@ -13,8 +13,8 @@ import { VALIDATORS_STATUSES_FOR_EXIT, DEFAULT_EXIT_PERCENT } from './constants'
 import { ConsensusMeta, Validator } from '@lido-nestjs/validators-registry';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { ValidatorsService } from 'validators';
-import { KeysUpdateService } from 'jobs/keys-update';
 import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
+import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 
 const VALIDATORS_REGISTRY_DISABLED_ERROR = 'Validators Registry is disabled. Check environment variables';
 
@@ -25,7 +25,7 @@ export class SRModulesValidatorsService {
     protected readonly curatedService: CuratedModuleService,
     protected readonly validatorsService: ValidatorsService,
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected keysUpdateService: KeysUpdateService,
+    protected stakingRouterService: StakingRouterService,
   ) {}
 
   async getOldestLidoValidators(
@@ -38,7 +38,7 @@ export class SRModulesValidatorsService {
       throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
 
-    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
+    const stakingModule = await this.stakingRouterService.getStakingModule(moduleId);
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
@@ -73,7 +73,7 @@ export class SRModulesValidatorsService {
       throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
 
-    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
+    const stakingModule = await this.stakingRouterService.getStakingModule(moduleId);
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);

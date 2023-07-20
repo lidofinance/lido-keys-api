@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ExecutionProvider } from 'common/execution-provider';
 import { KeyRegistryModule } from 'common/registry';
 import { CuratedModuleService } from './curated-module.service';
+import { StakingRouterService } from './staking-router.service';
 
 @Global()
 @Module({
@@ -13,7 +14,7 @@ import { CuratedModuleService } from './curated-module.service';
       },
     }),
   ],
-  providers: [CuratedModuleService],
-  exports: [CuratedModuleService],
+  providers: [CuratedModuleService, StakingRouterService],
+  exports: [CuratedModuleService, StakingRouterService],
 })
 export class StakingRouterModule {}

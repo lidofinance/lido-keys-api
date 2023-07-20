@@ -4,8 +4,8 @@ import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse } from './entit
 import { ELBlockSnapshot, Key, SRModule, ModuleId, CuratedKey, KeyQuery } from 'http/common/entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
-import { KeysUpdateService } from 'jobs/keys-update';
 import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
+import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 
 @Injectable()
 export class SRModulesKeysService {
@@ -13,11 +13,11 @@ export class SRModulesKeysService {
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected configService: ConfigService,
     protected curatedService: CuratedModuleService,
-    protected keysUpdateService: KeysUpdateService,
+    protected stakingRouterService: StakingRouterService,
   ) {}
 
   async getGroupedByModuleKeys(filters: KeyQuery): Promise<GroupedByModuleKeyListResponse> {
-    const stakingModules = await this.keysUpdateService.getStakingModules();
+    const stakingModules = this.stakingRouterService.getStakingModules();
 
     if (stakingModules.length == 0) {
       this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
@@ -76,7 +76,7 @@ export class SRModulesKeysService {
   }
 
   async getModuleKeys(moduleId: ModuleId, filters: KeyQuery): Promise<SRModuleKeyListResponse> {
-    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
+    const stakingModule = this.stakingRouterService.getStakingModule(moduleId);
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
@@ -115,7 +115,7 @@ export class SRModulesKeysService {
   }
 
   async getModuleKeysByPubkeys(moduleId: ModuleId, pubkeys: string[]): Promise<SRModuleKeyListResponse> {
-    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
+    const stakingModule = await this.stakingRouterService.getStakingModule(moduleId);
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);

@@ -6,8 +6,8 @@ import { ConfigService } from 'common/config';
 import { SRModuleOperatorsKeysResponse } from './entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
-import { KeysUpdateService } from 'jobs/keys-update';
 import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
+import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 
 @Injectable()
 export class SRModulesOperatorsKeysService {
@@ -15,12 +15,11 @@ export class SRModulesOperatorsKeysService {
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly curatedService: CuratedModuleService,
     protected readonly configService: ConfigService,
-    protected keysUpdateService: KeysUpdateService,
+    protected stakingRouterService: StakingRouterService,
   ) {}
 
   public async get(moduleId: ModuleId, filters: KeyQuery): Promise<SRModuleOperatorsKeysResponse> {
-    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
-
+    const stakingModule = await this.stakingRouterService.getStakingModule(moduleId);
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
     }

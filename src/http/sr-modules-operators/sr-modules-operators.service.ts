@@ -9,9 +9,9 @@ import {
 } from './entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
-import { KeysUpdateService } from 'jobs/keys-update';
 import { SRModuleOperator } from 'http/common/entities/sr-module-operator';
 import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
+import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 
 @Injectable()
 export class SRModulesOperatorsService {
@@ -19,14 +19,14 @@ export class SRModulesOperatorsService {
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected configService: ConfigService,
     protected curatedService: CuratedModuleService,
-    protected keysUpdateService: KeysUpdateService,
+    protected stakingRouterService: StakingRouterService,
   ) {}
 
   public async getAll(): Promise<GroupedByModuleOperatorListResponse> {
-    const stakingModules = await this.keysUpdateService.getStakingModules();
+    const stakingModules = await this.stakingRouterService.getStakingModules();
 
     if (stakingModules.length == 0) {
-      this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
+      this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
       throw httpExceptionTooEarlyResp();
     }
 
@@ -43,7 +43,7 @@ export class SRModulesOperatorsService {
         const { operators: curatedOperators, meta } = await this.curatedService.getOperatorsWithMeta();
 
         if (!meta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+          this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
           throw httpExceptionTooEarlyResp();
         }
 
@@ -64,7 +64,7 @@ export class SRModulesOperatorsService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
-      this.logger.warn(`Meta for response wasnt set.`);
+      this.logger.warn("Meta for response wasn't set.");
       throw httpExceptionTooEarlyResp();
     }
 
@@ -77,7 +77,7 @@ export class SRModulesOperatorsService {
   }
 
   public async getByModule(moduleId: ModuleId): Promise<SRModuleOperatorListResponse> {
-    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
+    const stakingModule = await this.stakingRouterService.getStakingModule(moduleId);
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
@@ -109,7 +109,7 @@ export class SRModulesOperatorsService {
   }
 
   public async getModuleOperator(moduleId: ModuleId, operatorIndex: number): Promise<SRModuleOperatorResponse> {
-    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
+    const stakingModule = await this.stakingRouterService.getStakingModule(moduleId);
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);

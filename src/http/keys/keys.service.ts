@@ -3,9 +3,9 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { KeyListResponse, KeyWithModuleAddress } from './entities';
 import { ConfigService } from 'common/config';
 import { ELBlockSnapshot, KeyQuery } from 'http/common/entities';
-import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules/';
-import { KeysUpdateService } from 'jobs/keys-update';
+import { CuratedModuleService, StakingRouterModule, STAKING_MODULE_TYPE } from 'staking-router-modules/';
 import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
+import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 
 @Injectable()
 export class KeysService {
@@ -13,34 +13,37 @@ export class KeysService {
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected curatedService: CuratedModuleService,
     protected configService: ConfigService,
-    protected keysUpdateService: KeysUpdateService,
+    protected stakingRouterService: StakingRouterService,
   ) {}
 
   async get(filters: KeyQuery): Promise<any> {
-    const stakingModules = await this.keysUpdateService.getStakingModules();
+    const stakingModules = this.stakingRouterService.getStakingModules();
 
     if (stakingModules.length === 0) {
-      this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
+      this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
       throw httpExceptionTooEarlyResp();
     }
 
     // keys could be of type CuratedKey | CommunityKey
     // const collectedKeys: KeyWithModuleAddress[][] = [];
     let elBlockSnapshot: ELBlockSnapshot | null = null;
+
     const { keysStream, meta } = await this.curatedService.getKeysWithMetaStream({
       used: filters.used,
       operatorIndex: filters.operatorIndex,
     });
 
+    // TODO: how will work fetching data from multiple modules
+
     if (!meta) {
-      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+      this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
       throw httpExceptionTooEarlyResp();
     }
 
     elBlockSnapshot = new ELBlockSnapshot(meta);
 
     if (!elBlockSnapshot) {
-      this.logger.warn(`Meta for response wasnt set.`);
+      this.logger.warn("Meta for response wasn't set.");
       throw httpExceptionTooEarlyResp();
     }
 
@@ -53,7 +56,7 @@ export class KeysService {
   }
 
   async getByPubkey(pubkey: string): Promise<KeyListResponse> {
-    const stakingModules = await this.keysUpdateService.getStakingModules();
+    const stakingModules = this.stakingRouterService.getStakingModules();
 
     if (stakingModules.length == 0) {
       this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
@@ -69,7 +72,7 @@ export class KeysService {
         // If some of modules has null meta, it means update hasnt been finished
         const { keys: curatedKeys, meta } = await this.curatedService.getKeyWithMetaByPubkey(pubkey);
         if (!meta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+          this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
           throw httpExceptionTooEarlyResp();
         }
 
@@ -92,7 +95,7 @@ export class KeysService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
-      this.logger.warn(`Meta for response wasnt set.`);
+      this.logger.warn("Meta for response wasn't set.");
       throw httpExceptionTooEarlyResp();
     }
 
@@ -110,10 +113,10 @@ export class KeysService {
   }
 
   async getByPubkeys(pubkeys: string[]): Promise<KeyListResponse> {
-    const stakingModules = await this.keysUpdateService.getStakingModules();
+    const stakingModules = this.stakingRouterService.getStakingModules();
 
     if (stakingModules.length == 0) {
-      this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
+      this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
       throw httpExceptionTooEarlyResp();
     }
 
@@ -126,7 +129,7 @@ export class KeysService {
         // If some of modules has null meta, it means update hasnt been finished
         const { keys: curatedKeys, meta } = await this.curatedService.getKeysWithMetaByPubkeys(pubkeys);
         if (!meta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+          this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
           throw httpExceptionTooEarlyResp();
         }
 
@@ -149,7 +152,7 @@ export class KeysService {
 
     // we check stakingModules list types so this condition should never be true
     if (!elBlockSnapshot) {
-      this.logger.warn(`Meta for response wasnt set.`);
+      this.logger.warn("Meta for response wasn't set.");
       throw httpExceptionTooEarlyResp();
     }
 
