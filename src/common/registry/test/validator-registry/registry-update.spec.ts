@@ -22,7 +22,7 @@ import {
 import { registryServiceMock } from '../mock-utils';
 import { MikroORM } from '@mikro-orm/core';
 
-describe('Registry', () => {
+describe('Validator registry', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
 
   let registryService: ValidatorRegistryService;
@@ -304,7 +304,7 @@ describe('Registry', () => {
   });
 });
 
-describe.skip('Empty registry', () => {
+describe('Empty registry', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
 
   let registryService: ValidatorRegistryService;

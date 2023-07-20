@@ -12,9 +12,12 @@ export const compareTestMetaKeys = async (
   registryService: AbstractRegistryService,
   { keys }: Pick<Expected, 'keys'>,
 ) => {
-  expect(keys.sort((a, b) => a.operatorIndex - b.operatorIndex)).toEqual(
-    await (await registryService.getOperatorsKeysFromStorage()).sort((a, b) => a.operatorIndex - b.operatorIndex),
-  );
+  const sorted = keys.sort((a, b) => a.operatorIndex - b.operatorIndex);
+  const fetchedAndSorted = await (
+    await registryService.getOperatorsKeysFromStorage()
+  ).sort((a, b) => a.operatorIndex - b.operatorIndex);
+
+  expect(fetchedAndSorted).toEqual(sorted);
 };
 
 export const compareTestMetaOperators = async (
