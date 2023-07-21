@@ -17,7 +17,7 @@ export class SRModulesKeysService {
   ) {}
 
   async getGroupedByModuleKeys(filters: KeyQuery): Promise<GroupedByModuleKeyListResponse> {
-    const stakingModules = this.stakingRouterService.getStakingModules();
+    const stakingModules = await this.stakingRouterService.getStakingModules();
 
     if (stakingModules.length == 0) {
       this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
@@ -76,7 +76,7 @@ export class SRModulesKeysService {
   }
 
   async getModuleKeys(moduleId: ModuleId, filters: KeyQuery): Promise<SRModuleKeyListResponse> {
-    const stakingModule = this.stakingRouterService.getStakingModule(moduleId);
+    const stakingModule = await this.stakingRouterService.getStakingModule(moduleId);
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);

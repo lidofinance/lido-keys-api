@@ -44,7 +44,6 @@
     "@lido-nestjs/execution": "^1.11.0",
     "@lido-nestjs/fetch": "^1.4.0",
     "@lido-nestjs/logger": "^1.3.2",
-    "@lido-nestjs/registry": "^6.2.0",
     "@lido-nestjs/validators-registry": "^1.2.1",
     "@mikro-orm/cli": "^5.5.3",
     "@mikro-orm/core": "^5.5.3",

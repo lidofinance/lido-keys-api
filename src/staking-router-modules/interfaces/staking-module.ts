@@ -1,5 +1,6 @@
 import { STAKING_MODULE_TYPE } from 'staking-router-modules';
 
+// interface of modules we get from SR contract
 export interface StakingModule {
   // unique id of the staking module
   id: number;
@@ -24,5 +25,5 @@ export interface StakingModule {
   // type of staking router module
   type: STAKING_MODULE_TYPE;
   // is module active
-  // active: boolean;
+  active: boolean;
 }

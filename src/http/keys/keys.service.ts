@@ -17,7 +17,7 @@ export class KeysService {
   ) {}
 
   async get(filters: KeyQuery): Promise<any> {
-    const stakingModules = this.stakingRouterService.getStakingModules();
+    const stakingModules = await this.stakingRouterService.getStakingModules();
 
     if (stakingModules.length === 0) {
       this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
@@ -56,7 +56,7 @@ export class KeysService {
   }
 
   async getByPubkey(pubkey: string): Promise<KeyListResponse> {
-    const stakingModules = this.stakingRouterService.getStakingModules();
+    const stakingModules = await this.stakingRouterService.getStakingModules();
 
     if (stakingModules.length == 0) {
       this.logger.warn('No staking modules in list. Maybe didnt fetched from SR yet');
@@ -113,7 +113,7 @@ export class KeysService {
   }
 
   async getByPubkeys(pubkeys: string[]): Promise<KeyListResponse> {
-    const stakingModules = this.stakingRouterService.getStakingModules();
+    const stakingModules = await this.stakingRouterService.getStakingModules();
 
     if (stakingModules.length == 0) {
       this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");

@@ -5,13 +5,14 @@ import { ModuleRef } from '@nestjs/core';
 import { StakingRouterFetchService } from 'common/contracts';
 import { ExecutionProviderService } from 'common/execution-provider';
 import { KeysFilter } from './interfaces/keys-filter';
-import { StakingModule } from './interfaces/staking-module';
 import { StakingModuleInterface } from './interfaces/staking-module.interface';
 import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions';
 import { KeyWithModuleAddress } from 'http/keys/entities';
 import { ELBlockSnapshot, ModuleId } from 'http/common/entities';
 import { config } from './staking-module-impl-config';
 import { IsolationLevel } from '@mikro-orm/core';
+import { SRModuleEntity } from 'storage/sr-module.entity';
+import { SRModuleStorageService } from 'storage/sr-module.storage';
 
 @Injectable()
 export class StakingRouterService {
@@ -21,19 +22,21 @@ export class StakingRouterService {
     protected readonly executionProvider: ExecutionProviderService,
     protected readonly entityManager: EntityManager,
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
+    protected readonly srModulesStorage: SRModuleStorageService,
   ) {}
-  // list of staking modules
-  // modules list is used in endpoints
-  // TODO: move this list in staking-router-modules folder
-  protected stakingModules: StakingModule[] = [];
 
-  public getStakingModules() {
-    return this.stakingModules;
+  // modules list is used in endpoints
+  public async getStakingModules(): Promise<SRModuleEntity[]> {
+    const srModules = await this.srModulesStorage.findAll();
+    return srModules;
   }
 
-  public getStakingModule(moduleId: ModuleId): StakingModule | undefined {
-    // here should be == , moduleId can be string and number
-    return this.stakingModules.find((module) => module.stakingModuleAddress == moduleId || module.id == moduleId);
+  public async getStakingModule(moduleId: ModuleId): Promise<SRModuleEntity | null> {
+    if (typeof moduleId === 'number') {
+      return await this.srModulesStorage.findOneById(moduleId);
+    }
+
+    return await this.srModulesStorage.findOneByContractAddress(moduleId);
   }
 
   // update keys of all modules
@@ -42,25 +45,52 @@ export class StakingRouterService {
     // start updating by block hash
     // get blockHash for 'latest' block
     const blockHash = await this.executionProvider.getBlockHash('latest');
+    // read from db
 
     // get staking router modules
     const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: blockHash });
-    this.stakingModules = modules;
 
     //TODO: will transaction and rollback work
     await this.entityManager.transactional(
       async () => {
         for (const module of modules) {
+          // on the next iteration form EL data here and write in DB
+
           const impl = config[module.type];
           const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
+          // TODO: rename updateKeys -> update (as we update operators, meta and keys)
+
+          // will move decision about update on upper layer
+          // read here a nonce for module
+          // but it can be not like this for other implementation
+
           await moduleInstance.updateKeys(blockHash);
+          const meta = await moduleInstance.getMetaDataFromStorage();
+
+          // if meta is null it means we cant work and update modules list
+          // and we should not update modules' data
+
+          if (!meta) {
+            this.logger.error("Can't update data in database, meta is null");
+            throw new Error("Can't update data in database, meta is null");
+          }
+
+          // on this iteration will read nonce from meta and write in module
+          const srModule = new SRModuleEntity(module, meta.keysOpIndex);
+
+          await this.entityManager
+            .createQueryBuilder(SRModuleEntity)
+            .insert(srModule)
+            .onConflict(['id', 'staking_module_address'])
+            .merge()
+            .execute();
         }
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
     );
   }
 
-  // this method we will use to return
+  // this method we will use to return meta in endpoints
   public async getElBlockSnapshot(): Promise<void> {
     return;
   }
@@ -71,7 +101,9 @@ export class StakingRouterService {
       elBlockSnapshot: ELBlockSnapshot;
     };
   }> {
-    if (this.stakingModules.length === 0) {
+    const stakingModules = await this.getStakingModules();
+
+    if (stakingModules.length === 0) {
       this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
       throw httpExceptionTooEarlyResp();
     }
@@ -82,7 +114,7 @@ export class StakingRouterService {
       const collectedKeys: KeyWithModuleAddress[][] = [];
       let elBlockSnapshot: ELBlockSnapshot | null = null;
 
-      for (const module of this.stakingModules) {
+      for (const module of stakingModules) {
         const impl = config[module.type];
         const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
         const { keys, meta } = await moduleInstance.getKeysWithMeta(filters);

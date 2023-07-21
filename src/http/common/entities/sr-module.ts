@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { StakingModule } from 'staking-router-modules/interfaces/staking-module';
+import { SRModuleEntity } from 'storage/sr-module.entity';
 
 export class SRModule {
-  constructor(nonce: number, module: StakingModule) {
+  constructor(nonce: number, module: SRModuleEntity) {
     this.nonce = nonce;
     this.type = module.type;
     this.id = module.id;

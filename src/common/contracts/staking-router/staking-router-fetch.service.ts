@@ -42,7 +42,7 @@ export class StakingRouterFetchService {
 
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
-        // const isActive = await contract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
+        const isActive = await srContract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
 
         const stakingModuleType = (await this.iStakingModule.getType(
           stakingModule.stakingModuleAddress,
@@ -67,7 +67,7 @@ export class StakingRouterFetchService {
           lastDepositAt: stakingModule.lastDepositAt.toNumber(),
           lastDepositBlock: stakingModule.lastDepositBlock.toNumber(),
           exitedValidatorsCount: stakingModule.exitedValidatorsCount.toNumber(),
-          // active: isActive,
+          active: isActive,
         };
       }),
     );

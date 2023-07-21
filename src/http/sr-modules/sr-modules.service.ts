@@ -18,7 +18,7 @@ export class SRModulesService {
   ) {}
 
   async getModules(): Promise<SRModuleListResponse> {
-    const stakingModules = this.stakingRouterService.getStakingModules();
+    const stakingModules = await this.stakingRouterService.getStakingModules();
 
     if (stakingModules.length == 0) {
       this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
@@ -62,7 +62,7 @@ export class SRModulesService {
   }
 
   async getModule(moduleId: ModuleId): Promise<SRModuleResponse> {
-    const stakingModule = this.stakingRouterService.getStakingModule(moduleId);
+    const stakingModule = await this.stakingRouterService.getStakingModule(moduleId);
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
