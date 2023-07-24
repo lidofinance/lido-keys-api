@@ -39,4 +39,16 @@ export class ExecutionProviderService {
     const block = await this.provider.getBlock(blockHashOrBlockTag);
     return block.hash;
   }
+
+  /**
+   *
+   * Returns block
+   */
+  @Trace(TRACE_TIMEOUT)
+  public async getBlock(
+    blockHashOrBlockTag: number | string,
+  ): Promise<{ number: number; hash: string; timestamp: number }> {
+    const block = await this.provider.getBlock(blockHashOrBlockTag);
+    return { number: block.number, hash: block.hash, timestamp: block.timestamp };
+  }
 }

@@ -1,6 +1,7 @@
 import { QueryOrder } from '@mikro-orm/core';
 import { FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
+import { StakingModule } from 'staking-router-modules/interfaces';
 import { SRModuleEntity } from './sr-module.entity';
 import { SRModuleRepository } from './sr-module.repository';
 
@@ -30,5 +31,16 @@ export class SRModuleStorageService {
     return await this.repository.findAll({
       orderBy: [{ id: QueryOrder.ASC }],
     });
+  }
+
+  async store(module: StakingModule, currNonce: number): Promise<void> {
+    const srModule = new SRModuleEntity(module, currNonce);
+    // TODO: what exactly will happen during attempt to write in db module that already exists in db
+    await this.repository
+      .createQueryBuilder()
+      .insert(srModule)
+      .onConflict(['id', 'staking_module_address'])
+      .merge()
+      .execute();
   }
 }

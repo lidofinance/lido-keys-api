@@ -26,4 +26,6 @@ export interface StakingModuleInterface {
     keys: KeyEntity[];
     meta: MetaEntity | null;
   }>;
+
+  getCurrentNonce(blockHashOrBlockTag: string | number): Promise<number>;
 }

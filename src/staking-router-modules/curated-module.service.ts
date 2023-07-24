@@ -33,6 +33,12 @@ export class CuratedModuleService implements StakingModuleInterface {
     await this.keyRegistryService.update(blockHashOrBlockTag);
   }
 
+  public async getCurrentNonce(blockHashOrBlockTag: string | number): Promise<number> {
+    // create in keyRegistryService just value for getting nonce from contract
+    const { keysOpIndex } = await this.keyRegistryService.getMetaDataFromContract(blockHashOrBlockTag);
+    return keysOpIndex;
+  }
+
   public async getKeyWithMetaByPubkey(pubkey: string): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
     const { keys, meta } = await this.entityManager.transactional(
       async () => {

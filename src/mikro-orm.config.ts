@@ -9,6 +9,7 @@ import { ConsensusMetaEntity } from '@lido-nestjs/validators-registry';
 import { ConsensusValidatorEntity } from '@lido-nestjs/validators-registry';
 import { readFileSync } from 'fs';
 import { SRModuleEntity } from './storage/sr-module.entity';
+import { ElMetaEntity } from './storage/el-meta.entity';
 
 dotenv.config();
 
@@ -49,13 +50,13 @@ const findMigrations = (mainFolder: string, npmPackageNames: string[]): Migratio
 
       return null;
     })
-    .filter(isNotNullOrUndefined);
-  // .sort((n1, n2) => (n1.name > n2.name ? 1 : -1));
+    .filter(isNotNullOrUndefined)
+    .sort((n1, n2) => (n1.name > n2.name ? 1 : -1));
 
-  // if (hasDuplicatesByName(migrations)) {
-  //   console.error('Found duplicated migration name in list');
-  //   process.exit(1);
-  // }
+  if (hasDuplicatesByName(migrations)) {
+    console.error('Found duplicated migration name in list');
+    process.exit(1);
+  }
 
   // TODO think about Nest.js logger
   console.log(`Found [${migrations.length}] DB migration files.`);
@@ -123,6 +124,7 @@ const config: Options = {
     ConsensusValidatorEntity,
     ConsensusMetaEntity,
     SRModuleEntity,
+    ElMetaEntity,
   ],
   migrations: getMigrationOptions(path.join(__dirname, 'migrations'), ['@lido-nestjs/validators-registry']),
 };

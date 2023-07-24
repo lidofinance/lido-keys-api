@@ -13,6 +13,8 @@ import { config } from './staking-module-impl-config';
 import { IsolationLevel } from '@mikro-orm/core';
 import { SRModuleEntity } from 'storage/sr-module.entity';
 import { SRModuleStorageService } from 'storage/sr-module.storage';
+import { ElMetaStorageService } from 'storage/el-meta.storage';
+import { ElMetaEntity } from 'storage/el-meta.entity';
 
 @Injectable()
 export class StakingRouterService {
@@ -23,6 +25,7 @@ export class StakingRouterService {
     protected readonly entityManager: EntityManager,
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly srModulesStorage: SRModuleStorageService,
+    protected readonly elMetaStorage: ElMetaStorageService,
   ) {}
 
   // modules list is used in endpoints
@@ -32,6 +35,7 @@ export class StakingRouterService {
   }
 
   public async getStakingModule(moduleId: ModuleId): Promise<SRModuleEntity | null> {
+    // TODO: here should be more checks
     if (typeof moduleId === 'number') {
       return await this.srModulesStorage.findOneById(moduleId);
     }
@@ -41,58 +45,64 @@ export class StakingRouterService {
 
   // update keys of all modules
   public async update(): Promise<void> {
-    // read list of modules
-    // start updating by block hash
-    // get blockHash for 'latest' block
-    const blockHash = await this.executionProvider.getBlockHash('latest');
-    // read from db
+    // reading latest block from blockchain
+    const currElMeta = await this.executionProvider.getBlock('latest');
+    // read from database last execution layer data
+    const prevElMeta = await this.elMetaStorage.get();
 
-    // get staking router modules
-    const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: blockHash });
+    if (prevElMeta && prevElMeta?.blockNumber > currElMeta.number) {
+      this.logger.warn('Previous data is newer than current data');
+      return;
+    }
+
+    // get staking router modules from SR contract
+    const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
 
     //TODO: will transaction and rollback work
     await this.entityManager.transactional(
       async () => {
-        for (const module of modules) {
-          // on the next iteration form EL data here and write in DB
+        // Update el meta in db
+        await this.entityManager.nativeDelete(ElMetaEntity, {});
+        await this.entityManager.persist(
+          new ElMetaEntity({
+            blockHash: currElMeta.hash,
+            blockNumber: currElMeta.number,
+            timestamp: currElMeta.timestamp,
+          }),
+        );
 
+        for (const module of modules) {
+          // read from config name of module that implement functions to fetch and store keys for type
+          // TODO: check what will happen if implementation is not a provider of StakingRouterModule
           const impl = config[module.type];
           const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-          // TODO: rename updateKeys -> update (as we update operators, meta and keys)
 
-          // will move decision about update on upper layer
-          // read here a nonce for module
-          // but it can be not like this for other implementation
+          // At the moment lets think that for all modules it is possible to make decision base on nonce value
 
-          await moduleInstance.updateKeys(blockHash);
-          const meta = await moduleInstance.getMetaDataFromStorage();
+          const currNonce = await moduleInstance.getCurrentNonce(currElMeta.hash);
+          const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
 
-          // if meta is null it means we cant work and update modules list
-          // and we should not update modules' data
-
-          if (!meta) {
-            this.logger.error("Can't update data in database, meta is null");
-            throw new Error("Can't update data in database, meta is null");
+          if (moduleInStorage && moduleInStorage.nonce == currNonce) {
+            // nothing changed, don't need to update
+            return;
           }
 
-          // on this iteration will read nonce from meta and write in module
-          const srModule = new SRModuleEntity(module, meta.keysOpIndex);
-
-          await this.entityManager
-            .createQueryBuilder(SRModuleEntity)
-            .insert(srModule)
-            .onConflict(['id', 'staking_module_address'])
-            .merge()
-            .execute();
+          // TODO: move to SRModuleEntity storage module
+          await this.srModulesStorage.store(module, currNonce);
+          // here we already sure that we need to update keys and operators
+          // TODO: next step is removing meta and nonce checking from updateKeys algo in registry implementation
+          // TODO: rename updateKeys -> update (as we update operators, meta and keys)
+          await moduleInstance.updateKeys(currElMeta.hash);
         }
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
     );
   }
 
-  // this method we will use to return meta in endpoints
-  public async getElBlockSnapshot(): Promise<void> {
-    return;
+  // this method we will use to return meta in endpoints for all modules
+  // as data collected for all modules for the same state
+  public async getElBlockSnapshot(): Promise<ElMetaEntity | null> {
+    return await this.elMetaStorage.get();
   }
 
   public async getKeys(filters: KeysFilter): Promise<{
