@@ -12,6 +12,7 @@ export class RegistryKey {
     this.key = operatorKey.key.toLocaleLowerCase();
     this.depositSignature = operatorKey.depositSignature.toLocaleLowerCase();
     this.used = operatorKey.used;
+    this.moduleAddress = operatorKey.moduleAddress;
   }
 
   @PrimaryKey()
@@ -28,4 +29,7 @@ export class RegistryKey {
 
   @Property()
   used!: boolean;
+
+  @Property({ length: 42 })
+  moduleAddress!: string;
 }

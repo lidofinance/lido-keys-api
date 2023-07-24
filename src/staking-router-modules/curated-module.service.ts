@@ -29,13 +29,14 @@ export class CuratedModuleService implements StakingModuleInterface {
   ) {}
 
   @Trace(TRACE_TIMEOUT)
-  public async updateKeys(blockHashOrBlockTag: string | number): Promise<void> {
-    await this.keyRegistryService.update(blockHashOrBlockTag);
+  public async updateKeys(blockHashOrBlockTag: string | number, contractAddress: string): Promise<void> {
+    await this.keyRegistryService.update(blockHashOrBlockTag, contractAddress);
   }
 
-  public async getCurrentNonce(blockHashOrBlockTag: string | number): Promise<number> {
+  public async getCurrentNonce(blockHashOrBlockTag: string | number, contractAddress: string): Promise<number> {
     // create in keyRegistryService just value for getting nonce from contract
-    const { keysOpIndex } = await this.keyRegistryService.getMetaDataFromContract(blockHashOrBlockTag);
+    const { keysOpIndex } = await this.keyRegistryService.getMetaDataFromContract(blockHashOrBlockTag, contractAddress);
+    // TODO: get nonce
     return keysOpIndex;
   }
 

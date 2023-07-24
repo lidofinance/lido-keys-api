@@ -4,6 +4,7 @@ export interface RegistryKey {
   depositSignature: string;
   key: string;
   used: boolean;
+  moduleAddress: string;
 }
 
 export type KeyBatchRecord = [string, string, boolean[]] & {

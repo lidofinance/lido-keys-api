@@ -48,7 +48,12 @@ export class RegistryKeyBatchFetchService {
     return this.splitMergedRecord(unformattedKeys, KEYS_LENGTH);
   }
 
-  public formatKeys(operatorIndex: number, unformattedRecords: KeyBatchRecord, startIndex: number): RegistryKey[] {
+  public formatKeys(
+    operatorIndex: number,
+    unformattedRecords: KeyBatchRecord,
+    startIndex: number,
+    moduleAddress: string,
+  ): RegistryKey[] {
     const keys = this.unformattedKeysToArray(unformattedRecords[0]);
     const signatures = this.unformattedSignaturesToArray(unformattedRecords[1]);
     const usedStatuses = unformattedRecords[2];
@@ -65,6 +70,7 @@ export class RegistryKeyBatchFetchService {
         key: keys[chunkIndex],
         depositSignature: signatures[chunkIndex],
         used,
+        moduleAddress,
       };
     });
   }
@@ -74,6 +80,7 @@ export class RegistryKeyBatchFetchService {
     operatorIndex: number,
     fromIndex = 0,
     toIndex = -1,
+    moduleAddress: string,
     overrides: CallOverrides = {},
   ): Promise<RegistryKey[]> {
     if (fromIndex > toIndex && toIndex !== -1) {
@@ -81,18 +88,23 @@ export class RegistryKeyBatchFetchService {
     }
 
     if (toIndex == null || toIndex === -1) {
-      const operator = await this.operatorsService.fetchOne(operatorIndex, overrides);
+      const operator = await this.operatorsService.fetchOne(operatorIndex, moduleAddress, overrides);
 
       toIndex = operator.totalSigningKeys;
     }
 
     const [offset, limit] = this.convertIndicesToOffsetAndTotal(fromIndex, toIndex);
-    const unformattedKeys = await this.fetchSigningKeysInBatches(operatorIndex, offset, limit);
+    const unformattedKeys = await this.fetchSigningKeysInBatches(operatorIndex, offset, limit, moduleAddress);
 
     return unformattedKeys;
   }
 
-  public async fetchSigningKeysInBatches(operatorIndex: number, fromIndex: number, totalAmount: number) {
+  public async fetchSigningKeysInBatches(
+    operatorIndex: number,
+    fromIndex: number,
+    totalAmount: number,
+    moduleAddress: string,
+  ) {
     // TODO: move to constants/config cause this limit depends on eth node
     const batchSize = 1100;
 
@@ -105,7 +117,7 @@ export class RegistryKeyBatchFetchService {
 
       const promise = (async () => {
         const keys = await this.contract.getSigningKeys(operatorIndex, currentFromIndex, currentBatchSize);
-        return this.formatKeys(operatorIndex, keys, currentFromIndex);
+        return this.formatKeys(operatorIndex, keys, currentFromIndex, moduleAddress);
       })();
 
       promises.push(promise);

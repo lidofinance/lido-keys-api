@@ -17,7 +17,12 @@ export class RegistryKeyFetchService {
   ) {}
 
   /** fetches one key */
-  public async fetchOne(operatorIndex: number, keyIndex: number, overrides: CallOverrides = {}): Promise<RegistryKey> {
+  public async fetchOne(
+    operatorIndex: number,
+    keyIndex: number,
+    moduleAddress: string,
+    overrides: CallOverrides = {},
+  ): Promise<RegistryKey> {
     const keyData = await this.contract.getSigningKey(operatorIndex, keyIndex, overrides as any);
 
     const { key, depositSignature, used } = keyData;
@@ -28,6 +33,7 @@ export class RegistryKeyFetchService {
       key,
       depositSignature,
       used,
+      moduleAddress,
     };
   }
 
@@ -36,6 +42,7 @@ export class RegistryKeyFetchService {
     operatorIndex: number,
     fromIndex = 0,
     toIndex = -1,
+    moduleAddress: string,
     overrides: CallOverrides = {},
   ): Promise<RegistryKey[]> {
     if (fromIndex > toIndex && toIndex !== -1) {
@@ -43,13 +50,13 @@ export class RegistryKeyFetchService {
     }
 
     if (toIndex == null || toIndex === -1) {
-      const operator = await this.operatorsService.fetchOne(operatorIndex, overrides);
+      const operator = await this.operatorsService.fetchOne(operatorIndex, moduleAddress, overrides);
 
       toIndex = operator.totalSigningKeys;
     }
 
     const fetcher = async (keyIndex: number) => {
-      return await this.fetchOne(operatorIndex, keyIndex, overrides);
+      return await this.fetchOne(operatorIndex, keyIndex, moduleAddress, overrides);
     };
 
     const batchSize = REGISTRY_KEY_BATCH_SIZE;

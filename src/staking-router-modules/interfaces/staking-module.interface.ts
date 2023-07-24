@@ -7,7 +7,7 @@ export type MetaEntity = RegistryMeta;
 export type OperatorEntity = RegistryOperator;
 
 export interface StakingModuleInterface {
-  updateKeys(blockHashOrBlockTag: string | number): Promise<void>;
+  updateKeys(blockHashOrBlockTag: string | number, contractAddress: string): Promise<void>;
 
   getKeysWithMeta(filters: KeysFilter): Promise<{ keys: KeyEntity[]; meta: MetaEntity | null }>;
 
@@ -27,5 +27,5 @@ export interface StakingModuleInterface {
     meta: MetaEntity | null;
   }>;
 
-  getCurrentNonce(blockHashOrBlockTag: string | number): Promise<number>;
+  getCurrentNonce(blockHashOrBlockTag: string | number, contractAddress: string): Promise<number>;
 }

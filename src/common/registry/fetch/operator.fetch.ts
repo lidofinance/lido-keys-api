@@ -20,7 +20,11 @@ export class RegistryOperatorFetchService {
   }
 
   /** fetches one operator */
-  public async fetchOne(operatorIndex: number, overrides: CallOverrides = {}): Promise<RegistryOperator> {
+  public async fetchOne(
+    operatorIndex: number,
+    moduleAddress: string,
+    overrides: CallOverrides = {},
+  ): Promise<RegistryOperator> {
     const fullInfo = true;
     const operator = await this.contract.getNodeOperator(operatorIndex, fullInfo, overrides as any);
 
@@ -47,7 +51,12 @@ export class RegistryOperatorFetchService {
   }
 
   /** fetches operators */
-  public async fetch(fromIndex = 0, toIndex = -1, overrides: CallOverrides = {}): Promise<RegistryOperator[]> {
+  public async fetch(
+    fromIndex = 0,
+    toIndex = -1,
+    moduleAddress: string,
+    overrides: CallOverrides = {},
+  ): Promise<RegistryOperator[]> {
     if (fromIndex > toIndex && toIndex !== -1) {
       throw new Error('fromIndex is greater than or equal to toIndex');
     }
@@ -57,7 +66,7 @@ export class RegistryOperatorFetchService {
     }
 
     const fetcher = async (operatorIndex: number) => {
-      return await this.fetchOne(operatorIndex, overrides);
+      return await this.fetchOne(operatorIndex, moduleAddress, overrides);
     };
 
     const batchSize = REGISTRY_OPERATORS_BATCH_SIZE;

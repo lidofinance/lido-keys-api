@@ -79,20 +79,22 @@ export class StakingRouterService {
 
           // At the moment lets think that for all modules it is possible to make decision base on nonce value
 
-          const currNonce = await moduleInstance.getCurrentNonce(currElMeta.hash);
+          const currNonce = await moduleInstance.getCurrentNonce(currElMeta.hash, module.stakingModuleAddress);
           const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
 
-          if (moduleInStorage && moduleInStorage.nonce == currNonce) {
-            // nothing changed, don't need to update
-            return;
-          }
+          // uncomment on the second step
+          // now updating decision should be here moduleInstance.updateKeys
+          // if (moduleInStorage && moduleInStorage.nonce == currNonce) {
+          //   // nothing changed, don't need to update
+          //   return;
+          // }
 
           // TODO: move to SRModuleEntity storage module
           await this.srModulesStorage.store(module, currNonce);
           // here we already sure that we need to update keys and operators
           // TODO: next step is removing meta and nonce checking from updateKeys algo in registry implementation
           // TODO: rename updateKeys -> update (as we update operators, meta and keys)
-          await moduleInstance.updateKeys(currElMeta.hash);
+          await moduleInstance.updateKeys(currElMeta.hash, module.stakingModuleAddress);
         }
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },

@@ -48,9 +48,10 @@ export abstract class AbstractRegistryService {
   ) {}
 
   /** collects changed data from the contract and store it to the db */
-  public async update(blockHashOrBlockTag: string | number) {
+  public async update(blockHashOrBlockTag: string | number, moduleAddress: string) {
+    // TODO: remove everything before operators fetching ans saving
     const prevMeta = await this.getMetaDataFromStorage();
-    const currMeta = await this.getMetaDataFromContract(blockHashOrBlockTag);
+    const currMeta = await this.getMetaDataFromContract(blockHashOrBlockTag, moduleAddress);
 
     const isSameContractState = compareMeta(prevMeta, currMeta);
 
@@ -80,7 +81,7 @@ export abstract class AbstractRegistryService {
     const blockHash = currMeta.blockHash;
 
     const previousOperators = await this.getOperatorsFromStorage();
-    const currentOperators = await this.getOperatorsFromContract(blockHash);
+    const currentOperators = await this.getOperatorsFromContract(blockHash, moduleAddress);
 
     this.logger.log('Collected operators', {
       previousOperators: previousOperators.length,
@@ -96,7 +97,7 @@ export abstract class AbstractRegistryService {
           currMeta,
         });
 
-        await this.syncUpdatedKeysWithContract(previousOperators, currentOperators, blockHash);
+        await this.syncUpdatedKeysWithContract(previousOperators, currentOperators, blockHash, moduleAddress);
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
     );
@@ -106,13 +107,16 @@ export abstract class AbstractRegistryService {
 
   /** contract */
   /** returns the meta data from the contract */
-  public async getMetaDataFromContract(blockHashOrBlockTag: string | number): Promise<RegistryMeta> {
+  public async getMetaDataFromContract(
+    blockHashOrBlockTag: string | number,
+    moduleAddress: string,
+  ): Promise<RegistryMeta> {
     const { provider } = this.registryContract;
     const block = await provider.getBlock(blockHashOrBlockTag);
     const blockHash = block.hash;
     const blockTag = { blockHash };
 
-    const keysOpIndex = await this.metaFetch.fetchKeysOpIndex({ blockTag });
+    const keysOpIndex = await this.metaFetch.fetchKeysOpIndex({ blockTag }, moduleAddress);
 
     return {
       blockNumber: block.number,
@@ -123,9 +127,9 @@ export abstract class AbstractRegistryService {
   }
 
   /** returns operators from the contract */
-  public async getOperatorsFromContract(blockHash: string) {
+  public async getOperatorsFromContract(blockHash: string, moduleAddress: string) {
     const overrides = { blockTag: { blockHash } };
-    return await this.operatorFetch.fetch(0, -1, overrides);
+    return await this.operatorFetch.fetch(0, -1, moduleAddress, overrides);
   }
 
   /** returns the right border of the update keys range */
@@ -136,6 +140,7 @@ export abstract class AbstractRegistryService {
     previousOperators: RegistryOperator[],
     currentOperators: RegistryOperator[],
     blockHash: string,
+    moduleAddress: string,
   ) {
     // TODO: disable console time after testing
     console.time('FETCH_OPERATORS');
@@ -162,7 +167,8 @@ export abstract class AbstractRegistryService {
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
       // TODO: use feature flag
-      const result = await this.keyBatchFetch.fetch(operatorIndex, fromIndex, toIndex, overrides);
+      const result = await this.keyBatchFetch.fetch(operatorIndex, fromIndex, toIndex, moduleAddress, overrides);
+      // add moduleAddress
       const operatorKeys = result.filter((key) => key);
 
       this.logger.log('Keys fetched', {
