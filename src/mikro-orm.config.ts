@@ -8,7 +8,7 @@ import { RegistryMeta, RegistryOperator, RegistryKey } from './common/registry';
 import { ConsensusMetaEntity } from '@lido-nestjs/validators-registry';
 import { ConsensusValidatorEntity } from '@lido-nestjs/validators-registry';
 import { readFileSync } from 'fs';
-import { SRModuleEntity } from './storage/sr-module.entity';
+import { SrModuleEntity } from './storage/sr-module.entity';
 import { ElMetaEntity } from './storage/el-meta.entity';
 
 dotenv.config();
@@ -123,7 +123,7 @@ const config: Options = {
     RegistryMeta,
     ConsensusValidatorEntity,
     ConsensusMetaEntity,
-    SRModuleEntity,
+    SrModuleEntity,
     ElMetaEntity,
   ],
   migrations: getMigrationOptions(path.join(__dirname, 'migrations'), ['@lido-nestjs/validators-registry']),

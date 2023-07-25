@@ -3,7 +3,7 @@ import { StakingModule } from '../staking-router-modules/interfaces';
 import { SRModuleRepository } from './sr-module.repository';
 
 @Entity({ customRepository: () => SRModuleRepository })
-export class SRModuleEntity {
+export class SrModuleEntity {
   [EntityRepositoryType]?: SRModuleRepository;
   [PrimaryKeyType]?: [number, string];
 

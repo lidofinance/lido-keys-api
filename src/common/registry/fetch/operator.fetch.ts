@@ -1,21 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { rangePromise } from '@lido-nestjs/utils';
-import { Registry, REGISTRY_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
+import { Registry__factory } from '@lido-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
+import { ExecutionProvider } from 'common/execution-provider';
 
 @Injectable()
 export class RegistryOperatorFetchService {
-  constructor(
-    @Inject(REGISTRY_CONTRACT_TOKEN)
-    private contract: Registry,
-  ) {}
+  constructor(protected readonly provider: ExecutionProvider) {}
+
+  private getContract(moduleAddress: string) {
+    return Registry__factory.connect(moduleAddress, this.provider);
+  }
 
   /** fetches number of operators */
-  public async count(overrides: CallOverrides = {}): Promise<number> {
-    const bigNumber = await this.contract.getNodeOperatorsCount(overrides as any);
+  public async count(moduleAddress: string, overrides: CallOverrides = {}): Promise<number> {
+    const bigNumber = await this.getContract(moduleAddress).getNodeOperatorsCount(overrides as any);
     return bigNumber.toNumber();
   }
 
@@ -26,7 +28,7 @@ export class RegistryOperatorFetchService {
     overrides: CallOverrides = {},
   ): Promise<RegistryOperator> {
     const fullInfo = true;
-    const operator = await this.contract.getNodeOperator(operatorIndex, fullInfo, overrides as any);
+    const operator = await this.getContract(moduleAddress).getNodeOperator(operatorIndex, fullInfo, overrides as any);
 
     const {
       name,
@@ -47,6 +49,7 @@ export class RegistryOperatorFetchService {
       stoppedValidators: totalExitedValidators.toNumber(),
       totalSigningKeys: totalAddedValidators.toNumber(),
       usedSigningKeys: totalDepositedValidators.toNumber(),
+      moduleAddress,
     };
   }
 
@@ -62,7 +65,7 @@ export class RegistryOperatorFetchService {
     }
 
     if (toIndex == null || toIndex === -1) {
-      toIndex = await this.count(overrides);
+      toIndex = await this.count(moduleAddress, overrides);
     }
 
     const fetcher = async (operatorIndex: number) => {

@@ -1,18 +1,21 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Registry, REGISTRY_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
+import { Injectable } from '@nestjs/common';
+import { Registry__factory } from '@lido-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { KeyBatchRecord, RegistryKey } from './interfaces/key.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';
 import { KEYS_LENGTH, SIGNATURE_LENGTH } from './key-batch.constants';
+import { ExecutionProvider } from 'common/execution-provider';
 
 @Injectable()
 export class RegistryKeyBatchFetchService {
   constructor(
-    @Inject(REGISTRY_CONTRACT_TOKEN)
-    private contract: Registry,
-
-    private operatorsService: RegistryOperatorFetchService,
+    protected readonly provider: ExecutionProvider,
+    protected readonly operatorsService: RegistryOperatorFetchService,
   ) {}
+
+  private getContract(moduleAddress: string) {
+    return Registry__factory.connect(moduleAddress, this.provider);
+  }
 
   /**
    * Split one big string into array of strings
@@ -116,7 +119,11 @@ export class RegistryKeyBatchFetchService {
       const currentBatchSize = Math.min(batchSize, totalAmount - i * batchSize);
 
       const promise = (async () => {
-        const keys = await this.contract.getSigningKeys(operatorIndex, currentFromIndex, currentBatchSize);
+        const keys = await this.getContract(moduleAddress).getSigningKeys(
+          operatorIndex,
+          currentFromIndex,
+          currentBatchSize,
+        );
         return this.formatKeys(operatorIndex, keys, currentFromIndex, moduleAddress);
       })();
 

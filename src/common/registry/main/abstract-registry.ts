@@ -116,7 +116,7 @@ export abstract class AbstractRegistryService {
     const blockHash = block.hash;
     const blockTag = { blockHash };
 
-    const keysOpIndex = await this.metaFetch.fetchKeysOpIndex({ blockTag }, moduleAddress);
+    const keysOpIndex = await this.metaFetch.fetchKeysOpIndex(moduleAddress, { blockTag });
 
     return {
       blockNumber: block.number,

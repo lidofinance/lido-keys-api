@@ -11,7 +11,7 @@ import { KeyWithModuleAddress } from 'http/keys/entities';
 import { ELBlockSnapshot, ModuleId } from 'http/common/entities';
 import { config } from './staking-module-impl-config';
 import { IsolationLevel } from '@mikro-orm/core';
-import { SRModuleEntity } from 'storage/sr-module.entity';
+import { SrModuleEntity } from 'storage/sr-module.entity';
 import { SRModuleStorageService } from 'storage/sr-module.storage';
 import { ElMetaStorageService } from 'storage/el-meta.storage';
 import { ElMetaEntity } from 'storage/el-meta.entity';
@@ -29,12 +29,12 @@ export class StakingRouterService {
   ) {}
 
   // modules list is used in endpoints
-  public async getStakingModules(): Promise<SRModuleEntity[]> {
+  public async getStakingModules(): Promise<SrModuleEntity[]> {
     const srModules = await this.srModulesStorage.findAll();
     return srModules;
   }
 
-  public async getStakingModule(moduleId: ModuleId): Promise<SRModuleEntity | null> {
+  public async getStakingModule(moduleId: ModuleId): Promise<SrModuleEntity | null> {
     // TODO: here should be more checks
     if (typeof moduleId === 'number') {
       return await this.srModulesStorage.findOneById(moduleId);
@@ -89,7 +89,7 @@ export class StakingRouterService {
           //   return;
           // }
 
-          // TODO: move to SRModuleEntity storage module
+          // TODO: move to SrModuleEntity storage module
           await this.srModulesStorage.store(module, currNonce);
           // here we already sure that we need to update keys and operators
           // TODO: next step is removing meta and nonce checking from updateKeys algo in registry implementation

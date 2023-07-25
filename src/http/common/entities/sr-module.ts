@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SRModuleEntity } from 'storage/sr-module.entity';
+import { SrModuleEntity } from 'storage/sr-module.entity';
 
 export class SRModule {
-  constructor(nonce: number, module: SRModuleEntity) {
+  constructor(nonce: number, module: SrModuleEntity) {
     this.nonce = nonce;
     this.type = module.type;
     this.id = module.id;

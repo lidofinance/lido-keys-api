@@ -2,7 +2,7 @@ import { QueryOrder } from '@mikro-orm/core';
 import { FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { StakingModule } from 'staking-router-modules/interfaces';
-import { SRModuleEntity } from './sr-module.entity';
+import { SrModuleEntity } from './sr-module.entity';
 import { SRModuleRepository } from './sr-module.repository';
 
 @Injectable()
@@ -11,30 +11,30 @@ export class SRModuleStorageService {
 
   /** find module */
   async find<P extends string = never>(
-    where: FilterQuery<SRModuleEntity>,
-    options?: FindOptions<SRModuleEntity, P>,
-  ): Promise<SRModuleEntity[]> {
+    where: FilterQuery<SrModuleEntity>,
+    options?: FindOptions<SrModuleEntity, P>,
+  ): Promise<SrModuleEntity[]> {
     return await this.repository.find(where, options);
   }
 
   /** find key by index */
-  async findOneById(moduleId: number): Promise<SRModuleEntity | null> {
+  async findOneById(moduleId: number): Promise<SrModuleEntity | null> {
     return await this.repository.findOne({ id: moduleId });
   }
 
-  async findOneByContractAddress(contractAddress: string): Promise<SRModuleEntity | null> {
+  async findOneByContractAddress(contractAddress: string): Promise<SrModuleEntity | null> {
     return await this.repository.findOne({ stakingModuleAddress: contractAddress });
   }
 
   /** find all keys */
-  async findAll(): Promise<SRModuleEntity[]> {
+  async findAll(): Promise<SrModuleEntity[]> {
     return await this.repository.findAll({
       orderBy: [{ id: QueryOrder.ASC }],
     });
   }
 
   async store(module: StakingModule, currNonce: number): Promise<void> {
-    const srModule = new SRModuleEntity(module, currNonce);
+    const srModule = new SrModuleEntity(module, currNonce);
     // TODO: what exactly will happen during attempt to write in db module that already exists in db
     await this.repository
       .createQueryBuilder()
