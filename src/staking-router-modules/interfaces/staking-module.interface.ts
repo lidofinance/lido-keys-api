@@ -8,8 +8,8 @@ export type MetaEntity = RegistryMeta;
 export type OperatorEntity = RegistryOperator;
 
 export interface StakingModuleInterface {
-  update(blockHashOrBlockTag: string | number, moduleAddress: string): Promise<void>;
-
+  // TODO: moduleAddress - first arg
+  update(blockHash: string, moduleAddress: string): Promise<void>;
   // this method, operators and nonce
   getKeys(filters: KeysFilter, moduleAddress: string, options?): Promise<KeyEntity[]>;
 
@@ -21,5 +21,5 @@ export interface StakingModuleInterface {
 
   getOperator(index: number, moduleAddress: string): Promise<OperatorEntity | null>;
 
-  getCurrentNonce(blockHashOrBlockTag: string | number, moduleAddress: string): Promise<number>;
+  getCurrentNonce(blockHash: string, moduleAddress: string): Promise<number>;
 }

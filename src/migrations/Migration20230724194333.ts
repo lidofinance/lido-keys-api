@@ -16,6 +16,8 @@ export class Migration20230724194333 extends Migration {
     // maybe better instead of this migration truncate values in db but than update will take more time for holders
     // I prefer second way
 
+    // TODO: can be solved by check if db empty dont do anything
+
     throw new Error('CHAIN_ID is wrong, it should be 1 or 5');
   }
 

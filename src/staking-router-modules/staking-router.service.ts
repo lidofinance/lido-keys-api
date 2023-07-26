@@ -65,6 +65,8 @@ export class StakingRouterService {
       return;
     }
 
+    // TODO: еcли была реорганизация, может ли currElMeta.number быть меньше и нам надо обновиться ?
+
     // get staking router modules from SR contract
     const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
 
@@ -87,12 +89,12 @@ export class StakingRouterService {
           const currNonce = await moduleInstance.getCurrentNonce(currElMeta.hash, module.stakingModuleAddress);
           const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
 
-          // uncomment on the second step
           // now updating decision should be here moduleInstance.updateKeys
-          // if (moduleInStorage && moduleInStorage.nonce === currNonce) {
-          //   // nothing changed, don't need to update
-          //   return;
-          // }
+          if (moduleInStorage && moduleInStorage.nonce === currNonce) {
+            // nothing changed, don't need to update
+            // TODO: add log
+            return;
+          }
 
           // TODO: move to SrModuleEntity storage module
           await this.srModulesStorage.store(module, currNonce);
@@ -632,4 +634,39 @@ export class StakingRouterService {
   }
 
   // smth for validators
+
+  // async getOldestLidoValidators(
+  //   moduleId: ModuleId,
+  //   operatorId: number,
+  //   filters: ValidatorsQuery,
+  // ): Promise<ExitValidatorListResponse> {
+  //   if (this.disabledRegistry()) {
+  //     this.logger.warn('ValidatorsRegistry is disabled in API');
+  //     throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
+  //   }
+
+  //   const stakingModule = await this.stakingRouterService.getStakingModule(moduleId);
+
+  //   if (!stakingModule) {
+  //     throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
+  //   }
+
+  //   // We suppose if module in list, Keys API knows how to work with it
+  //   // it is also important to have consistent module info and meta
+
+  //   if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
+  //     const { validators, meta: clMeta } = await this.getOperatorOldestValidators(operatorId, filters);
+  //     const data = this.createExitValidatorList(validators);
+  //     const clBlockSnapshot = new CLBlockSnapshot(clMeta);
+
+  //     return {
+  //       data,
+  //       meta: {
+  //         clBlockSnapshot: clBlockSnapshot,
+  //       },
+  //     };
+  //   }
+
+  //   throw new NotFoundException(`Modules with other types are not supported`);
+  // }
 }
