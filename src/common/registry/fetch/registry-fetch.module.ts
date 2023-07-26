@@ -48,7 +48,7 @@ export class RegistryFetchModule {
           provider: options?.provider,
         }),
         RegistryContractModule.forFeature({
-          address: options?.registryAddress,
+          address: '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9',
           provider: options?.provider,
         }),
       ],
@@ -75,7 +75,7 @@ export class RegistryFetchModule {
             const config = await options.useFactory(...args);
             const { provider, registryAddress } = config;
 
-            return { provider, address: registryAddress };
+            return { provider, address: '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9' };
           },
           inject: options.inject,
         }),
