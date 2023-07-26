@@ -1,5 +1,6 @@
 import { RegistryKey, RegistryMeta, RegistryOperator } from '../../common/registry';
 import { KeysFilter } from './keys-filter';
+import { OperatorsFilter } from './operators-filter';
 
 // TODO: in future Keys = CuratedKey (RegistryKey) | CommunityKey
 export type KeyEntity = RegistryKey;
@@ -7,25 +8,18 @@ export type MetaEntity = RegistryMeta;
 export type OperatorEntity = RegistryOperator;
 
 export interface StakingModuleInterface {
-  updateKeys(blockHashOrBlockTag: string | number, contractAddress: string): Promise<void>;
+  update(blockHashOrBlockTag: string | number, moduleAddress: string): Promise<void>;
 
-  getKeysWithMeta(filters: KeysFilter): Promise<{ keys: KeyEntity[]; meta: MetaEntity | null }>;
+  // this method, operators and nonce
+  getKeys(filters: KeysFilter, moduleAddress: string, options?): Promise<KeyEntity[]>;
 
-  getKeyWithMetaByPubkey(pubkey: string): Promise<{ keys: KeyEntity[]; meta: MetaEntity | null }>;
+  getKeysByPubKeys(pubKeys: string[], moduleAddress: string, options?): Promise<KeyEntity[]>;
 
-  getKeysWithMetaByPubkeys(pubkeys: string[]): Promise<{ keys: KeyEntity[]; meta: MetaEntity | null }>;
+  getKeysByPubkey(pubkey: string, moduleAddress: string, options?): Promise<KeyEntity[]>;
 
-  getMetaDataFromStorage(): Promise<MetaEntity | null>;
+  getOperators(moduleAddress: string, filters: OperatorsFilter): Promise<OperatorEntity[]>;
 
-  getOperatorsWithMeta(): Promise<{ operators: OperatorEntity[]; meta: MetaEntity | null }>;
+  getOperator(index: number, moduleAddress: string): Promise<OperatorEntity | null>;
 
-  getOperatorByIndex(index: number): Promise<{ operator: OperatorEntity | null; meta: MetaEntity | null }>;
-
-  getData(filters: KeysFilter): Promise<{
-    operators: OperatorEntity[];
-    keys: KeyEntity[];
-    meta: MetaEntity | null;
-  }>;
-
-  getCurrentNonce(blockHashOrBlockTag: string | number, contractAddress: string): Promise<number>;
+  getCurrentNonce(blockHashOrBlockTag: string | number, moduleAddress: string): Promise<number>;
 }

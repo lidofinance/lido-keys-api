@@ -4,89 +4,73 @@ import { ConfigService } from 'common/config';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { ELBlockSnapshot, SRModule } from 'http/common/entities';
 import { ModuleId } from 'http/common/entities/';
-import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
+import { IsolationLevel } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/knex';
 
 @Injectable()
 export class SRModulesService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected configService: ConfigService,
-    protected curatedService: CuratedModuleService,
+    private readonly entityManager: EntityManager,
     protected stakingRouterService: StakingRouterService,
   ) {}
 
   async getModules(): Promise<SRModuleListResponse> {
-    const stakingModules = await this.stakingRouterService.getStakingModules();
+    // TODO: maybe move to staking-module-service
+    const { stakingModules, elMeta } = await this.entityManager.transactional(
+      async () => {
+        const elMeta = await this.stakingRouterService.getElBlockSnapshot();
+        const stakingModules = await this.stakingRouterService.getStakingModules();
+        return { stakingModules, elMeta };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
 
     if (stakingModules.length == 0) {
       this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
       throw httpExceptionTooEarlyResp();
     }
 
-    const srModulesWithNonce: SRModule[] = [];
-    let elBlockSnapshot: ELBlockSnapshot | null = null;
-
-    for (let i = 0; i < stakingModules.length; i++) {
-      if (stakingModules[i].type == STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-        const meta = await this.curatedService.getMetaDataFromStorage();
-        if (!meta) {
-          this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
-          throw httpExceptionTooEarlyResp();
-        }
-
-        srModulesWithNonce.push(new SRModule(meta.keysOpIndex, stakingModules[i]));
-
-        // meta should be the same for all modules
-        // so in answer we can use meta of any module
-        // lets use meta of first module in list
-        // currently we sure if stakingModules is not empty, we will have in list Curated Module
-        // in future this check should be in each if clause
-        if (i == 0) {
-          elBlockSnapshot = new ELBlockSnapshot(meta);
-        }
-      }
-    }
-
-    // we check stakingModules list types so this condition should never be true
-    if (!elBlockSnapshot) {
-      this.logger.warn("Meta for response wasn't set.");
+    if (!elMeta) {
+      this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
       throw httpExceptionTooEarlyResp();
     }
 
+    const stakingModuleListResponse = stakingModules.map((module) => new SRModule(module));
+
     return {
-      data: srModulesWithNonce,
-      elBlockSnapshot,
+      data: stakingModuleListResponse,
+      elBlockSnapshot: new ELBlockSnapshot(elMeta),
     };
   }
 
   async getModule(moduleId: ModuleId): Promise<SRModuleResponse> {
-    const stakingModule = await this.stakingRouterService.getStakingModule(moduleId);
+    const { stakingModule, elMeta } = await this.entityManager.transactional(
+      async () => {
+        const elMeta = await this.stakingRouterService.getElBlockSnapshot();
+        const stakingModule = await this.stakingRouterService.getStakingModule(moduleId);
+        return { stakingModule, elMeta };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
+
+    // TODO: check if responses of this endpoint satisfy our document
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
     }
 
-    // We suppose if module in list, Keys API knows how to work with it
-    // it is also important to have consistent module info and meta
-
-    if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-      const meta = await this.curatedService.getMetaDataFromStorage();
-
-      if (!meta) {
-        this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
-        throw httpExceptionTooEarlyResp();
-      }
-
-      const elBlockSnapshot = new ELBlockSnapshot(meta);
-
-      return {
-        data: new SRModule(meta.keysOpIndex, stakingModule),
-        elBlockSnapshot,
-      };
+    if (!elMeta) {
+      this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
+      throw httpExceptionTooEarlyResp();
     }
 
-    throw new NotFoundException('Modules with other types are not supported');
+    return {
+      data: new SRModule(stakingModule),
+      elBlockSnapshot: new ELBlockSnapshot(elMeta),
+    };
   }
 }

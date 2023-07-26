@@ -77,6 +77,6 @@ export class SRModulesKeysController {
     description: 'Staking router module_id or contract address.',
   })
   getModuleKeysByPubkeys(@Param('module_id') moduleId: ModuleId, @Body() keys: KeysFindBody) {
-    return this.srModulesService.getModuleKeysByPubkeys(moduleId, keys.pubkeys);
+    return this.srModulesService.getModuleKeysByPubKeys(moduleId, keys.pubkeys);
   }
 }

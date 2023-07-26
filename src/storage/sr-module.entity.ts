@@ -23,7 +23,8 @@ export class SrModuleEntity {
     this.nonce = nonce;
   }
 
-  // TODO: should id be unique (if module is deleted, will we reuse id ?)
+  // TODO: change primary key from [id, stakingModuleAddress] to stakingModuleAddress ?
+
   @PrimaryKey()
   // unique id of the staking module
   @Property()
