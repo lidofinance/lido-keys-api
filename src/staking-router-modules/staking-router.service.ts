@@ -23,6 +23,7 @@ import {
 } from 'http/sr-modules-operators/entities';
 import { SRModuleOperator } from 'http/common/entities/sr-module-operator';
 import { SRModuleOperatorsKeysResponse } from 'http/sr-modules-operators-keys/entities';
+import { isValidContractAddress } from './utils';
 
 @Injectable()
 export class StakingRouterService {
@@ -45,12 +46,11 @@ export class StakingRouterService {
   }
 
   public async getStakingModule(moduleId: ModuleId): Promise<SrModuleEntity | null> {
-    // TODO: here should be more checks
-    if (typeof moduleId === 'number') {
-      return await this.srModulesStorage.findOneById(moduleId);
+    if (isValidContractAddress(moduleId)) {
+      return await this.srModulesStorage.findOneByContractAddress(moduleId);
     }
 
-    return await this.srModulesStorage.findOneByContractAddress(moduleId);
+    return await this.srModulesStorage.findOneById(Number(moduleId));
   }
 
   // update keys of all modules
@@ -457,7 +457,7 @@ export class StakingRouterService {
 
           //  /v1/operators return these common fields for all modules
           // here should be request without module.stakingModuleAddress
-          const operators: OperatorEntity[] = await moduleInstance.getOperators(module.stakingModuleAddress);
+          const operators: OperatorEntity[] = await moduleInstance.getOperators(module.stakingModuleAddress, {});
 
           operatorsByModules.push({ operators, module: new SRModule(module) });
         }
@@ -501,7 +501,7 @@ export class StakingRouterService {
 
         //  /v1/operators return these common fields for all modules
         // here should be request without module.stakingModuleAddress
-        const operators: OperatorEntity[] = await moduleInstance.getOperators(stakingModule.stakingModuleAddress);
+        const operators: OperatorEntity[] = await moduleInstance.getOperators(stakingModule.stakingModuleAddress, {});
 
         const module = new SRModule(stakingModule);
 
