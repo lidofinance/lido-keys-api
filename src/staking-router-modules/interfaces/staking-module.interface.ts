@@ -1,10 +1,9 @@
-import { RegistryKey, RegistryMeta, RegistryOperator } from '../../common/registry';
+import { RegistryKey, RegistryOperator } from 'common/registry';
 import { KeysFilter } from './keys-filter';
 import { OperatorsFilter } from './operators-filter';
 
 // TODO: in future Keys = CuratedKey (RegistryKey) | CommunityKey
 export type KeyEntity = RegistryKey;
-export type MetaEntity = RegistryMeta;
 export type OperatorEntity = RegistryOperator;
 
 export interface StakingModuleInterface {

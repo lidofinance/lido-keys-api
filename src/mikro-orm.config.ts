@@ -4,7 +4,8 @@ import * as dotenv from 'dotenv';
 import * as glob from 'glob';
 import * as path from 'path';
 import { MigrationObject } from '@mikro-orm/core/typings';
-import { RegistryMeta, RegistryOperator, RegistryKey } from './common/registry';
+import { RegistryOperator } from './common/registry/storage/operator.entity';
+import { RegistryKey } from './common/registry/storage/key.entity';
 import { ConsensusMetaEntity } from '@lido-nestjs/validators-registry';
 import { ConsensusValidatorEntity } from '@lido-nestjs/validators-registry';
 import { readFileSync } from 'fs';
@@ -120,7 +121,6 @@ const config: Options = {
   entities: [
     RegistryKey,
     RegistryOperator,
-    RegistryMeta,
     ConsensusValidatorEntity,
     ConsensusMetaEntity,
     SrModuleEntity,

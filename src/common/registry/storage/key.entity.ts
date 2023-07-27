@@ -4,7 +4,7 @@ import { RegistryKeyRepository } from './key.repository';
 @Entity({ customRepository: () => RegistryKeyRepository })
 export class RegistryKey {
   [EntityRepositoryType]?: RegistryKeyRepository;
-  [PrimaryKeyType]?: [number, number];
+  [PrimaryKeyType]?: [number, number, string];
 
   constructor(operatorKey: RegistryKey) {
     this.index = operatorKey.index;
@@ -30,6 +30,7 @@ export class RegistryKey {
   @Property()
   used!: boolean;
 
+  @PrimaryKey()
   @Property({ length: 42 })
   moduleAddress!: string;
 }

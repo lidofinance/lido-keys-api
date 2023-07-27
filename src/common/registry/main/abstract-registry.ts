@@ -7,7 +7,6 @@ import { RegistryMetaFetchService } from '../fetch/meta.fetch';
 import { RegistryKeyFetchService } from '../fetch/key.fetch';
 import { RegistryOperatorFetchService } from '../fetch/operator.fetch';
 
-import { RegistryMetaStorageService } from '../storage/meta.storage';
 import { RegistryKeyStorageService } from '../storage/key.storage';
 import { RegistryOperatorStorageService } from '../storage/operator.storage';
 
@@ -29,7 +28,6 @@ export abstract class AbstractRegistryService {
     @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
 
     protected readonly metaFetch: RegistryMetaFetchService,
-    protected readonly metaStorage: RegistryMetaStorageService,
 
     protected readonly keyFetch: RegistryKeyFetchService,
     protected readonly keyBatchFetch: RegistryKeyBatchFetchService,

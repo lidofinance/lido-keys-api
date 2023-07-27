@@ -3,8 +3,6 @@ export * from './cl-block-snapshot';
 export * from './el-block-snapshot';
 export * from './cl-meta';
 export * from './el-meta';
-// oneOf type for SR modules meta
-export * from './sr-module-meta';
 
 // keys
 export * from './key';

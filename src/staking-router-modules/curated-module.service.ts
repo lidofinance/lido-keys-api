@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   KeyRegistryService,
   RegistryKeyStorageService,
-  RegistryMetaStorageService,
   RegistryKey,
   RegistryOperator,
   RegistryOperatorStorageService,
@@ -23,7 +22,6 @@ export class CuratedModuleService implements StakingModuleInterface {
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly keyRegistryService: KeyRegistryService,
     protected readonly keyStorageService: RegistryKeyStorageService,
-    protected readonly metaStorageService: RegistryMetaStorageService,
     protected readonly operatorStorageService: RegistryOperatorStorageService,
     protected readonly entityManager: EntityManager,
   ) {}
