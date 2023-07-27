@@ -148,7 +148,7 @@ export abstract class AbstractRegistryService {
           await entityManager
             .createQueryBuilder(RegistryKey)
             .insert(keysChunk)
-            .onConflict(['index', 'operator_index'])
+            .onConflict(['index', 'operator_index', 'module_address'])
             .merge()
             .execute();
         }),
@@ -184,7 +184,7 @@ export abstract class AbstractRegistryService {
           await entityManager
             .createQueryBuilder(RegistryOperator)
             .insert(operatorsChunk)
-            .onConflict('index')
+            .onConflict(['index', 'module_address'])
             .merge()
             .execute();
         }),
