@@ -16,11 +16,20 @@ export class RegistryKeyStorageService {
     return await this.repository.find(where, options);
   }
 
+  async getChunk(limit: number, offset: number, where: FilterQuery<RegistryKey>, options: any) {
+    const query = this.repository.createQueryBuilder().select('*').where(where).limit(limit).offset(offset);
+
+    const chunk = await query.execute();
+
+    return chunk;
+  }
+
   async *fetchKeysByChunks(where: FilterQuery<RegistryKey>, options: any): AsyncGenerator<any, void, unknown> {
     const batchSize = 10000;
     let offset = 0;
-    // TODO: transaction
+    // TODO: transaction - transaction already at controller level
     while (true) {
+      // TODO: method find can work with limit offset
       const query = this.repository.createQueryBuilder().select('*').where(where).limit(batchSize).offset(offset);
 
       const chunk = await query.execute();

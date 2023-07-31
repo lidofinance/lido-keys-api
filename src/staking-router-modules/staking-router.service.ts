@@ -32,6 +32,7 @@ import {
   VALIDATORS_REGISTRY_DISABLED_ERROR,
 } from 'validators/validators.constants';
 import { ValidatorsService } from 'validators';
+import { CuratedModuleService } from './curated-module.service';
 
 @Injectable()
 export class StakingRouterService {
@@ -44,6 +45,7 @@ export class StakingRouterService {
     protected readonly srModulesStorage: SRModuleStorageService,
     protected readonly elMetaStorage: ElMetaStorageService,
     protected readonly validatorsService: ValidatorsService,
+    protected readonly curatedService: CuratedModuleService,
   ) {}
 
   // TODO: maybe add method to read modules and meta together
@@ -124,6 +126,34 @@ export class StakingRouterService {
     return await this.elMetaStorage.get();
   }
 
+  public async getKeysStream(filters: KeysFilter) {
+    const stakingModules = await this.getStakingModules();
+
+    if (stakingModules.length === 0) {
+      this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
+      // TODO: should we throw here exception, or enough to return empty list?
+      throw httpExceptionTooEarlyResp();
+    }
+
+    const keysGeneratorsByModules: any[] = [];
+
+    for (const module of stakingModules) {
+      const impl = config[module.type];
+      const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
+
+      // TODO: add type to function
+      // TODO: should add options {
+      //   populated: ['key', 'deposit_signature', 'operator_index', 'used', 'module_address'],
+      // }
+      const res = await moduleInstance.getKeysStream(filters, module.stakingModuleAddress);
+
+      keysGeneratorsByModules.push(res);
+    }
+
+    return keysGeneratorsByModules;
+  }
+
+  // TODO: should be deprecated
   public async getKeys(filters: KeysFilter): Promise<{
     data: KeyWithModuleAddress[];
     meta: {
@@ -182,6 +212,8 @@ export class StakingRouterService {
     };
   }
 
+  // TODO: Should we add streams for fetching keys by pubkeys ?
+  // this edpoint doesnt return a big answer
   public async getKeysByPubKeys(pubKeys: string[]): Promise<{
     data: KeyWithModuleAddress[];
     meta: {
@@ -239,6 +271,8 @@ export class StakingRouterService {
     };
   }
 
+  // TODO: Should we add streams for fetching keys by pubkeys ?
+  // this edpoint doesnt return a big answer
   public async getKeysByPubkey(pubkey: string): Promise<{
     data: KeyWithModuleAddress[];
     meta: {
@@ -290,6 +324,55 @@ export class StakingRouterService {
 
     return {
       data: keys,
+      meta: {
+        elBlockSnapshot: new ELBlockSnapshot(elMeta),
+      },
+    };
+  }
+
+  public async getKeysByModulesStreamVersion(filters: KeysFilter) {
+    //: Promise<GroupedByModuleKeyListResponse> {
+    // get list of modules
+    const stakingModules = await this.getStakingModules();
+
+    if (stakingModules.length === 0) {
+      this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
+      // TODO: should we throw here exception, or enough to return empty list?
+      throw httpExceptionTooEarlyResp();
+    }
+
+    const elMeta = await this.getElBlockSnapshot();
+
+    if (!elMeta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+      throw httpExceptionTooEarlyResp();
+    }
+
+    // TODO: add type
+    const keysGeneratorsByModules: { keysGenerator: any; module: SRModule }[] = [];
+
+    for (const module of stakingModules) {
+      // read from config name of module that implement functions to fetch and store keys for type
+      // TODO: check what will happen if implementation is not a provider of StakingRouterModule
+      const impl = config[module.type];
+      const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
+      // TODO: use here method with streams
+      // TODO: add in select fields
+
+      // TODO: define type for lsi of fields
+      // /v1/modules/keys return these common fields for all modules without address
+      const keysGenerator: any = await moduleInstance.getKeysStream(filters, module.stakingModuleAddress);
+
+      // TODO: above use options
+      //   {
+      //   populated: ['key', 'deposit_signature', 'operator_index', 'used'],
+      // });
+
+      keysGeneratorsByModules.push({ keysGenerator, module: new SRModule(module) });
+    }
+
+    return {
+      keysGeneratorsByModules,
       meta: {
         elBlockSnapshot: new ELBlockSnapshot(elMeta),
       },

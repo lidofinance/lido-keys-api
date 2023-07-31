@@ -28,6 +28,12 @@ import { IsolationLevel } from '@mikro-orm/core';
 export class KeysController {
   constructor(protected readonly keysService: KeysService, protected readonly entityManager: EntityManager) {}
 
+  *generateSequence() {
+    yield 1;
+    yield 2;
+    return 3;
+  }
+
   @Version('1')
   @Get('/stream')
   @ApiResponse({
@@ -44,16 +50,19 @@ export class KeysController {
   async get(@Query() filters: KeyQuery, @Res() reply?: FastifyReply) {
     await this.entityManager.transactional(
       async () => {
-        const { keysStream, meta } = await this.keysService.get(filters);
+        const { keysGeneratorsByModules, meta } = await this.keysService.get(filters);
 
-        const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "keys": [', ',', ']}');
+        // TODO: здесь должен быть ключь data
+        const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
         // TODO: this check is needed to prevent tests from crashing with an error,
         // in a real example this check should not be present
         reply && reply.type('application/json').send(jsonStream);
         // TODO: is it necessary to check the error? or 'finally' is ok?
         try {
-          for await (const keysBatch of keysStream) {
-            jsonStream.write(keysBatch);
+          for (const keysGenerator of keysGeneratorsByModules) {
+            for await (const keysBatch of keysGenerator) {
+              jsonStream.write(keysBatch);
+            }
           }
         } finally {
           jsonStream.end();

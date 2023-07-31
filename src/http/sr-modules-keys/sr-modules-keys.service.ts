@@ -13,8 +13,11 @@ export class SRModulesKeysService {
     protected stakingRouterService: StakingRouterService,
   ) {}
 
-  async getGroupedByModuleKeys(filters: KeyQuery): Promise<GroupedByModuleKeyListResponse> {
-    return await this.stakingRouterService.getKeysByModules(filters);
+  async getGroupedByModuleKeys(filters: KeyQuery) {
+    // Promise<GroupedByModuleKeyListResponse> {
+    const { keysGeneratorsByModules, meta } = await this.stakingRouterService.getKeysByModulesStreamVersion(filters);
+
+    return { keysGeneratorsByModules, meta };
   }
 
   async getModuleKeys(moduleId: ModuleId, filters: KeyQuery): Promise<SRModuleKeyListResponse> {

@@ -1,15 +1,22 @@
-import { Controller, Get, Version, Param, Query, Body, Post, NotFoundException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Version, Param, Query, Body, Post, NotFoundException, HttpStatus, Res } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
 import { ModuleId, KeyQuery } from 'http/common/entities/';
 import { KeysFindBody } from 'http/common/entities/pubkeys';
 import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { IsolationLevel } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/knex';
+import * as JSONStream from 'jsonstream';
+import type { FastifyReply } from 'fastify';
 
 @Controller('modules')
 @ApiTags('sr-module-keys')
 export class SRModulesKeysController {
-  constructor(protected readonly srModulesService: SRModulesKeysService) {}
+  constructor(
+    protected readonly srModulesService: SRModulesKeysService,
+    protected readonly entityManager: EntityManager,
+  ) {}
 
   @Version('1')
   @ApiOperation({ summary: 'Get keys for all modules grouped by staking router module.' })
@@ -24,8 +31,51 @@ export class SRModulesKeysController {
     type: TooEarlyResponse,
   })
   @Get('keys')
-  getGroupedByModuleKeys(@Query() filters: KeyQuery) {
-    return this.srModulesService.getGroupedByModuleKeys(filters);
+  async getGroupedByModuleKeys(@Query() filters: KeyQuery, @Res() reply?: FastifyReply) {
+    await this.entityManager.transactional(
+      async () => {
+        const { keysGeneratorsByModules, meta } = await this.srModulesService.getGroupedByModuleKeys(filters);
+        keysGeneratorsByModules.push(keysGeneratorsByModules[0]);
+
+        // const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
+        const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
+        // TODO: this check is needed to prevent tests from crashing with an error,
+        // in a real example this check should not be present
+        reply && reply.type('application/json').send(jsonStream);
+        // TODO: is it necessary to check the error? or 'finally' is ok?
+        try {
+          // jsonStream.write('{ "meta": ' + JSON.stringify(meta) + ', "data": [');
+
+          let k = 0;
+          for (const { keysGenerator, module } of keysGeneratorsByModules) {
+            // const keysStream = JSONStream.stringify('{ "module": ' + JSON.stringify(module) + ', "keys": [', ',', ']}');
+
+            let i = 0;
+            jsonStream.write('{ "module": ' + JSON.stringify(module) + ', "keys": [');
+            for await (const keysBatch of keysGenerator) {
+              jsonStream.write(keysBatch);
+              i++;
+            }
+            if (keysGenerator.length == i) {
+              jsonStream.write(']}');
+            } else {
+              jsonStream.write(']},');
+            }
+
+            k++;
+
+            // if (k == keysGeneratorsByModules.length) {
+            //   jsonStream.write(']}');
+            // } else {
+            //   jsonStream.write(']},');
+            // }
+          }
+        } finally {
+          jsonStream.end();
+        }
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
   }
 
   @Version('1')

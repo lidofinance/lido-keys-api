@@ -90,7 +90,23 @@ export class CuratedModuleService implements StakingModuleInterface {
   }
 
   // todo: should replace getKeys and other methods
-  public async getKeysWithMetaStream(filters: KeysFilter): Promise<any> {
+  // public async getKeysStream(filters: KeysFilter, moduleAddress: string) {
+  //   const where = {};
+  //   if (filters.operatorIndex != undefined) {
+  //     where['operatorIndex'] = filters.operatorIndex;
+  //   }
+
+  //   if (filters.used != undefined) {
+  //     where['used'] = filters.used;
+  //   }
+
+  //   where['moduleAddress'] = moduleAddress;
+
+  //   const keysStream = await this.keyStorageService.fetchKeysByChunks(where, {});
+  //   return keysStream;
+  // }
+
+  public async *getKeysStream(filters: KeysFilter, moduleAddress: string): AsyncGenerator<any> {
     const where = {};
     if (filters.operatorIndex != undefined) {
       where['operatorIndex'] = filters.operatorIndex;
@@ -100,7 +116,24 @@ export class CuratedModuleService implements StakingModuleInterface {
       where['used'] = filters.used;
     }
 
-    const keysStream = await this.keyStorageService.fetchKeysByChunks(where, {});
-    return keysStream;
+    where['moduleAddress'] = moduleAddress;
+
+    const batchSize = 10000;
+    let offset = 0;
+
+    // TODO: transaction - transaction already at controller level
+    while (true) {
+      const chunk = await this.keyStorageService.getChunk(batchSize, offset, where, {});
+
+      if (chunk.length === 0) {
+        break;
+      }
+
+      offset += batchSize;
+
+      for (const record of chunk) {
+        yield record;
+      }
+    }
   }
 }

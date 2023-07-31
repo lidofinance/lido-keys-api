@@ -12,6 +12,8 @@ export interface StakingModuleInterface {
   // this method, operators and nonce
   getKeys(filters: KeysFilter, moduleAddress: string, options?): Promise<KeyEntity[]>;
 
+  getKeysStream(filters: KeysFilter, moduleAddress: string);
+
   getKeysByPubKeys(pubKeys: string[], moduleAddress: string, options?): Promise<KeyEntity[]>;
 
   getKeysByPubkey(pubkey: string, moduleAddress: string, options?): Promise<KeyEntity[]>;

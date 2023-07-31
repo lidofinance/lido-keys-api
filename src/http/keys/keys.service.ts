@@ -11,47 +11,23 @@ import { StakingRouterService } from 'staking-router-modules/staking-router.serv
 export class KeysService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected curatedService: CuratedModuleService,
     protected configService: ConfigService,
     protected stakingRouterService: StakingRouterService,
+    protected curated: CuratedModuleService,
   ) {}
 
   async get(filters: KeyQuery): Promise<any> {
-    const stakingModules = await this.stakingRouterService.getStakingModules();
-
-    if (stakingModules.length === 0) {
-      this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-      throw httpExceptionTooEarlyResp();
-    }
-
-    // keys could be of type CuratedKey | CommunityKey
-    // const collectedKeys: KeyWithModuleAddress[][] = [];
-    let elBlockSnapshot: ELBlockSnapshot | null = null;
-
-    const { keysStream, meta } = await this.curatedService.getKeysWithMetaStream({
-      used: filters.used,
-      operatorIndex: filters.operatorIndex,
-    });
-
-    // TODO: how will work fetching data from multiple modules
+    const meta = await this.stakingRouterService.getElBlockSnapshot();
+    const keysGeneratorsByModules = await this.stakingRouterService.getKeysStream(filters);
 
     if (!meta) {
-      this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
-      throw httpExceptionTooEarlyResp();
-    }
-
-    elBlockSnapshot = new ELBlockSnapshot(meta);
-
-    if (!elBlockSnapshot) {
-      this.logger.warn("Meta for response wasn't set.");
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
       throw httpExceptionTooEarlyResp();
     }
 
     return {
-      keysStream,
-      meta: {
-        elBlockSnapshot,
-      },
+      keysGeneratorsByModules,
+      meta,
     };
   }
 
