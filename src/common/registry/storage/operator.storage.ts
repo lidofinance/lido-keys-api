@@ -8,6 +8,13 @@ import { RegistryOperatorRepository } from './operator.repository';
 export class RegistryOperatorStorageService {
   constructor(private readonly repository: RegistryOperatorRepository) {}
 
+  async getChunk(limit: number, offset: number, where: FilterQuery<RegistryOperator>, options: any) {
+    const query = this.repository.createQueryBuilder().select('*').where(where).limit(limit).offset(offset);
+    const chunk = await query.execute();
+
+    return chunk;
+  }
+
   /** find operators */
   async find<P extends string = never>(
     where: FilterQuery<RegistryOperator>,

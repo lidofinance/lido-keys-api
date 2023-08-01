@@ -136,4 +136,28 @@ export class CuratedModuleService implements StakingModuleInterface {
       }
     }
   }
+
+  public async *getOperatorsStream(moduleAddress: string): AsyncGenerator<any> {
+    const where = {};
+
+    where['moduleAddress'] = moduleAddress;
+
+    const batchSize = 10000;
+    let offset = 0;
+
+    // TODO: transaction - transaction already at controller level
+    while (true) {
+      const chunk = await this.operatorStorageService.getChunk(batchSize, offset, where, {});
+
+      if (chunk.length === 0) {
+        break;
+      }
+
+      offset += batchSize;
+
+      for (const record of chunk) {
+        yield record;
+      }
+    }
+  }
 }

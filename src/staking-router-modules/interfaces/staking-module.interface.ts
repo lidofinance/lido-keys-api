@@ -20,6 +20,8 @@ export interface StakingModuleInterface {
 
   getOperators(moduleAddress: string, filters: OperatorsFilter): Promise<OperatorEntity[]>;
 
+  getOperatorsStream(moduleAddress: string, filters: OperatorsFilter); //: Promise<OperatorEntity[]>;
+
   getOperator(index: number, moduleAddress: string): Promise<OperatorEntity | null>;
 
   getCurrentNonce(blockHash: string, moduleAddress: string): Promise<number>;

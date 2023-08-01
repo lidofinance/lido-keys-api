@@ -14,7 +14,7 @@ import type { FastifyReply } from 'fastify';
 @ApiTags('sr-module-keys')
 export class SRModulesKeysController {
   constructor(
-    protected readonly srModulesService: SRModulesKeysService,
+    protected readonly srModulesKeysService: SRModulesKeysService,
     protected readonly entityManager: EntityManager,
   ) {}
 
@@ -34,7 +34,7 @@ export class SRModulesKeysController {
   async getGroupedByModuleKeys(@Query() filters: KeyQuery, @Res() reply?: FastifyReply) {
     await this.entityManager.transactional(
       async () => {
-        const { keysGeneratorsByModules, meta } = await this.srModulesService.getGroupedByModuleKeys(filters);
+        const { keysGeneratorsByModules, meta } = await this.srModulesKeysService.getGroupedByModuleKeys(filters);
 
         const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
 
@@ -81,7 +81,7 @@ export class SRModulesKeysController {
   async getModuleKeys(@Param('module_id') moduleId: ModuleId, @Query() filters: KeyQuery, @Res() reply?: FastifyReply) {
     await this.entityManager.transactional(
       async () => {
-        const { keysGenerator, module, meta } = await this.srModulesService.getModuleKeys(moduleId, filters);
+        const { keysGenerator, module, meta } = await this.srModulesKeysService.getModuleKeys(moduleId, filters);
 
         // const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
 
@@ -126,6 +126,6 @@ export class SRModulesKeysController {
     description: 'Staking router module_id or contract address.',
   })
   getModuleKeysByPubkeys(@Param('module_id') moduleId: ModuleId, @Body() keys: KeysFindBody) {
-    return this.srModulesService.getModuleKeysByPubKeys(moduleId, keys.pubkeys);
+    return this.srModulesKeysService.getModuleKeysByPubKeys(moduleId, keys.pubkeys);
   }
 }
