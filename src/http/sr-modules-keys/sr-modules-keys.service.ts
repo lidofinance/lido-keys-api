@@ -20,8 +20,16 @@ export class SRModulesKeysService {
     return { keysGeneratorsByModules, meta };
   }
 
-  async getModuleKeys(moduleId: ModuleId, filters: KeyQuery): Promise<SRModuleKeyListResponse> {
-    return await this.stakingRouterService.getModuleKeys(moduleId, filters);
+  async getModuleKeys(moduleId: ModuleId, filters: KeyQuery) {
+    // Promise<SRModuleKeyListResponse> {
+    // return await this.stakingRouterService.getModuleKeys(moduleId, filters);
+
+    const { keysGenerator, module, meta } = await this.stakingRouterService.getModuleKeysStreamVersion(
+      moduleId,
+      filters,
+    );
+
+    return { keysGenerator, module, meta };
   }
 
   async getModuleKeysByPubKeys(moduleId: ModuleId, pubKeys: string[]): Promise<SRModuleKeyListResponse> {

@@ -371,6 +371,8 @@ export class StakingRouterService {
       keysGeneratorsByModules.push({ keysGenerator, module: new SRModule(module) });
     }
 
+    // TODO: maybe we need to read meta on the upper layer in controller's service
+
     return {
       keysGeneratorsByModules,
       meta: {
@@ -379,6 +381,7 @@ export class StakingRouterService {
     };
   }
 
+  // should be deprecated
   public async getKeysByModules(filters: KeysFilter): Promise<GroupedByModuleKeyListResponse> {
     const { keysByModules, elMeta } = await this.entityManager.transactional(
       async () => {
@@ -432,6 +435,51 @@ export class StakingRouterService {
 
   // for one module
 
+  // TODO: write type
+  public async getModuleKeysStreamVersion(moduleId: ModuleId, filters: KeysFilter) {
+    // /v1/modules/{moduleId}/keys returning type depends on module
+
+    // so const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
+    // moduleInstance.getKeys() should return all fields of key for module
+    // check /v1/modules/{module_id}/keys
+
+    // get module
+    const stakingModule = await this.getStakingModule(moduleId);
+
+    // maybe  this exception should not be sent here
+    if (!stakingModule) {
+      throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
+    }
+
+    const elMeta = await this.getElBlockSnapshot();
+
+    if (!elMeta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+      throw httpExceptionTooEarlyResp();
+    }
+
+    const impl = config[stakingModule.type];
+    const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
+    // TODO: use here method with streams
+    // TODO: add in select fields
+
+    // TODO: define type for lsi of fields
+    // /v1/modules/keys return these common fields for all modules without address
+    const keysGenerator: any = await moduleInstance.getKeysStream(filters, stakingModule.stakingModuleAddress);
+    const module = new SRModule(stakingModule);
+
+    // TODO: maybe we need to read meta on the upper layer in controller's service
+
+    return {
+      keysGenerator,
+      module,
+      meta: {
+        elBlockSnapshot: new ELBlockSnapshot(elMeta),
+      },
+    };
+  }
+
+  // should be deprecated
   // TODO: consider use different type
   public async getModuleKeys(moduleId: ModuleId, filters: KeysFilter): Promise<SRModuleKeyListResponse> {
     // /v1/modules/{moduleId}/keys returning type depends on module

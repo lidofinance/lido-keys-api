@@ -78,8 +78,29 @@ export class SRModulesKeysController {
     description: 'Staking router module_id or contract address.',
   })
   @Get(':module_id/keys')
-  getModuleKeys(@Param('module_id') moduleId: ModuleId, @Query() filters: KeyQuery) {
-    return this.srModulesService.getModuleKeys(moduleId, filters);
+  async getModuleKeys(@Param('module_id') moduleId: ModuleId, @Query() filters: KeyQuery, @Res() reply?: FastifyReply) {
+    await this.entityManager.transactional(
+      async () => {
+        const { keysGenerator, module, meta } = await this.srModulesService.getModuleKeys(moduleId, filters);
+
+        // const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
+
+        const jsonStream = JSONStream.stringify(
+          '{ "meta": ' + JSON.stringify(meta) + ', "data": { "module": ' + JSON.stringify(module) + ', "keys": [',
+          ',',
+          ']}}',
+        );
+
+        reply && reply.type('application/json').send(jsonStream);
+
+        for await (const keysBatch of keysGenerator) {
+          jsonStream.write(keysBatch);
+        }
+
+        jsonStream.end();
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
   }
 
   @Version('1')

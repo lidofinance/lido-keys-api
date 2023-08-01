@@ -28,14 +28,8 @@ import { IsolationLevel } from '@mikro-orm/core';
 export class KeysController {
   constructor(protected readonly keysService: KeysService, protected readonly entityManager: EntityManager) {}
 
-  *generateSequence() {
-    yield 1;
-    yield 2;
-    return 3;
-  }
-
   @Version('1')
-  @Get('/stream')
+  @Get()
   @ApiResponse({
     status: 425,
     description: "Meta is null, maybe data hasn't been written in db yet",
