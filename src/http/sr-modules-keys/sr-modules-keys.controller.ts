@@ -35,44 +35,22 @@ export class SRModulesKeysController {
     await this.entityManager.transactional(
       async () => {
         const { keysGeneratorsByModules, meta } = await this.srModulesService.getGroupedByModuleKeys(filters);
-        keysGeneratorsByModules.push(keysGeneratorsByModules[0]);
 
-        // const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
         const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
-        // TODO: this check is needed to prevent tests from crashing with an error,
-        // in a real example this check should not be present
+
         reply && reply.type('application/json').send(jsonStream);
-        // TODO: is it necessary to check the error? or 'finally' is ok?
-        try {
-          // jsonStream.write('{ "meta": ' + JSON.stringify(meta) + ', "data": [');
 
-          let k = 0;
-          for (const { keysGenerator, module } of keysGeneratorsByModules) {
-            // const keysStream = JSONStream.stringify('{ "module": ' + JSON.stringify(module) + ', "keys": [', ',', ']}');
+        for (const { keysGenerator, module } of keysGeneratorsByModules) {
+          const keysData = { module, keys: [] as any[] };
 
-            let i = 0;
-            jsonStream.write('{ "module": ' + JSON.stringify(module) + ', "keys": [');
-            for await (const keysBatch of keysGenerator) {
-              jsonStream.write(keysBatch);
-              i++;
-            }
-            if (keysGenerator.length == i) {
-              jsonStream.write(']}');
-            } else {
-              jsonStream.write(']},');
-            }
-
-            k++;
-
-            // if (k == keysGeneratorsByModules.length) {
-            //   jsonStream.write(']}');
-            // } else {
-            //   jsonStream.write(']},');
-            // }
+          for await (const keysBatch of keysGenerator) {
+            keysData.keys.push(keysBatch);
           }
-        } finally {
-          jsonStream.end();
+
+          jsonStream.write(keysData);
         }
+
+        jsonStream.end();
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
