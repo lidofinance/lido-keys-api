@@ -17,18 +17,12 @@ export class SRModulesOperatorsService {
     protected stakingRouterService: StakingRouterService,
   ) {}
 
-  public async getAll() {
-    //Promise<GroupedByModuleOperatorListResponse> {
-    const { operatorsGeneratorsByModules, meta } = await this.stakingRouterService.getOperatorsByModulesStreamVersion();
-    return { operatorsGeneratorsByModules, meta };
+  public async getAll(): Promise<GroupedByModuleOperatorListResponse> {
+    return await this.stakingRouterService.getOperatorsByModules();
   }
 
-  public async getByModule(moduleId: ModuleId) {
-    // : Promise<SRModuleOperatorListResponse> {
-    const { operatorsGenerator, module, meta } = await this.stakingRouterService.getModuleOperatorsStreamVersion(
-      moduleId,
-    );
-    return { operatorsGenerator, module, meta };
+  public async getByModule(moduleId: ModuleId): Promise<SRModuleOperatorListResponse> {
+    return await this.stakingRouterService.getModuleOperators(moduleId);
   }
 
   public async getModuleOperator(moduleId: ModuleId, operatorIndex: number): Promise<SRModuleOperatorResponse> {

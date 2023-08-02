@@ -1,14 +1,21 @@
-import { Controller, Get, Version, Param, Query, NotFoundException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Version, Param, Query, NotFoundException, HttpStatus, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } from '@nestjs/swagger';
 import { SRModuleOperatorsKeysResponse } from './entities';
 import { ModuleId, KeyQuery } from 'http/common/entities/';
 import { SRModulesOperatorsKeysService } from './sr-modules-operators-keys.service';
 import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { EntityManager } from '@mikro-orm/knex';
+import * as JSONStream from 'jsonstream';
+import type { FastifyReply } from 'fastify';
+import { IsolationLevel } from '@mikro-orm/core';
 
 @Controller('/modules')
 @ApiTags('operators-keys')
 export class SRModulesOperatorsKeysController {
-  constructor(protected readonly srModulesOperatorsKeys: SRModulesOperatorsKeysService) {}
+  constructor(
+    protected readonly srModulesOperatorsKeys: SRModulesOperatorsKeysService,
+    protected readonly entityManager: EntityManager,
+  ) {}
 
   @Version('1')
   @ApiOperation({ summary: 'Staking router module operators.' })
@@ -32,7 +39,36 @@ export class SRModulesOperatorsKeysController {
     description: 'Staking router module_id or contract address.',
   })
   @Get(':module_id/operators/keys')
-  getOperatorsKeys(@Param('module_id') moduleId: ModuleId, @Query() filters: KeyQuery) {
-    return this.srModulesOperatorsKeys.get(moduleId, filters);
+  async getOperatorsKeys(
+    @Param('module_id') moduleId: ModuleId,
+    @Query() filters: KeyQuery,
+    @Res() reply?: FastifyReply,
+  ) {
+    await this.entityManager.transactional(
+      async () => {
+        const { operators, keysGenerator, module, meta } = await this.srModulesOperatorsKeys.get(moduleId, filters);
+
+        const jsonStream = JSONStream.stringify(
+          '{ "meta": ' +
+            JSON.stringify(meta) +
+            ', "data": { "module": ' +
+            JSON.stringify(module) +
+            ', "operators": ' +
+            JSON.stringify(operators) +
+            ', "keys": [',
+          ',',
+          ']}}',
+        );
+
+        reply && reply.type('application/json').send(jsonStream);
+
+        for await (const keysBatch of keysGenerator) {
+          jsonStream.write(keysBatch);
+        }
+
+        jsonStream.end();
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
   }
 }

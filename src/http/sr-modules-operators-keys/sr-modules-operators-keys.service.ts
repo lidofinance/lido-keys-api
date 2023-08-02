@@ -14,7 +14,8 @@ export class SRModulesOperatorsKeysService {
     protected stakingRouterService: StakingRouterService,
   ) {}
 
-  public async get(moduleId: ModuleId, filters: KeyQuery): Promise<SRModuleOperatorsKeysResponse> {
-    return await this.stakingRouterService.getModuleOperatorsAndKeys(moduleId, filters);
+  public async get(moduleId: ModuleId, filters: KeyQuery) {
+    //: Promise<SRModuleOperatorsKeysResponse> {
+    return await this.stakingRouterService.getModuleOperatorsAndKeysStreamVersion(moduleId, filters);
   }
 }

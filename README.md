@@ -879,8 +879,7 @@ For running locally in container run
 
 1. `docker-compose -f docker-compose.yml build`
 2. `docker-compose -f docker-compose.yml up`
-3. `docker-compose -f docker-compose.metrics.yml build`
-4. `docker-compose -f docker-compose.metrics.yml up`
+3. `docker-compose -f docker-compose.metrics.yml up`
 
 To configure grafana go to `http://localhost:8000/dashboards` and dashboards from `./grafana` folder.
 

@@ -566,52 +566,6 @@ export class StakingRouterService {
     };
   }
 
-  // operators
-
-  public async getOperatorsByModulesStreamVersion() {
-    //Promise<GroupedByModuleOperatorListResponse> {
-    // get list of modules
-    const stakingModules = await this.getStakingModules();
-
-    if (stakingModules.length === 0) {
-      this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-      // TODO: should we throw here exception, or enough to return empty list?
-      throw httpExceptionTooEarlyResp();
-    }
-
-    const elMeta = await this.getElBlockSnapshot();
-
-    if (!elMeta) {
-      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-      throw httpExceptionTooEarlyResp();
-    }
-
-    const operatorsGeneratorsByModules: { operatorsGenerator: SRModuleOperator[]; module: SRModule }[] = [];
-
-    for (const module of stakingModules) {
-      // read from config name of module that implement functions to fetch and store keys for type
-      // TODO: check what will happen if implementation is not a provider of StakingRouterModule
-      const impl = config[module.type];
-      const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-      // TODO: use here method with streams
-      // TODO: add in select fields
-
-      //  /v1/operators return these common fields for all modules
-      // here should be request without module.stakingModuleAddress
-      const operatorsGenerator: any = await moduleInstance.getOperatorsStream(module.stakingModuleAddress, {});
-
-      operatorsGeneratorsByModules.push({ operatorsGenerator, module: new SRModule(module) });
-    }
-
-    return {
-      operatorsGeneratorsByModules,
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
-    };
-  }
-
-  // TODO: should be deprecated
   public async getOperatorsByModules(): Promise<GroupedByModuleOperatorListResponse> {
     const { operatorsByModules, elMeta } = await this.entityManager.transactional(
       async () => {
@@ -661,46 +615,6 @@ export class StakingRouterService {
     };
   }
 
-  public async getModuleOperatorsStreamVersion(moduleId: ModuleId) {
-    //: Promise<SRModuleOperatorListResponse> {
-
-    // get list of modules
-    const stakingModule = await this.getStakingModule(moduleId);
-
-    if (!stakingModule) {
-      throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-    }
-
-    const elMeta = await this.getElBlockSnapshot();
-
-    if (!elMeta) {
-      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-      throw httpExceptionTooEarlyResp();
-    }
-
-    // read from config name of module that implement functions to fetch and store keys for type
-    // TODO: check what will happen if implementation is not a provider of StakingRouterModule
-    const impl = config[stakingModule.type];
-    const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-    // TODO: use here method with streams
-    // TODO: add in select fields
-
-    //  /v1/operators return these common fields for all modules
-    // here should be request without module.stakingModuleAddress
-    const operatorsGenerator: any[] = await moduleInstance.getOperatorsStream(stakingModule.stakingModuleAddress, {});
-
-    const module = new SRModule(stakingModule);
-
-    return {
-      operatorsGenerator,
-      module,
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
-    };
-  }
-
-  // TODO: should be deprecated
   public async getModuleOperators(moduleId: ModuleId): Promise<SRModuleOperatorListResponse> {
     const { operators, module, elMeta } = await this.entityManager.transactional(
       async () => {
@@ -803,6 +717,48 @@ export class StakingRouterService {
     };
   }
 
+  public async getModuleOperatorsAndKeysStreamVersion(moduleId: ModuleId, filters: KeysFilter) {
+    // get list of modules
+    const stakingModule = await this.getStakingModule(moduleId);
+
+    if (!stakingModule) {
+      throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
+    }
+
+    const elMeta = await this.getElBlockSnapshot();
+
+    if (!elMeta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+      throw httpExceptionTooEarlyResp();
+    }
+
+    // read from config name of module that implement functions to fetch and store keys for type
+    // TODO: check what will happen if implementation is not a provider of StakingRouterModule
+    const impl = config[stakingModule.type];
+    const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
+    // TODO: use here method with streams
+    // TODO: add in select fields
+
+    const keysGenerator = await moduleInstance.getKeysStream(filters, stakingModule.stakingModuleAddress);
+
+    // TODO: add filter in
+    const operatorsFilter = filters.operatorIndex ? { index: filters.operatorIndex } : {};
+
+    const operators = await moduleInstance.getOperators(stakingModule.stakingModuleAddress, operatorsFilter);
+
+    const module = new SRModule(stakingModule);
+
+    return {
+      operators,
+      keysGenerator,
+      module,
+      meta: {
+        elBlockSnapshot: new ELBlockSnapshot(elMeta),
+      },
+    };
+  }
+
+  // TODO: should be deprecated
   public async getModuleOperatorsAndKeys(
     moduleId: ModuleId,
     filters: KeysFilter,

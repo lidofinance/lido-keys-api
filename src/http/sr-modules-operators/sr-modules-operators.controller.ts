@@ -9,18 +9,11 @@ import { ModuleId } from 'http/common/entities/';
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
 import { OperatorIdParam } from 'http/common/entities/operator-id-param';
 import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
-import { EntityManager } from '@mikro-orm/knex';
-import * as JSONStream from 'jsonstream';
-import type { FastifyReply } from 'fastify';
-import { IsolationLevel } from '@mikro-orm/core';
 
 @Controller('/')
 @ApiTags('operators')
 export class SRModulesOperatorsController {
-  constructor(
-    protected readonly srModulesOperators: SRModulesOperatorsService,
-    protected readonly entityManager: EntityManager,
-  ) {}
+  constructor(protected readonly srModulesOperators: SRModulesOperatorsService) {}
 
   @Version('1')
   @ApiOperation({ summary: 'Get operators for all modules grouped by staking router module.' })
@@ -35,29 +28,8 @@ export class SRModulesOperatorsController {
     type: TooEarlyResponse,
   })
   @Get('/operators')
-  async get(@Res() reply?: FastifyReply) {
-    await this.entityManager.transactional(
-      async () => {
-        const { operatorsGeneratorsByModules, meta } = await this.srModulesOperators.getAll();
-
-        const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
-
-        reply && reply.type('application/json').send(jsonStream);
-
-        for (const { operatorsGenerator, module } of operatorsGeneratorsByModules) {
-          const operatorsData = { module, operators: [] as any[] };
-
-          for await (const operatorsBatch of operatorsGenerator) {
-            operatorsData.operators.push(operatorsBatch);
-          }
-
-          jsonStream.write(operatorsData);
-        }
-
-        jsonStream.end();
-      },
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
+  get() {
+    return this.srModulesOperators.getAll();
   }
 
   @Version('1')
@@ -82,27 +54,8 @@ export class SRModulesOperatorsController {
     description: 'Staking router module_id or contract address.',
   })
   @Get('modules/:module_id/operators')
-  async getModuleOperators(@Param('module_id') moduleId: ModuleId, @Res() reply?: FastifyReply) {
-    await this.entityManager.transactional(
-      async () => {
-        const { operatorsGenerator, module, meta } = await this.srModulesOperators.getByModule(moduleId);
-
-        const jsonStream = JSONStream.stringify(
-          '{ "meta": ' + JSON.stringify(meta) + ', "data": { "module": ' + JSON.stringify(module) + ', "operators": [',
-          ',',
-          ']}}',
-        );
-
-        reply && reply.type('application/json').send(jsonStream);
-
-        for await (const operatorsBatch of operatorsGenerator) {
-          jsonStream.write(operatorsBatch);
-        }
-
-        jsonStream.end();
-      },
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
+  getModuleOperators(@Param('module_id') moduleId: ModuleId) {
+    return this.srModulesOperators.getByModule(moduleId);
   }
 
   @Version('1')
@@ -127,7 +80,7 @@ export class SRModulesOperatorsController {
     description: 'Staking router module_id or contract address.',
   })
   @Get('modules/:module_id/operators/:operator_id')
-  // here should be validaton
+  //TODO: here should be validation
   getModuleOperator(@Param('module_id') moduleId: ModuleId, @Param() operator: OperatorIdParam) {
     return this.srModulesOperators.getModuleOperator(moduleId, operator.operator_id);
   }
