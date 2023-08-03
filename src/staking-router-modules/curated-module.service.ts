@@ -110,9 +110,9 @@ export class CuratedModuleService implements StakingModuleInterface {
     return await this.keyStorageService.find({ key: pubKey.toLocaleLowerCase(), moduleAddress }, { populate: fields });
   }
 
-  public async getOperators(moduleAddress: string, filters: OperatorsFilter): Promise<RegistryOperator[]> {
+  public async getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<RegistryOperator[]> {
     const where = {};
-    if (filters.index != undefined) {
+    if (filters?.index != undefined) {
       where['index'] = filters.index;
     }
     // we store operators of modules with the same impl at the same table

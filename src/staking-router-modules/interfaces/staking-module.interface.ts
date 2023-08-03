@@ -31,7 +31,7 @@ export interface StakingModuleInterface {
     fields?: readonly KeyField[] | undefined,
   ): Promise<KeyEntity[]>;
 
-  getOperators(moduleAddress: string, filters: OperatorsFilter): Promise<OperatorEntity[]>;
+  getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<OperatorEntity[]>;
 
   getOperator(moduleAddress: string, index: number): Promise<OperatorEntity | null>;
 

@@ -17,15 +17,15 @@ import { ElMetaStorageService } from 'storage/el-meta.storage';
 import { ElMetaEntity } from 'storage/el-meta.entity';
 import { isValidContractAddress } from './utils';
 import { ValidatorsQuery } from 'http/sr-modules-validators/entities';
-import { ConsensusMeta, Validator } from '@lido-nestjs/validators-registry';
+import { Validator } from '@lido-nestjs/validators-registry';
 import {
   DEFAULT_EXIT_PERCENT,
   VALIDATORS_STATUSES_FOR_EXIT,
   VALIDATORS_REGISTRY_DISABLED_ERROR,
 } from 'validators/validators.constants';
 import { ValidatorsService } from 'validators';
-import { CuratedModuleService } from './curated-module.service';
 import { KeyField } from './interfaces/key-fields';
+import { PrometheusService } from 'common/prometheus';
 
 @Injectable()
 export class StakingRouterService {
@@ -38,7 +38,7 @@ export class StakingRouterService {
     protected readonly srModulesStorage: SRModuleStorageService,
     protected readonly elMetaStorage: ElMetaStorageService,
     protected readonly validatorsService: ValidatorsService,
-    protected readonly curatedService: CuratedModuleService,
+    protected readonly prometheusService: PrometheusService,
   ) {}
 
   // TODO: maybe add method to read modules and meta together
@@ -58,7 +58,8 @@ export class StakingRouterService {
   }
 
   // update keys of all modules
-  public async update(): Promise<void> {
+  // TODO: return elMeta as result
+  public async update(): Promise<{ number: number; hash: string; timestamp: number } | undefined> {
     // reading latest block from blockchain
     const currElMeta = await this.executionProvider.getBlock('latest');
     // read from database last execution layer data
@@ -100,6 +101,62 @@ export class StakingRouterService {
 
           await this.srModulesStorage.store(module, currNonce);
           await moduleInstance.update(module.stakingModuleAddress, currElMeta.hash);
+        }
+      },
+      { isolationLevel: IsolationLevel.READ_COMMITTED },
+    );
+
+    return currElMeta;
+  }
+
+  public async updateMetrics() {
+    const stakingModules = await this.getStakingModules();
+
+    await this.entityManager.transactional(
+      async () => {
+        this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.reset();
+        const elMeta = await this.getElBlockSnapshot();
+
+        if (!elMeta) {
+          return;
+        }
+
+        // update timestamp and block number metrics
+        this.prometheusService.registryLastUpdate.set(elMeta.timestamp);
+        this.prometheusService.registryBlockNumber.set(elMeta.blockNumber);
+
+        for (const module of stakingModules) {
+          // read from config name of module that implement functions to fetch and store keys for type
+          // TODO: check what will happen if implementation is not a provider of StakingRouterModule
+          const impl = config[module.type];
+          const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
+
+          // update nonce metric
+          this.prometheusService.registryNonce.set({ srModuleId: module.id }, module.nonce);
+
+          // get operators
+          const operators = await moduleInstance.getOperators(module.stakingModuleAddress);
+          this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.reset();
+
+          operators.forEach((operator) => {
+            this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
+              {
+                operator: operator.index,
+                srModuleId: module.id,
+                used: 'true',
+              },
+              operator.usedSigningKeys,
+            );
+
+            this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
+              {
+                operator: operator.index,
+                srModuleId: module.id,
+                used: 'false',
+              },
+              operator.totalSigningKeys - operator.usedSigningKeys,
+            );
+          });
         }
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
