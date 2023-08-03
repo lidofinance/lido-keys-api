@@ -30,12 +30,12 @@ export class CuratedModuleService implements StakingModuleInterface {
   // we need it
   @Trace(TRACE_TIMEOUT)
   public async update(moduleAddress: string, blockHash: string): Promise<void> {
-    await this.keyRegistryService.update(blockHash, moduleAddress);
+    await this.keyRegistryService.update(moduleAddress, blockHash);
   }
 
   // we need it
   public async getCurrentNonce(moduleAddress: string, blockHash: string): Promise<number> {
-    const nonce = await this.keyRegistryService.getNonceFromContract(blockHash, moduleAddress);
+    const nonce = await this.keyRegistryService.getNonceFromContract(moduleAddress, blockHash);
     return nonce;
   }
 

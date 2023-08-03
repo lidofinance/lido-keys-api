@@ -23,8 +23,8 @@ export class RegistryOperatorFetchService {
 
   /** fetches one operator */
   public async fetchOne(
-    operatorIndex: number,
     moduleAddress: string,
+    operatorIndex: number,
     overrides: CallOverrides = {},
   ): Promise<RegistryOperator> {
     const fullInfo = true;
@@ -55,9 +55,9 @@ export class RegistryOperatorFetchService {
 
   /** fetches operators */
   public async fetch(
+    moduleAddress: string,
     fromIndex = 0,
     toIndex = -1,
-    moduleAddress: string,
     overrides: CallOverrides = {},
   ): Promise<RegistryOperator[]> {
     if (fromIndex > toIndex && toIndex !== -1) {
@@ -69,7 +69,7 @@ export class RegistryOperatorFetchService {
     }
 
     const fetcher = async (operatorIndex: number) => {
-      return await this.fetchOne(operatorIndex, moduleAddress, overrides);
+      return await this.fetchOne(moduleAddress, operatorIndex, overrides);
     };
 
     const batchSize = REGISTRY_OPERATORS_BATCH_SIZE;

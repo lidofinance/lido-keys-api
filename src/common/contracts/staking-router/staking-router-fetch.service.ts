@@ -1,7 +1,9 @@
 import { Injectable, Inject, LoggerService } from '@nestjs/common';
+// TODO: move to staking-router-service
 import { StakingModule } from '../../../staking-router-modules/interfaces/staking-module';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { IStakingModuleService } from 'common/contracts/i-staking-module';
+// TODO: instead of separate file and index create one module with all contants
 import { STAKING_MODULE_TYPE } from 'staking-router-modules/interfaces/staking-module-type';
 import { LidoLocatorService } from 'common/contracts/lido-locator';
 import { StakingRouter__factory } from 'generated';
@@ -12,6 +14,7 @@ import { Trace } from 'common/decorators/trace';
 const TRACE_TIMEOUT = 30 * 1000;
 
 @Injectable()
+// TODO: move to staking-router-service
 export class StakingRouterFetchService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
@@ -50,6 +53,7 @@ export class StakingRouterFetchService {
         )) as STAKING_MODULE_TYPE;
 
         // TODO: reconsider way of checking this module type without
+        // TODO: how to handle this case?
         if (!Object.values(STAKING_MODULE_TYPE).includes(stakingModuleType)) {
           this.logger.error(new Error(`Staking Module id ${stakingModule.id} is unknown`));
           process.exit(1);

@@ -52,10 +52,10 @@ export class RegistryKeyBatchFetchService {
   }
 
   public formatKeys(
+    moduleAddress: string,
     operatorIndex: number,
     unformattedRecords: KeyBatchRecord,
     startIndex: number,
-    moduleAddress: string,
   ): RegistryKey[] {
     const keys = this.unformattedKeysToArray(unformattedRecords[0]);
     const signatures = this.unformattedSignaturesToArray(unformattedRecords[1]);
@@ -80,10 +80,10 @@ export class RegistryKeyBatchFetchService {
 
   /** fetches operator's keys */
   public async fetch(
+    moduleAddress: string,
     operatorIndex: number,
     fromIndex = 0,
     toIndex = -1,
-    moduleAddress: string,
     overrides: CallOverrides = {},
   ): Promise<RegistryKey[]> {
     if (fromIndex > toIndex && toIndex !== -1) {
@@ -91,22 +91,22 @@ export class RegistryKeyBatchFetchService {
     }
 
     if (toIndex == null || toIndex === -1) {
-      const operator = await this.operatorsService.fetchOne(operatorIndex, moduleAddress, overrides);
+      const operator = await this.operatorsService.fetchOne(moduleAddress, operatorIndex, overrides);
 
       toIndex = operator.totalSigningKeys;
     }
 
     const [offset, limit] = this.convertIndicesToOffsetAndTotal(fromIndex, toIndex);
-    const unformattedKeys = await this.fetchSigningKeysInBatches(operatorIndex, offset, limit, moduleAddress);
+    const unformattedKeys = await this.fetchSigningKeysInBatches(moduleAddress, operatorIndex, offset, limit);
 
     return unformattedKeys;
   }
 
   public async fetchSigningKeysInBatches(
+    moduleAddress: string,
     operatorIndex: number,
     fromIndex: number,
     totalAmount: number,
-    moduleAddress: string,
   ) {
     // TODO: move to constants/config cause this limit depends on eth node
     const batchSize = 1100;
@@ -124,7 +124,7 @@ export class RegistryKeyBatchFetchService {
           currentFromIndex,
           currentBatchSize,
         );
-        return this.formatKeys(operatorIndex, keys, currentFromIndex, moduleAddress);
+        return this.formatKeys(moduleAddress, operatorIndex, keys, currentFromIndex);
       })();
 
       promises.push(promise);

@@ -44,9 +44,9 @@ export abstract class AbstractRegistryService {
   ) {}
 
   /** collects changed data from the contract and store it to the db */
-  public async update(blockHash: string, moduleAddress: string) {
+  public async update(moduleAddress: string, blockHash: string) {
     const previousOperators = await this.getOperatorsFromStorage();
-    const currentOperators = await this.getOperatorsFromContract(blockHash, moduleAddress);
+    const currentOperators = await this.getOperatorsFromContract(moduleAddress, blockHash);
 
     this.logger.log('Collected operators', {
       previousOperators: previousOperators.length,
@@ -61,16 +61,16 @@ export abstract class AbstractRegistryService {
           operators: currentOperators.length,
         });
 
-        await this.syncUpdatedKeysWithContract(previousOperators, currentOperators, blockHash, moduleAddress);
+        await this.syncUpdatedKeysWithContract(moduleAddress, previousOperators, currentOperators, blockHash);
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
     );
   }
 
   /** returns operators from the contract */
-  public async getOperatorsFromContract(blockHash: string, moduleAddress: string) {
+  public async getOperatorsFromContract(moduleAddress: string, blockHash: string) {
     const overrides = { blockTag: { blockHash } };
-    return await this.operatorFetch.fetch(0, -1, moduleAddress, overrides);
+    return await this.operatorFetch.fetch(moduleAddress, 0, -1, overrides);
   }
 
   /** returns the right border of the update keys range */
@@ -78,10 +78,10 @@ export abstract class AbstractRegistryService {
 
   /** sync keys with contract */
   public async syncUpdatedKeysWithContract(
+    moduleAddress: string,
     previousOperators: RegistryOperator[],
     currentOperators: RegistryOperator[],
     blockHash: string,
-    moduleAddress: string,
   ) {
     // TODO: disable console time after testing
     console.time('FETCH_OPERATORS');
@@ -108,7 +108,7 @@ export abstract class AbstractRegistryService {
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
       // TODO: use feature flag
-      const result = await this.keyBatchFetch.fetch(operatorIndex, fromIndex, toIndex, moduleAddress, overrides);
+      const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
       // add moduleAddress
       const operatorKeys = result.filter((key) => key);
 
@@ -158,7 +158,7 @@ export abstract class AbstractRegistryService {
 
   /** contract */
   /** returns the meta data from the contract */
-  public async getNonceFromContract(blockHash: string, moduleAddress: string): Promise<number> {
+  public async getNonceFromContract(moduleAddress: string, blockHash: string): Promise<number> {
     const keysOpIndex = await this.metaFetch.fetchKeysOpIndex(moduleAddress, { blockTag: { blockHash } });
     return keysOpIndex;
   }
@@ -184,6 +184,7 @@ export abstract class AbstractRegistryService {
           await entityManager
             .createQueryBuilder(RegistryOperator)
             .insert(operatorsChunk)
+            // TODO: module_address or moduleAddress ?
             .onConflict(['index', 'module_address'])
             .merge()
             .execute();

@@ -37,6 +37,7 @@ const findMigrations = (mainFolder: string, npmPackageNames: string[]): Migratio
   const isNullOrUndefined = (val: unknown): val is null | undefined => val === null || typeof val === 'undefined';
   const isNotNullOrUndefined = <T>(val: T | undefined | null): val is T => !isNullOrUndefined(val);
 
+  // TODO: check sort by name
   const migrations = filenames
     .map((filename) => {
       const module = require(filename);

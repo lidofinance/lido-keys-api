@@ -8,7 +8,6 @@ export type KeyEntity = RegistryKey;
 export type OperatorEntity = RegistryOperator;
 
 export interface StakingModuleInterface {
-  // TODO: moduleAddress - first arg
   update(moduleAddress: string, blockHash: string): Promise<void>;
 
   getKeysStream(

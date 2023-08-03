@@ -19,7 +19,6 @@ export class SRModulesService {
   ) {}
 
   async getModules(): Promise<SRModuleListResponse> {
-    // TODO: maybe move to staking-module-service
     const { stakingModules, elMeta } = await this.entityManager.transactional(
       async () => {
         const elMeta = await this.stakingRouterService.getElBlockSnapshot();
@@ -56,8 +55,6 @@ export class SRModulesService {
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
-
-    // TODO: check if responses of this endpoint satisfy our document
 
     if (!stakingModule) {
       throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
