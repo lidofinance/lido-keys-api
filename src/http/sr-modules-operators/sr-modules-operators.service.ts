@@ -18,14 +18,30 @@ export class SRModulesOperatorsService {
   ) {}
 
   public async getAll(): Promise<GroupedByModuleOperatorListResponse> {
-    return await this.stakingRouterService.getOperatorsByModules();
+    const { operatorsByModules, elBlockSnapshot } = await this.stakingRouterService.getOperatorsByModules();
+
+    return { data: operatorsByModules, meta: { elBlockSnapshot } };
   }
 
   public async getByModule(moduleId: ModuleId): Promise<SRModuleOperatorListResponse> {
-    return await this.stakingRouterService.getModuleOperators(moduleId);
+    const { operators, module, elBlockSnapshot } = await this.stakingRouterService.getModuleOperators(moduleId);
+    return {
+      data: {
+        operators,
+        module,
+      },
+      meta: { elBlockSnapshot },
+    };
   }
 
   public async getModuleOperator(moduleId: ModuleId, operatorIndex: number): Promise<SRModuleOperatorResponse> {
-    return await this.stakingRouterService.getModuleOperator(moduleId, operatorIndex);
+    const { operator, module, elBlockSnapshot } = await this.stakingRouterService.getModuleOperator(
+      moduleId,
+      operatorIndex,
+    );
+    return {
+      data: { operator, module },
+      meta: { elBlockSnapshot },
+    };
   }
 }

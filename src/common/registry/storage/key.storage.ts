@@ -1,6 +1,7 @@
 import { QueryOrder } from '@mikro-orm/core';
 import { FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
+import { KeyField } from 'staking-router-modules/interfaces/key-fields';
 import { RegistryKey } from './key.entity';
 import { RegistryKeyRepository } from './key.repository';
 
@@ -14,14 +15,6 @@ export class RegistryKeyStorageService {
     options?: FindOptions<RegistryKey, P>,
   ): Promise<RegistryKey[]> {
     return await this.repository.find(where, options);
-  }
-
-  async getChunk(limit: number, offset: number, where: FilterQuery<RegistryKey>, options: any) {
-    const query = this.repository.createQueryBuilder().select('*').where(where).limit(limit).offset(offset);
-
-    const chunk = await query.execute();
-
-    return chunk;
   }
 
   async *fetchKeysByChunks(where: FilterQuery<RegistryKey>, options: any): AsyncGenerator<any, void, unknown> {

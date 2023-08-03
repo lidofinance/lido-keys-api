@@ -9,11 +9,8 @@ import {
 } from './entities';
 import { CLBlockSnapshot, ModuleId } from 'http/common/entities/';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { VALIDATORS_STATUSES_FOR_EXIT, DEFAULT_EXIT_PERCENT } from './constants';
-import { ConsensusMeta, Validator } from '@lido-nestjs/validators-registry';
-import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
+import { Validator } from '@lido-nestjs/validators-registry';
 import { ValidatorsService } from 'validators';
-import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 
 const VALIDATORS_REGISTRY_DISABLED_ERROR = 'Validators Registry is disabled. Check environment variables';
@@ -38,18 +35,17 @@ export class SRModulesValidatorsService {
       throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
 
-    const { validators, meta } = await this.stakingRouterService.getOperatorOldestValidators(
+    const { validators, clBlockSnapshot } = await this.stakingRouterService.getOperatorOldestValidators(
       moduleId,
       operatorId,
       filters,
     );
     const data = this.createExitValidatorList(validators);
-    const clBlockSnapshot = new CLBlockSnapshot(meta);
 
     return {
       data,
       meta: {
-        clBlockSnapshot: clBlockSnapshot,
+        clBlockSnapshot,
       },
     };
   }
@@ -64,13 +60,12 @@ export class SRModulesValidatorsService {
       throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
 
-    const { validators, meta } = await this.stakingRouterService.getOperatorOldestValidators(
+    const { validators, clBlockSnapshot } = await this.stakingRouterService.getOperatorOldestValidators(
       moduleId,
       operatorId,
       filters,
     );
-    const data = this.createExitPresignMessageList(validators, meta);
-    const clBlockSnapshot = new CLBlockSnapshot(meta);
+    const data = this.createExitPresignMessageList(validators, clBlockSnapshot);
 
     return {
       data,
@@ -84,7 +79,7 @@ export class SRModulesValidatorsService {
     return validators.map((v) => ({ validatorIndex: v.index, key: v.pubkey }));
   }
 
-  private createExitPresignMessageList(validators: Validator[], clMeta: ConsensusMeta): ExitPresignMessage[] {
+  private createExitPresignMessageList(validators: Validator[], clMeta: CLBlockSnapshot): ExitPresignMessage[] {
     return validators.map((v) => ({ validator_index: String(v.index), epoch: String(clMeta.epoch) }));
   }
 

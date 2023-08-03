@@ -1,4 +1,5 @@
 import { RegistryKey, RegistryOperator } from 'common/registry';
+import { KeyField } from './key-fields';
 import { KeysFilter } from './keys-filter';
 import { OperatorsFilter } from './operators-filter';
 
@@ -8,19 +9,31 @@ export type OperatorEntity = RegistryOperator;
 
 export interface StakingModuleInterface {
   // TODO: moduleAddress - first arg
-  update(blockHash: string, moduleAddress: string): Promise<void>;
-  // this method, operators and nonce
-  getKeys(filters: KeysFilter, moduleAddress: string, options?): Promise<KeyEntity[]>;
+  update(moduleAddress: string, blockHash: string): Promise<void>;
 
-  getKeysStream(filters: KeysFilter, moduleAddress: string);
+  getKeysStream(
+    moduleAddress: string,
+    filters: KeysFilter,
+    fields?: readonly KeyField[] | undefined,
+  ): AsyncGenerator<KeyEntity>;
 
-  getKeysByPubKeys(pubKeys: string[], moduleAddress: string, options?): Promise<KeyEntity[]>;
+  getKeys(moduleAddress: string, filters: KeysFilter, fields?: readonly KeyField[] | undefined): Promise<KeyEntity[]>;
 
-  getKeysByPubkey(pubkey: string, moduleAddress: string, options?): Promise<KeyEntity[]>;
+  getKeysByPubKeys(
+    moduleAddress: string,
+    pubKeys: string[],
+    fields?: readonly KeyField[] | undefined,
+  ): Promise<KeyEntity[]>;
+
+  getKeysByPubkey(
+    moduleAddress: string,
+    pubkey: string,
+    fields?: readonly KeyField[] | undefined,
+  ): Promise<KeyEntity[]>;
 
   getOperators(moduleAddress: string, filters: OperatorsFilter): Promise<OperatorEntity[]>;
 
-  getOperator(index: number, moduleAddress: string): Promise<OperatorEntity | null>;
+  getOperator(moduleAddress: string, index: number): Promise<OperatorEntity | null>;
 
-  getCurrentNonce(blockHash: string, moduleAddress: string): Promise<number>;
+  getCurrentNonce(moduleAddress: string, blockHash: string): Promise<number>;
 }

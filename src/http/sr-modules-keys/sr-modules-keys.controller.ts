@@ -82,9 +82,6 @@ export class SRModulesKeysController {
     await this.entityManager.transactional(
       async () => {
         const { keysGenerator, module, meta } = await this.srModulesKeysService.getModuleKeys(moduleId, filters);
-
-        // const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
-
         const jsonStream = JSONStream.stringify(
           '{ "meta": ' + JSON.stringify(meta) + ', "data": { "module": ' + JSON.stringify(module) + ', "keys": [',
           ',',

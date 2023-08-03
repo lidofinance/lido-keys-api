@@ -8,21 +8,13 @@ import { KeysFilter } from './interfaces/keys-filter';
 import { KeyEntity, OperatorEntity, StakingModuleInterface } from './interfaces/staking-module.interface';
 import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions';
 import { KeyWithModuleAddress } from 'http/keys/entities';
-import { ELBlockSnapshot, Key, ModuleId, SRModule } from 'http/common/entities';
+import { CLBlockSnapshot, ELBlockSnapshot, Key, ModuleId, SRModule } from 'http/common/entities';
 import { config } from './staking-module-impl-config';
 import { IsolationLevel } from '@mikro-orm/core';
 import { SrModuleEntity } from 'storage/sr-module.entity';
 import { SRModuleStorageService } from 'storage/sr-module.storage';
 import { ElMetaStorageService } from 'storage/el-meta.storage';
 import { ElMetaEntity } from 'storage/el-meta.entity';
-import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse } from 'http/sr-modules-keys/entities';
-import {
-  GroupedByModuleOperatorListResponse,
-  SRModuleOperatorListResponse,
-  SRModuleOperatorResponse,
-} from 'http/sr-modules-operators/entities';
-import { SRModuleOperator } from 'http/common/entities/sr-module-operator';
-import { SRModuleOperatorsKeysResponse } from 'http/sr-modules-operators-keys/entities';
 import { isValidContractAddress } from './utils';
 import { ValidatorsQuery } from 'http/sr-modules-validators/entities';
 import { ConsensusMeta, Validator } from '@lido-nestjs/validators-registry';
@@ -33,6 +25,7 @@ import {
 } from 'validators/validators.constants';
 import { ValidatorsService } from 'validators';
 import { CuratedModuleService } from './curated-module.service';
+import { KeyField } from './interfaces/key-fields';
 
 @Injectable()
 export class StakingRouterService {
@@ -83,7 +76,6 @@ export class StakingRouterService {
 
     // TODO: is it correct that i use here modules from blockchain instead of storage
 
-    //TODO: will transaction and rollback work
     await this.entityManager.transactional(
       async () => {
         // Update el meta in db
@@ -96,7 +88,6 @@ export class StakingRouterService {
           const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
 
           // At the moment lets think that for all modules it is possible to make decision base on nonce value
-
           const currNonce = await moduleInstance.getCurrentNonce(currElMeta.hash, module.stakingModuleAddress);
           const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
 
@@ -107,12 +98,8 @@ export class StakingRouterService {
             return;
           }
 
-          // TODO: move to SrModuleEntity storage module
           await this.srModulesStorage.store(module, currNonce);
-          // here we already sure that we need to update keys and operators
-          // TODO: next step is removing meta and nonce checking from updateKeys algo in registry implementation
-          // TODO: rename updateKeys -> update (as we update operators, meta and keys)
-          await moduleInstance.update(currElMeta.hash, module.stakingModuleAddress);
+          await moduleInstance.update(module.stakingModuleAddress, currElMeta.hash);
         }
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
@@ -121,12 +108,14 @@ export class StakingRouterService {
 
   // this method we will use to return meta in endpoints for all modules
   // as data collected for all modules for the same state
-  // TODO: start using in endpoints
   public async getElBlockSnapshot(): Promise<ElMetaEntity | null> {
     return await this.elMetaStorage.get();
   }
 
-  public async getKeysStream(filters: KeysFilter) {
+  // TODO: check why we dont have a type conflict here
+  public async getKeysStream(
+    filters: KeysFilter,
+  ): Promise<{ keysGenerators: AsyncGenerator<KeyWithModuleAddress>[]; elBlockSnapshot: ELBlockSnapshot }> {
     const stakingModules = await this.getStakingModules();
 
     if (stakingModules.length === 0) {
@@ -135,90 +124,36 @@ export class StakingRouterService {
       throw httpExceptionTooEarlyResp();
     }
 
-    const keysGeneratorsByModules: any[] = [];
+    const elMeta = await this.getElBlockSnapshot();
+
+    if (!elMeta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+      throw httpExceptionTooEarlyResp();
+    }
+
+    const keysGenerators: AsyncGenerator<KeyWithModuleAddress>[] = [];
 
     for (const module of stakingModules) {
       const impl = config[module.type];
       const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
 
-      // TODO: add type to function
-      // TODO: should add options {
-      //   populated: ['key', 'deposit_signature', 'operator_index', 'used', 'module_address'],
-      // }
-      const res = await moduleInstance.getKeysStream(filters, module.stakingModuleAddress);
+      const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used', 'moduleAddress'];
+      // TODO: maybe get rid of this type KeyWithModuleAddress
+      const keysGenerator: AsyncGenerator<KeyWithModuleAddress> = await moduleInstance.getKeysStream(
+        module.stakingModuleAddress,
+        filters,
+        fields,
+      );
 
-      keysGeneratorsByModules.push(res);
+      keysGenerators.push(keysGenerator);
     }
 
-    return keysGeneratorsByModules;
+    return { keysGenerators, elBlockSnapshot: new ELBlockSnapshot(elMeta) };
   }
 
-  // TODO: should be deprecated
-  public async getKeys(filters: KeysFilter): Promise<{
-    data: KeyWithModuleAddress[];
-    meta: {
-      elBlockSnapshot: ELBlockSnapshot;
-    };
-  }> {
-    const { keys, elMeta } = await this.entityManager.transactional(
-      async () => {
-        // get list of modules
-        const stakingModules = await this.getStakingModules();
-
-        if (stakingModules.length === 0) {
-          this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-          // TODO: should we throw here exception, or enough to return empty list?
-          throw httpExceptionTooEarlyResp();
-        }
-
-        const elMeta = await this.getElBlockSnapshot();
-
-        if (!elMeta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          throw httpExceptionTooEarlyResp();
-        }
-
-        const collectedKeys: KeyWithModuleAddress[][] = [];
-
-        for (const module of stakingModules) {
-          // read from config name of module that implement functions to fetch and store keys for type
-          // TODO: check what will happen if implementation is not a provider of StakingRouterModule
-          const impl = config[module.type];
-          const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-          // TODO: use here method with streams
-          // TODO: add in select fields
-          // all keys should be returned with the same fields
-
-          // this method of modules with  StakingModuleInterface interface has common type of key
-          // /v1/keys return these common fields for all modules
-          // here should be request without module.stakingModuleAddress
-          const keys = await moduleInstance.getKeys(filters, module.stakingModuleAddress, {
-            populated: ['key', 'deposit_signature', 'operator_index', 'used', 'module_address'],
-          });
-
-          collectedKeys.push(keys);
-        }
-
-        return { keys: collectedKeys.flat(), elMeta };
-      },
-      { isolationLevel: IsolationLevel.READ_COMMITTED },
-    );
-
-    return {
-      data: keys,
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
-    };
-  }
-
-  // TODO: Should we add streams for fetching keys by pubkeys ?
-  // this edpoint doesnt return a big answer
   public async getKeysByPubKeys(pubKeys: string[]): Promise<{
-    data: KeyWithModuleAddress[];
-    meta: {
-      elBlockSnapshot: ELBlockSnapshot;
-    };
+    keys: KeyWithModuleAddress[];
+    elBlockSnapshot: ELBlockSnapshot;
   }> {
     const { keys, elMeta } = await this.entityManager.transactional(
       async () => {
@@ -245,15 +180,13 @@ export class StakingRouterService {
           // TODO: check what will happen if implementation is not a provider of StakingRouterModule
           const impl = config[module.type];
           const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-          // TODO: use here method with streams
-          // TODO: add in select fields
-          // all keys should be returned with the same fields
 
-          // this method of modules with  StakingModuleInterface interface has common type of key
-          // //v1/keys/find return these common fields for all modules
-          const keys = await moduleInstance.getKeysByPubKeys(pubKeys, module.stakingModuleAddress, {
-            populated: ['key', 'deposit_signature', 'operator_index', 'used', 'module_address'],
-          });
+          const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used', 'moduleAddress'];
+          const keys: KeyWithModuleAddress[] = await moduleInstance.getKeysByPubKeys(
+            module.stakingModuleAddress,
+            pubKeys,
+            fields,
+          );
 
           collectedKeys.push(keys);
         }
@@ -264,20 +197,16 @@ export class StakingRouterService {
     );
 
     return {
-      data: keys,
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
+      keys,
+      elBlockSnapshot: new ELBlockSnapshot(elMeta),
     };
   }
 
   // TODO: Should we add streams for fetching keys by pubkeys ?
-  // this edpoint doesnt return a big answer
+  // this endpoint doesnt return a big answer
   public async getKeysByPubkey(pubkey: string): Promise<{
-    data: KeyWithModuleAddress[];
-    meta: {
-      elBlockSnapshot: ELBlockSnapshot;
-    };
+    keys: KeyWithModuleAddress[];
+    elBlockSnapshot: ELBlockSnapshot;
   }> {
     const { keys, elMeta } = await this.entityManager.transactional(
       async () => {
@@ -304,15 +233,13 @@ export class StakingRouterService {
           // TODO: check what will happen if implementation is not a provider of StakingRouterModule
           const impl = config[module.type];
           const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-          // TODO: use here method with streams
-          // TODO: add in select fields
-          // all keys should be returned with the same fields
 
-          // this method of modules with  StakingModuleInterface interface has common type of key
-          // //v1/keys/find return these common fields for all modules
-          const keys = await moduleInstance.getKeysByPubkey(pubkey, module.stakingModuleAddress, {
-            populated: ['key', 'deposit_signature', 'operator_index', 'used', 'module_address'],
-          });
+          const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used', 'moduleAddress'];
+          const keys: KeyWithModuleAddress[] = await moduleInstance.getKeysByPubkey(
+            module.stakingModuleAddress,
+            pubkey,
+            fields,
+          );
 
           collectedKeys.push(keys);
         }
@@ -323,15 +250,15 @@ export class StakingRouterService {
     );
 
     return {
-      data: keys,
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
+      keys,
+      elBlockSnapshot: new ELBlockSnapshot(elMeta),
     };
   }
 
-  public async getKeysByModulesStreamVersion(filters: KeysFilter) {
-    //: Promise<GroupedByModuleKeyListResponse> {
+  public async getKeysByModulesStreamVersion(filters: KeysFilter): Promise<{
+    keysGeneratorsByModules: { keysGenerator: AsyncGenerator<Key>; module: SRModule }[];
+    elBlockSnapshot: ELBlockSnapshot;
+  }> {
     // get list of modules
     const stakingModules = await this.getStakingModules();
 
@@ -356,93 +283,30 @@ export class StakingRouterService {
       // TODO: check what will happen if implementation is not a provider of StakingRouterModule
       const impl = config[module.type];
       const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-      // TODO: use here method with streams
-      // TODO: add in select fields
 
-      // TODO: define type for lsi of fields
-      // /v1/modules/keys return these common fields for all modules without address
-      const keysGenerator: any = await moduleInstance.getKeysStream(filters, module.stakingModuleAddress);
-
-      // TODO: above use options
-      //   {
-      //   populated: ['key', 'deposit_signature', 'operator_index', 'used'],
-      // });
+      const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used'];
+      const keysGenerator: AsyncGenerator<Key> = await moduleInstance.getKeysStream(
+        module.stakingModuleAddress,
+        filters,
+        fields,
+      );
 
       keysGeneratorsByModules.push({ keysGenerator, module: new SRModule(module) });
     }
 
-    // TODO: maybe we need to read meta on the upper layer in controller's service
-
     return {
       keysGeneratorsByModules,
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
-    };
-  }
-
-  // should be deprecated
-  public async getKeysByModules(filters: KeysFilter): Promise<GroupedByModuleKeyListResponse> {
-    const { keysByModules, elMeta } = await this.entityManager.transactional(
-      async () => {
-        // get list of modules
-        const stakingModules = await this.getStakingModules();
-
-        if (stakingModules.length === 0) {
-          this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-          // TODO: should we throw here exception, or enough to return empty list?
-          throw httpExceptionTooEarlyResp();
-        }
-
-        const elMeta = await this.getElBlockSnapshot();
-
-        if (!elMeta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          throw httpExceptionTooEarlyResp();
-        }
-
-        const keysByModules: { keys: Key[]; module: SRModule }[] = [];
-
-        for (const module of stakingModules) {
-          // read from config name of module that implement functions to fetch and store keys for type
-          // TODO: check what will happen if implementation is not a provider of StakingRouterModule
-          const impl = config[module.type];
-          const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-          // TODO: use here method with streams
-          // TODO: add in select fields
-
-          // TODO: define type for lsi of fields
-          // /v1/modules/keys return these common fields for all modules without address
-          const keys: Key[] = await moduleInstance.getKeys(filters, module.stakingModuleAddress, {
-            populated: ['key', 'deposit_signature', 'operator_index', 'used'],
-          });
-
-          keysByModules.push({ keys, module: new SRModule(module) });
-        }
-
-        return { keysByModules, elMeta };
-      },
-      { isolationLevel: IsolationLevel.READ_COMMITTED },
-    );
-
-    return {
-      data: keysByModules,
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
+      elBlockSnapshot: new ELBlockSnapshot(elMeta),
     };
   }
 
   // for one module
 
   // TODO: write type
-  public async getModuleKeysStreamVersion(moduleId: ModuleId, filters: KeysFilter) {
-    // /v1/modules/{moduleId}/keys returning type depends on module
-
-    // so const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-    // moduleInstance.getKeys() should return all fields of key for module
-    // check /v1/modules/{module_id}/keys
-
+  public async getModuleKeysStreamVersion(
+    moduleId: ModuleId,
+    filters: KeysFilter,
+  ): Promise<{ keysGenerator: AsyncGenerator<KeyEntity>; module: SRModule; elBlockSnapshot: ELBlockSnapshot }> {
     // get module
     const stakingModule = await this.getStakingModule(moduleId);
 
@@ -460,12 +324,11 @@ export class StakingRouterService {
 
     const impl = config[stakingModule.type];
     const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-    // TODO: use here method with streams
-    // TODO: add in select fields
 
-    // TODO: define type for lsi of fields
-    // /v1/modules/keys return these common fields for all modules without address
-    const keysGenerator: any = await moduleInstance.getKeysStream(filters, stakingModule.stakingModuleAddress);
+    const keysGenerator: AsyncGenerator<KeyEntity> = await moduleInstance.getKeysStream(
+      stakingModule.stakingModuleAddress,
+      filters,
+    );
     const module = new SRModule(stakingModule);
 
     // TODO: maybe we need to read meta on the upper layer in controller's service
@@ -473,62 +336,18 @@ export class StakingRouterService {
     return {
       keysGenerator,
       module,
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
+      elBlockSnapshot: new ELBlockSnapshot(elMeta),
     };
   }
 
-  // should be deprecated
-  // TODO: consider use different type
-  public async getModuleKeys(moduleId: ModuleId, filters: KeysFilter): Promise<SRModuleKeyListResponse> {
-    // /v1/modules/{moduleId}/keys returning type depends on module
-
-    // so const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-    // moduleInstance.getKeys() should return all fields of key for module
-    // check /v1/modules/{module_id}/keys
-
-    const { keys, module, elMeta } = await this.entityManager.transactional(
-      async () => {
-        // get module
-        const stakingModule = await this.getStakingModule(moduleId);
-
-        // maybe  this exception should not be sent here
-        if (!stakingModule) {
-          throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-        }
-
-        const elMeta = await this.getElBlockSnapshot();
-
-        if (!elMeta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          throw httpExceptionTooEarlyResp();
-        }
-
-        const impl = config[stakingModule.type];
-        const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-        // TODO: use here method with streams
-        // TODO: add in select fields
-
-        // TODO: define type for lsi of fields
-        // /v1/modules/keys return these common fields for all modules without address
-        const keys: KeyEntity[] = await moduleInstance.getKeys(filters, stakingModule.stakingModuleAddress);
-        const module = new SRModule(stakingModule);
-
-        return { keys, module, elMeta };
-      },
-      { isolationLevel: IsolationLevel.READ_COMMITTED },
-    );
-
-    return {
-      data: { keys, module },
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
-    };
-  }
-
-  public async getModuleKeysByPubKeys(moduleId: ModuleId, pubKeys: string[]): Promise<SRModuleKeyListResponse> {
+  public async getModuleKeysByPubKeys(
+    moduleId: ModuleId,
+    pubKeys: string[],
+  ): Promise<{
+    keys: KeyEntity[];
+    module: SRModule;
+    elBlockSnapshot: ELBlockSnapshot;
+  }> {
     const { keys, module, elMeta } = await this.entityManager.transactional(
       async () => {
         // get module
@@ -549,8 +368,7 @@ export class StakingRouterService {
         const impl = config[stakingModule.type];
         const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
 
-        // /v1/modules/{module_id}/keys/find return all module fields
-        const keys: KeyEntity[] = await moduleInstance.getKeysByPubKeys(pubKeys, stakingModule.stakingModuleAddress);
+        const keys: KeyEntity[] = await moduleInstance.getKeysByPubKeys(stakingModule.stakingModuleAddress, pubKeys);
         const module = new SRModule(stakingModule);
 
         return { keys, module, elMeta };
@@ -559,14 +377,16 @@ export class StakingRouterService {
     );
 
     return {
-      data: { keys, module },
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
+      keys,
+      module,
+      elBlockSnapshot: new ELBlockSnapshot(elMeta),
     };
   }
 
-  public async getOperatorsByModules(): Promise<GroupedByModuleOperatorListResponse> {
+  public async getOperatorsByModules(): Promise<{
+    operatorsByModules: { operators: OperatorEntity[]; module: SRModule }[];
+    elBlockSnapshot: ELBlockSnapshot;
+  }> {
     const { operatorsByModules, elMeta } = await this.entityManager.transactional(
       async () => {
         // get list of modules
@@ -585,7 +405,7 @@ export class StakingRouterService {
           throw httpExceptionTooEarlyResp();
         }
 
-        const operatorsByModules: { operators: SRModuleOperator[]; module: SRModule }[] = [];
+        const operatorsByModules: { operators: OperatorEntity[]; module: SRModule }[] = [];
 
         for (const module of stakingModules) {
           // read from config name of module that implement functions to fetch and store keys for type
@@ -608,14 +428,15 @@ export class StakingRouterService {
     );
 
     return {
-      data: operatorsByModules,
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
+      operatorsByModules,
+      elBlockSnapshot: new ELBlockSnapshot(elMeta),
     };
   }
 
-  public async getModuleOperators(moduleId: ModuleId): Promise<SRModuleOperatorListResponse> {
+  // TODO: is it okay that we have moduleAddress in every opertor now ?
+  public async getModuleOperators(
+    moduleId: ModuleId,
+  ): Promise<{ operators: OperatorEntity[]; module: SRModule; elBlockSnapshot: ELBlockSnapshot }> {
     const { operators, module, elMeta } = await this.entityManager.transactional(
       async () => {
         // get list of modules
@@ -651,17 +472,16 @@ export class StakingRouterService {
     );
 
     return {
-      data: {
-        operators,
-        module,
-      },
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
+      operators,
+      module,
+      elBlockSnapshot: new ELBlockSnapshot(elMeta),
     };
   }
 
-  public async getModuleOperator(moduleId: ModuleId, operatorIndex: number): Promise<SRModuleOperatorResponse> {
+  public async getModuleOperator(
+    moduleId: ModuleId,
+    operatorIndex: number,
+  ): Promise<{ operator: OperatorEntity; module: SRModule; elBlockSnapshot: ELBlockSnapshot }> {
     const { operator, module, elMeta } = await this.entityManager.transactional(
       async () => {
         // get list of modules
@@ -682,14 +502,10 @@ export class StakingRouterService {
         // TODO: check what will happen if implementation is not a provider of StakingRouterModule
         const impl = config[stakingModule.type];
         const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-        // TODO: use here method with streams
-        // TODO: add in select fields
 
-        //  /v1/operators return these common fields for all modules
-        // here should be request without module.stakingModuleAddress
         const operator: OperatorEntity | null = await moduleInstance.getOperator(
-          operatorIndex,
           stakingModule.stakingModuleAddress,
+          operatorIndex,
         );
 
         const module = new SRModule(stakingModule);
@@ -707,17 +523,21 @@ export class StakingRouterService {
     //  TODO: new CuratedOperator(operator);
 
     return {
-      data: {
-        operator,
-        module,
-      },
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
+      operator,
+      module,
+      elBlockSnapshot: new ELBlockSnapshot(elMeta),
     };
   }
 
-  public async getModuleOperatorsAndKeysStreamVersion(moduleId: ModuleId, filters: KeysFilter) {
+  public async getModuleOperatorsAndKeysStreamVersion(
+    moduleId: ModuleId,
+    filters: KeysFilter,
+  ): Promise<{
+    operators: OperatorEntity[];
+    keysGenerator: AsyncGenerator<KeyEntity>;
+    module: SRModule;
+    elBlockSnapshot: ELBlockSnapshot;
+  }> {
     // get list of modules
     const stakingModule = await this.getStakingModule(moduleId);
 
@@ -739,12 +559,18 @@ export class StakingRouterService {
     // TODO: use here method with streams
     // TODO: add in select fields
 
-    const keysGenerator = await moduleInstance.getKeysStream(filters, stakingModule.stakingModuleAddress);
+    const keysGenerator: AsyncGenerator<KeyEntity> = await moduleInstance.getKeysStream(
+      stakingModule.stakingModuleAddress,
+      filters,
+    );
 
     // TODO: add filter in
     const operatorsFilter = filters.operatorIndex ? { index: filters.operatorIndex } : {};
 
-    const operators = await moduleInstance.getOperators(stakingModule.stakingModuleAddress, operatorsFilter);
+    const operators: OperatorEntity[] = await moduleInstance.getOperators(
+      stakingModule.stakingModuleAddress,
+      operatorsFilter,
+    );
 
     const module = new SRModule(stakingModule);
 
@@ -752,64 +578,7 @@ export class StakingRouterService {
       operators,
       keysGenerator,
       module,
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
-    };
-  }
-
-  // TODO: should be deprecated
-  public async getModuleOperatorsAndKeys(
-    moduleId: ModuleId,
-    filters: KeysFilter,
-  ): Promise<SRModuleOperatorsKeysResponse> {
-    const { operators, keys, module, elMeta } = await this.entityManager.transactional(
-      async () => {
-        // get list of modules
-        const stakingModule = await this.getStakingModule(moduleId);
-
-        if (!stakingModule) {
-          throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-        }
-
-        const elMeta = await this.getElBlockSnapshot();
-
-        if (!elMeta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          throw httpExceptionTooEarlyResp();
-        }
-
-        // read from config name of module that implement functions to fetch and store keys for type
-        // TODO: check what will happen if implementation is not a provider of StakingRouterModule
-        const impl = config[stakingModule.type];
-        const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-        // TODO: use here method with streams
-        // TODO: add in select fields
-
-        const keys = await moduleInstance.getKeys(filters, stakingModule.stakingModuleAddress);
-
-        // TODO: add filter in
-
-        const operatorsFilter = filters.operatorIndex ? { index: filters.operatorIndex } : {};
-
-        const operators = await moduleInstance.getOperators(stakingModule.stakingModuleAddress, operatorsFilter);
-
-        const module = new SRModule(stakingModule);
-
-        return { operators, keys, module, elMeta };
-      },
-      { isolationLevel: IsolationLevel.READ_COMMITTED },
-    );
-
-    return {
-      data: {
-        operators,
-        keys,
-        module,
-      },
-      meta: {
-        elBlockSnapshot: new ELBlockSnapshot(elMeta),
-      },
+      elBlockSnapshot: new ELBlockSnapshot(elMeta),
     };
   }
 
@@ -819,7 +588,7 @@ export class StakingRouterService {
     moduleId: string,
     operatorIndex: number,
     filters: ValidatorsQuery,
-  ): Promise<{ validators: Validator[]; meta: ConsensusMeta }> {
+  ): Promise<{ validators: Validator[]; clBlockSnapshot: CLBlockSnapshot }> {
     const { validators, meta } = await this.entityManager.transactional(
       async () => {
         const stakingModule = await this.getStakingModule(moduleId);
@@ -839,16 +608,7 @@ export class StakingRouterService {
         // TODO: check what will happen if implementation is not a provider of StakingRouterModule
         const impl = config[stakingModule.type];
         const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-        // TODO: use here method with streams
-        // TODO: add in select fields
-        // all keys should be returned with the same fields
-
-        // this method of modules with  StakingModuleInterface interface has common type of key
-        // /v1/keys return these common fields for all modules
-        // here should be request without module.stakingModuleAddress
-        const keys = await moduleInstance.getKeys({ operatorIndex }, stakingModule.stakingModuleAddress, {
-          populated: ['key'],
-        });
+        const keys = await moduleInstance.getKeys(stakingModule.stakingModuleAddress, { operatorIndex }, ['key']);
 
         const pubkeys = keys.map((pubkey) => pubkey.key);
         const percent =
@@ -891,6 +651,6 @@ export class StakingRouterService {
       { isolationLevel: IsolationLevel.READ_COMMITTED },
     );
 
-    return { validators, meta };
+    return { validators, clBlockSnapshot: new CLBlockSnapshot(meta) };
   }
 }
