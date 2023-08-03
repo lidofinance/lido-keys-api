@@ -89,7 +89,7 @@ export class StakingRouterService {
           const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
 
           // At the moment lets think that for all modules it is possible to make decision base on nonce value
-          const currNonce = await moduleInstance.getCurrentNonce(currElMeta.hash, module.stakingModuleAddress);
+          const currNonce = await moduleInstance.getCurrentNonce(module.stakingModuleAddress, currElMeta.hash);
           const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
 
           // now updating decision should be here moduleInstance.updateKeys
