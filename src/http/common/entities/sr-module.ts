@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { SrModuleEntity } from 'storage/sr-module.entity';
 
+// TODO: this class is okay, as it format data from db for response
+// but we use it in staking module service
 export class SRModule {
   constructor(module: SrModuleEntity) {
     this.nonce = module.nonce;

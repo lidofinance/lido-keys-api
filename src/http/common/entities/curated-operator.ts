@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Operator } from 'http/common/entities/';
 import { RegistryOperator } from 'common/registry';
 
+// TODO: it enough use operator from registry , lets remove
 export class CuratedOperator extends Operator {
   constructor(operator: RegistryOperator) {
     super(operator);

@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, ArrayNotEmpty, ArrayMinSize, IsString } from 'class-validator';
 
+// TODO: put put it with key query at the same file
 export class KeysFindBody {
   @ApiProperty({
     required: true,

@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { SRModuleKey } from './sr-module-key';
 
+// TODO: when we get from storage this number of fields  we get a narrowed key
+// maybe move to staking-module-service and here use in response type
 export class Key {
   constructor(key: SRModuleKey) {
     this.key = key.key;

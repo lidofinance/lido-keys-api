@@ -35,7 +35,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/common/contracts/abi/*.json"
+    "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/staking-router-modules/contracts/abi/*.json"
   },
   "dependencies": {
     "@lido-nestjs/consensus": "^1.5.0",
