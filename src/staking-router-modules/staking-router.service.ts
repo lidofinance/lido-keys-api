@@ -2,9 +2,9 @@ import { EntityManager } from '@mikro-orm/knex';
 import { Inject, Injectable, InternalServerErrorException, LoggerService, NotFoundException } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ModuleRef } from '@nestjs/core';
-import { StakingRouterFetchService } from 'common/contracts';
+import { StakingRouterFetchService } from 'staking-router-modules/contracts';
 import { ExecutionProviderService } from 'common/execution-provider';
-import { KeysFilter } from './interfaces/keys-filter';
+
 import { KeyEntity, OperatorEntity, StakingModuleInterface } from './interfaces/staking-module.interface';
 import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions';
 import { KeyWithModuleAddress } from 'http/keys/entities';
@@ -24,8 +24,9 @@ import {
   VALIDATORS_REGISTRY_DISABLED_ERROR,
 } from 'validators/validators.constants';
 import { ValidatorsService } from 'validators';
-import { KeyField } from './interfaces/key-fields';
+
 import { PrometheusService } from 'common/prometheus';
+import { KeyField, KeysFilter } from './interfaces/filters';
 
 @Injectable()
 export class StakingRouterService {

@@ -1,5 +1,5 @@
 import { CuratedModuleService } from './curated-module.service';
-import { STAKING_MODULE_TYPE } from './interfaces/staking-module-type';
+import { STAKING_MODULE_TYPE } from './constants';
 
 type StakingModuleImpl = typeof CuratedModuleService;
 

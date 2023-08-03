@@ -11,9 +11,7 @@ import { Trace } from 'common/decorators/trace';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { QueryOrder } from '@mikro-orm/core';
 import { StakingModuleInterface } from './interfaces/staking-module.interface';
-import { KeysFilter } from './interfaces/keys-filter';
-import { OperatorsFilter } from './interfaces';
-import { KeyField } from './interfaces/key-fields';
+import { KeyField, KeysFilter, OperatorsFilter } from './interfaces/filters';
 
 const TRACE_TIMEOUT = 15 * 60 * 1000;
 

@@ -1,5 +1,5 @@
-import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyType, Property, Unique } from '@mikro-orm/core';
-import { StakingModule } from '../staking-router-modules/interfaces';
+import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
+import { StakingModule } from '../staking-router-modules/interfaces/staking-module.interface';
 import { SRModuleRepository } from './sr-module.repository';
 
 @Entity({ customRepository: () => SRModuleRepository })

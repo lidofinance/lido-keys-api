@@ -1,7 +1,7 @@
 import { QueryOrder } from '@mikro-orm/core';
 import { FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
-import { StakingModule } from 'staking-router-modules/interfaces';
+import { StakingModule } from '../staking-router-modules/interfaces/staking-module.interface';
 import { SrModuleEntity } from './sr-module.entity';
 import { SRModuleRepository } from './sr-module.repository';
 

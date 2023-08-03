@@ -1,11 +1,9 @@
 import { Injectable, Inject, LoggerService } from '@nestjs/common';
-// TODO: move to staking-router-service
-import { StakingModule } from '../../../staking-router-modules/interfaces/staking-module';
+import { StakingModule } from '../../interfaces/staking-module.interface';
+import { STAKING_MODULE_TYPE } from '../../constants';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { IStakingModuleService } from 'common/contracts/i-staking-module';
-// TODO: instead of separate file and index create one module with all contants
-import { STAKING_MODULE_TYPE } from 'staking-router-modules/interfaces/staking-module-type';
-import { LidoLocatorService } from 'common/contracts/lido-locator';
+import { StakingModuleInterfaceService } from '../staking-module-interface';
+import { LidoLocatorService } from '../lido-locator';
 import { StakingRouter__factory } from 'generated';
 import { ExecutionProvider } from 'common/execution-provider';
 import { BlockTag } from '../interfaces';
@@ -14,11 +12,10 @@ import { Trace } from 'common/decorators/trace';
 const TRACE_TIMEOUT = 30 * 1000;
 
 @Injectable()
-// TODO: move to staking-router-service
 export class StakingRouterFetchService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected readonly iStakingModule: IStakingModuleService,
+    protected readonly stakingModuleInterface: StakingModuleInterfaceService,
     protected readonly lidoLocatorService: LidoLocatorService,
     protected readonly provider: ExecutionProvider,
   ) {}
@@ -47,7 +44,7 @@ export class StakingRouterFetchService {
       modules.map(async (stakingModule) => {
         const isActive = await srContract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
 
-        const stakingModuleType = (await this.iStakingModule.getType(
+        const stakingModuleType = (await this.stakingModuleInterface.getType(
           stakingModule.stakingModuleAddress,
           blockTag,
         )) as STAKING_MODULE_TYPE;

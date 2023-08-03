@@ -4,7 +4,7 @@ import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse } from './entit
 import { ModuleId, KeyQuery, Key, ELBlockSnapshot, SRModule } from 'http/common/entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
-import { KeyEntity } from 'staking-router-modules/interfaces';
+import { KeyEntity } from 'staking-router-modules/interfaces/staking-module.interface';
 
 @Injectable()
 export class SRModulesKeysService {

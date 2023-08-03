@@ -1,7 +1,6 @@
 import { QueryOrder } from '@mikro-orm/core';
 import { FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
-import { KeyField } from 'staking-router-modules/interfaces/key-fields';
 import { RegistryKey } from './key.entity';
 import { RegistryKeyRepository } from './key.repository';
 

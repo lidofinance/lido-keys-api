@@ -5,7 +5,7 @@ import { ethers } from 'ethers';
 import { BlockTag } from '../interfaces';
 
 @Injectable()
-export class IStakingModuleService {
+export class StakingModuleInterfaceService {
   constructor(protected readonly provider: ExecutionProvider) {}
 
   public async getType(contractAddress: string, blockTag: BlockTag): Promise<string> {

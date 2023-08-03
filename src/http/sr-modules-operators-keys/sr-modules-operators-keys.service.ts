@@ -5,7 +5,7 @@ import { ConfigService } from 'common/config';
 import { SRModuleOperatorsKeysResponse } from './entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
-import { KeyEntity, OperatorEntity } from 'staking-router-modules/interfaces';
+import { KeyEntity, OperatorEntity } from 'staking-router-modules/interfaces/staking-module.interface';
 
 @Injectable()
 export class SRModulesOperatorsKeysService {
