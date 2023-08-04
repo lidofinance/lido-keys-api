@@ -14,7 +14,7 @@ export class KeysService {
   async get(
     filters: KeyQuery,
   ): Promise<{ keysGenerators: AsyncGenerator<KeyWithModuleAddress>[]; meta: { elBlockSnapshot: ELBlockSnapshot } }> {
-    const { keysGenerators, elBlockSnapshot } = await this.stakingRouterService.getKeysStream(filters);
+    const { keysGenerators, elBlockSnapshot } = await this.stakingRouterService.getKeys(filters);
 
     return {
       keysGenerators,
@@ -23,7 +23,7 @@ export class KeysService {
   }
 
   async getByPubkey(pubkey: string): Promise<KeyListResponse> {
-    const { keys, elBlockSnapshot } = await this.stakingRouterService.getKeysByPubkey(pubkey);
+    const { keys, elBlockSnapshot } = await this.stakingRouterService.getKeysByPubkeys([pubkey]);
     return {
       data: keys,
       meta: { elBlockSnapshot },
@@ -31,7 +31,7 @@ export class KeysService {
   }
 
   async getByPubkeys(pubkeys: string[]): Promise<KeyListResponse> {
-    const { keys, elBlockSnapshot } = await this.stakingRouterService.getKeysByPubKeys(pubkeys);
+    const { keys, elBlockSnapshot } = await this.stakingRouterService.getKeysByPubkeys(pubkeys);
     return {
       data: keys,
       meta: { elBlockSnapshot },

@@ -49,7 +49,7 @@ export class SRModulesController {
     name: 'module_id',
     description: 'Staking router module_id or contract address.',
   })
-  // add pattern check Module Id
+  // TODO: add pattern check Module Id
   getModule(@Param('module_id') moduleId: ModuleId) {
     return this.srModulesService.getModule(moduleId);
   }

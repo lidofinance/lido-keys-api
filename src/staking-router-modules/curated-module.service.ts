@@ -6,7 +6,6 @@ import {
   RegistryOperator,
   RegistryOperatorStorageService,
 } from 'common/registry';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { Trace } from 'common/decorators/trace';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { QueryOrder } from '@mikro-orm/core';
@@ -22,7 +21,6 @@ export class CuratedModuleService implements StakingModuleInterface {
     protected readonly keyRegistryService: KeyRegistryService,
     protected readonly keyStorageService: RegistryKeyStorageService,
     protected readonly operatorStorageService: RegistryOperatorStorageService,
-    protected readonly entityManager: EntityManager,
   ) {}
 
   // we need it

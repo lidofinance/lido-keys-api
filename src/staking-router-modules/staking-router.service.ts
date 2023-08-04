@@ -42,14 +42,20 @@ export class StakingRouterService {
     protected readonly prometheusService: PrometheusService,
   ) {}
 
-  // TODO: maybe add method to read modules and meta together
-
-  // modules list is used in endpoints
+  /**
+   * Method for reading staking modules from database
+   * @returns Staking module list from database
+   */
   public async getStakingModules(): Promise<SrModuleEntity[]> {
     const srModules = await this.srModulesStorage.findAll();
     return srModules;
   }
 
+  /**
+   * Method for reading staking module from database by module id
+   * @param moduleId - id or address of staking module
+   * @returns Staking module from database
+   */
   public async getStakingModule(moduleId: ModuleId): Promise<SrModuleEntity | null> {
     if (isValidContractAddress(moduleId)) {
       return await this.srModulesStorage.findOneByContractAddress(moduleId);
@@ -58,8 +64,10 @@ export class StakingRouterService {
     return await this.srModulesStorage.findOneById(Number(moduleId));
   }
 
-  // update keys of all modules
-  // TODO: return elMeta as result
+  /**
+   * Update keys of staking modules
+   * @returns Number, hash and timestamp of execution layer block
+   */
   public async update(): Promise<{ number: number; hash: string; timestamp: number } | undefined> {
     // reading latest block from blockchain
     const currElMeta = await this.executionProvider.getBlock('latest');
@@ -76,6 +84,7 @@ export class StakingRouterService {
     // get staking router modules from SR contract
     const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
 
+    // TODO: what will happen if module исчез из списка
     // TODO: is it correct that i use here modules from blockchain instead of storage
 
     await this.entityManager.transactional(
@@ -110,12 +119,13 @@ export class StakingRouterService {
     return currElMeta;
   }
 
+  /**
+   * Update prometheus metrics of staking modules
+   */
   public async updateMetrics() {
-    const stakingModules = await this.getStakingModules();
-
     await this.entityManager.transactional(
       async () => {
-        this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.reset();
+        const stakingModules = await this.getStakingModules();
         const elMeta = await this.getElBlockSnapshot();
 
         if (!elMeta) {
@@ -160,35 +170,59 @@ export class StakingRouterService {
           });
         }
       },
-      { isolationLevel: IsolationLevel.READ_COMMITTED },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
   }
 
-  // this method we will use to return meta in endpoints for all modules
-  // as data collected for all modules for the same state
+  /**
+   * Execution layer meta that is stored in database
+   */
   public async getElBlockSnapshot(): Promise<ElMetaEntity | null> {
     return await this.elMetaStorage.get();
   }
 
-  // TODO: check why we dont have a type conflict here
-  public async getKeysStream(
+  /**
+   * Helper method for getting staking module list and execution layer meta
+   * @returns Staking modules list and execution layer meta
+   */
+  public async getStakingModulesAndMeta(): Promise<{
+    stakingModules: SrModuleEntity[];
+    elBlockSnapshot: ELBlockSnapshot;
+  }> {
+    const { stakingModules, elBlockSnapshot } = await this.entityManager.transactional(
+      async () => {
+        const stakingModules = await this.getStakingModules();
+
+        if (stakingModules.length === 0) {
+          this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
+          throw httpExceptionTooEarlyResp();
+        }
+
+        const elBlockSnapshot = await this.getElBlockSnapshot();
+
+        if (!elBlockSnapshot) {
+          this.logger.warn("Meta is null, maybe data hasn't been written in db yet");
+          throw httpExceptionTooEarlyResp();
+        }
+
+        return { stakingModules, elBlockSnapshot };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
+
+    return { stakingModules, elBlockSnapshot: new ELBlockSnapshot(elBlockSnapshot) };
+  }
+
+  // TODO: check why we don't have a type conflict here
+  /**
+   * Return generators for keys of all modules with fields {key, depositSignature, operatorIndex, used, moduleAddress} and execution layer meta
+   * @param filters used, operatorIndex
+   * @returns List of generators for keys and execution layer meta
+   */
+  public async getKeys(
     filters: KeysFilter,
   ): Promise<{ keysGenerators: AsyncGenerator<KeyWithModuleAddress>[]; elBlockSnapshot: ELBlockSnapshot }> {
-    const stakingModules = await this.getStakingModules();
-
-    if (stakingModules.length === 0) {
-      this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-      // TODO: should we throw here exception, or enough to return empty list?
-      throw httpExceptionTooEarlyResp();
-    }
-
-    const elMeta = await this.getElBlockSnapshot();
-
-    if (!elMeta) {
-      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-      throw httpExceptionTooEarlyResp();
-    }
-
+    const { stakingModules, elBlockSnapshot } = await this.getStakingModulesAndMeta();
     const keysGenerators: AsyncGenerator<KeyWithModuleAddress>[] = [];
 
     for (const module of stakingModules) {
@@ -206,36 +240,23 @@ export class StakingRouterService {
       keysGenerators.push(keysGenerator);
     }
 
-    return { keysGenerators, elBlockSnapshot: new ELBlockSnapshot(elMeta) };
+    return { keysGenerators, elBlockSnapshot };
   }
 
-  public async getKeysByPubKeys(pubKeys: string[]): Promise<{
-    keys: KeyWithModuleAddress[];
-    elBlockSnapshot: ELBlockSnapshot;
-  }> {
-    const { keys, elMeta } = await this.entityManager.transactional(
+  /**
+   * Return keys from pubKeys list with fields {key, depositSignature, operatorIndex, used, moduleAddress}
+   * @param pubKeys list of public keys for searching
+   * @returns list of keys with fields {key, depositSignature, operatorIndex, used, moduleAddress} and execution layer meta
+   */
+  public async getKeysByPubkeys(
+    pubKeys: string[],
+  ): Promise<{ keys: KeyWithModuleAddress[]; elBlockSnapshot: ELBlockSnapshot }> {
+    const { keys, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
-        // get list of modules
-        const stakingModules = await this.getStakingModules();
-
-        if (stakingModules.length === 0) {
-          this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-          // TODO: should we throw here exception, or enough to return empty list?
-          throw httpExceptionTooEarlyResp();
-        }
-
-        const elMeta = await this.getElBlockSnapshot();
-
-        if (!elMeta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          throw httpExceptionTooEarlyResp();
-        }
-
+        const { stakingModules, elBlockSnapshot } = await this.getStakingModulesAndMeta();
         const collectedKeys: KeyWithModuleAddress[][] = [];
 
         for (const module of stakingModules) {
-          // read from config name of module that implement functions to fetch and store keys for type
-          // TODO: check what will happen if implementation is not a provider of StakingRouterModule
           const impl = config[module.type];
           const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
 
@@ -249,91 +270,24 @@ export class StakingRouterService {
           collectedKeys.push(keys);
         }
 
-        return { keys: collectedKeys.flat(), elMeta };
+        return { keys: collectedKeys.flat(), elBlockSnapshot };
       },
-      { isolationLevel: IsolationLevel.READ_COMMITTED },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
 
-    return {
-      keys,
-      elBlockSnapshot: new ELBlockSnapshot(elMeta),
-    };
+    return { keys, elBlockSnapshot };
   }
 
-  // TODO: Should we add streams for fetching keys by pubkeys ?
-  // this endpoint doesnt return a big answer
-  public async getKeysByPubkey(pubkey: string): Promise<{
-    keys: KeyWithModuleAddress[];
-    elBlockSnapshot: ELBlockSnapshot;
-  }> {
-    const { keys, elMeta } = await this.entityManager.transactional(
-      async () => {
-        // get list of modules
-        const stakingModules = await this.getStakingModules();
-
-        if (stakingModules.length === 0) {
-          this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-          // TODO: should we throw here exception, or enough to return empty list?
-          throw httpExceptionTooEarlyResp();
-        }
-
-        const elMeta = await this.getElBlockSnapshot();
-
-        if (!elMeta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          throw httpExceptionTooEarlyResp();
-        }
-
-        const collectedKeys: KeyWithModuleAddress[][] = [];
-
-        for (const module of stakingModules) {
-          // read from config name of module that implement functions to fetch and store keys for type
-          // TODO: check what will happen if implementation is not a provider of StakingRouterModule
-          const impl = config[module.type];
-          const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-
-          const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used', 'moduleAddress'];
-          const keys: KeyWithModuleAddress[] = await moduleInstance.getKeysByPubkey(
-            module.stakingModuleAddress,
-            pubkey,
-            fields,
-          );
-
-          collectedKeys.push(keys);
-        }
-
-        return { keys: collectedKeys.flat(), elMeta };
-      },
-      { isolationLevel: IsolationLevel.READ_COMMITTED },
-    );
-
-    return {
-      keys,
-      elBlockSnapshot: new ELBlockSnapshot(elMeta),
-    };
-  }
-
-  public async getKeysByModulesStreamVersion(filters: KeysFilter): Promise<{
+  /**
+   * Return generators for keys of all modules with fields {key, depositSignature, operatorIndex, used } and execution layer meta
+   * @param filters used, operatorIndex
+   * @returns List of generators for keys and execution layer meta
+   */
+  public async getKeysByModules(filters: KeysFilter): Promise<{
     keysGeneratorsByModules: { keysGenerator: AsyncGenerator<Key>; module: SRModule }[];
     elBlockSnapshot: ELBlockSnapshot;
   }> {
-    // get list of modules
-    const stakingModules = await this.getStakingModules();
-
-    if (stakingModules.length === 0) {
-      this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-      // TODO: should we throw here exception, or enough to return empty list?
-      throw httpExceptionTooEarlyResp();
-    }
-
-    const elMeta = await this.getElBlockSnapshot();
-
-    if (!elMeta) {
-      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-      throw httpExceptionTooEarlyResp();
-    }
-
-    // TODO: add type
+    const { stakingModules, elBlockSnapshot } = await this.getStakingModulesAndMeta();
     const keysGeneratorsByModules: { keysGenerator: any; module: SRModule }[] = [];
 
     for (const module of stakingModules) {
@@ -354,47 +308,61 @@ export class StakingRouterService {
 
     return {
       keysGeneratorsByModules,
-      elBlockSnapshot: new ELBlockSnapshot(elMeta),
+      elBlockSnapshot,
     };
   }
 
   // for one module
 
-  // TODO: write type
-  public async getModuleKeysStreamVersion(
+  /**
+   * Find in storage staking module and execution layer meta
+   * @param moduleId id or contract address of staking module contract
+   * @returns staking module from database and execution layer meta
+   */
+  public async getStakingModuleAndMeta(
+    moduleId: ModuleId,
+  ): Promise<{ module: SRModule; elBlockSnapshot: ELBlockSnapshot }> {
+    const { stakingModule, elBlockSnapshot } = await this.entityManager.transactional(
+      async () => {
+        const stakingModule = await this.getStakingModule(moduleId);
+        if (!stakingModule) {
+          throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
+        }
+
+        const elBlockSnapshot = await this.getElBlockSnapshot();
+
+        if (!elBlockSnapshot) {
+          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+          throw httpExceptionTooEarlyResp();
+        }
+
+        return { stakingModule, elBlockSnapshot };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
+
+    // TODO: in this module sometime we return module from db as it is , sometime use SRModule from http/entities. need to choose how we will do it
+    return { module: new SRModule(stakingModule), elBlockSnapshot: new ELBlockSnapshot(elBlockSnapshot) };
+  }
+
+  public async getModuleKeys(
     moduleId: ModuleId,
     filters: KeysFilter,
   ): Promise<{ keysGenerator: AsyncGenerator<KeyEntity>; module: SRModule; elBlockSnapshot: ELBlockSnapshot }> {
-    // get module
-    const stakingModule = await this.getStakingModule(moduleId);
+    const { module, elBlockSnapshot } = await this.getStakingModuleAndMeta(moduleId);
 
-    // maybe  this exception should not be sent here
-    if (!stakingModule) {
-      throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-    }
-
-    const elMeta = await this.getElBlockSnapshot();
-
-    if (!elMeta) {
-      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-      throw httpExceptionTooEarlyResp();
-    }
-
-    const impl = config[stakingModule.type];
+    const impl = config[module.type];
     const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
 
     const keysGenerator: AsyncGenerator<KeyEntity> = await moduleInstance.getKeysStream(
-      stakingModule.stakingModuleAddress,
+      module.stakingModuleAddress,
       filters,
     );
-    const module = new SRModule(stakingModule);
-
-    // TODO: maybe we need to read meta on the upper layer in controller's service
 
     return {
       keysGenerator,
       module,
-      elBlockSnapshot: new ELBlockSnapshot(elMeta),
+      elBlockSnapshot,
     };
   }
 
@@ -406,38 +374,23 @@ export class StakingRouterService {
     module: SRModule;
     elBlockSnapshot: ELBlockSnapshot;
   }> {
-    const { keys, module, elMeta } = await this.entityManager.transactional(
+    const { keys, module, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
-        // get module
-        const stakingModule = await this.getStakingModule(moduleId);
-
-        // maybe  this exception should not be sent here
-        if (!stakingModule) {
-          throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-        }
-
-        const elMeta = await this.getElBlockSnapshot();
-
-        if (!elMeta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          throw httpExceptionTooEarlyResp();
-        }
-
-        const impl = config[stakingModule.type];
+        const { module, elBlockSnapshot } = await this.getStakingModuleAndMeta(moduleId);
+        const impl = config[module.type];
         const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
 
-        const keys: KeyEntity[] = await moduleInstance.getKeysByPubKeys(stakingModule.stakingModuleAddress, pubKeys);
-        const module = new SRModule(stakingModule);
+        const keys: KeyEntity[] = await moduleInstance.getKeysByPubKeys(module.stakingModuleAddress, pubKeys);
 
-        return { keys, module, elMeta };
+        return { keys, module, elBlockSnapshot };
       },
-      { isolationLevel: IsolationLevel.READ_COMMITTED },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
 
     return {
       keys,
       module,
-      elBlockSnapshot: new ELBlockSnapshot(elMeta),
+      elBlockSnapshot,
     };
   }
 
@@ -445,24 +398,9 @@ export class StakingRouterService {
     operatorsByModules: { operators: OperatorEntity[]; module: SRModule }[];
     elBlockSnapshot: ELBlockSnapshot;
   }> {
-    const { operatorsByModules, elMeta } = await this.entityManager.transactional(
+    const { operatorsByModules, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
-        // get list of modules
-        const stakingModules = await this.getStakingModules();
-
-        if (stakingModules.length === 0) {
-          this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-          // TODO: should we throw here exception, or enough to return empty list?
-          throw httpExceptionTooEarlyResp();
-        }
-
-        const elMeta = await this.getElBlockSnapshot();
-
-        if (!elMeta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          throw httpExceptionTooEarlyResp();
-        }
-
+        const { stakingModules, elBlockSnapshot } = await this.getStakingModulesAndMeta();
         const operatorsByModules: { operators: OperatorEntity[]; module: SRModule }[] = [];
 
         for (const module of stakingModules) {
@@ -480,14 +418,14 @@ export class StakingRouterService {
           operatorsByModules.push({ operators, module: new SRModule(module) });
         }
 
-        return { operatorsByModules, elMeta };
+        return { operatorsByModules, elBlockSnapshot };
       },
-      { isolationLevel: IsolationLevel.READ_COMMITTED },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
 
     return {
       operatorsByModules,
-      elBlockSnapshot: new ELBlockSnapshot(elMeta),
+      elBlockSnapshot,
     };
   }
 
@@ -495,44 +433,30 @@ export class StakingRouterService {
   public async getModuleOperators(
     moduleId: ModuleId,
   ): Promise<{ operators: OperatorEntity[]; module: SRModule; elBlockSnapshot: ELBlockSnapshot }> {
-    const { operators, module, elMeta } = await this.entityManager.transactional(
+    const { operators, module, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
-        // get list of modules
-        const stakingModule = await this.getStakingModule(moduleId);
-
-        if (!stakingModule) {
-          throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-        }
-
-        const elMeta = await this.getElBlockSnapshot();
-
-        if (!elMeta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          throw httpExceptionTooEarlyResp();
-        }
+        const { module, elBlockSnapshot } = await this.getStakingModuleAndMeta(moduleId);
 
         // read from config name of module that implement functions to fetch and store keys for type
         // TODO: check what will happen if implementation is not a provider of StakingRouterModule
-        const impl = config[stakingModule.type];
+        const impl = config[module.type];
         const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
         // TODO: use here method with streams
         // TODO: add in select fields
 
         //  /v1/operators return these common fields for all modules
         // here should be request without module.stakingModuleAddress
-        const operators: OperatorEntity[] = await moduleInstance.getOperators(stakingModule.stakingModuleAddress, {});
+        const operators: OperatorEntity[] = await moduleInstance.getOperators(module.stakingModuleAddress, {});
 
-        const module = new SRModule(stakingModule);
-
-        return { operators, module, elMeta };
+        return { operators, module, elBlockSnapshot };
       },
-      { isolationLevel: IsolationLevel.READ_COMMITTED },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
 
     return {
       operators,
       module,
-      elBlockSnapshot: new ELBlockSnapshot(elMeta),
+      elBlockSnapshot,
     };
   }
 
@@ -540,37 +464,23 @@ export class StakingRouterService {
     moduleId: ModuleId,
     operatorIndex: number,
   ): Promise<{ operator: OperatorEntity; module: SRModule; elBlockSnapshot: ELBlockSnapshot }> {
-    const { operator, module, elMeta } = await this.entityManager.transactional(
+    const { operator, module, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
-        // get list of modules
-        const stakingModule = await this.getStakingModule(moduleId);
-
-        if (!stakingModule) {
-          throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-        }
-
-        const elMeta = await this.getElBlockSnapshot();
-
-        if (!elMeta) {
-          this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-          throw httpExceptionTooEarlyResp();
-        }
+        const { module, elBlockSnapshot } = await this.getStakingModuleAndMeta(moduleId);
 
         // read from config name of module that implement functions to fetch and store keys for type
         // TODO: check what will happen if implementation is not a provider of StakingRouterModule
-        const impl = config[stakingModule.type];
+        const impl = config[module.type];
         const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
 
         const operator: OperatorEntity | null = await moduleInstance.getOperator(
-          stakingModule.stakingModuleAddress,
+          module.stakingModuleAddress,
           operatorIndex,
         );
 
-        const module = new SRModule(stakingModule);
-
-        return { operator, module, elMeta };
+        return { operator, module, elBlockSnapshot };
       },
-      { isolationLevel: IsolationLevel.READ_COMMITTED },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
 
     if (!operator) {
@@ -578,16 +488,21 @@ export class StakingRouterService {
         `Operator with index ${operatorIndex} is not found for module with moduleId ${moduleId}`,
       );
     }
-    //  TODO: new CuratedOperator(operator);
 
     return {
       operator,
       module,
-      elBlockSnapshot: new ELBlockSnapshot(elMeta),
+      elBlockSnapshot,
     };
   }
 
-  public async getModuleOperatorsAndKeysStreamVersion(
+  /**
+   *
+   * @param moduleId
+   * @param filters
+   * @returns
+   */
+  public async getModuleOperatorsAndKeys(
     moduleId: ModuleId,
     filters: KeysFilter,
   ): Promise<{
@@ -596,47 +511,28 @@ export class StakingRouterService {
     module: SRModule;
     elBlockSnapshot: ELBlockSnapshot;
   }> {
-    // get list of modules
-    const stakingModule = await this.getStakingModule(moduleId);
-
-    if (!stakingModule) {
-      throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-    }
-
-    const elMeta = await this.getElBlockSnapshot();
-
-    if (!elMeta) {
-      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-      throw httpExceptionTooEarlyResp();
-    }
+    const { module, elBlockSnapshot } = await this.getStakingModuleAndMeta(moduleId);
 
     // read from config name of module that implement functions to fetch and store keys for type
     // TODO: check what will happen if implementation is not a provider of StakingRouterModule
-    const impl = config[stakingModule.type];
+    const impl = config[module.type];
     const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
     // TODO: use here method with streams
     // TODO: add in select fields
 
     const keysGenerator: AsyncGenerator<KeyEntity> = await moduleInstance.getKeysStream(
-      stakingModule.stakingModuleAddress,
+      module.stakingModuleAddress,
       filters,
     );
-
     // TODO: add filter in
     const operatorsFilter = filters.operatorIndex ? { index: filters.operatorIndex } : {};
-
-    const operators: OperatorEntity[] = await moduleInstance.getOperators(
-      stakingModule.stakingModuleAddress,
-      operatorsFilter,
-    );
-
-    const module = new SRModule(stakingModule);
+    const operators: OperatorEntity[] = await moduleInstance.getOperators(module.stakingModuleAddress, operatorsFilter);
 
     return {
       operators,
       keysGenerator,
       module,
-      elBlockSnapshot: new ELBlockSnapshot(elMeta),
+      elBlockSnapshot,
     };
   }
 
@@ -649,24 +545,13 @@ export class StakingRouterService {
   ): Promise<{ validators: Validator[]; clBlockSnapshot: CLBlockSnapshot }> {
     const { validators, meta } = await this.entityManager.transactional(
       async () => {
-        const stakingModule = await this.getStakingModule(moduleId);
-
-        if (!stakingModule) {
-          throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-        }
-
-        const elMeta = await this.getElBlockSnapshot();
-
-        if (!elMeta) {
-          this.logger.warn(`EL meta is empty, maybe first Updating Keys Job is not finished yet.`);
-          throw httpExceptionTooEarlyResp();
-        }
+        const { module, elBlockSnapshot } = await this.getStakingModuleAndMeta(moduleId);
 
         // read from config name of module that implement functions to fetch and store keys for type
         // TODO: check what will happen if implementation is not a provider of StakingRouterModule
-        const impl = config[stakingModule.type];
+        const impl = config[module.type];
         const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
-        const keys = await moduleInstance.getKeys(stakingModule.stakingModuleAddress, { operatorIndex }, ['key']);
+        const keys = await moduleInstance.getKeys(module.stakingModuleAddress, { operatorIndex }, ['key']);
 
         const pubkeys = keys.map((pubkey) => pubkey.key);
         const percent =
@@ -694,7 +579,7 @@ export class StakingRouterService {
         }
 
         // We need EL meta always be actual
-        if (elMeta.blockNumber < clMeta.blockNumber) {
+        if (elBlockSnapshot.blockNumber < clMeta.blockNumber) {
           this.logger.warn('Last Execution Layer block number in our database older than last Consensus Layer');
           // add metric or alert on breaking el > cl condition
           // TODO: what answer will be better here?
@@ -706,7 +591,7 @@ export class StakingRouterService {
 
         return { validators, meta: clMeta };
       },
-      { isolationLevel: IsolationLevel.READ_COMMITTED },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
 
     return { validators, clBlockSnapshot: new CLBlockSnapshot(meta) };

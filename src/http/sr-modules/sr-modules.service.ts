@@ -19,55 +19,22 @@ export class SRModulesService {
   ) {}
 
   async getModules(): Promise<SRModuleListResponse> {
-    const { stakingModules, elMeta } = await this.entityManager.transactional(
-      async () => {
-        const elMeta = await this.stakingRouterService.getElBlockSnapshot();
-        const stakingModules = await this.stakingRouterService.getStakingModules();
-        return { stakingModules, elMeta };
-      },
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
-
-    if (stakingModules.length == 0) {
-      this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-      throw httpExceptionTooEarlyResp();
-    }
-
-    if (!elMeta) {
-      this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
-      throw httpExceptionTooEarlyResp();
-    }
+    const { stakingModules, elBlockSnapshot } = await this.stakingRouterService.getStakingModulesAndMeta();
 
     const stakingModuleListResponse = stakingModules.map((module) => new SRModule(module));
 
     return {
       data: stakingModuleListResponse,
-      elBlockSnapshot: new ELBlockSnapshot(elMeta),
+      elBlockSnapshot,
     };
   }
 
   async getModule(moduleId: ModuleId): Promise<SRModuleResponse> {
-    const { stakingModule, elMeta } = await this.entityManager.transactional(
-      async () => {
-        const elMeta = await this.stakingRouterService.getElBlockSnapshot();
-        const stakingModule = await this.stakingRouterService.getStakingModule(moduleId);
-        return { stakingModule, elMeta };
-      },
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
-
-    if (!stakingModule) {
-      throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-    }
-
-    if (!elMeta) {
-      this.logger.warn("Meta is null, maybe data hasn't been written in db yet.");
-      throw httpExceptionTooEarlyResp();
-    }
+    const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
 
     return {
-      data: new SRModule(stakingModule),
-      elBlockSnapshot: new ELBlockSnapshot(elMeta),
+      data: module,
+      elBlockSnapshot: new ELBlockSnapshot(elBlockSnapshot),
     };
   }
 }

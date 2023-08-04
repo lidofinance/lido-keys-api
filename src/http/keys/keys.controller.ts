@@ -42,6 +42,7 @@ export class KeysController {
   })
   @ApiOperation({ summary: 'Get list of all keys' })
   async get(@Query() filters: KeyQuery, @Res() reply?: FastifyReply) {
+    // TODO: explain here why we use here transaction
     await this.entityManager.transactional(
       async () => {
         const { keysGenerators, meta } = await this.keysService.get(filters);

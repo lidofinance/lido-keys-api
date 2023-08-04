@@ -25,7 +25,7 @@ export class SRModulesOperatorsKeysService {
     meta: { elBlockSnapshot: ELBlockSnapshot };
   }> {
     const { operators, keysGenerator, module, elBlockSnapshot } =
-      await this.stakingRouterService.getModuleOperatorsAndKeysStreamVersion(moduleId, filters);
+      await this.stakingRouterService.getModuleOperatorsAndKeys(moduleId, filters);
     return { operators, keysGenerator, module, meta: { elBlockSnapshot } };
   }
 }

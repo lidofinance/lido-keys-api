@@ -18,9 +18,7 @@ export class SRModulesKeysService {
     keysGeneratorsByModules: { keysGenerator: AsyncGenerator<Key>; module: SRModule }[];
     meta: { elBlockSnapshot: ELBlockSnapshot };
   }> {
-    const { keysGeneratorsByModules, elBlockSnapshot } = await this.stakingRouterService.getKeysByModulesStreamVersion(
-      filters,
-    );
+    const { keysGeneratorsByModules, elBlockSnapshot } = await this.stakingRouterService.getKeysByModules(filters);
 
     return { keysGeneratorsByModules, meta: { elBlockSnapshot } };
   }
@@ -33,10 +31,7 @@ export class SRModulesKeysService {
     module: SRModule;
     meta: { elBlockSnapshot: ELBlockSnapshot };
   }> {
-    const { keysGenerator, module, elBlockSnapshot } = await this.stakingRouterService.getModuleKeysStreamVersion(
-      moduleId,
-      filters,
-    );
+    const { keysGenerator, module, elBlockSnapshot } = await this.stakingRouterService.getModuleKeys(moduleId, filters);
 
     return { keysGenerator, module, meta: { elBlockSnapshot } };
   }
