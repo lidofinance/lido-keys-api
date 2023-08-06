@@ -61,6 +61,7 @@ export class RegistryFetchModule {
       module: RegistryFetchModule,
       imports: [
         ...(options.imports || []),
+        // TODO: why we need it here?
         LidoContractModule.forFeatureAsync({
           async useFactory(...args) {
             const config = await options.useFactory(...args);

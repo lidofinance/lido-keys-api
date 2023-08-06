@@ -1,20 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { Registry__factory } from '@lido-nestjs/contracts';
+import { Inject, Injectable } from '@nestjs/common';
+import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { KeyBatchRecord, RegistryKey } from './interfaces/key.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';
 import { KEYS_LENGTH, SIGNATURE_LENGTH } from './key-batch.constants';
-import { ExecutionProvider } from 'common/execution-provider';
 
 @Injectable()
 export class RegistryKeyBatchFetchService {
   constructor(
-    protected readonly provider: ExecutionProvider,
     protected readonly operatorsService: RegistryOperatorFetchService,
+    @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
   ) {}
 
   private getContract(moduleAddress: string) {
-    return Registry__factory.connect(moduleAddress, this.provider);
+    return this.contract.attach(moduleAddress);
+
+    // return Registry__factory.connect(moduleAddress, this.provider);
   }
 
   /**

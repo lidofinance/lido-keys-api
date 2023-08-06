@@ -109,6 +109,7 @@ export abstract class AbstractRegistryService {
       const overrides = { blockTag: { blockHash } };
       // TODO: use feature flag
       const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
+
       // add moduleAddress
       const operatorKeys = result.filter((key) => key);
 
@@ -170,6 +171,7 @@ export abstract class AbstractRegistryService {
       await Promise.all(
         // remove all keys from the database that are greater than the total number of keys
         // it's needed to clear the list in db when removing keys from the contract
+
         currentOperators.map(async (operator) => {
           await entityManager.nativeDelete(RegistryKey, {
             index: { $gte: operator.totalSigningKeys },
