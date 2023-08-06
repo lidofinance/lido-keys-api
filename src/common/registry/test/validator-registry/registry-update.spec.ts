@@ -247,11 +247,8 @@ describe('Empty registry', () => {
   let registryStorageService: RegistryStorageService;
   let moduleRef: TestingModule;
   const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');
-  if (!process.env.CHAIN_ID) {
-    console.error("CHAIN_ID wasn't provides");
-    process.exit(1);
-  }
-  const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
+  const CHAIN_ID = process.env.CHAIN_ID || 1;
+  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
 
   const keysWithModuleAddress = keys.map((key) => {
     return { ...key, moduleAddress: address };
