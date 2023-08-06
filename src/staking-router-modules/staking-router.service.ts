@@ -27,6 +27,7 @@ import { ValidatorsService } from 'validators';
 
 import { PrometheusService } from 'common/prometheus';
 import { KeyField, KeysFilter } from './interfaces/filters';
+import { STAKING_MODULE_TYPE } from './constants';
 
 @Injectable()
 export class StakingRouterService {
@@ -62,6 +63,12 @@ export class StakingRouterService {
     }
 
     return await this.srModulesStorage.findOneById(Number(moduleId));
+  }
+
+  public getStakingRouterModuleImpl(moduleType: string): StakingModuleInterface {
+    const impl = config[moduleType];
+    const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
+    return moduleInstance;
   }
 
   /**
@@ -214,69 +221,69 @@ export class StakingRouterService {
   }
 
   // TODO: check why we don't have a type conflict here
-  /**
-   * Return generators for keys of all modules with fields {key, depositSignature, operatorIndex, used, moduleAddress} and execution layer meta
-   * @param filters used, operatorIndex
-   * @returns List of generators for keys and execution layer meta
-   */
-  public async getKeys(
-    filters: KeysFilter,
-  ): Promise<{ keysGenerators: AsyncGenerator<KeyWithModuleAddress>[]; elBlockSnapshot: ELBlockSnapshot }> {
-    const { stakingModules, elBlockSnapshot } = await this.getStakingModulesAndMeta();
-    const keysGenerators: AsyncGenerator<KeyWithModuleAddress>[] = [];
+  // /**
+  //  * Return generators for keys of all modules with fields {key, depositSignature, operatorIndex, used, moduleAddress} and execution layer meta
+  //  * @param filters used, operatorIndex
+  //  * @returns List of generators for keys and execution layer meta
+  //  */
+  // public async getKeys(
+  //   filters: KeysFilter,
+  // ): Promise<{ keysGenerators: AsyncGenerator<KeyWithModuleAddress>[]; elBlockSnapshot: ELBlockSnapshot }> {
+  //   const { stakingModules, elBlockSnapshot } = await this.getStakingModulesAndMeta();
+  //   const keysGenerators: AsyncGenerator<KeyWithModuleAddress>[] = [];
 
-    for (const module of stakingModules) {
-      const impl = config[module.type];
-      const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
+  //   for (const module of stakingModules) {
+  //     const impl = config[module.type];
+  //     const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
 
-      const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used', 'moduleAddress'];
-      // TODO: maybe get rid of this type KeyWithModuleAddress
-      const keysGenerator: AsyncGenerator<KeyWithModuleAddress> = await moduleInstance.getKeysStream(
-        module.stakingModuleAddress,
-        filters,
-        fields,
-      );
+  //     const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used', 'moduleAddress'];
+  //     // TODO: maybe get rid of this type KeyWithModuleAddress
+  //     const keysGenerator: AsyncGenerator<KeyWithModuleAddress> = await moduleInstance.getKeysStream(
+  //       module.stakingModuleAddress,
+  //       filters,
+  //       fields,
+  //     );
 
-      keysGenerators.push(keysGenerator);
-    }
+  //     keysGenerators.push(keysGenerator);
+  //   }
 
-    return { keysGenerators, elBlockSnapshot };
-  }
+  //   return { keysGenerators, elBlockSnapshot };
+  // }
 
   /**
    * Return keys from pubKeys list with fields {key, depositSignature, operatorIndex, used, moduleAddress}
    * @param pubKeys list of public keys for searching
    * @returns list of keys with fields {key, depositSignature, operatorIndex, used, moduleAddress} and execution layer meta
    */
-  public async getKeysByPubkeys(
-    pubKeys: string[],
-  ): Promise<{ keys: KeyWithModuleAddress[]; elBlockSnapshot: ELBlockSnapshot }> {
-    const { keys, elBlockSnapshot } = await this.entityManager.transactional(
-      async () => {
-        const { stakingModules, elBlockSnapshot } = await this.getStakingModulesAndMeta();
-        const collectedKeys: KeyWithModuleAddress[][] = [];
+  // public async getKeysByPubkeys(
+  //   pubKeys: string[],
+  // ): Promise<{ keys: KeyWithModuleAddress[]; elBlockSnapshot: ELBlockSnapshot }> {
+  //   const { keys, elBlockSnapshot } = await this.entityManager.transactional(
+  //     async () => {
+  //       const { stakingModules, elBlockSnapshot } = await this.getStakingModulesAndMeta();
+  //       const collectedKeys: KeyWithModuleAddress[][] = [];
 
-        for (const module of stakingModules) {
-          const impl = config[module.type];
-          const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
+  //       for (const module of stakingModules) {
+  //         const impl = config[module.type];
+  //         const moduleInstance = this.moduleRef.get<StakingModuleInterface>(impl);
 
-          const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used', 'moduleAddress'];
-          const keys: KeyWithModuleAddress[] = await moduleInstance.getKeysByPubKeys(
-            module.stakingModuleAddress,
-            pubKeys,
-            fields,
-          );
+  //         const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used', 'moduleAddress'];
+  //         const keys: KeyWithModuleAddress[] = await moduleInstance.getKeysByPubKeys(
+  //           module.stakingModuleAddress,
+  //           pubKeys,
+  //           fields,
+  //         );
 
-          collectedKeys.push(keys);
-        }
+  //         collectedKeys.push(keys);
+  //       }
 
-        return { keys: collectedKeys.flat(), elBlockSnapshot };
-      },
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
+  //       return { keys: collectedKeys.flat(), elBlockSnapshot };
+  //     },
+  //     { isolationLevel: IsolationLevel.REPEATABLE_READ },
+  //   );
 
-    return { keys, elBlockSnapshot };
-  }
+  //   return { keys, elBlockSnapshot };
+  // }
 
   /**
    * Return generators for keys of all modules with fields {key, depositSignature, operatorIndex, used } and execution layer meta
