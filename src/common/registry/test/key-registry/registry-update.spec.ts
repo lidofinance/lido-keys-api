@@ -90,7 +90,10 @@ describe('Registry', () => {
       expect(saveRegistryMock).toBeCalledTimes(1);
       // 2 - number of operators
       expect(saveKeyRegistryMock).toBeCalledTimes(2);
-      await compareTestMeta(registryService, { keys: keysWithModuleAddress, operators: operatorsWithModuleAddress });
+      await compareTestMeta(address, registryService, {
+        keys: keysWithModuleAddress,
+        operators: operatorsWithModuleAddress,
+      });
     });
 
     // this test now the same as same data. as both of them were based on keyOpIndex. now we check it on the level above
@@ -125,8 +128,8 @@ describe('Registry', () => {
       await registryService.update(address, 'latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestMetaKeys(registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(registryService, { operators: operatorsWithModuleAddress });
+      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestMetaOperators(address, registryService, { operators: operatorsWithModuleAddress });
     });
 
     test('looking for totalSigningKeys', async () => {
@@ -147,8 +150,8 @@ describe('Registry', () => {
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
 
-      await compareTestMetaKeys(registryService, { keys: newKeys });
-      await compareTestMetaOperators(registryService, {
+      await compareTestMetaKeys(address, registryService, { keys: newKeys });
+      await compareTestMetaOperators(address, registryService, {
         operators: newOperators,
       });
     });
@@ -168,8 +171,8 @@ describe('Registry', () => {
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
 
-      await compareTestMetaKeys(registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(registryService, {
+      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestMetaOperators(address, registryService, {
         operators: newOperators,
       });
     });
@@ -192,8 +195,8 @@ describe('Registry', () => {
       await registryService.update(address, 'latest');
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestMetaKeys(registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(registryService, {
+      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestMetaOperators(address, registryService, {
         operators: newOperators,
       });
     });
@@ -213,8 +216,8 @@ describe('Registry', () => {
       await registryService.update(address, 'latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestMetaKeys(registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(registryService, {
+      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestMetaOperators(address, registryService, {
         operators: newOperators,
       });
     });
@@ -234,11 +237,11 @@ describe('Registry', () => {
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
 
-      await compareTestMetaOperators(registryService, {
+      await compareTestMetaOperators(address, registryService, {
         operators: newOperators,
       });
       const firstOperatorKeys = await (
-        await registryService.getAllKeysFromStorage()
+        await registryService.getAllKeysFromStorage(address)
       ).filter(({ operatorIndex }) => operatorIndex === 0);
       expect(firstOperatorKeys.length).toBe(newOperators[0].totalSigningKeys);
     });

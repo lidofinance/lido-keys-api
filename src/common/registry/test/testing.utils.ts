@@ -9,12 +9,13 @@ type Expected = {
 
 // TODO: why meta? if we compare keys
 export const compareTestMetaKeys = async (
+  address: string,
   registryService: AbstractRegistryService,
   { keys }: Pick<Expected, 'keys'>,
 ) => {
   const sorted = keys.sort((a, b) => a.operatorIndex - b.operatorIndex);
   const fetchedAndSorted = await (
-    await registryService.getOperatorsKeysFromStorage()
+    await registryService.getOperatorsKeysFromStorage(address)
   ).sort((a, b) => a.operatorIndex - b.operatorIndex);
 
   expect(fetchedAndSorted).toEqual(sorted);
@@ -22,15 +23,20 @@ export const compareTestMetaKeys = async (
 
 // TODO: why meta? if we compare operators
 export const compareTestMetaOperators = async (
+  address: string,
   registryService: AbstractRegistryService,
   { operators }: Pick<Expected, 'operators'>,
 ) => {
-  expect(operators).toEqual(await registryService.getOperatorsFromStorage());
+  expect(operators).toEqual(await registryService.getOperatorsFromStorage(address));
 };
 
-export const compareTestMeta = async (registryService: AbstractRegistryService, { keys, operators }: Expected) => {
-  await compareTestMetaKeys(registryService, { keys });
-  await compareTestMetaOperators(registryService, { operators });
+export const compareTestMeta = async (
+  address: string,
+  registryService: AbstractRegistryService,
+  { keys, operators }: Expected,
+) => {
+  await compareTestMetaKeys(address, registryService, { keys });
+  await compareTestMetaOperators(address, registryService, { operators });
 };
 
 // TODO: maybe add address as argument

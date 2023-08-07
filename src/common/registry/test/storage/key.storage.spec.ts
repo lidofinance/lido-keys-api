@@ -54,40 +54,42 @@ describe('Keys', () => {
   });
 
   test('findAll', async () => {
-    await expect(storageService.findAll()).resolves.toEqual([]);
-    expect(mockRegistryKeyRepository.findAll).toBeCalledTimes(1);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
+    expect(mockRegistryKeyRepository.find).toBeCalledTimes(1);
   });
 
   test('findUsed', async () => {
-    await expect(storageService.findUsed()).resolves.toEqual([]);
+    await expect(storageService.findUsed(address)).resolves.toEqual([]);
     expect(mockRegistryKeyRepository.find).toBeCalledTimes(1);
-    expect(mockRegistryKeyRepository.find).toBeCalledWith({ used: true });
+    expect(mockRegistryKeyRepository.find).toBeCalledWith({ moduleAddress: address, used: true });
   });
 
   test('findByOperatorIndex', async () => {
-    await expect(storageService.findByOperatorIndex(1)).resolves.toEqual([]);
+    await expect(storageService.findByOperatorIndex(address, 1)).resolves.toEqual([]);
     expect(mockRegistryKeyRepository.find).toBeCalledTimes(1);
   });
 
   test('findOneByIndex', async () => {
-    await expect(storageService.findOneByIndex(registryKey.operatorIndex, registryKey.index)).resolves.toEqual(
+    await expect(storageService.findOneByIndex(address, registryKey.operatorIndex, registryKey.index)).resolves.toEqual(
       registryKey,
     );
     expect(mockRegistryKeyRepository.findOne).toBeCalledTimes(1);
   });
 
   test('findOneByPubkey', async () => {
-    await expect(storageService.findByPubkey('')).resolves.toEqual([]);
+    await expect(storageService.findByPubkey(address, '')).resolves.toEqual([]);
     expect(mockRegistryKeyRepository.find).toBeCalledTimes(1);
   });
 
   test('findOneBySignature', async () => {
-    await expect(storageService.findBySignature('')).resolves.toEqual([]);
+    await expect(storageService.findBySignature(address, '')).resolves.toEqual([]);
     expect(mockRegistryKeyRepository.find).toBeCalledTimes(1);
   });
 
   test('removeOneByIndex', async () => {
-    await expect(storageService.removeOneByIndex(registryKey.operatorIndex, registryKey.index)).resolves.toEqual(1);
+    await expect(
+      storageService.removeOneByIndex(address, registryKey.operatorIndex, registryKey.index),
+    ).resolves.toEqual(1);
     expect(mockRegistryKeyRepository.nativeDelete).toBeCalledTimes(1);
   });
 

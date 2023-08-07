@@ -60,17 +60,17 @@ describe('Operators', () => {
   });
 
   test('findAll', async () => {
-    await expect(storageService.findAll()).resolves.toEqual([]);
-    expect(mockRegistryOperatorRepository.findAll).toBeCalledTimes(1);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
+    expect(mockRegistryOperatorRepository.find).toBeCalledTimes(1);
   });
 
   test('findOneByIndex', async () => {
-    await expect(storageService.findOneByIndex(registryOperator.index)).resolves.toEqual(registryOperator);
+    await expect(storageService.findOneByIndex(address, registryOperator.index)).resolves.toEqual(registryOperator);
     expect(mockRegistryOperatorRepository.findOne).toBeCalledTimes(1);
   });
 
   test('removeOneByIndex', async () => {
-    await expect(storageService.removeOneByIndex(registryOperator.index)).resolves.toEqual(1);
+    await expect(storageService.removeOneByIndex(address, registryOperator.index)).resolves.toEqual(1);
     expect(mockRegistryOperatorRepository.nativeDelete).toBeCalledTimes(1);
   });
 

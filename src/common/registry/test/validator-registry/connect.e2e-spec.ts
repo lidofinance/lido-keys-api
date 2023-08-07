@@ -67,11 +67,11 @@ describe('Registry', () => {
     // 6912872
     await registryService.update(address, hash);
 
-    await compareTestMetaOperators(registryService, {
+    await compareTestMetaOperators(address, registryService, {
       operators: operatorsWithModuleAddress,
     });
 
-    const keys = await registryService.getOperatorsKeysFromStorage();
+    const keys = await registryService.getOperatorsKeysFromStorage(address);
     expect(keys).toHaveLength(250);
   }, 200_000);
 });

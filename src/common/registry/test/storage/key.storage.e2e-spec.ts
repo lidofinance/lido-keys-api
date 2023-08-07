@@ -46,7 +46,7 @@ describe('Keys', () => {
       { operatorIndex: 1, index: 2, moduleAddress: address, ...key },
     ];
 
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.save(keys);
     await expect(
       storageService.find({ operatorIndex: 1 }, { limit: 1, orderBy: { index: QueryOrder.DESC } }),
@@ -59,26 +59,26 @@ describe('Keys', () => {
       { operatorIndex: 1, index: 2, moduleAddress: address, ...key },
     ];
 
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.save(keys);
-    await expect(storageService.findOneByIndex(1, 1)).resolves.toEqual(keys[0]);
-    await expect(storageService.findOneByIndex(1, 2)).resolves.toEqual(keys[1]);
+    await expect(storageService.findOneByIndex(address, 1, 1)).resolves.toEqual(keys[0]);
+    await expect(storageService.findOneByIndex(address, 1, 2)).resolves.toEqual(keys[1]);
   });
 
   test('find by pubkey', async () => {
     const keys = [{ operatorIndex: 1, index: 1, moduleAddress: address, ...key }];
 
-    await expect(storageService.findByPubkey(key.key)).resolves.toEqual([]);
+    await expect(storageService.findByPubkey(address, key.key)).resolves.toEqual([]);
     await storageService.save(keys);
-    await expect(storageService.findByPubkey(key.key)).resolves.toEqual([keys[0]]);
+    await expect(storageService.findByPubkey(address, key.key)).resolves.toEqual([keys[0]]);
   });
 
   test('find by signature', async () => {
     const keys = [{ operatorIndex: 1, index: 1, moduleAddress: address, ...key }];
 
-    await expect(storageService.findBySignature(key.depositSignature)).resolves.toEqual([]);
+    await expect(storageService.findBySignature(address, key.depositSignature)).resolves.toEqual([]);
     await storageService.save(keys);
-    await expect(storageService.findBySignature(key.depositSignature)).resolves.toEqual([keys[0]]);
+    await expect(storageService.findBySignature(address, key.depositSignature)).resolves.toEqual([keys[0]]);
   });
 
   test('find by operator', async () => {
@@ -87,17 +87,17 @@ describe('Keys', () => {
       { operatorIndex: 1, index: 2, moduleAddress: address, ...key },
     ];
 
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.save(keys);
-    await expect(storageService.findByOperatorIndex(1)).resolves.toEqual(keys);
+    await expect(storageService.findByOperatorIndex(address, 1)).resolves.toEqual(keys);
   });
 
   test('save one key', async () => {
     const registryKey = { operatorIndex: 1, index: 1, moduleAddress: address, ...key };
 
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.saveOne(registryKey);
-    await expect(storageService.findAll()).resolves.toEqual([registryKey]);
+    await expect(storageService.findAll(address)).resolves.toEqual([registryKey]);
   });
 
   test('save keys', async () => {
@@ -106,19 +106,19 @@ describe('Keys', () => {
       { operatorIndex: 1, index: 2, moduleAddress: address, ...key },
     ];
 
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.save(keys);
-    await expect(storageService.findAll()).resolves.toEqual(keys);
+    await expect(storageService.findAll(address)).resolves.toEqual(keys);
   });
 
   test('remove one key', async () => {
     const registryKey = { operatorIndex: 1, index: 1, moduleAddress: address, ...key };
 
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.saveOne(registryKey);
-    await expect(storageService.findAll()).resolves.toEqual([registryKey]);
-    await storageService.removeOneByIndex(registryKey.operatorIndex, registryKey.index);
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([registryKey]);
+    await storageService.removeOneByIndex(address, registryKey.operatorIndex, registryKey.index);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
   });
 
   test('remove all keys', async () => {
@@ -127,10 +127,10 @@ describe('Keys', () => {
       { operatorIndex: 1, index: 2, moduleAddress: address, ...key },
     ];
 
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.save(keys);
-    await expect(storageService.findAll()).resolves.toEqual(keys);
+    await expect(storageService.findAll(address)).resolves.toEqual(keys);
     await storageService.removeAll();
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
   });
 });

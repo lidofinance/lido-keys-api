@@ -7,11 +7,11 @@ export class KeyRegistryService extends AbstractRegistryService {
     return currOperator.totalSigningKeys;
   }
   /** returns all operators keys from the db */
-  public async getAllKeysFromStorage() {
-    return await this.keyStorage.findAll();
+  public async getAllKeysFromStorage(moduleAddress: string) {
+    return await this.keyStorage.findAll(moduleAddress);
   }
   /** returns used keys from the db */
-  public async getUsedKeysFromStorage() {
-    return await this.keyStorage.findUsed();
+  public async getUsedKeysFromStorage(moduleAddress: string) {
+    return await this.keyStorage.findUsed(moduleAddress);
   }
 }

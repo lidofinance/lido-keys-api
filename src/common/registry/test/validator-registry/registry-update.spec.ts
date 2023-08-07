@@ -89,7 +89,10 @@ describe('Validator registry', () => {
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
       // 2 - number of operators
       expect(saveKeyRegistryMock).toBeCalledTimes(2);
-      await compareTestMeta(registryService, { keys: keysWithModuleAddress, operators: operatorsWithModuleAddress });
+      await compareTestMeta(address, registryService, {
+        keys: keysWithModuleAddress,
+        operators: operatorsWithModuleAddress,
+      });
     });
 
     test('new key without keysOpIndex updating', async () => {
@@ -121,8 +124,8 @@ describe('Validator registry', () => {
       await registryService.update(address, 'latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestMetaKeys(registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(registryService, { operators: operatorsWithModuleAddress });
+      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestMetaOperators(address, registryService, { operators: operatorsWithModuleAddress });
     });
 
     test('looking only for used keys', async () => {
@@ -141,8 +144,8 @@ describe('Validator registry', () => {
       await registryService.update(address, 'latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestMetaKeys(registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(registryService, {
+      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestMetaOperators(address, registryService, {
         operators: newOperators,
       });
     });
@@ -160,8 +163,8 @@ describe('Validator registry', () => {
       await registryService.update(address, 'latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestMetaKeys(registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(registryService, {
+      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestMetaOperators(address, registryService, {
         operators: newOperators,
       });
     });
@@ -183,8 +186,8 @@ describe('Validator registry', () => {
       await registryService.update(address, 'latest');
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestMetaKeys(registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(registryService, {
+      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestMetaOperators(address, registryService, {
         operators: newOperators,
       });
     });
@@ -208,8 +211,8 @@ describe('Validator registry', () => {
       await registryService.update(address, 'latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestMetaKeys(registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(registryService, {
+      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestMetaOperators(address, registryService, {
         operators: newOperators,
       });
     });
@@ -228,12 +231,12 @@ describe('Validator registry', () => {
       await registryService.update(address, 'latest');
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestMetaOperators(registryService, {
+      await compareTestMetaOperators(address, registryService, {
         operators: newOperators,
       });
 
       const firstOperatorKeys = await (
-        await registryService.getOperatorsKeysFromStorage()
+        await registryService.getOperatorsKeysFromStorage(address)
       ).filter(({ operatorIndex }) => operatorIndex === 0);
 
       expect(firstOperatorKeys.length).toBe(newOperators[0].totalSigningKeys);
@@ -299,7 +302,10 @@ describe('Empty registry', () => {
     await registryService.update(address, 'latest');
     expect(saveRegistryMock).toBeCalledTimes(1);
     expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-    await compareTestMeta(registryService, { keys: keysWithModuleAddress, operators: operatorsWithModuleAddress });
+    await compareTestMeta(address, registryService, {
+      keys: keysWithModuleAddress,
+      operators: operatorsWithModuleAddress,
+    });
     await registryService.update(address, 'latest');
   });
 });

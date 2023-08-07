@@ -8,7 +8,7 @@ export class ValidatorRegistryService extends AbstractRegistryService {
   }
 
   /** returns used keys from the db */
-  public async getValidatorsKeysFromStorage() {
-    return await this.keyStorage.findUsed();
+  public async getValidatorsKeysFromStorage(moduleAddress: string) {
+    return await this.keyStorage.findUsed(moduleAddress);
   }
 }

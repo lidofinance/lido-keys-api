@@ -46,7 +46,7 @@ describe('Operators', () => {
       { index: 2, moduleAddress: address, ...operator },
     ];
 
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.save(operators);
     await expect(
       storageService.find({ active: true }, { limit: 1, orderBy: { index: QueryOrder.DESC } }),
@@ -56,9 +56,9 @@ describe('Operators', () => {
   test('save one operator', async () => {
     const registryOperator = { index: 1, moduleAddress: address, ...operator };
 
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.saveOne(registryOperator);
-    await expect(storageService.findAll()).resolves.toEqual([registryOperator]);
+    await expect(storageService.findAll(address)).resolves.toEqual([registryOperator]);
   });
 
   test('save operators', async () => {
@@ -67,19 +67,19 @@ describe('Operators', () => {
       { index: 2, moduleAddress: address, ...operator },
     ];
 
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.save(operators);
-    await expect(storageService.findAll()).resolves.toEqual(operators);
+    await expect(storageService.findAll(address)).resolves.toEqual(operators);
   });
 
   test('remove one operator', async () => {
     const registryOperator = { index: 1, moduleAddress: address, ...operator };
 
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.saveOne(registryOperator);
-    await expect(storageService.findAll()).resolves.toEqual([registryOperator]);
-    await storageService.removeOneByIndex(registryOperator.index);
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([registryOperator]);
+    await storageService.removeOneByIndex(address, registryOperator.index);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
   });
 
   test('remove all operators', async () => {
@@ -88,10 +88,10 @@ describe('Operators', () => {
       { index: 2, moduleAddress: address, ...operator },
     ];
 
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.save(operators);
-    await expect(storageService.findAll()).resolves.toEqual(operators);
+    await expect(storageService.findAll(address)).resolves.toEqual(operators);
     await storageService.removeAll();
-    await expect(storageService.findAll()).resolves.toEqual([]);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
   });
 });

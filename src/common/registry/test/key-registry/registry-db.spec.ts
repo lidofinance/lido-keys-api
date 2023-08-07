@@ -74,6 +74,9 @@ describe('Registry', () => {
   });
 
   test('db init is correct', async () => {
-    await compareTestMeta(registryService, { keys: keysWithModuleAddress, operators: operatorsWithModuleAddress });
+    await compareTestMeta(address, registryService, {
+      keys: keysWithModuleAddress,
+      operators: operatorsWithModuleAddress,
+    });
   });
 });

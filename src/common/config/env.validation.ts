@@ -165,6 +165,10 @@ export class EnvironmentVariables {
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
   UPDATE_VALIDATORS_INTERVAL_MS = 10000;
+
+  @IsOptional()
+  @IsString()
+  LIDO_LOCATOR_ADDRESS = '';
 }
 
 export function validate(config: Record<string, unknown>) {

@@ -45,7 +45,7 @@ export abstract class AbstractRegistryService {
 
   /** collects changed data from the contract and store it to the db */
   public async update(moduleAddress: string, blockHash: string) {
-    const previousOperators = await this.getOperatorsFromStorage();
+    const previousOperators = await this.getOperatorsFromStorage(moduleAddress);
     const currentOperators = await this.getOperatorsFromContract(moduleAddress, blockHash);
 
     this.logger.log('Collected operators', {
@@ -55,7 +55,7 @@ export abstract class AbstractRegistryService {
 
     await this.entityManager.transactional(
       async () => {
-        await this.saveOperators(currentOperators);
+        await this.saveOperators(moduleAddress, currentOperators);
 
         this.logger.log('Saved data operators to the DB', {
           operators: currentOperators.length,
@@ -132,13 +132,15 @@ export abstract class AbstractRegistryService {
   /** storage */
 
   /** returns the latest operators data from the db */
-  public async getOperatorsFromStorage() {
-    return await this.operatorStorage.findAll();
+  public async getOperatorsFromStorage(moduleAddress: string) {
+    // TODO: find for module
+    return await this.operatorStorage.findAll(moduleAddress);
   }
 
   /** returns all the keys from storage */
-  public async getOperatorsKeysFromStorage() {
-    return await this.keyStorage.findAll();
+  // the same
+  public async getOperatorsKeysFromStorage(moduleAddress: string) {
+    return await this.keyStorage.findAll(moduleAddress);
   }
 
   public async saveKeys(keys: RegistryKey[]) {
@@ -165,7 +167,7 @@ export abstract class AbstractRegistryService {
   }
 
   /** saves all the data to the db */
-  public async saveOperators(currentOperators: RegistryOperator[]) {
+  public async saveOperators(moduleAddress: string, currentOperators: RegistryOperator[]) {
     // save all data in a transaction
     await this.entityManager.transactional(async (entityManager) => {
       await Promise.all(
@@ -176,6 +178,7 @@ export abstract class AbstractRegistryService {
           await entityManager.nativeDelete(RegistryKey, {
             index: { $gte: operator.totalSigningKeys },
             operatorIndex: operator.index,
+            moduleAddress,
           });
         }),
       );
