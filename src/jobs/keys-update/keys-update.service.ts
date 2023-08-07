@@ -5,6 +5,13 @@ import { JobService } from 'common/job';
 import { OneAtTime } from 'common/decorators/oneAtTime';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
+import { StakingRouterFetchService } from 'staking-router-modules/contracts';
+import { ElMetaStorageService } from 'storage/el-meta.storage';
+import { EntityManager } from '@mikro-orm/knex';
+import { ExecutionProviderService } from 'common/execution-provider';
+import { SRModuleStorageService } from 'storage/sr-module.storage';
+import { IsolationLevel } from '@mikro-orm/core';
+import { PrometheusService } from 'common/prometheus';
 
 class KeyOutdatedError extends Error {
   lastBlock: number;
@@ -23,6 +30,12 @@ export class KeysUpdateService {
     protected readonly jobService: JobService,
     protected readonly schedulerRegistry: SchedulerRegistry,
     protected readonly stakingRouterService: StakingRouterService,
+    protected readonly stakingRouterFetchService: StakingRouterFetchService,
+    protected readonly elMetaStorage: ElMetaStorageService,
+    protected readonly entityManager: EntityManager,
+    protected readonly executionProvider: ExecutionProviderService,
+    protected readonly srModulesStorage: SRModuleStorageService,
+    protected readonly prometheusService: PrometheusService,
   ) {}
 
   protected lastTimestampSec: number | undefined = undefined;
@@ -77,8 +90,8 @@ export class KeysUpdateService {
   @OneAtTime()
   private async updateKeys(): Promise<void> {
     await this.jobService.wrapJob({ name: 'Update Staking Router Modules keys' }, async () => {
-      const meta = await this.stakingRouterService.update();
-      await this.stakingRouterService.updateMetrics();
+      const meta = await this.update();
+      await this.updateMetrics();
 
       if (meta) {
         this.lastBlockNumber = meta.number;
@@ -88,5 +101,109 @@ export class KeysUpdateService {
       // clear timeout
       this.checkKeysUpdateTimeout();
     });
+  }
+
+  /**
+   * Update keys of staking modules
+   * @returns Number, hash and timestamp of execution layer block
+   */
+  public async update(): Promise<{ number: number; hash: string; timestamp: number } | undefined> {
+    // reading latest block from blockchain
+    const currElMeta = await this.executionProvider.getBlock('latest');
+    // read from database last execution layer data
+    const prevElMeta = await this.elMetaStorage.get();
+
+    if (prevElMeta && prevElMeta?.blockNumber > currElMeta.number) {
+      this.logger.warn('Previous data is newer than current data');
+      return;
+    }
+
+    // TODO: еcли была реорганизация, может ли currElMeta.number быть меньше и нам надо обновиться ?
+
+    // get staking router modules from SR contract
+    const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
+
+    // TODO: what will happen if module исчез из списка
+    // TODO: is it correct that i use here modules from blockchain instead of storage
+
+    await this.entityManager.transactional(
+      async () => {
+        // Update el meta in db
+        await this.elMetaStorage.update(currElMeta);
+
+        for (const module of modules) {
+          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
+
+          // At the moment lets think that for all modules it is possible to make decision base on nonce value
+          const currNonce = await moduleInstance.getCurrentNonce(module.stakingModuleAddress, currElMeta.hash);
+          const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
+
+          // now updating decision should be here moduleInstance.updateKeys
+          if (moduleInStorage && moduleInStorage.nonce === currNonce) {
+            // nothing changed, don't need to update
+            // TODO: add log
+            return;
+          }
+
+          await this.srModulesStorage.store(module, currNonce);
+          await moduleInstance.update(module.stakingModuleAddress, currElMeta.hash);
+        }
+      },
+      { isolationLevel: IsolationLevel.READ_COMMITTED },
+    );
+
+    return currElMeta;
+  }
+
+  /**
+   * Update prometheus metrics of staking modules
+   */
+  public async updateMetrics() {
+    await this.entityManager.transactional(
+      async () => {
+        const stakingModules = await this.stakingRouterService.getStakingModules();
+        const elMeta = await this.stakingRouterService.getElBlockSnapshot();
+
+        if (!elMeta) {
+          return;
+        }
+
+        // update timestamp and block number metrics
+        this.prometheusService.registryLastUpdate.set(elMeta.timestamp);
+        this.prometheusService.registryBlockNumber.set(elMeta.blockNumber);
+
+        for (const module of stakingModules) {
+          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
+
+          // update nonce metric
+          this.prometheusService.registryNonce.set({ srModuleId: module.id }, module.nonce);
+
+          // get operators
+          const operators = await moduleInstance.getOperators(module.stakingModuleAddress);
+          this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.reset();
+
+          operators.forEach((operator) => {
+            this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
+              {
+                operator: operator.index,
+                srModuleId: module.id,
+                used: 'true',
+              },
+              operator.usedSigningKeys,
+            );
+
+            this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
+              {
+                operator: operator.index,
+                srModuleId: module.id,
+                used: 'false',
+              },
+              operator.totalSigningKeys - operator.usedSigningKeys,
+            );
+          });
+        }
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
   }
 }

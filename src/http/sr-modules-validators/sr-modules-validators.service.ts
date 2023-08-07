@@ -12,17 +12,23 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { Validator } from '@lido-nestjs/validators-registry';
 import { ValidatorsService } from 'validators';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
-
-const VALIDATORS_REGISTRY_DISABLED_ERROR = 'Validators Registry is disabled. Check environment variables';
+import { EntityManager } from '@mikro-orm/knex';
+import {
+  DEFAULT_EXIT_PERCENT,
+  VALIDATORS_STATUSES_FOR_EXIT,
+  VALIDATORS_REGISTRY_DISABLED_ERROR,
+} from 'validators/validators.constants';
+import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions';
+import { IsolationLevel } from '@mikro-orm/core';
 
 @Injectable()
 export class SRModulesValidatorsService {
   constructor(
     protected readonly configService: ConfigService,
-    // protected readonly curatedService: CuratedModuleService,
     protected readonly validatorsService: ValidatorsService,
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected stakingRouterService: StakingRouterService,
+    protected readonly entityManager: EntityManager,
   ) {}
 
   async getOldestLidoValidators(
@@ -35,11 +41,7 @@ export class SRModulesValidatorsService {
       throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
 
-    const { validators, clBlockSnapshot } = await this.stakingRouterService.getOperatorOldestValidators(
-      moduleId,
-      operatorId,
-      filters,
-    );
+    const { validators, clBlockSnapshot } = await this.getOperatorOldestValidators(moduleId, operatorId, filters);
     const data = this.createExitValidatorList(validators);
 
     return {
@@ -60,11 +62,7 @@ export class SRModulesValidatorsService {
       throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
 
-    const { validators, clBlockSnapshot } = await this.stakingRouterService.getOperatorOldestValidators(
-      moduleId,
-      operatorId,
-      filters,
-    );
+    const { validators, clBlockSnapshot } = await this.getOperatorOldestValidators(moduleId, operatorId, filters);
     const data = this.createExitPresignMessageList(validators, clBlockSnapshot);
 
     return {
@@ -85,5 +83,63 @@ export class SRModulesValidatorsService {
 
   private disabledRegistry() {
     return !this.configService.get('VALIDATOR_REGISTRY_ENABLE');
+  }
+
+  private async getOperatorOldestValidators(
+    moduleId: string,
+    operatorIndex: number,
+    filters: ValidatorsQuery,
+  ): Promise<{ validators: Validator[]; clBlockSnapshot: CLBlockSnapshot }> {
+    const { validators, meta } = await this.entityManager.transactional(
+      async () => {
+        const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
+
+        // read from config name of module that implement functions to fetch and store keys for type
+        // TODO: check what will happen if implementation is not a provider of StakingRouterModule
+        const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
+        const keys = await moduleInstance.getKeys(module.stakingModuleAddress, { operatorIndex }, ['key']);
+
+        const pubkeys = keys.map((pubkey) => pubkey.key);
+        const percent =
+          filters?.max_amount == undefined && filters?.percent == undefined ? DEFAULT_EXIT_PERCENT : filters?.percent;
+
+        const result = await this.validatorsService.getOldestValidators({
+          pubkeys,
+          statuses: VALIDATORS_STATUSES_FOR_EXIT,
+          max_amount: filters?.max_amount,
+          percent: percent,
+        });
+
+        if (!result) {
+          // if result of this method is null it means Validators Registry is disabled
+          throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
+        }
+
+        const { validators, meta: clMeta } = result;
+
+        // check if clMeta is not null
+        // if it is null, it means keys db is empty and Updating Validators Job is not finished yet
+        if (!clMeta) {
+          this.logger.warn(`CL meta is empty, maybe first Updating Validators Job is not finished yet.`);
+          throw httpExceptionTooEarlyResp();
+        }
+
+        // We need EL meta always be actual
+        if (elBlockSnapshot.blockNumber < clMeta.blockNumber) {
+          this.logger.warn('Last Execution Layer block number in our database older than last Consensus Layer');
+          // add metric or alert on breaking el > cl condition
+          // TODO: what answer will be better here?
+          // TODO: describe in doc
+          throw new InternalServerErrorException(
+            'Last Execution Layer block number in our database older than last Consensus Layer',
+          );
+        }
+
+        return { validators, meta: clMeta };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
+
+    return { validators, clBlockSnapshot: new CLBlockSnapshot(meta) };
   }
 }
