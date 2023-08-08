@@ -12,6 +12,8 @@ import { ExecutionProviderService } from 'common/execution-provider';
 import { SRModuleStorageService } from 'storage/sr-module.storage';
 import { IsolationLevel } from '@mikro-orm/core';
 import { PrometheusService } from 'common/prometheus';
+import { SrModuleEntity } from 'storage/sr-module.entity';
+import { StakingModule } from 'staking-router-modules/interfaces/staking-module.interface';
 
 class KeyOutdatedError extends Error {
   lastBlock: number;
@@ -114,17 +116,25 @@ export class KeysUpdateService {
     const prevElMeta = await this.elMetaStorage.get();
 
     if (prevElMeta && prevElMeta?.blockNumber > currElMeta.number) {
-      this.logger.warn('Previous data is newer than current data');
+      this.logger.warn('Previous data is newer than current data', prevElMeta);
+      console.log('curr', currElMeta);
       return;
     }
 
     // TODO: еcли была реорганизация, может ли currElMeta.number быть меньше и нам надо обновиться ?
 
+    const storageModules = await this.srModulesStorage.findAll();
     // get staking router modules from SR contract
     const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
 
     // TODO: what will happen if module исчез из списка
     // TODO: is it correct that i use here modules from blockchain instead of storage
+
+    if (!this.modulesWereNotDeleted(modules, storageModules)) {
+      const error = new Error('Modules list is wrong');
+      this.logger.error(error);
+      process.exit(1);
+    }
 
     await this.entityManager.transactional(
       async () => {
@@ -205,5 +215,13 @@ export class KeysUpdateService {
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
+  }
+
+  private modulesWereNotDeleted(contractModules: StakingModule[], storageModules: SrModuleEntity[]): boolean {
+    // we want to check here that all modules from storageModules exist in list contractModules
+    // will check contractAddress
+    const addresses = contractModules.map((module) => module.stakingModuleAddress);
+
+    return storageModules.every((module) => addresses.includes(module.stakingModuleAddress));
   }
 }
