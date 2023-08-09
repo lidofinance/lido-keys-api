@@ -14,8 +14,6 @@ export class RegistryKeyBatchFetchService {
 
   private getContract(moduleAddress: string) {
     return this.contract.attach(moduleAddress);
-
-    // return Registry__factory.connect(moduleAddress, this.provider);
   }
 
   /**

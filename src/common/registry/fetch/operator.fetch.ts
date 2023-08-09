@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Inject, Injectable } from '@nestjs/common';
 import { rangePromise } from '@lido-nestjs/utils';
-import { REGISTRY_CONTRACT_TOKEN, Registry__factory, Registry } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
-import { ExecutionProvider } from 'common/execution-provider';
 
 @Injectable()
 export class RegistryOperatorFetchService {
@@ -13,7 +12,6 @@ export class RegistryOperatorFetchService {
 
   private getContract(moduleAddress: string) {
     return this.contract.attach(moduleAddress);
-    // return Registry__factory.connect(moduleAddress, this.provider);
   }
 
   /** fetches number of operators */
