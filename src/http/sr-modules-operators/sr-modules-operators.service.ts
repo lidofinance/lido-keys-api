@@ -2,16 +2,13 @@ import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/co
 import { ConfigService } from 'common/config';
 import { ModuleId } from 'http/common/entities/';
 import { ELBlockSnapshot, SRModule, CuratedOperator } from 'http/common/entities/';
-import {
-  GroupedByModuleOperatorListResponse,
-  SRModuleOperatorListResponse,
-  SRModuleOperatorResponse,
-} from './entities';
+import { GroupedByModuleOperatorListResponse, SRModuleOperatorResponse } from './entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
 import { KeysUpdateService } from 'jobs/keys-update';
 import { SRModuleOperator } from 'http/common/entities/sr-module-operator';
 import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
+import { RegistryOperator } from '@lido-nestjs/registry';
 
 @Injectable()
 export class SRModulesOperatorsService {
@@ -76,7 +73,11 @@ export class SRModulesOperatorsService {
     };
   }
 
-  public async getByModule(moduleId: ModuleId): Promise<SRModuleOperatorListResponse> {
+  public async getByModule(moduleId: ModuleId): Promise<{
+    operatorsStream: AsyncGenerator<RegistryOperator>;
+    module: SRModule;
+    meta: { elBlockSnapshot: ELBlockSnapshot };
+  }> {
     const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
 
     if (!stakingModule) {
@@ -86,26 +87,26 @@ export class SRModulesOperatorsService {
     // We suppose if module in list, Keys API knows how to work with it
     // it is also important to have consistent module info and meta
 
-    if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-      const { operators, meta } = await this.curatedService.getOperatorsWithMeta();
+    if (stakingModule.type !== STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
+      throw new NotFoundException(`Modules with other types are not supported`);
+    }
+    const meta = await this.curatedService.getMetaDataFromStorage();
+    const operatorsStream = this.curatedService.getOperatorsStream();
 
-      if (!meta) {
-        this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-        throw httpExceptionTooEarlyResp();
-      }
-
-      const curatedOperators: CuratedOperator[] = operators.map((op) => new CuratedOperator(op));
-      const elBlockSnapshot = new ELBlockSnapshot(meta);
-
-      return {
-        data: { operators: curatedOperators, module: new SRModule(meta.keysOpIndex, stakingModule) },
-        meta: {
-          elBlockSnapshot,
-        },
-      };
+    if (!meta) {
+      this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
+      throw httpExceptionTooEarlyResp();
     }
 
-    throw new NotFoundException(`Modules with other types are not supported`);
+    const elBlockSnapshot = new ELBlockSnapshot(meta);
+
+    return {
+      operatorsStream,
+      module: new SRModule(meta.keysOpIndex, stakingModule),
+      meta: {
+        elBlockSnapshot,
+      },
+    };
   }
 
   public async getModuleOperator(moduleId: ModuleId, operatorIndex: number): Promise<SRModuleOperatorResponse> {

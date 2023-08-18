@@ -93,6 +93,25 @@ export class CuratedModuleService {
     return await this.metaStorageService.get();
   }
 
+  public async *getOperatorsStream(): AsyncGenerator<RegistryOperator> {
+    const where = {};
+    const batchSize = 1000;
+    let offset = 0;
+
+    while (true) {
+      const chunk = await this.operatorStorageService.find(where, { limit: batchSize, offset });
+      if (chunk.length === 0) {
+        break;
+      }
+
+      offset += batchSize;
+
+      for (const record of chunk) {
+        yield record;
+      }
+    }
+  }
+
   public async getOperatorsWithMeta(): Promise<{ operators: RegistryOperator[]; meta: RegistryMeta | null }> {
     const { operators, meta } = await this.entityManager.transactional(
       async () => {

@@ -63,6 +63,7 @@
     "@sentry/node": "^6.16.1",
     "@typechain/ethers-v5": "^9.0.0",
     "@willsoto/nestjs-prometheus": "^4.4.0",
+    "avsc": "^5.7.7",
     "cache-manager": "^3.6.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
