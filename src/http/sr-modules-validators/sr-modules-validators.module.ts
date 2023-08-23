@@ -6,7 +6,7 @@ import { SRModulesValidatorsController } from './sr-modules-validators.controlle
 import { SRModulesValidatorsService } from './sr-modules-validators.service';
 
 @Module({
-  imports: [LoggerModule, StakingRouterModule, ValidatorsModule],
+  imports: [LoggerModule, StakingRouterModule.forFeatureAsync(), ValidatorsModule],
   providers: [SRModulesValidatorsService],
   controllers: [SRModulesValidatorsController],
 })

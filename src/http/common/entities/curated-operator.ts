@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Operator } from 'http/common/entities/';
+import { Operator } from './';
 import { RegistryOperator } from 'common/registry';
 
 // TODO: it enough use operator from registry , lets remove
