@@ -43,4 +43,9 @@ export class SRModuleStorageService {
       .merge()
       .execute();
   }
+
+  /** removes all modules */
+  async removeAll() {
+    return await this.repository.nativeDelete({});
+  }
 }

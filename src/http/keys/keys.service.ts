@@ -1,8 +1,8 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { KeyListResponse, KeyWithModuleAddress } from './entities';
-import { StakingRouterService } from 'staking-router-modules/staking-router.service';
-import { ELBlockSnapshot, KeyQuery } from 'http/common/entities';
+import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
+import { ELBlockSnapshot, KeyQuery } from '../common/entities';
 import { KeyField } from 'staking-router-modules/interfaces/filters';
 import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
@@ -26,6 +26,7 @@ export class KeysService {
 
       const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used', 'moduleAddress'];
       // TODO: maybe get rid of this type KeyWithModuleAddress
+      // TODO: maybe we should get list of fields for response as a keys of KeyWithModuleAddress?
       const keysGenerator: AsyncGenerator<KeyWithModuleAddress> = await moduleInstance.getKeysStream(
         module.stakingModuleAddress,
         filters,

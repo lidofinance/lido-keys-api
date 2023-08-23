@@ -4,13 +4,13 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ModuleRef } from '@nestjs/core';
 
 import { StakingModuleInterface } from './interfaces/staking-module.interface';
-import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions';
-import { ELBlockSnapshot, ModuleId, SRModule } from 'http/common/entities';
+import { httpExceptionTooEarlyResp } from '../http/common/entities/http-exceptions';
+import { ELBlockSnapshot, ModuleId, SRModule } from '../http/common/entities';
 import { config } from './staking-module-impl-config';
 import { IsolationLevel } from '@mikro-orm/core';
 import { SrModuleEntity } from 'storage/sr-module.entity';
-import { SRModuleStorageService } from 'storage/sr-module.storage';
-import { ElMetaStorageService } from 'storage/el-meta.storage';
+import { SRModuleStorageService } from '../storage/sr-module.storage';
+import { ElMetaStorageService } from '../storage/el-meta.storage';
 import { ElMetaEntity } from 'storage/el-meta.entity';
 import { isValidContractAddress } from './utils';
 

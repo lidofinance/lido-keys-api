@@ -22,4 +22,9 @@ export class ElMetaStorageService {
       }),
     );
   }
+
+  /** removes all modules */
+  async removeAll() {
+    return await this.repository.nativeDelete({});
+  }
 }

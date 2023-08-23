@@ -4,10 +4,13 @@ import { STAKING_MODULE_TYPE } from '../../constants';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingModuleInterfaceService } from '../staking-module-interface';
 import { LidoLocatorService } from '../lido-locator';
-import { StakingRouter__factory } from 'generated';
-import { ExecutionProvider } from 'common/execution-provider';
+// TODO: maybe we need to move generated to the same folder with contracts
+import { StakingRouter__factory } from '../../../generated';
+// TODO: maybe ../../../ shows us that we need to move execution-provider on level up
+import { ExecutionProvider } from '../../../common/execution-provider';
 import { BlockTag } from '../interfaces';
-import { Trace } from 'common/decorators/trace';
+// TODO: maybe it is time to stop using trace decorators in code and use it only in debug mode
+import { Trace } from '../../../common/decorators/trace';
 
 const TRACE_TIMEOUT = 30 * 1000;
 
@@ -21,6 +24,7 @@ export class StakingRouterFetchService {
   ) {}
 
   private getSRContract(contractAddress: string) {
+    // TODO: use attach instead
     return StakingRouter__factory.connect(contractAddress, this.provider);
   }
 

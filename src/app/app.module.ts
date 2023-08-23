@@ -12,7 +12,6 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { JobsModule } from 'jobs';
 import { ScheduleModule } from '@nestjs/schedule';
 import config from 'mikro-orm.config';
-import { StakingRouterModule } from 'staking-router-modules';
 import { ValidatorsModule } from 'validators';
 import { LoggerModule } from '@lido-nestjs/logger';
 
@@ -43,7 +42,6 @@ import { LoggerModule } from '@lido-nestjs/logger';
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
-    StakingRouterModule,
     ValidatorsModule,
     JobsModule,
     HTTPModule,

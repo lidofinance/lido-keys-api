@@ -1,8 +1,8 @@
 import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
 import { CHAINS } from '@lido-nestjs/constants';
 import { Injectable, Inject } from '@nestjs/common';
-import { Trace } from 'common/decorators/trace';
-import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
+import { Trace } from '../decorators/trace';
+import { LOGGER_PROVIDER, LoggerService } from '../logger';
 
 const TRACE_TIMEOUT = 30 * 1000;
 
