@@ -9,6 +9,8 @@ import { ConfigService } from 'common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
 import { MikroORM } from '@mikro-orm/core';
 
+export const validationOpt = { transform: true };
+
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,

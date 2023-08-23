@@ -5,9 +5,9 @@ import {
   RegistryKey,
   RegistryOperator,
   RegistryOperatorStorageService,
-} from 'common/registry';
-import { Trace } from 'common/decorators/trace';
-import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
+} from '../common/registry';
+import { Trace } from '../common/decorators/trace';
+import { LOGGER_PROVIDER, LoggerService } from '../common/logger';
 import { QueryOrder } from '@mikro-orm/core';
 import { StakingModuleInterface } from './interfaces/staking-module.interface';
 import { KeyField, KeysFilter, OperatorsFilter } from './interfaces/filters';
