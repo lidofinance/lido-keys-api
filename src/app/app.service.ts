@@ -1,9 +1,9 @@
 import { Inject, Injectable, LoggerService, OnModuleInit } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { ExecutionProviderService } from 'common/execution-provider';
-import { ConsensusProviderService } from 'common/consensus-provider';
-import { ConfigService } from 'common/config';
-import { PrometheusService } from 'common/prometheus';
+import { ExecutionProviderService } from '../common/execution-provider';
+import { ConsensusProviderService } from '../common/consensus-provider';
+import { ConfigService } from '../common/config';
+import { PrometheusService } from '../common/prometheus';
 import { APP_NAME, APP_VERSION } from './app.constants';
 
 @Injectable()

@@ -1,18 +1,18 @@
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { Module } from '@nestjs/common';
-import { PrometheusModule } from 'common/prometheus';
-import { ConfigModule, ConfigService } from 'common/config';
-import { SentryInterceptor } from 'common/sentry';
-import { HealthModule } from 'common/health';
+import { PrometheusModule } from '../common/prometheus';
+import { ConfigModule, ConfigService } from '../common/config';
+import { SentryInterceptor } from '../common/sentry';
+import { HealthModule } from '../common/health';
 import { AppService } from './app.service';
-import { HTTPModule } from 'http/';
-import { ExecutionProviderModule } from 'common/execution-provider';
-import { ConsensusProviderModule } from 'common/consensus-provider';
+import { HTTPModule } from '../http/';
+import { ExecutionProviderModule } from '../common/execution-provider';
+import { ConsensusProviderModule } from '../common/consensus-provider';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { JobsModule } from 'jobs';
+import { JobsModule } from '../jobs';
 import { ScheduleModule } from '@nestjs/schedule';
 import config from 'mikro-orm.config';
-import { ValidatorsModule } from 'validators';
+import { ValidatorsModule } from '../validators';
 import { LoggerModule } from '@lido-nestjs/logger';
 
 @Module({

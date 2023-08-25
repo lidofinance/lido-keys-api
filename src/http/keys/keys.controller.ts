@@ -22,17 +22,12 @@ import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import * as JSONStream from 'jsonstream';
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
+import { Validate } from 'class-validator';
 
 @Controller('keys')
 @ApiTags('keys')
 export class KeysController {
   constructor(protected readonly keysService: KeysService, protected readonly entityManager: EntityManager) {}
-
-  @Version('1')
-  @Get('/test')
-  async getTest() {
-    return { data: ['test'] };
-  }
 
   @Version('1')
   @Get()

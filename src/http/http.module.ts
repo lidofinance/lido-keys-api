@@ -1,8 +1,8 @@
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { CacheInterceptor, MiddlewareConsumer, Module } from '@nestjs/common';
 
-import { HEALTH_URL } from 'common/health';
-import { METRICS_URL } from 'common/prometheus';
+import { HEALTH_URL } from '../common/health';
+import { METRICS_URL } from '../common/prometheus';
 
 import { SWAGGER_URL } from './common/swagger';
 import { ThrottlerModule, ThrottlerBehindProxyGuard } from './common/throttler';
