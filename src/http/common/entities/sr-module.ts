@@ -42,7 +42,7 @@ export class SRModule {
   stakingModuleAddress: string;
 
   @ApiProperty({
-    description: 'rewarf fee of the module',
+    description: 'reward fee of the module',
     nullable: true,
   })
   moduleFee: number | null;

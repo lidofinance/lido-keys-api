@@ -1,4 +1,4 @@
-import { DynamicModule, Global, Module } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
 import { ExecutionProvider } from '../common/execution-provider';
 import { KeyRegistryModule } from '../common/registry';
 import { StorageModule } from '../storage/storage.module';

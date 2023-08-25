@@ -1,5 +1,5 @@
 import { ThrottlerModule as ThrottlerModuleSource } from '@nestjs/throttler';
-import { ConfigModule, ConfigService } from 'common/config';
+import { ConfigModule, ConfigService } from '../../../common/config';
 
 export const ThrottlerModule = ThrottlerModuleSource.forRootAsync({
   imports: [ConfigModule],
