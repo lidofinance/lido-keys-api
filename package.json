@@ -20,7 +20,7 @@
     "url": "https://github.com/lidofinance/lido-keys-api/issues"
   },
   "scripts": {
-    "postinstall": "rimraf ./node_modules/@ethersproject/abstract-provider/src.ts/*.ts",
+    "postinstall": "rimraf ./node_modules/@ethersproject/abstract-provider/src.ts/*.ts && yarn nse:compile",
     "mikro-orm": "./node_modules/mikro-orm",
     "prebuild": "rimraf dist",
     "build": "nest build",
@@ -30,7 +30,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node --max-old-space-size=4096 dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
+    "test": "jest && nse:test",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
