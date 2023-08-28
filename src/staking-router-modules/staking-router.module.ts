@@ -1,24 +1,30 @@
-import { Global, Module } from '@nestjs/common';
-import { ExecutionProvider } from 'common/execution-provider';
-import { KeyRegistryModule } from 'common/registry';
-import { StorageModule } from 'storage/storage.module';
-import { StakingRouterFetchModule } from './contracts';
+import { DynamicModule, Module } from '@nestjs/common';
+import { ExecutionProvider } from '../common/execution-provider';
+import { KeyRegistryModule } from '../common/registry';
+import { StorageModule } from '../storage/storage.module';
 import { CuratedModuleService } from './curated-module.service';
 import { StakingRouterService } from './staking-router.service';
+import { RegistryModuleAsyncOptions } from 'common/registry/main/interfaces/module.interface';
 
-@Global()
 @Module({
-  imports: [
-    KeyRegistryModule.forFeatureAsync({
-      inject: [ExecutionProvider],
-      async useFactory(provider) {
-        return { provider };
-      },
-    }),
-    StorageModule,
-    StakingRouterFetchModule,
-  ],
+  imports: [StorageModule],
   providers: [CuratedModuleService, StakingRouterService],
   exports: [CuratedModuleService, StakingRouterService],
 })
-export class StakingRouterModule {}
+export class StakingRouterModule {
+  public static forFeatureAsync(options?: RegistryModuleAsyncOptions): DynamicModule {
+    return {
+      module: StakingRouterModule,
+      imports: [
+        KeyRegistryModule.forFeatureAsync(
+          options || {
+            inject: [ExecutionProvider],
+            async useFactory(provider) {
+              return { provider };
+            },
+          },
+        ),
+      ],
+    };
+  }
+}

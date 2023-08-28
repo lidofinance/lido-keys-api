@@ -129,6 +129,7 @@ export class KeysUpdateService {
 
     // TODO: what will happen if module исчез из списка
     // TODO: is it correct that i use here modules from blockchain instead of storage
+    // TODO: do without not
 
     if (!this.modulesWereNotDeleted(modules, storageModules)) {
       const error = new Error('Modules list is wrong');
@@ -149,6 +150,7 @@ export class KeysUpdateService {
           const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
 
           // now updating decision should be here moduleInstance.updateKeys
+          // TODO: operators list also the same ?
           if (moduleInStorage && moduleInStorage.nonce === currNonce) {
             // nothing changed, don't need to update
             // TODO: add log
