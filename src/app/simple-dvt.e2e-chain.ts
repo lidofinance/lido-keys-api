@@ -4,7 +4,7 @@ jest.setTimeout(100_000);
 
 describe('Simple DVT', () => {
   let sdk: nse.SDK;
-  let session: nse.Session;
+  let session: nse.HardhatSession;
   let initialState: nse.StoryResult<'simple-dvt-mock/initial-state'>;
   beforeAll(async () => {
     sdk = await createSDK('http://localhost:8001');
