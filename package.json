@@ -92,7 +92,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.4.7",
-    "nse-test": "^0.0.30",
+    "nse-test": "^0.0.31",
     "prettier": "^2.5.1",
     "supertest": "^6.2.1",
     "ts-jest": "^27.1.3",

@@ -12,7 +12,7 @@ describe('Simple DVT', () => {
     sdk = await createSDK('http://localhost:8001');
 
     const { port } = await sdk.env.hardhat({});
-    initialState = await sdk.story('simple-dvt-mock/deploy-staking-router', {
+    initialState = await sdk.story('simple-dvt-mock/initial-state', {
       sessionKey: port,
     });
   });
