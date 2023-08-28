@@ -46,6 +46,7 @@ export class StakingRouterFetchService {
 
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
+        // TODO: what is the diff between status and active ?
         const isActive = await srContract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
 
         const stakingModuleType = (await this.stakingModuleInterface.getType(

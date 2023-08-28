@@ -41,7 +41,7 @@ export class SRModulesKeysController {
         reply.type('application/json').send(jsonStream);
 
         for (const { keysGenerator, module } of keysGeneratorsByModules) {
-          // TODO: does memory consumption increased ?
+          // TODO: does memory consumption is increase ?
           const keysData = { module, keys: [] as any[] };
 
           for await (const keysBatch of keysGenerator) {
