@@ -240,6 +240,19 @@ describe('KeyController (e2e)', () => {
       //   expect(resp.status).toEqual(200);
       //   expect(getMock).toBeCalledWith({ used: true, operatorIndex: 1 });
       // });
+
+      it('should return empty list if operator doesnt exist', async () => {
+        const resp = await request(app.getHttpServer()).get('/v1/keys').query({ operatorIndex: 3 });
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data.length).toEqual(0);
+        expect(resp.body.meta).toEqual({
+          elBlockSnapshot: {
+            blockNumber: elMeta.number,
+            blockHash: elMeta.hash,
+            timestamp: elMeta.timestamp,
+          },
+        });
+      });
     });
 
     describe('too early response case', () => {
@@ -277,8 +290,6 @@ describe('KeyController (e2e)', () => {
   });
 
   // describe('The /keys/{pubkey} requests', () => {
-  //   it('', async () => {
-
-  //   });
+  //   it('', async () => {});
   // });
 });
