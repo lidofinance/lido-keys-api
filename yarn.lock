@@ -5663,7 +5663,7 @@ har-validator@~5.1.3:
     ajv "^6.12.3"
     har-schema "^2.0.0"
 
-hardhat@^2.17.0:
+hardhat@^2.17.1:
   version "2.17.1"
   resolved "https://registry.yarnpkg.com/hardhat/-/hardhat-2.17.1.tgz#4b6c8c8f624fd23d9f40185a4af24815d05a486a"
   integrity sha512-1PxRkfjhEzXs/wDxI5YgzYBxNmvzifBTjYzuopwel+vXpAhCudplusJthN5eig0FTs4qbi828DBIITEDh8x9LA==
@@ -7627,10 +7627,10 @@ npmlog@^6.0.0:
     gauge "^4.0.3"
     set-blocking "^2.0.0"
 
-nse-test@^0.0.21:
-  version "0.0.21"
-  resolved "https://registry.yarnpkg.com/nse-test/-/nse-test-0.0.21.tgz#a6411932020c4c674f572d2f757238c64edb3be6"
-  integrity sha512-j+hIz0kudwPZfqhZwotUP+FCVmFUOecy+zvY4p6iDyQBvh9ewxZomf4CiKBtCge9QzHYVHQg6R9+YIS7ZjiL9A==
+nse-test@^0.0.30:
+  version "0.0.30"
+  resolved "https://registry.yarnpkg.com/nse-test/-/nse-test-0.0.30.tgz#b1fc3e5b9ad1456c4d1c85690ebb48029f7ba947"
+  integrity sha512-fxgjJbZ2iT+S4uo59PuR2/QRu2NeKcQEaihW+ngeswhI6Y65Wa2N/+zRrTboTw+zvHnJX5pVqcnrs6gDnY042w==
   dependencies:
     "@aragon/os" "^4.4.0"
     "@nomiclabs/hardhat-ethers" "^2.2.3"
@@ -7646,7 +7646,7 @@ nse-test@^0.0.21:
     ethers "5.7.2"
     express "^4.18.2"
     express-zod-api "^11.3.0"
-    hardhat "^2.17.0"
+    hardhat "^2.17.1"
     node-fetch "2.6.7"
     ramda "^0.29.0"
     swagger-ui-express "^5.0.0"

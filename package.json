@@ -35,8 +35,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e:onchain": "jest --config ./test/jest-e2e-onchain.json",
     "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/staking-router-modules/contracts/abi/*.json",
-    "nse": "nse-test compile && nse-test start"
+    "nse:compile": "nse-test compile",
+    "nse:test": "nse-test test"
   },
   "dependencies": {
     "@lido-nestjs/consensus": "^1.5.0",
@@ -90,7 +92,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.4.7",
-    "nse-test": "^0.0.21",
+    "nse-test": "^0.0.30",
     "prettier": "^2.5.1",
     "supertest": "^6.2.1",
     "ts-jest": "^27.1.3",
