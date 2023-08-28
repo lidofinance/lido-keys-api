@@ -5,7 +5,6 @@ import { MikroORM } from '@mikro-orm/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { KeysController } from './keys.controller';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
-import { key } from './key.fixture';
 import { dvtModule, curatedModule } from '../../storage/module.fixture';
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
 import { ElMetaStorageService } from '../../storage/el-meta.storage';
@@ -15,6 +14,7 @@ import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 
 import * as request from 'supertest';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import { hexZeroPad } from 'ethers/lib/utils';
 // import { validationOpt } from '../../main';
 
 describe('KeyController (e2e)', () => {
@@ -32,24 +32,39 @@ describe('KeyController (e2e)', () => {
     timestamp: 1691500803,
   };
 
-  const operatorOneUsedKeys = [
-    { operatorIndex: 1, index: 1, moduleAddress: dvtModule.stakingModuleAddress, ...key, used: true },
-    { operatorIndex: 1, index: 1, moduleAddress: curatedModule.stakingModuleAddress, ...key, used: true },
-    { operatorIndex: 1, index: 2, moduleAddress: curatedModule.stakingModuleAddress, ...key, used: true },
+  const getKey = (value: string) => {
+    return {
+      key: hexZeroPad(value, 98),
+      depositSignature: hexZeroPad(value, 194),
+      used: true,
+    };
+  };
+
+  const dvtModuleKeys = [
+    { operatorIndex: 1, index: 1, moduleAddress: dvtModule.stakingModuleAddress, ...getKey('0x01'), used: true },
+    { operatorIndex: 1, index: 2, moduleAddress: dvtModule.stakingModuleAddress, ...getKey('0x02'), used: false },
   ];
 
-  const operatorOneUnusedKeys = [
-    { operatorIndex: 1, index: 2, moduleAddress: dvtModule.stakingModuleAddress, ...key, used: false },
-    { operatorIndex: 1, index: 3, moduleAddress: curatedModule.stakingModuleAddress, ...key, used: false },
+  const keyForOperatorTwo = {
+    operatorIndex: 2,
+    index: 5,
+    moduleAddress: curatedModule.stakingModuleAddress,
+    ...getKey('0x03'),
+    used: true,
+  };
+
+  const keyForOperatorTwoDuplicate = { ...keyForOperatorTwo, index: 6 };
+
+  const curatedModuleKeys = [
+    { operatorIndex: 1, index: 1, moduleAddress: curatedModule.stakingModuleAddress, ...getKey('0x04'), used: true },
+    { operatorIndex: 1, index: 2, moduleAddress: curatedModule.stakingModuleAddress, ...getKey('0x05'), used: true },
+    { operatorIndex: 1, index: 3, moduleAddress: curatedModule.stakingModuleAddress, ...getKey('0x06'), used: false },
+    { operatorIndex: 2, index: 4, moduleAddress: curatedModule.stakingModuleAddress, ...getKey('0x07'), used: true },
+    keyForOperatorTwo,
+    keyForOperatorTwoDuplicate,
   ];
 
-  const operatorTwoUsedKeys = [
-    { operatorIndex: 2, index: 4, moduleAddress: curatedModule.stakingModuleAddress, ...key, used: true },
-    { operatorIndex: 2, index: 5, moduleAddress: curatedModule.stakingModuleAddress, ...key, used: true },
-  ];
-
-  // primary key: operatorIndex, index, moduleAddress
-  const keys = [...operatorOneUsedKeys, ...operatorOneUnusedKeys, ...operatorTwoUsedKeys];
+  const keys = [...dvtModuleKeys, ...curatedModuleKeys];
 
   async function cleanDB() {
     await keysStorageService.removeAll();
@@ -107,11 +122,10 @@ describe('KeyController (e2e)', () => {
   });
 
   describe('The /keys requests', () => {
-    describe('requests with filters', () => {
+    describe('api ready to work', () => {
       beforeAll(async () => {
         // lets save meta
         await elMetaStorageService.update(elMeta);
-
         // lets save keys
         await keysStorageService.save(keys);
 
@@ -143,9 +157,11 @@ describe('KeyController (e2e)', () => {
       it('should return used keys', async () => {
         const resp = await request(app.getHttpServer()).get('/v1/keys').query({ used: true });
 
+        const expectedKeys = keys.filter((key) => key.used);
+
         expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual([...operatorOneUsedKeys, ...operatorTwoUsedKeys].length);
-        expect(resp.body.data).toEqual(expect.arrayContaining([...operatorOneUsedKeys, ...operatorTwoUsedKeys]));
+        expect(resp.body.data.length).toEqual(expectedKeys.length);
+        expect(resp.body.data).toEqual(expect.arrayContaining(expectedKeys));
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
             blockNumber: elMeta.number,
@@ -157,10 +173,11 @@ describe('KeyController (e2e)', () => {
 
       it('should return unused keys', async () => {
         const resp = await request(app.getHttpServer()).get('/v1/keys').query({ used: false });
+        const expectedKeys = keys.filter((key) => !key.used);
 
         expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(operatorOneUnusedKeys.length);
-        expect(resp.body.data).toEqual(expect.arrayContaining(operatorOneUnusedKeys));
+        expect(resp.body.data.length).toEqual(expectedKeys.length);
+        expect(resp.body.data).toEqual(expect.arrayContaining(expectedKeys));
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
             blockNumber: elMeta.number,
@@ -172,10 +189,11 @@ describe('KeyController (e2e)', () => {
 
       it('should return used keys for operator 1', async () => {
         const resp = await request(app.getHttpServer()).get('/v1/keys').query({ used: true, operatorIndex: 1 });
+        const expectedKeys = keys.filter((key) => key.used && key.operatorIndex == 1);
 
         expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(operatorOneUsedKeys.length);
-        expect(resp.body.data).toEqual(expect.arrayContaining(operatorOneUsedKeys));
+        expect(resp.body.data.length).toEqual(expectedKeys.length);
+        expect(resp.body.data).toEqual(expect.arrayContaining(expectedKeys));
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
             blockNumber: elMeta.number,
@@ -187,10 +205,11 @@ describe('KeyController (e2e)', () => {
 
       it('should return unused keys for operator 1', async () => {
         const resp = await request(app.getHttpServer()).get('/v1/keys').query({ used: false, operatorIndex: 1 });
+        const expectedKeys = keys.filter((key) => !key.used && key.operatorIndex == 1);
 
         expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(operatorOneUnusedKeys.length);
-        expect(resp.body.data).toEqual(expect.arrayContaining(operatorOneUnusedKeys));
+        expect(resp.body.data.length).toEqual(expectedKeys.length);
+        expect(resp.body.data).toEqual(expect.arrayContaining(expectedKeys));
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
             blockNumber: elMeta.number,
@@ -241,7 +260,7 @@ describe('KeyController (e2e)', () => {
       //   expect(getMock).toBeCalledWith({ used: true, operatorIndex: 1 });
       // });
 
-      it('should return empty list if operator doesnt exist', async () => {
+      it("should return empty list if operator doesn't exist", async () => {
         const resp = await request(app.getHttpServer()).get('/v1/keys').query({ operatorIndex: 3 });
         expect(resp.status).toEqual(200);
         expect(resp.body.data.length).toEqual(0);
@@ -289,7 +308,117 @@ describe('KeyController (e2e)', () => {
     });
   });
 
-  // describe('The /keys/{pubkey} requests', () => {
-  //   it('', async () => {});
-  // });
+  describe('The /v1/keys/find requests', () => {
+    describe('too early response case', () => {
+      beforeEach(async () => {
+        await cleanDB();
+      });
+
+      afterEach(async () => {
+        await cleanDB();
+      });
+
+      it('should return too early response if there are no modules in database', async () => {
+        // lets save meta
+        await elMetaStorageService.update(elMeta);
+        // lets save keys
+        await keysStorageService.save(keys);
+        const pubkeys = [keys[0].key, keys[1].key];
+        const resp = await request(app.getHttpServer())
+          .post(`/v1/keys/find`)
+          .set('Content-Type', 'application/json')
+          .send({ pubkeys });
+        expect(resp.status).toEqual(425);
+        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+      });
+
+      it('should return too early response if there are no meta', async () => {
+        // lets save keys
+        await keysStorageService.save(keys);
+        await moduleStorageService.store(curatedModule, 1);
+        const pubkeys = [keys[0].key, keys[1].key];
+        const resp = await request(app.getHttpServer())
+          .post(`/v1/keys/find`)
+          .set('Content-Type', 'application/json')
+          .send({ pubkeys });
+        expect(resp.status).toEqual(425);
+        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+      });
+    });
+
+    describe('api ready to work', () => {
+      beforeAll(async () => {
+        // lets save meta
+        await elMetaStorageService.update(elMeta);
+
+        // lets save keys
+        await keysStorageService.save(keys);
+
+        // lets save modules
+        await moduleStorageService.store(dvtModule, 1);
+        await moduleStorageService.store(curatedModule, 1);
+      });
+
+      afterAll(async () => {
+        await cleanDB();
+      });
+
+      it('should return all keys that satisfy the request', async () => {
+        // Get all keys without filters
+        const pubkeys = [keys[0].key, keys[1].key, keyForOperatorTwo.key];
+
+        const resp = await request(app.getHttpServer())
+          .post('/v1/keys/find')
+          .set('Content-Type', 'application/json')
+          .send({ pubkeys });
+
+        expect(resp.status).toEqual(200);
+        // as pubkeys contains 3 elements and keyForOperatorTwo has a duplicate
+        expect(resp.body.data.length).toEqual(4);
+        expect(resp.body.data).toEqual(expect.arrayContaining([keys[0], keys[1], keyForOperatorTwo]));
+        expect(resp.body.meta).toEqual({
+          elBlockSnapshot: {
+            blockNumber: elMeta.number,
+            blockHash: elMeta.hash,
+            timestamp: elMeta.timestamp,
+          },
+        });
+      });
+
+      it('Should return an empty list if no keys satisfy the request', async () => {
+        // Get all keys without filters
+        const pubkeys = ['somerandomkey'];
+
+        const resp = await request(app.getHttpServer())
+          .post('/v1/keys/find')
+          .set('Content-Type', 'application/json')
+          .send({ pubkeys });
+
+        expect(resp.status).toEqual(200);
+        // as pubkeys contains 3 elements and keyForOperatorTwo has a duplicate
+        expect(resp.body.data.length).toEqual(0);
+        expect(resp.body.meta).toEqual({
+          elBlockSnapshot: {
+            blockNumber: elMeta.number,
+            blockHash: elMeta.hash,
+            timestamp: elMeta.timestamp,
+          },
+        });
+      });
+
+      it('should return validation error if pubkeys list was not provided', async () => {
+        const resp = await request(app.getHttpServer())
+          .post('/v1/keys/find')
+          .set('Content-Type', 'application/json')
+          .send({ pubkeys: [] });
+
+        expect(resp.status).toEqual(400);
+        expect(resp.body).toEqual({
+          error: 'Bad Request',
+          message: ['pubkeys must contain at least 1 elements'],
+          statusCode: 400,
+        });
+      });
+    });
+  });
 });

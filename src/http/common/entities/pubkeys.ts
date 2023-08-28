@@ -8,7 +8,6 @@ export class KeysFindBody {
     description: 'Public keys list',
   })
   @IsArray()
-  @ArrayNotEmpty()
   @ArrayMinSize(1)
   @IsString({ each: true })
   pubkeys!: string[];

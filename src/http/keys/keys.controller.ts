@@ -91,6 +91,7 @@ export class KeysController {
   @ApiOperation({ summary: 'Get detailed information about pubkey' })
   // TODO: add check that pubkey has a right pattern
   getByPubkey(@Param('pubkey') pubkey: string) {
+    console.log('get for pubkeys solution');
     return this.keysService.getByPubkey(pubkey);
   }
 

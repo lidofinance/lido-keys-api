@@ -23,7 +23,11 @@ export class SrModuleEntity {
     this.nonce = nonce;
   }
 
+  // TODO: maybe add incr id
+
   // TODO: change primary key from [id, stakingModuleAddress] to stakingModuleAddress ?
+
+  // TODO: id primary key
 
   @PrimaryKey()
   // unique id of the staking module
