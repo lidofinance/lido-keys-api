@@ -7627,10 +7627,10 @@ npmlog@^6.0.0:
     gauge "^4.0.3"
     set-blocking "^2.0.0"
 
-nse-test@^0.0.31:
-  version "0.0.31"
-  resolved "https://registry.yarnpkg.com/nse-test/-/nse-test-0.0.31.tgz#a4beb52afddc92a0e1b9704169e13ccf290cbdcc"
-  integrity sha512-aiUrP2Ul6crdlNOFS7B/DSvPC8LKONFhvK2mQnux77+L+fqdhcluxvK9tAuFGnidJCRVwT3CNRRErB8nLTLgeA==
+nse-test@^0.0.32:
+  version "0.0.32"
+  resolved "https://registry.yarnpkg.com/nse-test/-/nse-test-0.0.32.tgz#900ec6d00bf6340c6e7ce84f129514655af9202c"
+  integrity sha512-ACcfxr9A1Ddydly/c3RIiwLFLJ24lngBXaeXxWe1Bivr5CrmR5Zbd4b0oKa4JBiY3bkWC0UzcKL4qOCeNojg2w==
   dependencies:
     "@aragon/os" "^4.4.0"
     "@nomiclabs/hardhat-ethers" "^2.2.3"
