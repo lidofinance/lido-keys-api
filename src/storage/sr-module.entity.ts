@@ -44,6 +44,7 @@ export class SrModuleEntity {
   stakingModuleFee: number;
 
   // part of the fee taken from staking rewards that goes to the treasury
+  @Property()
   treasuryFee: number;
 
   // target percent of total validators in protocol, in BP
