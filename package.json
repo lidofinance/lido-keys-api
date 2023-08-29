@@ -34,11 +34,11 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:e2e:onchain": "jest --config ./test/jest-e2e-onchain.json",
     "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/staking-router-modules/contracts/abi/*.json",
     "nse:compile": "nse-test compile",
-    "nse:test": "nse-test test"
+    "nse:test": "nse-test test",
+    "test:e2e": "jest --config  jest-e2e.json --detectOpenHandles",
+    "test:e2e:onchain": "jest --config  jest-e2e-onchain.json"
   },
   "dependencies": {
     "@lido-nestjs/consensus": "^1.5.0",

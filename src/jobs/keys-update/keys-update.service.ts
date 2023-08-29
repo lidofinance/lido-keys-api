@@ -1,19 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
-import { ConfigService } from 'common/config';
-import { JobService } from 'common/job';
-import { OneAtTime } from 'common/decorators/oneAtTime';
+import { LOGGER_PROVIDER, LoggerService } from '../../common/logger';
+import { ConfigService } from '../../common/config';
+import { JobService } from '../../common/job';
+import { OneAtTime } from '../../common/decorators/oneAtTime';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { StakingRouterService } from 'staking-router-modules/staking-router.service';
-import { StakingRouterFetchService } from 'staking-router-modules/contracts';
-import { ElMetaStorageService } from 'storage/el-meta.storage';
+import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
+import { StakingRouterFetchService } from '../../staking-router-modules/contracts';
+import { ElMetaStorageService } from '../../storage/el-meta.storage';
 import { EntityManager } from '@mikro-orm/knex';
-import { ExecutionProviderService } from 'common/execution-provider';
-import { SRModuleStorageService } from 'storage/sr-module.storage';
+import { ExecutionProviderService } from '../../common/execution-provider';
+import { SRModuleStorageService } from '../../storage/sr-module.storage';
 import { IsolationLevel } from '@mikro-orm/core';
-import { PrometheusService } from 'common/prometheus';
-import { SrModuleEntity } from 'storage/sr-module.entity';
-import { StakingModule } from 'staking-router-modules/interfaces/staking-module.interface';
+import { PrometheusService } from '../../common/prometheus';
+import { SrModuleEntity } from '../../storage/sr-module.entity';
+import { StakingModule } from '../../staking-router-modules/interfaces/staking-module.interface';
 
 class KeyOutdatedError extends Error {
   lastBlock: number;
