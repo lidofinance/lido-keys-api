@@ -50,6 +50,7 @@ describe('Simple DVT', () => {
     sdk = await createSDK('http://localhost:8001');
 
     session = await sdk.env.hardhat({});
+
     process.env['PROVIDERS_URLS'] = `http://127.0.0.1:${session.env.port}`;
     console.log(`http://127.0.0.1:${session.env.port}`);
     initialState = await session.story('simple-dvt-mock/initial-state', {});
