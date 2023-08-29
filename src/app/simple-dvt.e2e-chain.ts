@@ -16,13 +16,13 @@ import { RegistryKeyStorageService, RegistryStorageService } from '../common/reg
 import { KeysController, KeysService } from '../http/keys';
 
 import { StakingRouterModule } from '../staking-router-modules/staking-router.module';
-import { StakingRouterFetchModule, StakingRouterFetchService } from '../staking-router-modules/contracts';
+import { StakingRouterFetchService } from '../staking-router-modules/contracts';
 import { ElMetaStorageService } from '../storage/el-meta.storage';
 import { SRModuleStorageService } from '../storage/sr-module.storage';
-import { KeysUpdateModule, KeysUpdateService } from '../jobs/keys-update';
+import { KeysUpdateService } from '../jobs/keys-update';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ExecutionProvider, ExecutionProviderModule, ExecutionProviderService } from '../common/execution-provider';
-import { ConfigModule, ConfigService } from '../common/config';
+import { ExecutionProvider, ExecutionProviderService } from '../common/execution-provider';
+import { ConfigService } from '../common/config';
 import { PrometheusService } from '../common/prometheus';
 import { JobService } from '../common/job';
 import { StakingModuleInterfaceService } from '../staking-router-modules/contracts/staking-module-interface';
@@ -188,16 +188,21 @@ describe('Simple DVT', () => {
     expect(keys).toHaveLength(simpleDVTKeysCount + curatedModuleKeysCount);
   });
 
-  test('meta is updating correctlyd', async () => {
+  test('meta is updating correctly', async () => {
     // mine new block
     await session.provider.evm_mine();
     const currentBlockNumber = (await session.provider.getBlock('latest')).number;
+    // check if the block has been changed
     expect(prevBlockNumber).toBeLessThan(currentBlockNumber);
 
     await keysUpdateService.update();
+
     const {
       meta: { elBlockSnapshot },
     } = await keysService.get({});
+
     expect(elBlockSnapshot.blockNumber).toBe(currentBlockNumber);
+
+    prevBlockNumber = currentBlockNumber;
   });
 });
