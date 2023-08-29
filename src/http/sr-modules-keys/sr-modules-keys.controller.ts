@@ -2,9 +2,9 @@ import { Controller, Get, Version, Param, Query, Body, Post, NotFoundException, 
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
-import { ModuleId, KeyQuery } from 'http/common/entities/';
-import { KeysFindBody } from 'http/common/entities/pubkeys';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { ModuleId, KeyQuery } from '../common/entities/';
+import { KeysFindBody } from '../common/entities/pubkeys';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';

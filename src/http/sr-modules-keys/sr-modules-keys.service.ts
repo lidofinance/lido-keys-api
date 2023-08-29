@@ -1,20 +1,20 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ConfigService } from 'common/config';
 import { SRModuleKeyListResponse } from './entities';
-import { ModuleId, KeyQuery, Key, ELBlockSnapshot, SRModule } from 'http/common/entities';
+import { ModuleId, KeyQuery, Key, ELBlockSnapshot, SRModule } from '../common/entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { StakingRouterService } from 'staking-router-modules/staking-router.service';
-import { KeyEntity } from 'staking-router-modules/interfaces/staking-module.interface';
+import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
+import { KeyEntity } from '../../staking-router-modules/interfaces/staking-module.interface';
 // TODO: maybe moved it from staking-router-modules/interfaces/filters
-import { KeyField } from 'staking-router-modules/interfaces/filters';
+// import { KeyField } from 'staking-router-modules/interfaces/filters';
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
+
+type KeyFieldT = keyof Key;
 
 @Injectable()
 export class SRModulesKeysService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected configService: ConfigService,
     protected stakingRouterService: StakingRouterService,
     protected readonly entityManager: EntityManager,
   ) {}
@@ -30,7 +30,7 @@ export class SRModulesKeysService {
       // read from config name of module that implement functions to fetch and store keys for type
       // TODO: check what will happen if implementation is not a provider of StakingRouterModule
       const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-      const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used'];
+      const fields: KeyFieldT[] = ['key', 'depositSignature', 'operatorIndex', 'used'];
       const keysGenerator: AsyncGenerator<Key> = await moduleInstance.getKeysStream(
         module.stakingModuleAddress,
         filters,
