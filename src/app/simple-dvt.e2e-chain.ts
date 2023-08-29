@@ -28,10 +28,9 @@ import { JobService } from '../common/job';
 import { StakingModuleInterfaceService } from '../staking-router-modules/contracts/staking-module-interface';
 import { LidoLocatorService } from '../staking-router-modules/contracts/lido-locator';
 import { LidoLocator__factory, LIDO_LOCATOR_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
+import { KeyWithModuleAddress } from '../http/keys/entities';
 
 jest.setTimeout(100_000);
-process.env['CL_API_URLS'] = '';
-// process.env['PROVIDERS_URLS'] = '';
 
 describe('Simple DVT', () => {
   let sdk: nse.SDK;
@@ -45,16 +44,14 @@ describe('Simple DVT', () => {
   let keysStorageService: RegistryKeyStorageService;
   let moduleStorageService: SRModuleStorageService;
   let elMetaStorageService: ElMetaStorageService;
-  let keysService: KeysService;
   let registryStorage: RegistryStorageService;
+
+  let keysService: KeysService;
   let keysUpdateService: KeysUpdateService;
   beforeAll(async () => {
     sdk = await createSDK('http://localhost:8001');
 
     session = await sdk.env.hardhat({});
-
-    process.env['PROVIDERS_URLS'] = `http://127.0.0.1:${session.env.port}`;
-    console.log(`http://127.0.0.1:${session.env.port}`);
     initialState = await session.story('simple-dvt-mock/initial-state', {});
 
     const providerModule = BatchProviderModule.forRoot({ url: `http://127.0.0.1:${session.env.port}` });
@@ -69,8 +66,6 @@ describe('Simple DVT', () => {
       }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ScheduleModule.forRoot(),
-      // KeysUpdateModule,
-
       providerModule,
       StakingRouterModule.forFeatureAsync({
         inject: [ExtendedJsonRpcBatchProvider],
@@ -94,8 +89,8 @@ describe('Simple DVT', () => {
         provide: ConfigService,
         useValue: {
           get(path) {
-            console.log(path);
-            return initialState.locatorAddress;
+            const conf = { LIDO_LOCATOR_ADDRESS: initialState.locatorAddress };
+            return conf[path];
           },
         },
       },
@@ -153,8 +148,14 @@ describe('Simple DVT', () => {
     await app.init();
   });
 
-  afterAll(() => {
-    app.close();
+  afterAll(async () => {
+    await keysStorageService.removeAll();
+    await moduleStorageService.removeAll();
+    await elMetaStorageService.removeAll();
+
+    await registryStorage.onModuleDestroy();
+    await app.getHttpAdapter().close();
+    await app.close();
   });
 
   test('initial state created', async () => {
@@ -174,7 +175,7 @@ describe('Simple DVT', () => {
     expect(elBlockSnapshot.blockNumber).toBe(currentBlockNumber);
     prevBlockNumber = currentBlockNumber;
 
-    const keys: any = [];
+    const keys: KeyWithModuleAddress[] = [];
     for (const keysGenerator of keysGenerators) {
       for await (const keysBatch of keysGenerator) {
         keys.push(keysBatch);
