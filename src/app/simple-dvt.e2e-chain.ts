@@ -32,11 +32,13 @@ import { LidoLocator__factory, LIDO_LOCATOR_CONTRACT_TOKEN } from '@lido-nestjs/
 jest.setTimeout(100_000);
 process.env['CL_API_URLS'] = '';
 // process.env['PROVIDERS_URLS'] = '';
-//
+
 describe('Simple DVT', () => {
   let sdk: nse.SDK;
   let session: nse.HardhatSession;
   let initialState: nse.StoryResult<'simple-dvt-mock/initial-state'>;
+
+  let prevBlockNumber = 0;
 
   let app: INestApplication;
 
@@ -156,7 +158,6 @@ describe('Simple DVT', () => {
   });
 
   test('initial state created', async () => {
-    // console.log(await session.provider.getBlock('latest'));
     expect((await session.provider.getBlock('latest')).number).toBeGreaterThan(0);
     expect(initialState).toBeDefined();
     expect(initialState.locatorAddress).toBeDefined();
@@ -164,5 +165,39 @@ describe('Simple DVT', () => {
 
   test('update keys api keys', async () => {
     await keysUpdateService.update();
+    const {
+      meta: { elBlockSnapshot },
+      keysGenerators,
+    } = await keysService.get({});
+    const currentBlockNumber = (await session.provider.getBlock('latest')).number;
+
+    expect(elBlockSnapshot.blockNumber).toBe(currentBlockNumber);
+    prevBlockNumber = currentBlockNumber;
+
+    const keys: any = [];
+    for (const keysGenerator of keysGenerators) {
+      for await (const keysBatch of keysGenerator) {
+        keys.push(keysBatch);
+      }
+    }
+    const { simpleDVTModuleState, curatedModuleState } = initialState;
+
+    const simpleDVTKeysCount = simpleDVTModuleState.keysCount * simpleDVTModuleState.nodeOperatorsCount;
+    const curatedModuleKeysCount = curatedModuleState.keysCount * curatedModuleState.nodeOperatorsCount;
+    // const keys = await Promise.all([...keysGenerators.flat()]);
+    expect(keys).toHaveLength(simpleDVTKeysCount + curatedModuleKeysCount);
+  });
+
+  test('meta is updating correctlyd', async () => {
+    // mine new block
+    await session.provider.evm_mine();
+    const currentBlockNumber = (await session.provider.getBlock('latest')).number;
+    expect(prevBlockNumber).toBeLessThan(currentBlockNumber);
+
+    await keysUpdateService.update();
+    const {
+      meta: { elBlockSnapshot },
+    } = await keysService.get({});
+    expect(elBlockSnapshot.blockNumber).toBe(currentBlockNumber);
   });
 });
