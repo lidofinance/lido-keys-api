@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SRModule, ELBlockSnapshot } from 'http/common/entities/';
+import { SRModule, ELBlockSnapshot } from '../../common/entities/';
 
 export class SRModuleListResponse {
   @ApiProperty({

@@ -2,8 +2,8 @@ import { Controller, Get, Version, Param, HttpStatus, NotFoundException } from '
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleListResponse, SRModuleResponse } from './entities';
 import { SRModulesService } from './sr-modules.service';
-import { ModuleId } from 'http/common/entities/';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { ModuleId } from '../common/entities/';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
 
 @Controller('modules')
 @ApiTags('modules')

@@ -83,5 +83,6 @@ export class SRModule {
   })
   lastDepositBlock: number | null;
 
-  // exitedValidatorsCount: number;
+  // TODO: do we want to add it to response
+  //exitedValidatorsCount: number;
 }
