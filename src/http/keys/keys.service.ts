@@ -1,4 +1,4 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { KeyListResponse, KeyWithModuleAddress } from './entities';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
@@ -6,6 +6,8 @@ import { ELBlockSnapshot, KeyQuery } from '../common/entities';
 import { KeyField } from 'staking-router-modules/interfaces/filters';
 import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
+
+type KeyWithModuleAddressFieldT = keyof KeyWithModuleAddress;
 
 @Injectable()
 export class KeysService {
@@ -43,7 +45,42 @@ export class KeysService {
   }
 
   async getByPubkey(pubkey: string): Promise<KeyListResponse> {
-    return this.getByPubkeys([pubkey]);
+    const { keys, elBlockSnapshot } = await this.entityManager.transactional(
+      async () => {
+        const { stakingModules, elBlockSnapshot } = await this.stakingRouterService.getStakingModulesAndMeta();
+        const collectedKeys: KeyWithModuleAddress[][] = [];
+
+        for (const module of stakingModules) {
+          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
+          const fields: KeyWithModuleAddressFieldT[] = [
+            'key',
+            'depositSignature',
+            'operatorIndex',
+            'used',
+            'moduleAddress',
+          ];
+          const keys: KeyWithModuleAddress[] = await moduleInstance.getKeysByPubkey(
+            module.stakingModuleAddress,
+            pubkey,
+            fields,
+          );
+
+          collectedKeys.push(keys);
+        }
+
+        return { keys: collectedKeys.flat(), elBlockSnapshot };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
+
+    if (keys.length == 0) {
+      throw new NotFoundException(`There are no keys with ${pubkey} public key in db.`);
+    }
+
+    return {
+      data: keys,
+      meta: { elBlockSnapshot },
+    };
   }
 
   async getByPubkeys(pubKeys: string[]): Promise<KeyListResponse> {
@@ -54,7 +91,13 @@ export class KeysService {
 
         for (const module of stakingModules) {
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-          const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used', 'moduleAddress'];
+          const fields: KeyWithModuleAddressFieldT[] = [
+            'key',
+            'depositSignature',
+            'operatorIndex',
+            'used',
+            'moduleAddress',
+          ];
           const keys: KeyWithModuleAddress[] = await moduleInstance.getKeysByPubKeys(
             module.stakingModuleAddress,
             pubKeys,
