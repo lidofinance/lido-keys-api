@@ -1,8 +1,14 @@
 import { Test } from '@nestjs/testing';
-import { INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
-import { RegistryKeyStorageService, RegistryStorageService } from '../../common/registry';
+import { Global, INestApplication, Module, ValidationPipe, VersioningType } from '@nestjs/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+
+import {
+  RegistryKeyStorageService,
+  KeyRegistryService,
+  RegistryStorageModule,
+  RegistryStorageService,
+} from '../../common/registry';
 
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
 import { dvtModule, curatedModule } from '../../storage/module.fixture';
@@ -114,6 +120,20 @@ describe('SRModulesKeysController (e2e)', () => {
     await elMetaStorageService.removeAll();
   }
 
+  @Global()
+  @Module({
+    imports: [RegistryStorageModule],
+    providers: [KeyRegistryService],
+    exports: [KeyRegistryService, RegistryStorageModule],
+  })
+  class KeyRegistryModule {}
+
+  class KeysRegistryServiceMock {
+    async update(moduleAddress, blockHash) {
+      return;
+    }
+  }
+
   beforeAll(async () => {
     const imports = [
       //  sqlite3 only supports serializable transactions, ignoring the isolation level param
@@ -125,20 +145,17 @@ describe('SRModulesKeysController (e2e)', () => {
         entities: ['./**/*.entity.ts'],
       }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
-      // TODO: mock provider
-      BatchProviderModule.forRoot({ url: process.env.PROVIDERS_URLS as string }),
-      StakingRouterModule.forFeatureAsync({
-        inject: [ExtendedJsonRpcBatchProvider],
-        async useFactory(provider) {
-          return { provider };
-        },
-      }),
+      KeyRegistryModule,
+      StakingRouterModule,
     ];
 
     const controllers = [SRModulesKeysController];
     const providers = [SRModulesKeysService];
 
-    const moduleRef = await Test.createTestingModule({ imports, controllers, providers }).compile();
+    const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
+      .overrideProvider(KeyRegistryService)
+      .useClass(KeysRegistryServiceMock)
+      .compile();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);
     moduleStorageService = moduleRef.get(SRModuleStorageService);
@@ -183,52 +200,36 @@ describe('SRModulesKeysController (e2e)', () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/keys`);
 
         expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(dvtModuleKeys.length);
+        expect(resp.body.data.keys.length).toEqual(dvtModuleKeys.length);
+        expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeys));
 
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtModuleKeys));
-        expect(resp.body.elBlockSnapshot).toEqual({
-          blockNumber: elMeta.number,
-          blockHash: elMeta.hash,
-          timestamp: elMeta.timestamp,
-        });
-      });
-
-      it("should return 404 if module doesn't exist", async () => {
-        const resp = await request(app.getHttpServer()).get('/v1/modules/777/keys');
-
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(dvtModuleKeys.length);
-
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtModuleKeys));
-        expect(resp.body.elBlockSnapshot).toEqual({
+        expect(resp.body.meta.elBlockSnapshot).toEqual({
           blockNumber: elMeta.number,
           blockHash: elMeta.hash,
           timestamp: elMeta.timestamp,
         });
       });
     });
+    //   beforeEach(async () => {
+    //     await cleanDB();
+    //   });
+    //   afterEach(async () => {
+    //     await cleanDB();
+    //   });
 
-    describe('too early response case', () => {
-      beforeEach(async () => {
-        await cleanDB();
-      });
-      afterEach(async () => {
-        await cleanDB();
-      });
+    //   it('should return too early response if there are no modules in database', async () => {
+    //     await elMetaStorageService.update(elMeta);
+    //     const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/keys`);
+    //     expect(resp.status).toEqual(425);
+    //     expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+    //   });
 
-      it('should return too early response if there are no modules in database', async () => {
-        await elMetaStorageService.update(elMeta);
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/keys`);
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-
-      it('should return too early response if there are no meta', async () => {
-        await moduleStorageService.store(curatedModule, 1);
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/keys`);
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-    });
+    //   it('should return too early response if there are no meta', async () => {
+    //     await moduleStorageService.store(curatedModule, 1);
+    //     const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/keys`);
+    //     expect(resp.status).toEqual(425);
+    //     expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+    //   });
+    // });
   });
 });

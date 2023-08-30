@@ -27,8 +27,6 @@ export class SRModulesKeysService {
     const keysGeneratorsByModules: { keysGenerator: any; module: SRModule }[] = [];
 
     for (const module of stakingModules) {
-      // read from config name of module that implement functions to fetch and store keys for type
-      // TODO: check what will happen if implementation is not a provider of StakingRouterModule
       const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
       const fields: KeyFieldT[] = ['key', 'depositSignature', 'operatorIndex', 'used'];
       const keysGenerator: AsyncGenerator<Key> = await moduleInstance.getKeysStream(
@@ -54,6 +52,8 @@ export class SRModulesKeysService {
     const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
     const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
+    // TODO: is it okay that in answer we will get moduleAddress two ?
+    // before we had
     const keysGenerator: AsyncGenerator<KeyEntity> = await moduleInstance.getKeysStream(
       module.stakingModuleAddress,
       filters,

@@ -52,7 +52,7 @@ export class CuratedModuleService implements StakingModuleInterface {
     // we store keys of modules with the same impl at the same table
     where['moduleAddress'] = moduleAddress;
 
-    const keys = await this.keyStorageService.find(where, { populate: fields });
+    const keys = await this.keyStorageService.find(where, { fields });
 
     return keys;
   }
@@ -77,7 +77,11 @@ export class CuratedModuleService implements StakingModuleInterface {
     let offset = 0;
 
     while (true) {
-      const chunk = await this.keyStorageService.find(where, { limit: batchSize, offset, populate: fields });
+      const chunk = await this.keyStorageService.find(where, {
+        limit: batchSize,
+        offset,
+        fields,
+      });
       if (chunk.length === 0) {
         break;
       }
@@ -95,7 +99,7 @@ export class CuratedModuleService implements StakingModuleInterface {
     pubKeys: string[],
     fields: readonly KeyField[] | undefined,
   ): Promise<RegistryKey[]> {
-    return await this.keyStorageService.find({ key: { $in: pubKeys }, moduleAddress }, { populate: fields });
+    return await this.keyStorageService.find({ key: { $in: pubKeys }, moduleAddress }, { fields });
   }
 
   public async getKeysByPubkey(
@@ -103,7 +107,7 @@ export class CuratedModuleService implements StakingModuleInterface {
     pubKey: string,
     fields: readonly KeyField[] | undefined,
   ): Promise<RegistryKey[]> {
-    return await this.keyStorageService.find({ key: pubKey.toLocaleLowerCase(), moduleAddress }, { populate: fields });
+    return await this.keyStorageService.find({ key: pubKey.toLocaleLowerCase(), moduleAddress }, { fields });
   }
 
   public async getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<RegistryOperator[]> {

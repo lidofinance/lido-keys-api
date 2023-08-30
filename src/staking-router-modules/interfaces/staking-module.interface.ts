@@ -1,4 +1,4 @@
-import { RegistryKey, RegistryOperator } from 'common/registry';
+import { RegistryKey, RegistryOperator } from '../../common/registry';
 import { KeyField, KeysFilter, OperatorsFilter } from './filters';
 import { STAKING_MODULE_TYPE } from '../constants';
 

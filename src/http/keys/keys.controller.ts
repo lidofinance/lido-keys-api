@@ -22,7 +22,6 @@ import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import * as JSONStream from 'jsonstream';
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
-import { Validate } from 'class-validator';
 
 @Controller('keys')
 @ApiTags('keys')
