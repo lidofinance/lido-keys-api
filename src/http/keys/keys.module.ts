@@ -5,13 +5,7 @@ import { KeysController } from './keys.controller';
 import { KeysService } from './keys.service';
 
 @Module({
-  imports: [
-    LoggerModule,
-    // TODO: dont like to add here such a lot of dependencies
-    // for example we add here also deps for reading from blockchain
-    // but use only methods for reading data from db
-    StakingRouterModule.forFeatureAsync(),
-  ],
+  imports: [LoggerModule, StakingRouterModule],
   controllers: [KeysController],
   providers: [KeysService],
 })

@@ -5,7 +5,7 @@ import { SRModulesController } from './sr-modules.controller';
 import { SRModulesService } from './sr-modules.service';
 
 @Module({
-  imports: [LoggerModule, StakingRouterModule.forFeatureAsync()],
+  imports: [LoggerModule, StakingRouterModule],
   controllers: [SRModulesController],
   providers: [SRModulesService],
 })
