@@ -1,6 +1,11 @@
 import { Test } from '@nestjs/testing';
-import { INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
-import { RegistryKeyStorageService, RegistryStorageService } from '../../common/registry';
+import { Global, INestApplication, Module, ValidationPipe, VersioningType } from '@nestjs/common';
+import {
+  KeyRegistryService,
+  RegistryKeyStorageService,
+  RegistryStorageModule,
+  RegistryStorageService,
+} from '../../common/registry';
 import { MikroORM } from '@mikro-orm/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { KeysController } from './keys.controller';
@@ -9,7 +14,6 @@ import { dvtModule, curatedModule } from '../../storage/module.fixture';
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
 import { ElMetaStorageService } from '../../storage/el-meta.storage';
 import { KeysService } from './keys.service';
-import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/execution';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 
 import * as request from 'supertest';
@@ -113,6 +117,20 @@ describe('KeyController (e2e)', () => {
     await elMetaStorageService.removeAll();
   }
 
+  @Global()
+  @Module({
+    imports: [RegistryStorageModule],
+    providers: [KeyRegistryService],
+    exports: [KeyRegistryService, RegistryStorageModule],
+  })
+  class KeyRegistryModule {}
+
+  class KeysRegistryServiceMock {
+    async update(moduleAddress, blockHash) {
+      return;
+    }
+  }
+
   beforeAll(async () => {
     const imports = [
       //  sqlite3 only supports serializable transactions, ignoring the isolation level param
@@ -124,20 +142,16 @@ describe('KeyController (e2e)', () => {
         entities: ['./**/*.entity.ts'],
       }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
-      // TODO: mock provider
-      BatchProviderModule.forRoot({ url: process.env.PROVIDERS_URLS as string }),
-      StakingRouterModule.forFeatureAsync({
-        inject: [ExtendedJsonRpcBatchProvider],
-        async useFactory(provider) {
-          return { provider };
-        },
-      }),
+      KeyRegistryModule,
+      StakingRouterModule,
     ];
 
     const controllers = [KeysController];
     const providers = [KeysService];
-
-    const moduleRef = await Test.createTestingModule({ imports, controllers, providers }).compile();
+    const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
+      .overrideProvider(KeyRegistryService)
+      .useClass(KeysRegistryServiceMock)
+      .compile();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);
     keysStorageService = moduleRef.get(RegistryKeyStorageService);
@@ -327,7 +341,6 @@ describe('KeyController (e2e)', () => {
       it('should return too early response if there are no modules in database', async () => {
         // lets save meta
         await elMetaStorageService.update(elMeta);
-
         // lets save keys
         await keysStorageService.save(keys);
 
