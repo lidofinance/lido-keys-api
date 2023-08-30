@@ -1,15 +1,14 @@
 import { Test } from '@nestjs/testing';
-import { INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
-import { RegistryStorageService } from '../../common/registry';
+import { Global, INestApplication, Module, ValidationPipe, VersioningType } from '@nestjs/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 
+import { KeyRegistryService, RegistryStorageModule, RegistryStorageService } from '../../common/registry';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
 import { dvtModule, curatedModule, dvtModuleResp, curatedModuleResp } from '../../storage/module.fixture';
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
 import { ElMetaStorageService } from '../../storage/el-meta.storage';
 
-import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/execution';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 
 import * as request from 'supertest';
@@ -37,6 +36,20 @@ describe('SRModulesController (e2e)', () => {
     await elMetaStorageService.removeAll();
   }
 
+  @Global()
+  @Module({
+    imports: [RegistryStorageModule],
+    providers: [KeyRegistryService],
+    exports: [KeyRegistryService, RegistryStorageModule],
+  })
+  class KeyRegistryModule {}
+
+  class KeysRegistryServiceMock {
+    async update(moduleAddress, blockHash) {
+      return;
+    }
+  }
+
   beforeAll(async () => {
     const imports = [
       //  sqlite3 only supports serializable transactions, ignoring the isolation level param
@@ -48,20 +61,17 @@ describe('SRModulesController (e2e)', () => {
         entities: ['./**/*.entity.ts'],
       }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
-      // TODO: mock provider
-      BatchProviderModule.forRoot({ url: process.env.PROVIDERS_URLS as string }),
-      StakingRouterModule.forFeatureAsync({
-        inject: [ExtendedJsonRpcBatchProvider],
-        async useFactory(provider) {
-          return { provider };
-        },
-      }),
+      KeyRegistryModule,
+      StakingRouterModule,
     ];
 
     const controllers = [SRModulesController];
     const providers = [SRModulesService];
 
-    const moduleRef = await Test.createTestingModule({ imports, controllers, providers }).compile();
+    const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
+      .overrideProvider(KeyRegistryService)
+      .useClass(KeysRegistryServiceMock)
+      .compile();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);
     moduleStorageService = moduleRef.get(SRModuleStorageService);
