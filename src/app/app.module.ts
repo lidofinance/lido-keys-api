@@ -14,6 +14,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import config from 'mikro-orm.config';
 import { ValidatorsModule } from '../validators';
 import { LoggerModule } from '@lido-nestjs/logger';
+import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
+import { KeyRegistryModule } from 'common/registry';
+import { StakingRouterModule } from 'staking-router-modules';
 
 @Module({
   imports: [
@@ -42,6 +45,13 @@ import { LoggerModule } from '@lido-nestjs/logger';
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
+    KeyRegistryModule.forRootAsync({
+      inject: [SimpleFallbackJsonRpcBatchProvider],
+      async useFactory(provider) {
+        return { provider };
+      },
+    }),
+    StakingRouterModule,
     ValidatorsModule,
     JobsModule,
     HTTPModule,
