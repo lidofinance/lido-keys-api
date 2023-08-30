@@ -23,7 +23,11 @@ export class SrModuleEntity {
     this.nonce = nonce;
   }
 
+  // TODO: maybe add incr id
+
   // TODO: change primary key from [id, stakingModuleAddress] to stakingModuleAddress ?
+
+  // TODO: id primary key
 
   @PrimaryKey()
   // unique id of the staking module
@@ -40,6 +44,7 @@ export class SrModuleEntity {
   stakingModuleFee: number;
 
   // part of the fee taken from staking rewards that goes to the treasury
+  @Property()
   treasuryFee: number;
 
   // target percent of total validators in protocol, in BP

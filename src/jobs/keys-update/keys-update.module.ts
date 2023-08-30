@@ -12,7 +12,7 @@ import { StakingRouterModule } from '../../staking-router-modules';
   imports: [
     LoggerModule,
     JobModule,
-    StakingRouterModule.forFeatureAsync(),
+    StakingRouterModule,
     StakingRouterFetchModule,
     ExecutionProviderModule,
     StorageModule,

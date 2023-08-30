@@ -13,6 +13,7 @@ export class ElMetaStorageService {
   }
 
   async update(currElMeta: { number: number; hash: string; timestamp: number }): Promise<void> {
+    // TODO: is it correct?
     await this.repository.nativeDelete({});
     await this.repository.persist(
       new ElMetaEntity({
@@ -21,6 +22,7 @@ export class ElMetaStorageService {
         timestamp: currElMeta.timestamp,
       }),
     );
+    await this.repository.flush();
   }
 
   /** removes all modules */

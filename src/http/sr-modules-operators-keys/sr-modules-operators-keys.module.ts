@@ -5,7 +5,7 @@ import { SRModulesOperatorsKeysController } from './sr-modules-operators-keys.co
 import { SRModulesOperatorsKeysService } from './sr-modules-operators-keys.service';
 
 @Module({
-  imports: [LoggerModule, StakingRouterModule.forFeatureAsync()],
+  imports: [LoggerModule, StakingRouterModule],
   controllers: [SRModulesOperatorsKeysController],
   providers: [SRModulesOperatorsKeysService],
 })

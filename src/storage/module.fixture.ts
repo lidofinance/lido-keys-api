@@ -32,29 +32,30 @@ export const dvtModule = {
 
 export const srModules = [curatedModule, dvtModule];
 
-// [
-//   [
-//     1,
-//     '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9',
-//     100,
-//     100,
-//     100,
-//     0,
-//     'curated-onchain-v1',
-//     { type: 'BigNumber', hex: '0x64d240bc' },
-//     { type: 'BigNumber', hex: '0x09' },
-//     { type: 'BigNumber', hex: '0x00' },
-//   ],
-//   [
-//     2,
-//     '0x0165878A594ca255338adfa4d48449f69242Eb8F',
-//     100,
-//     100,
-//     100,
-//     0,
-//     'simple-dvt-onchain-v1',
-//     { type: 'BigNumber', hex: '0x64d240bd' },
-//     { type: 'BigNumber', hex: '0x0a' },
-//     { type: 'BigNumber', hex: '0x00' },
-//   ],
-// ];
+export const curatedModuleResp = {
+  id: 1,
+  stakingModuleAddress: '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9',
+  moduleFee: 100,
+  treasuryFee: 100,
+  targetShare: 100,
+  status: 0,
+  name: 'curated-onchain-v1',
+  type: 'curated-onchain-v1' as STAKING_MODULE_TYPE,
+  lastDepositAt: 1691500732,
+  lastDepositBlock: 9,
+  nonce: 1,
+};
+
+export const dvtModuleResp = {
+  id: 2,
+  stakingModuleAddress: '0x0165878A594ca255338adfa4d48449f69242Eb8F',
+  moduleFee: 100,
+  treasuryFee: 100,
+  targetShare: 100,
+  status: 0,
+  name: 'simple-dvt-onchain-v1',
+  type: 'simple-dvt-onchain-v1' as STAKING_MODULE_TYPE,
+  lastDepositAt: 1691500733,
+  lastDepositBlock: 10,
+  nonce: 1,
+};
