@@ -31,14 +31,14 @@ export class SRModulesKeysController {
     type: TooEarlyResponse,
   })
   @Get('keys')
-  async getGroupedByModuleKeys(@Query() filters: KeyQuery, @Res() reply?: FastifyReply) {
+  async getGroupedByModuleKeys(@Query() filters: KeyQuery, @Res() reply: FastifyReply) {
     await this.entityManager.transactional(
       async () => {
         const { keysGeneratorsByModules, meta } = await this.srModulesKeysService.getGroupedByModuleKeys(filters);
 
         const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
 
-        reply && reply.type('application/json').send(jsonStream);
+        reply.type('application/json').send(jsonStream);
 
         for (const { keysGenerator, module } of keysGeneratorsByModules) {
           // TODO: does memory consumption increased ?
@@ -79,7 +79,7 @@ export class SRModulesKeysController {
     description: 'Staking router module_id or contract address.',
   })
   @Get(':module_id/keys')
-  async getModuleKeys(@Param('module_id') moduleId: ModuleId, @Query() filters: KeyQuery, @Res() reply?: FastifyReply) {
+  async getModuleKeys(@Param('module_id') moduleId: ModuleId, @Query() filters: KeyQuery, @Res() reply: FastifyReply) {
     await this.entityManager.transactional(
       async () => {
         const { keysGenerator, module, meta } = await this.srModulesKeysService.getModuleKeys(moduleId, filters);
@@ -89,7 +89,7 @@ export class SRModulesKeysController {
           ']}}',
         );
 
-        reply && reply.type('application/json').send(jsonStream);
+        reply.type('application/json').send(jsonStream);
 
         for await (const keysBatch of keysGenerator) {
           jsonStream.write(keysBatch);

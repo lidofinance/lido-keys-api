@@ -130,7 +130,7 @@ export class KeysUpdateService {
     // TODO: what will happen if module исчез из списка
     // TODO: is it correct that i use here modules from blockchain instead of storage
 
-    if (!this.modulesWereNotDeleted(modules, storageModules)) {
+    if (this.modulesWereDeleted(modules, storageModules)) {
       const error = new Error('Modules list is wrong');
       this.logger.error(error);
       process.exit(1);
@@ -217,11 +217,11 @@ export class KeysUpdateService {
     );
   }
 
-  private modulesWereNotDeleted(contractModules: StakingModule[], storageModules: SrModuleEntity[]): boolean {
+  private modulesWereDeleted(contractModules: StakingModule[], storageModules: SrModuleEntity[]): boolean {
     // we want to check here that all modules from storageModules exist in list contractModules
     // will check contractAddress
     const addresses = contractModules.map((module) => module.stakingModuleAddress);
 
-    return storageModules.every((module) => addresses.includes(module.stakingModuleAddress));
+    return !storageModules.every((module) => addresses.includes(module.stakingModuleAddress));
   }
 }

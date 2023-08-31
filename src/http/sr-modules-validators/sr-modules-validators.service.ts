@@ -36,7 +36,7 @@ export class SRModulesValidatorsService {
     operatorId: number,
     filters: ValidatorsQuery,
   ): Promise<ExitValidatorListResponse> {
-    if (this.disabledRegistry()) {
+    if (this.isRegistryDisabled()) {
       this.logger.warn('ValidatorsRegistry is disabled in API');
       throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
@@ -57,7 +57,7 @@ export class SRModulesValidatorsService {
     operatorId: number,
     filters: ValidatorsQuery,
   ): Promise<ExitPresignMessageListResponse> {
-    if (this.disabledRegistry()) {
+    if (this.isRegistryDisabled()) {
       this.logger.warn('ValidatorsRegistry is disabled in API');
       throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
     }
@@ -81,7 +81,7 @@ export class SRModulesValidatorsService {
     return validators.map((v) => ({ validator_index: String(v.index), epoch: String(clMeta.epoch) }));
   }
 
-  private disabledRegistry() {
+  private isRegistryDisabled() {
     return !this.configService.get('VALIDATOR_REGISTRY_ENABLE');
   }
 

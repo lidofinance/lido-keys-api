@@ -42,7 +42,7 @@ export class SRModulesOperatorsKeysController {
   async getOperatorsKeys(
     @Param('module_id') moduleId: ModuleId,
     @Query() filters: KeyQuery,
-    @Res() reply?: FastifyReply,
+    @Res() reply: FastifyReply,
   ) {
     await this.entityManager.transactional(
       async () => {
@@ -60,7 +60,7 @@ export class SRModulesOperatorsKeysController {
           ']}}',
         );
 
-        reply && reply.type('application/json').send(jsonStream);
+        reply.type('application/json').send(jsonStream);
 
         for await (const keysBatch of keysGenerator) {
           jsonStream.write(keysBatch);

@@ -41,7 +41,7 @@ export class KeysController {
     type: KeyListResponse,
   })
   @ApiOperation({ summary: 'Get list of all keys' })
-  async get(@Query() filters: KeyQuery, @Res() reply?: FastifyReply) {
+  async get(@Query() filters: KeyQuery, @Res() reply: FastifyReply) {
     // TODO: explain here why we use here transaction
     await this.entityManager.transactional(
       async () => {
@@ -50,7 +50,7 @@ export class KeysController {
         const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
         // TODO: this check is needed to prevent tests from crashing with an error,
         // in a real example this check should not be present
-        reply && reply.type('application/json').send(jsonStream);
+        reply.type('application/json').send(jsonStream);
         // TODO: is it necessary to check the error? or 'finally' is ok?
         try {
           for (const keysGenerator of keysGenerators) {
