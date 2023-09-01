@@ -19,7 +19,7 @@ export class SRModuleStorageService {
 
   /** find key by index */
   async findOneById(moduleId: number): Promise<SrModuleEntity | null> {
-    return await this.repository.findOne({ id: moduleId });
+    return await this.repository.findOne({ moduleId });
   }
 
   async findOneByContractAddress(contractAddress: string): Promise<SrModuleEntity | null> {
