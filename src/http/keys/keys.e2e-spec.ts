@@ -185,8 +185,8 @@ describe('KeyController (e2e)', () => {
         await keysStorageService.save(keys);
 
         // lets save modules
-        await moduleStorageService.store(dvtModule, 1);
-        await moduleStorageService.store(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1);
       });
 
       afterAll(async () => {
@@ -353,7 +353,7 @@ describe('KeyController (e2e)', () => {
         // lets save keys
         await keysStorageService.save(keys);
 
-        await moduleStorageService.store(curatedModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1);
 
         const resp = await request(app.getHttpServer()).get('/v1/keys');
         expect(resp.status).toEqual(425);
@@ -389,7 +389,7 @@ describe('KeyController (e2e)', () => {
       it('should return too early response if there are no meta', async () => {
         // lets save keys
         await keysStorageService.save(keys);
-        await moduleStorageService.store(curatedModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1);
         const pubkeys = [keys[0].key, keys[1].key];
         const resp = await request(app.getHttpServer())
           .post(`/v1/keys/find`)
@@ -409,8 +409,8 @@ describe('KeyController (e2e)', () => {
         await keysStorageService.save(keys);
 
         // lets save modules
-        await moduleStorageService.store(dvtModule, 1);
-        await moduleStorageService.store(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1);
       });
 
       afterAll(async () => {
@@ -499,7 +499,7 @@ describe('KeyController (e2e)', () => {
       it('should return too early response if there are no meta', async () => {
         // lets save keys
         await keysStorageService.save(keys);
-        await moduleStorageService.store(curatedModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1);
         const resp = await request(app.getHttpServer()).get(`/v1/keys/wrongkey`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
@@ -513,8 +513,8 @@ describe('KeyController (e2e)', () => {
         // lets save keys
         await keysStorageService.save(keys);
         // lets save modules
-        await moduleStorageService.store(dvtModule, 1);
-        await moduleStorageService.store(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1);
       });
 
       afterAll(async () => {
