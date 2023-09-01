@@ -1,14 +1,14 @@
-import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
+import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyType, Property, Unique } from '@mikro-orm/core';
 import { StakingModule } from '../staking-router-modules/interfaces/staking-module.interface';
+import { MODULE_ADDRESS_LEN } from './constants';
 import { SRModuleRepository } from './sr-module.repository';
 
 @Entity({ customRepository: () => SRModuleRepository })
 export class SrModuleEntity {
   [EntityRepositoryType]?: SRModuleRepository;
-  [PrimaryKeyType]?: [number, string];
 
   constructor(srModule: StakingModule, nonce: number) {
-    this.id = srModule.id;
+    this.moduleId = srModule.id;
     this.stakingModuleAddress = srModule.stakingModuleAddress;
     this.stakingModuleFee = srModule.stakingModuleFee;
     this.treasuryFee = srModule.treasuryFee;
@@ -23,15 +23,17 @@ export class SrModuleEntity {
     this.nonce = nonce;
   }
 
-  // TODO: change primary key from [id, stakingModuleAddress] to stakingModuleAddress ?
-
   @PrimaryKey()
+  // autoincrement primary key
+  id!: number;
+
   // unique id of the staking module
+  @Unique()
   @Property()
-  id: number;
+  moduleId: number;
 
-  @PrimaryKey()
-  @Property({ length: 42 })
+  @Unique()
+  @Property({ length: MODULE_ADDRESS_LEN })
   // address of staking module
   stakingModuleAddress: string;
 

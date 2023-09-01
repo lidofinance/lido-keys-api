@@ -33,14 +33,33 @@ export class SRModuleStorageService {
     });
   }
 
-  async store(module: StakingModule, currNonce: number): Promise<void> {
-    const srModule = new SrModuleEntity(module, currNonce);
-    // TODO: what exactly will happen during attempt to write in db module that already exists in db
-    await this.repository
-      .createQueryBuilder()
-      .insert(srModule)
-      .onConflict(['id', 'staking_module_address'])
-      .merge()
-      .execute();
+  async upsert(srModule: StakingModule, nonce: number) {
+    // Try to find an existing entity by moduleId or stakingModuleAddress
+    let existingModule = await this.repository.findOne({
+      moduleId: srModule.id,
+    });
+
+    if (!existingModule) {
+      // If the entity doesn't exist, create a new one
+      existingModule = new SrModuleEntity(srModule, nonce);
+    } else {
+      // If the entity exists, update its properties
+      existingModule.stakingModuleFee = srModule.stakingModuleFee;
+      existingModule.treasuryFee = srModule.treasuryFee;
+      existingModule.targetShare = srModule.targetShare;
+      existingModule.status = srModule.status;
+      existingModule.name = srModule.name;
+      existingModule.lastDepositAt = srModule.lastDepositAt;
+      existingModule.lastDepositBlock = srModule.lastDepositBlock;
+      existingModule.exitedValidatorsCount = srModule.exitedValidatorsCount;
+      existingModule.type = srModule.type;
+      existingModule.active = srModule.active;
+      existingModule.nonce = nonce;
+    }
+
+    // Save the entity (either a new one or an updated one)
+    await this.repository.persistAndFlush(existingModule);
+
+    return existingModule;
   }
 }

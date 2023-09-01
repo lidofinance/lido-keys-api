@@ -127,7 +127,6 @@ export class KeysUpdateService {
     // get staking router modules from SR contract
     const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
 
-    // TODO: what will happen if module исчез из списка
     // TODO: is it correct that i use here modules from blockchain instead of storage
 
     if (this.modulesWereDeleted(modules, storageModules)) {
@@ -152,10 +151,13 @@ export class KeysUpdateService {
           if (moduleInStorage && moduleInStorage.nonce === currNonce) {
             // nothing changed, don't need to update
             // TODO: add log
+            this.logger.log(
+              `Nonce was not changed for staking module ${moduleInStorage.id}. Don't need to update keys and operators in database`,
+            );
             return;
           }
 
-          await this.srModulesStorage.store(module, currNonce);
+          await this.srModulesStorage.upsert(module, currNonce);
           await moduleInstance.update(module.stakingModuleAddress, currElMeta.hash);
         }
       },

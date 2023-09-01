@@ -7,7 +7,7 @@ export class SRModule {
   constructor(module: SrModuleEntity) {
     this.nonce = module.nonce;
     this.type = module.type;
-    this.id = module.id;
+    this.id = module.moduleId;
     this.stakingModuleAddress = module.stakingModuleAddress;
     // TODO: maybe rename field stakingModuleFee
     this.moduleFee = module?.stakingModuleFee ?? null;
