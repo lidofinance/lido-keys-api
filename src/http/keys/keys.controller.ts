@@ -43,14 +43,12 @@ export class KeysController {
   })
   @ApiOperation({ summary: 'Get list of all keys' })
   async get(@Query() filters: KeyQuery, @Res() reply: FastifyReply) {
-    // TODO: explain here why we use here transaction
+    // Because the real execution of generators occurs in the controller's method, that's why we moved the transaction here
     await this.entityManager.transactional(
       async () => {
         const { keysGenerators, meta } = await this.keysService.get(filters);
 
         const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
-        // TODO: this check is needed to prevent tests from crashing with an error,
-        // in a real example this check should not be present
         reply.type('application/json').send(jsonStream);
         // TODO: is it necessary to check the error? or 'finally' is ok?
         try {
