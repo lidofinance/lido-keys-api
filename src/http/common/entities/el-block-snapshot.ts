@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ElMetaEntity } from 'storage/el-meta.entity';
+import { ElMetaEntity } from '../../../storage/el-meta.entity';
 
 export class ELBlockSnapshot {
   constructor(meta: ElMetaEntity) {

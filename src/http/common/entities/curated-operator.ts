@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Operator } from './';
-import { RegistryOperator } from 'common/registry';
+import { RegistryOperator } from '../../../common/registry';
 
 // TODO: it enough use operator from registry , lets remove
 export class CuratedOperator extends Operator {

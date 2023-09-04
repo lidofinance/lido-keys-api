@@ -1,18 +1,14 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { ConfigService } from 'common/config';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
-import { ELBlockSnapshot, SRModule } from 'http/common/entities';
-import { ModuleId } from 'http/common/entities/';
-import { StakingRouterService } from 'staking-router-modules/staking-router.service';
-import { EntityManager } from '@mikro-orm/knex';
+import { ELBlockSnapshot, SRModule } from '../common/entities';
+import { ModuleId } from '../common/entities/';
+import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 
 @Injectable()
 export class SRModulesService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected configService: ConfigService,
-    private readonly entityManager: EntityManager,
     protected stakingRouterService: StakingRouterService,
   ) {}
 
