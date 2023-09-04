@@ -8,6 +8,7 @@ import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
 
 type KeyWithModuleAddressFieldT = keyof KeyWithModuleAddress;
+type KeyWithModuleAddressFieldsT = KeyWithModuleAddressFieldT[];
 
 @Injectable()
 export class KeysService {
@@ -26,9 +27,15 @@ export class KeysService {
     for (const module of stakingModules) {
       const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
-      const fields: KeyField[] = ['key', 'depositSignature', 'operatorIndex', 'used', 'moduleAddress'];
-      // TODO: maybe get rid of this type KeyWithModuleAddress
-      // TODO: maybe we should get list of fields for response as a keys of KeyWithModuleAddress?
+      const fields: KeyWithModuleAddressFieldT[] = [
+        'key',
+        'depositSignature',
+        'operatorIndex',
+        'used',
+        'moduleAddress',
+      ];
+
+      // in result will have extra index field, because it is part of compound pkey
       const keysGenerator: AsyncGenerator<KeyWithModuleAddress> = await moduleInstance.getKeysStream(
         module.stakingModuleAddress,
         filters,
@@ -59,6 +66,7 @@ export class KeysService {
             'used',
             'moduleAddress',
           ];
+          // in result will have extra index field, because it is part of compound pkey
           const keys: KeyWithModuleAddress[] = await moduleInstance.getKeysByPubkey(
             module.stakingModuleAddress,
             pubkey,
@@ -91,6 +99,7 @@ export class KeysService {
 
         for (const module of stakingModules) {
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
+          // in result will have extra index field, because it is part of compound pkey
           const fields: KeyWithModuleAddressFieldT[] = [
             'key',
             'depositSignature',
