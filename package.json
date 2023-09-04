@@ -54,7 +54,6 @@
     "@nestjs/common": "^8.2.5",
     "@nestjs/config": "^1.1.6",
     "@nestjs/core": "^8.2.5",
-    "@nestjs/platform-express": "^10.2.1",
     "@nestjs/platform-fastify": "^8.2.5",
     "@nestjs/schedule": "^2.0.1",
     "@nestjs/swagger": "^5.1.5",
