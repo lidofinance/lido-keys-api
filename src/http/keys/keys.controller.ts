@@ -40,7 +40,7 @@ export class KeysController {
     description: 'List of all keys',
     type: KeyListResponse,
   })
-  @ApiOperation({ summary: 'Get list of all keys' })
+  @ApiOperation({ summary: 'Get list of all keys in stream' })
   async get(@Query() filters: KeyQuery, @Res() reply: FastifyReply) {
     // Because the real execution of generators occurs in the controller's method, that's why we moved the transaction here
     await this.entityManager.transactional(

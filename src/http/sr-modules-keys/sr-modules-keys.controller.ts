@@ -22,7 +22,8 @@ export class SRModulesKeysController {
   @ApiOperation({ summary: 'Get keys for all modules grouped by staking router module.' })
   @ApiResponse({
     status: 200,
-    description: 'Keys for all modules grouped by staking router module.',
+    description:
+      'Keys for all modules are grouped by the staking router module. Receiving results from this endpoint may take some time, so please use it carefully.',
     type: GroupedByModuleKeyListResponse,
   })
   @ApiResponse({
@@ -31,30 +32,8 @@ export class SRModulesKeysController {
     type: TooEarlyResponse,
   })
   @Get('keys')
-  async getGroupedByModuleKeys(@Query() filters: KeyQuery, @Res() reply: FastifyReply) {
-    await this.entityManager.transactional(
-      async () => {
-        const { keysGeneratorsByModules, meta } = await this.srModulesKeysService.getGroupedByModuleKeys(filters);
-
-        const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
-
-        reply.type('application/json').send(jsonStream);
-
-        for (const { keysGenerator, module } of keysGeneratorsByModules) {
-          // TODO: does memory consumption is increase ?
-          const keysData = { module, keys: [] as any[] };
-
-          for await (const keysBatch of keysGenerator) {
-            keysData.keys.push(keysBatch);
-          }
-
-          jsonStream.write(keysData);
-        }
-
-        jsonStream.end();
-      },
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
+  async getGroupedByModuleKeys(@Query() filters: KeyQuery) {
+    return this.srModulesKeysService.getGroupedByModuleKeys(filters);
   }
 
   @Version('1')
