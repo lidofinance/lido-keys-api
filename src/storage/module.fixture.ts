@@ -31,30 +31,3 @@ export const dvtModule = {
 };
 
 export const srModules = [curatedModule, dvtModule];
-
-// [
-//   [
-//     1,
-//     '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9',
-//     100,
-//     100,
-//     100,
-//     0,
-//     'curated-onchain-v1',
-//     { type: 'BigNumber', hex: '0x64d240bc' },
-//     { type: 'BigNumber', hex: '0x09' },
-//     { type: 'BigNumber', hex: '0x00' },
-//   ],
-//   [
-//     2,
-//     '0x0165878A594ca255338adfa4d48449f69242Eb8F',
-//     100,
-//     100,
-//     100,
-//     0,
-//     'simple-dvt-onchain-v1',
-//     { type: 'BigNumber', hex: '0x64d240bd' },
-//     { type: 'BigNumber', hex: '0x0a' },
-//     { type: 'BigNumber', hex: '0x00' },
-//   ],
-// ];

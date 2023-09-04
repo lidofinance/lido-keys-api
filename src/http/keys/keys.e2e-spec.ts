@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test } from '@nestjs/testing';
 import { Global, INestApplication, Module, ValidationPipe, VersioningType } from '@nestjs/common';
 import {
@@ -26,7 +27,6 @@ describe('KeyController (e2e)', () => {
   let keysStorageService: RegistryKeyStorageService;
   let moduleStorageService: SRModuleStorageService;
   let elMetaStorageService: ElMetaStorageService;
-  let keysService: KeysService;
   let registryStorage: RegistryStorageService;
 
   const elMeta = {
@@ -156,7 +156,6 @@ describe('KeyController (e2e)', () => {
     elMetaStorageService = moduleRef.get(ElMetaStorageService);
     keysStorageService = moduleRef.get(RegistryKeyStorageService);
     moduleStorageService = moduleRef.get(SRModuleStorageService);
-    keysService = moduleRef.get(KeysService);
     registryStorage = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();

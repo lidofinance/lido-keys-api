@@ -1,4 +1,4 @@
-import { Injectable, Inject, InternalServerErrorException, NotFoundException, LoggerService } from '@nestjs/common';
+import { Injectable, Inject, InternalServerErrorException, LoggerService } from '@nestjs/common';
 import { ConfigService } from 'common/config';
 import {
   ExitValidatorListResponse,

@@ -3,13 +3,10 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { KeyListResponse, KeyWithModuleAddress } from './entities';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 import { ELBlockSnapshot, KeyQuery } from '../common/entities';
-import { KeyField } from 'staking-router-modules/interfaces/filters';
 import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
 
 type KeyWithModuleAddressFieldT = keyof KeyWithModuleAddress;
-type KeyWithModuleAddressFieldsT = KeyWithModuleAddressFieldT[];
-
 @Injectable()
 export class KeysService {
   constructor(

@@ -1,4 +1,4 @@
-import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyType, Property, Unique } from '@mikro-orm/core';
+import { Entity, EntityRepositoryType, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { StakingModule } from '../staking-router-modules/interfaces/staking-module.interface';
 import { MODULE_ADDRESS_LEN } from './constants';
 import { SRModuleRepository } from './sr-module.repository';

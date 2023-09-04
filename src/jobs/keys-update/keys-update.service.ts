@@ -128,7 +128,6 @@ export class KeysUpdateService {
     const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
 
     // TODO: is it correct that i use here modules from blockchain instead of storage
-    // TODO: do without not
 
     if (this.modulesWereDeleted(modules, storageModules)) {
       const error = new Error('Modules list is wrong');
@@ -152,7 +151,6 @@ export class KeysUpdateService {
           // TODO: operators list also the same ?
           if (moduleInStorage && moduleInStorage.nonce === currNonce) {
             // nothing changed, don't need to update
-            // TODO: add log
             this.logger.log(
               `Nonce was not changed for staking module ${moduleInStorage.id}. Don't need to update keys and operators in database`,
             );

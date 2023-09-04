@@ -1,4 +1,4 @@
-import { Controller, Get, Version, Param, HttpStatus, NotFoundException, Res } from '@nestjs/common';
+import { Controller, Get, Version, Param, HttpStatus, NotFoundException } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } from '@nestjs/swagger';
 import {
   GroupedByModuleOperatorListResponse,
