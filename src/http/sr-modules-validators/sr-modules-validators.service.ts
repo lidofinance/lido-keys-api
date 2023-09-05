@@ -97,7 +97,7 @@ export class SRModulesValidatorsService {
         // read from config name of module that implement functions to fetch and store keys for type
         // TODO: check what will happen if implementation is not a provider of StakingRouterModule
         const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-        const keys = await moduleInstance.getKeys(module.stakingModuleAddress, { operatorIndex }, ['key']);
+        const keys = await moduleInstance.getKeys(module.stakingModuleAddress, { operatorIndex });
 
         const pubkeys = keys.map((pubkey) => pubkey.key);
         const percent =
