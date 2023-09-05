@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { LoggerModule } from 'common/logger';
-import { StakingRouterModule } from 'staking-router-modules';
+import { LoggerModule } from '../../common/logger';
 import { KeysController } from './keys.controller';
 import { KeysService } from './keys.service';
 
 @Module({
-  imports: [LoggerModule, StakingRouterModule],
+  imports: [LoggerModule],
   controllers: [KeysController],
   providers: [KeysService],
 })

@@ -62,4 +62,9 @@ export class SRModuleStorageService {
 
     return existingModule;
   }
+
+  /** removes all modules */
+  async removeAll() {
+    return await this.repository.nativeDelete({});
+  }
 }

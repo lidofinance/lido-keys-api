@@ -10,6 +10,9 @@ import { compareTestMetaOperators } from '../testing.utils';
 import { operators } from '../fixtures/connect.fixture';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 describe('Registry', () => {
   let registryService: ValidatorRegistryService;

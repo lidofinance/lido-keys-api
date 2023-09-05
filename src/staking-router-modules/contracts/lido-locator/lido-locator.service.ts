@@ -2,7 +2,8 @@ import { LidoLocator, LIDO_LOCATOR_CONTRACT_TOKEN } from '@lido-nestjs/contracts
 import { Injectable, Inject, LoggerService } from '@nestjs/common';
 import { BlockTag } from '../interfaces';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { ConfigService } from 'common/config';
+// TODO: maybe ../../../ shows us that we need to move execution-provider on level up
+import { ConfigService } from '../../../common/config';
 
 @Injectable()
 export class LidoLocatorService {

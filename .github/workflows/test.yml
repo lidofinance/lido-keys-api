@@ -19,3 +19,8 @@ jobs:
         run: yarn lint
       - name: Run tests
         run: yarn test
+      - name: Run tests
+        run: yarn test:e2e
+        env:
+          PROVIDERS_URLS: ${{ secrets.EL_RPC_URL }}
+          CHAIN_ID: ${{ secrets.CHAIN_ID }}

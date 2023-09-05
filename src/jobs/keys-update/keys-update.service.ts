@@ -148,9 +148,9 @@ export class KeysUpdateService {
           const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
 
           // now updating decision should be here moduleInstance.updateKeys
+          // TODO: operators list also the same ?
           if (moduleInStorage && moduleInStorage.nonce === currNonce) {
             // nothing changed, don't need to update
-            // TODO: add log
             this.logger.log(
               `Nonce was not changed for staking module ${moduleInStorage.id}. Don't need to update keys and operators in database`,
             );

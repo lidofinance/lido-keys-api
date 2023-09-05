@@ -16,9 +16,9 @@ import type { FastifyReply } from 'fastify';
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
 import { KeyListResponse } from './entities';
-import { KeyQuery } from 'http/common/entities';
-import { KeysFindBody } from 'http/common/entities/pubkeys';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { KeyQuery } from '../common/entities';
+import { KeysFindBody } from '../common/entities/pubkeys';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import * as JSONStream from 'jsonstream';
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
@@ -40,16 +40,14 @@ export class KeysController {
     description: 'List of all keys',
     type: KeyListResponse,
   })
-  @ApiOperation({ summary: 'Get list of all keys' })
+  @ApiOperation({ summary: 'Get list of all keys in stream' })
   async get(@Query() filters: KeyQuery, @Res() reply: FastifyReply) {
-    // TODO: explain here why we use here transaction
+    // Because the real execution of generators occurs in the controller's method, that's why we moved the transaction here
     await this.entityManager.transactional(
       async () => {
         const { keysGenerators, meta } = await this.keysService.get(filters);
 
         const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
-        // TODO: this check is needed to prevent tests from crashing with an error,
-        // in a real example this check should not be present
         reply.type('application/json').send(jsonStream);
         // TODO: is it necessary to check the error? or 'finally' is ok?
         try {

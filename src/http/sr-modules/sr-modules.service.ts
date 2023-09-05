@@ -1,12 +1,10 @@
-import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ConfigService } from 'common/config';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { ELBlockSnapshot, SRModule } from 'http/common/entities';
 import { ModuleId } from 'http/common/entities/';
-import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
-import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
 
 @Injectable()

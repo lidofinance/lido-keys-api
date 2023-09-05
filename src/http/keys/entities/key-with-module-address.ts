@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Key, SRModuleKey } from 'http/common/entities/';
+import { Key, SRModuleKey } from '../../common/entities/';
 
 export class KeyWithModuleAddress extends Key {
   constructor(key: SRModuleKey, moduleAddress: string) {
