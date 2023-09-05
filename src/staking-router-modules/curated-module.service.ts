@@ -10,7 +10,7 @@ import { Trace } from '../common/decorators/trace';
 import { LOGGER_PROVIDER, LoggerService } from '../common/logger';
 import { QueryOrder } from '@mikro-orm/core';
 import { StakingModuleInterface } from './interfaces/staking-module.interface';
-import { KeyField, KeysFilter, OperatorsFilter } from './interfaces/filters';
+import { KeysFilter, OperatorsFilter } from './interfaces/filters';
 
 const TRACE_TIMEOUT = 15 * 60 * 1000;
 
@@ -35,11 +35,7 @@ export class CuratedModuleService implements StakingModuleInterface {
     return nonce;
   }
 
-  public async getKeys(
-    moduleAddress: string,
-    filters: KeysFilter,
-    fields: readonly KeyField[] | undefined,
-  ): Promise<RegistryKey[]> {
+  public async getKeys(moduleAddress: string, filters: KeysFilter): Promise<RegistryKey[]> {
     const where = {};
     if (filters.operatorIndex != undefined) {
       where['operatorIndex'] = filters.operatorIndex;
@@ -52,16 +48,12 @@ export class CuratedModuleService implements StakingModuleInterface {
     // we store keys of modules with the same impl at the same table
     where['moduleAddress'] = moduleAddress;
 
-    const keys = await this.keyStorageService.find(where, { fields });
+    const keys = await this.keyStorageService.find(where);
 
     return keys;
   }
 
-  public async *getKeysStream(
-    contractAddress: string,
-    filters: KeysFilter,
-    fields: readonly KeyField[] | undefined,
-  ): AsyncGenerator<RegistryKey> {
+  public async *getKeysStream(contractAddress: string, filters: KeysFilter): AsyncGenerator<RegistryKey> {
     const where = {};
     if (filters.operatorIndex != undefined) {
       where['operatorIndex'] = filters.operatorIndex;
@@ -77,7 +69,7 @@ export class CuratedModuleService implements StakingModuleInterface {
     let offset = 0;
 
     while (true) {
-      const chunk = await this.keyStorageService.find(where, { limit: batchSize, offset, fields });
+      const chunk = await this.keyStorageService.find(where, { limit: batchSize, offset });
       if (chunk.length === 0) {
         break;
       }
@@ -90,20 +82,12 @@ export class CuratedModuleService implements StakingModuleInterface {
     }
   }
 
-  public async getKeysByPubKeys(
-    moduleAddress: string,
-    pubKeys: string[],
-    fields: readonly KeyField[] | undefined,
-  ): Promise<RegistryKey[]> {
-    return await this.keyStorageService.find({ key: { $in: pubKeys }, moduleAddress }, { fields });
+  public async getKeysByPubKeys(moduleAddress: string, pubKeys: string[]): Promise<RegistryKey[]> {
+    return await this.keyStorageService.find({ key: { $in: pubKeys }, moduleAddress });
   }
 
-  public async getKeysByPubkey(
-    moduleAddress: string,
-    pubKey: string,
-    fields: readonly KeyField[] | undefined,
-  ): Promise<RegistryKey[]> {
-    return await this.keyStorageService.find({ key: pubKey.toLocaleLowerCase(), moduleAddress }, { fields });
+  public async getKeysByPubkey(moduleAddress: string, pubKey: string): Promise<RegistryKey[]> {
+    return await this.keyStorageService.find({ key: pubKey.toLocaleLowerCase(), moduleAddress });
   }
 
   public async getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<RegistryOperator[]> {

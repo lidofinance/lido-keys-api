@@ -6,7 +6,6 @@ import { ELBlockSnapshot, KeyQuery } from '../common/entities';
 import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
 
-type KeyWithModuleAddressFieldT = keyof KeyWithModuleAddress;
 @Injectable()
 export class KeysService {
   constructor(
@@ -24,19 +23,10 @@ export class KeysService {
     for (const module of stakingModules) {
       const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
-      const fields: KeyWithModuleAddressFieldT[] = [
-        'key',
-        'depositSignature',
-        'operatorIndex',
-        'used',
-        'moduleAddress',
-      ];
-
       // in result will have extra index field, because it is part of compound pkey
       const keysGenerator: AsyncGenerator<KeyWithModuleAddress> = await moduleInstance.getKeysStream(
         module.stakingModuleAddress,
         filters,
-        fields,
       );
 
       keysGenerators.push(keysGenerator);
@@ -56,18 +46,10 @@ export class KeysService {
 
         for (const module of stakingModules) {
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-          const fields: KeyWithModuleAddressFieldT[] = [
-            'key',
-            'depositSignature',
-            'operatorIndex',
-            'used',
-            'moduleAddress',
-          ];
           // in result will have extra index field, because it is part of compound pkey
           const keys: KeyWithModuleAddress[] = await moduleInstance.getKeysByPubkey(
             module.stakingModuleAddress,
             pubkey,
-            fields,
           );
 
           collectedKeys.push(keys);
@@ -97,17 +79,10 @@ export class KeysService {
         for (const module of stakingModules) {
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
           // in result will have extra index field, because it is part of compound pkey
-          const fields: KeyWithModuleAddressFieldT[] = [
-            'key',
-            'depositSignature',
-            'operatorIndex',
-            'used',
-            'moduleAddress',
-          ];
+
           const keys: KeyWithModuleAddress[] = await moduleInstance.getKeysByPubKeys(
             module.stakingModuleAddress,
             pubKeys,
-            fields,
           );
 
           collectedKeys.push(keys);

@@ -27,9 +27,7 @@ export class SRModulesKeysService {
       // read from config name of module that implement functions to fetch and store keys for type
       // TODO: check what will happen if implementation is not a provider of StakingRouterModule
       const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-      const fields: KeyFieldT[] = ['key', 'depositSignature', 'operatorIndex', 'used'];
-      // index, moduleAddress will be included in answer
-      const keys: Key[] = await moduleInstance.getKeys(module.stakingModuleAddress, filters, fields);
+      const keys: Key[] = await moduleInstance.getKeys(module.stakingModuleAddress, filters);
 
       srModulesKeys.push({ keys, module: new SRModule(module) });
     }

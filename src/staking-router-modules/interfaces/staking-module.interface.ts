@@ -1,5 +1,5 @@
 import { RegistryKey, RegistryOperator } from 'common/registry';
-import { KeyField, KeysFilter, OperatorsFilter } from './filters';
+import { KeysFilter, OperatorsFilter } from './filters';
 import { STAKING_MODULE_TYPE } from '../constants';
 
 // interface of modules we get from SR contract
@@ -37,25 +37,13 @@ export type OperatorEntity = RegistryOperator;
 export interface StakingModuleInterface {
   update(moduleAddress: string, blockHash: string): Promise<void>;
 
-  getKeysStream(
-    moduleAddress: string,
-    filters: KeysFilter,
-    fields?: readonly KeyField[] | undefined,
-  ): AsyncGenerator<KeyEntity>;
+  getKeysStream(moduleAddress: string, filters: KeysFilter): AsyncGenerator<KeyEntity>;
 
-  getKeys(moduleAddress: string, filters: KeysFilter, fields?: readonly KeyField[] | undefined): Promise<KeyEntity[]>;
+  getKeys(moduleAddress: string, filters: KeysFilter): Promise<KeyEntity[]>;
 
-  getKeysByPubKeys(
-    moduleAddress: string,
-    pubKeys: string[],
-    fields?: readonly KeyField[] | undefined,
-  ): Promise<KeyEntity[]>;
+  getKeysByPubKeys(moduleAddress: string, pubKeys: string[]): Promise<KeyEntity[]>;
 
-  getKeysByPubkey(
-    moduleAddress: string,
-    pubkey: string,
-    fields?: readonly KeyField[] | undefined,
-  ): Promise<KeyEntity[]>;
+  getKeysByPubkey(moduleAddress: string, pubkey: string): Promise<KeyEntity[]>;
 
   getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<OperatorEntity[]>;
 
