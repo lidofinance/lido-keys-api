@@ -7,6 +7,7 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { ValidatorsService } from 'validators';
 import { IsolationLevel } from '@mikro-orm/core';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
+
 @Injectable()
 export class StatusService {
   constructor(

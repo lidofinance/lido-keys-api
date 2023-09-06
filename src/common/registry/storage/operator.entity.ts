@@ -1,4 +1,5 @@
 import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
+import { MODULE_ADDRESS_LEN, REWARD_ADDRESS_LEN } from './constants';
 import { RegistryOperatorRepository } from './operator.repository';
 
 @Entity({ customRepository: () => RegistryOperatorRepository })
@@ -27,7 +28,7 @@ export class RegistryOperator {
   @Property({ length: 256 })
   name!: string;
 
-  @Property({ length: 42 })
+  @Property({ length: REWARD_ADDRESS_LEN })
   rewardAddress!: string;
 
   @Property()
@@ -43,6 +44,6 @@ export class RegistryOperator {
   usedSigningKeys!: number;
 
   @PrimaryKey()
-  @Property({ length: 42 })
+  @Property({ length: MODULE_ADDRESS_LEN })
   moduleAddress!: string;
 }

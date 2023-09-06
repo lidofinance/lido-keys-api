@@ -8,8 +8,6 @@ import { KeyEntity } from 'staking-router-modules/interfaces/staking-module.inte
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
 
-type KeyFieldT = keyof Key;
-
 @Injectable()
 export class SRModulesKeysService {
   constructor(
