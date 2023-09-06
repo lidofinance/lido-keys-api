@@ -22,5 +22,5 @@ jobs:
       - name: Run tests
         run: yarn test:e2e
         env:
-          PROVIDERS_URLS: ${{ secrets.EL_RPC_URL }}
+          PROVIDERS_URLS: ${{ secrets.PROVIDERS_URLS }}
           CHAIN_ID: ${{ secrets.CHAIN_ID }}
