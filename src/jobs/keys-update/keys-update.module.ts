@@ -6,13 +6,11 @@ import { StakingRouterFetchModule } from 'staking-router-modules/contracts';
 import { ExecutionProviderModule } from 'common/execution-provider';
 import { StorageModule } from 'storage/storage.module';
 import { PrometheusModule } from 'common/prometheus';
-import { StakingRouterModule } from 'staking-router-modules';
 
 @Module({
   imports: [
     LoggerModule,
     JobModule,
-    StakingRouterModule,
     StakingRouterFetchModule,
     ExecutionProviderModule,
     StorageModule,

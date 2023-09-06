@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { LoggerModule } from 'common/logger';
+import { LoggerModule } from '../../common/logger';
 import { SRModulesController } from './sr-modules.controller';
 import { SRModulesService } from './sr-modules.service';
 

@@ -21,6 +21,7 @@ export class ElMetaStorageService {
         timestamp: currElMeta.timestamp,
       }),
     );
+    await this.repository.flush();
   }
 
   /** removes all modules */
