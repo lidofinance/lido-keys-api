@@ -2,7 +2,6 @@ import { EntityManager } from '@mikro-orm/knex';
 import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ModuleRef } from '@nestjs/core';
-
 import { StakingModuleInterface } from './interfaces/staking-module.interface';
 import { httpExceptionTooEarlyResp } from '../http/common/entities/http-exceptions';
 import { ELBlockSnapshot, ModuleId, SRModule } from '../http/common/entities';

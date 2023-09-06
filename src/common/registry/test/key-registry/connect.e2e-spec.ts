@@ -64,15 +64,15 @@ describe('Registry', () => {
   });
 
   test('Update', async () => {
-    const hash = '0xb8adbea6395dbae8f81e7bfc4f731833b9c2a4a10fd9a42d0c059aeb9236dc37';
-    // 6912872
-    await registryService.update(address, hash);
+    const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
+    await registryService.update(address, blockHash);
 
     await compareTestMetaOperators(address, registryService, {
       operators: operatorsWithModuleAddress,
     });
 
     const keys = await registryService.getOperatorsKeysFromStorage(address);
-    expect(keys).toHaveLength(1036);
+    expect(keys).toHaveLength(20527);
   }, 200_000);
 });

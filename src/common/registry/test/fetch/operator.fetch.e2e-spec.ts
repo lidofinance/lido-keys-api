@@ -46,7 +46,9 @@ describe('Operators', () => {
   });
 
   test('fetch all operators', async () => {
-    const operators = await fetchService.fetch(address);
+    const operators = await fetchService.fetch(address, 0, -1, {
+      blockTag: '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418',
+    });
 
     expect(operators).toBeInstanceOf(Array);
     expect(operators.length).toBeGreaterThan(0);
