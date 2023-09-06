@@ -56,29 +56,51 @@ export class CuratedModuleService implements StakingModuleInterface {
   public async *getKeysStream(contractAddress: string, filters: KeysFilter): AsyncGenerator<RegistryKey> {
     const where = {};
     if (filters.operatorIndex != undefined) {
-      where['operatorIndex'] = filters.operatorIndex;
+      where['operator_index'] = filters.operatorIndex;
     }
 
     if (filters.used != undefined) {
       where['used'] = filters.used;
     }
 
-    where['moduleAddress'] = contractAddress;
+    where['module_address'] = contractAddress;
 
-    const batchSize = 10000;
-    let offset = 0;
+    const keyStream = this.keyStorageService.findStream(where, [
+      'index',
+      'operator_index as operatorIndex',
+      'key',
+      'deposit_signature as depositSignature',
+      'used',
+      'module_address as moduleAddress',
+    ]);
 
-    while (true) {
-      const chunk = await this.keyStorageService.find(where, { limit: batchSize, offset });
-      if (chunk.length === 0) {
-        break;
-      }
+    for await (const record of keyStream) {
+      yield record;
+    }
+  }
 
-      offset += batchSize;
+  public async *getOperatorsStream(moduleAddress: string, filters?: OperatorsFilter): AsyncGenerator<RegistryOperator> {
+    const where = {};
+    if (filters?.index != undefined) {
+      where['index'] = filters.index;
+    }
+    // we store operators of modules with the same impl at the same table
+    where['module_address'] = moduleAddress;
 
-      for (const record of chunk) {
-        yield record;
-      }
+    const operatorStream = this.operatorStorageService.findStream(where, [
+      'index',
+      'active',
+      'name',
+      'reward_address as rewardAddress',
+      'staking_limit as stakingLimit',
+      'stopped_validators as stoppedValidators',
+      'total_signing_keys as totalSigningKeys',
+      'used_signing_keys as usedSigningKeys',
+      'module_address as moduleAddress',
+    ]);
+
+    for await (const record of operatorStream) {
+      yield record;
     }
   }
 

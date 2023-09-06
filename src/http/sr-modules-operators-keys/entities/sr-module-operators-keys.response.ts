@@ -45,3 +45,32 @@ export class SRModuleOperatorsKeysResponse {
   })
   meta!: ELMeta;
 }
+
+export class SRModulesOperatorsKeysStreamResponse {
+  @ApiProperty({
+    type: 'array',
+    items: { oneOf: [{ $ref: getSchemaPath(CuratedOperator) }] },
+    description: 'Operators of staking router module',
+  })
+  operators?: SRModuleOperator[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { oneOf: [{ $ref: getSchemaPath(CuratedKey) }] },
+    description: 'Keys of staking router module',
+  })
+  keys?: SRModuleKey[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { oneOf: [{ $ref: getSchemaPath(SRModule) }] },
+    description: 'List of Staking Router',
+  })
+  modules?: SRModule[];
+
+  @ApiProperty({
+    nullable: true,
+    type: () => ELMeta,
+  })
+  meta?: ELMeta;
+}

@@ -16,6 +16,15 @@ export class RegistryKeyStorageService {
     return await this.repository.find(where, options);
   }
 
+  findStream(where: FilterQuery<RegistryKey>, fields?: string[]): AsyncIterable<RegistryKey> {
+    const knex = this.repository.getKnex();
+    return knex
+      .select(fields || '*')
+      .from<RegistryKey>('registry_key')
+      .where(where)
+      .stream();
+  }
+
   /** find all keys */
   async findAll(moduleAddress: string): Promise<RegistryKey[]> {
     return await this.repository.find(

@@ -16,6 +16,15 @@ export class RegistryOperatorStorageService {
     return await this.repository.find(where, options);
   }
 
+  findStream(where: FilterQuery<RegistryOperator>, fields?: string[]): AsyncIterable<RegistryOperator> {
+    const knex = this.repository.getKnex();
+    return knex
+      .select(fields || '*')
+      .from<RegistryOperator>('registry_operator')
+      .where(where)
+      .stream();
+  }
+
   /** find all operators */
   async findAll(moduleAddress: string): Promise<RegistryOperator[]> {
     return await this.repository.find(

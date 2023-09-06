@@ -53,7 +53,7 @@ export class KeysController {
         try {
           for (const keysGenerator of keysGenerators) {
             for await (const keysBatch of keysGenerator) {
-              jsonStream.write(keysBatch);
+              jsonStream.write(JSON.stringify(keysBatch));
             }
           }
         } finally {

@@ -71,7 +71,7 @@ export class SRModulesKeysController {
         reply.type('application/json').send(jsonStream);
 
         for await (const keysBatch of keysGenerator) {
-          jsonStream.write(keysBatch);
+          jsonStream.write(JSON.stringify(keysBatch));
         }
 
         jsonStream.end();

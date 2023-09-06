@@ -1612,6 +1612,13 @@
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==
 
+"@types/jsonstream@^0.8.31":
+  version "0.8.31"
+  resolved "https://registry.yarnpkg.com/@types/jsonstream/-/jsonstream-0.8.31.tgz#8df1c36c80dbb36e40794217d782022455d1e89a"
+  integrity sha512-32nJ7wl+q0lebxHo8iXqpmgLmkj6lYNHKp97+h8qteQ6O6IKnY+GyD/Eitqi4ul2Bbw3MScfRKtaHxt8gpC98w==
+  dependencies:
+    "@types/node" "*"
+
 "@types/node-fetch@^2.5.12":
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-2.6.2.tgz#d1a9c5fd049d9415dce61571557104dec3ec81da"
@@ -5528,6 +5535,11 @@ pg-connection-string@2.5.0, pg-connection-string@^2.5.0:
   resolved "https://registry.yarnpkg.com/pg-connection-string/-/pg-connection-string-2.5.0.tgz#538cadd0f7e603fc09a12590f3b8a452c2c0cf34"
   integrity sha512-r5o/V/ORTA6TmUnyWZR9nCj1klXCO2CEKNRlVuJptZe85QuhFayC7WeMic7ndayT5IRIR0S0xFxFi2ousartlQ==
 
+pg-cursor@^2.10.3:
+  version "2.10.3"
+  resolved "https://registry.yarnpkg.com/pg-cursor/-/pg-cursor-2.10.3.tgz#4b44fbaede168a4785def56b8ac195e7df354472"
+  integrity sha512-rDyBVoqPVnx/PTmnwQAYgusSeAKlTL++gmpf5klVK+mYMFEqsOc6VHHZnPKc/4lOvr4r6fiMuoxSFuBF1dx4FQ==
+
 pg-int8@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/pg-int8/-/pg-int8-1.0.1.tgz#943bd463bf5b71b4170115f80f8efc9a0c0eb78c"
@@ -5542,6 +5554,13 @@ pg-protocol@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/pg-protocol/-/pg-protocol-1.5.0.tgz#b5dd452257314565e2d54ab3c132adc46565a6a0"
   integrity sha512-muRttij7H8TqRNu/DxrAJQITO4Ac7RmX3Klyr/9mJEOBeIpgnF8f9jAfRz5d3XwQZl5qBjF9gLsUtMPJE0vezQ==
+
+pg-query-stream@^4.5.3:
+  version "4.5.3"
+  resolved "https://registry.yarnpkg.com/pg-query-stream/-/pg-query-stream-4.5.3.tgz#841ce414064d7b14bd2540d2267bdf40779d26f2"
+  integrity sha512-ufa94r/lHJdjAm3+zPZEO0gXAmCb4tZPaOt7O76mjcxdL/HxwTuryy76km+u0odBBgtfdKFYq/9XGfiYeQF0yA==
+  dependencies:
+    pg-cursor "^2.10.3"
 
 pg-types@^2.1.0:
   version "2.2.0"
