@@ -20,7 +20,7 @@
     "url": "https://github.com/lidofinance/lido-keys-api/issues"
   },
   "scripts": {
-    "postinstall": "rimraf ./node_modules/@ethersproject/abstract-provider/src.ts/*.ts",
+    "postinstall": "rimraf ./node_modules/@ethersproject/abstract-provider/src.ts/*.ts && yarn chronix:compile",
     "mikro-orm": "./node_modules/mikro-orm",
     "prebuild": "rimraf dist",
     "build": "nest build",
@@ -35,7 +35,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config jest-e2e.json",
-    "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/staking-router-modules/contracts/abi/*.json"
+    "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/staking-router-modules/contracts/abi/*.json",
+    "test:e2e:onchain": "jest --config  jest-e2e-onchain.json",
+    "chronix:compile": "chronix compile",
+    "chronix:test": "chronix test"
   },
   "dependencies": {
     "@lido-nestjs/consensus": "^1.5.0",
@@ -63,6 +66,7 @@
     "@typechain/ethers-v5": "^9.0.0",
     "@willsoto/nestjs-prometheus": "^4.4.0",
     "cache-manager": "^3.6.1",
+    "chronix": "^0.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "ethers": "^5.5.4",
