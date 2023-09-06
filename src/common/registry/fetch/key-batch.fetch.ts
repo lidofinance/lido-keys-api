@@ -77,7 +77,7 @@ export class RegistryKeyBatchFetchService {
     });
   }
 
-  /** fetches operator's keys */
+  /** fetches operator's keys from specific module */
   public async fetch(
     moduleAddress: string,
     operatorIndex: number,
