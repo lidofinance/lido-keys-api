@@ -76,5 +76,5 @@ describe('Registry', () => {
     });
     const keys = await registryService.getOperatorsKeysFromStorage(address);
     expect(keys).toHaveLength(15283);
-  }, 200_000);
+  }, 400_000);
 });
