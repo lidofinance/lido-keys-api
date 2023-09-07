@@ -30,8 +30,6 @@ export interface StakingModule {
   active: boolean;
 }
 
-export type OperatorEntity = RegistryOperator;
-
 export interface StakingModuleInterface {
   update(moduleAddress: string, blockHash: string): Promise<void>;
 
@@ -43,9 +41,9 @@ export interface StakingModuleInterface {
 
   getKeysByPubkey(moduleAddress: string, pubkey: string): Promise<RegistryKey[]>;
 
-  getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<OperatorEntity[]>;
+  getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<RegistryOperator[]>;
 
-  getOperator(moduleAddress: string, index: number): Promise<OperatorEntity | null>;
+  getOperator(moduleAddress: string, index: number): Promise<RegistryOperator | null>;
 
   getCurrentNonce(moduleAddress: string, blockHash: string): Promise<number>;
 }

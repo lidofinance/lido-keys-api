@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-// import { SRModuleKey } from './sr-module-key';
-import { RegistryKey } from 'common/registry';
+import { RegistryKey } from '../../../common/registry';
 
 // maybe Partial<RegistryKey> in future
 export class Key implements RegistryKey {

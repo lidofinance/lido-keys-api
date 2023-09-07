@@ -12,8 +12,6 @@ export * from './sr-module';
 
 // operators
 export * from './operator';
-export * from './curated-operator';
-
 // query
 export * from './module-id';
 export * from './key-query';

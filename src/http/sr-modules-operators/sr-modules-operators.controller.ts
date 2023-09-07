@@ -5,10 +5,10 @@ import {
   SRModuleOperatorListResponse,
   SRModuleOperatorResponse,
 } from './entities';
-import { ModuleId } from 'http/common/entities/';
+import { ModuleId } from '../common/entities/';
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
-import { OperatorIdParam } from 'http/common/entities/operator-id-param';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { OperatorIdParam } from '../common/entities/operator-id-param';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
 
 @Controller('/')
 @ApiTags('operators')

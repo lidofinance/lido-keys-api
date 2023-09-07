@@ -117,7 +117,6 @@ export class KeysUpdateService {
 
     if (prevElMeta && prevElMeta?.blockNumber > currElMeta.number) {
       this.logger.warn('Previous data is newer than current data', prevElMeta);
-      console.log('curr', currElMeta);
       return;
     }
 
