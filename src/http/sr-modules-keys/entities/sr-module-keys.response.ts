@@ -1,15 +1,14 @@
 import { ApiProperty, getSchemaPath, ApiExtraModels } from '@nestjs/swagger';
-import { SRModule, CuratedKey, ELMeta } from 'http/common/entities/';
-import { SRModuleKey } from 'http/common/entities/';
+import { SRModule, Key, ELMeta } from '../../common/entities/';
 
-@ApiExtraModels(CuratedKey)
+@ApiExtraModels(Key)
 export class SRKeyListWithModule {
   @ApiProperty({
     type: 'array',
-    items: { oneOf: [{ $ref: getSchemaPath(CuratedKey) }] },
+    items: { oneOf: [{ $ref: getSchemaPath(Key) }] },
     description: 'Keys of staking router module',
   })
-  keys!: SRModuleKey[];
+  keys!: Key[];
 
   @ApiProperty({
     description: 'Detailed Staking Router information',

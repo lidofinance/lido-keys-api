@@ -6,8 +6,6 @@ export * from './el-meta';
 
 // keys
 export * from './key';
-export * from './curated-key'; // shouldnt exports SRModuleKey should be used everywhere instead
-export * from './sr-module-key';
 
 // modules
 export * from './sr-module';

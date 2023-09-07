@@ -5,7 +5,7 @@ import { RegistryOperatorRepository } from './operator.repository';
 @Entity({ customRepository: () => RegistryOperatorRepository })
 export class RegistryOperator {
   [EntityRepositoryType]?: RegistryOperatorRepository;
-  [PrimaryKeyType]?: [number, string];
+  [PrimaryKeyType]?: [RegistryOperator['index'], RegistryOperator['moduleAddress']];
 
   constructor(operator: RegistryOperator) {
     this.index = operator.index;
