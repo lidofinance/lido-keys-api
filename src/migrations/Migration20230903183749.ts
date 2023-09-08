@@ -2,33 +2,33 @@ import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20230903183749 extends Migration {
   async up(): Promise<void> {
-    // this.addSql('TRUNCATE registry_key');
-    // this.addSql('TRUNCATE registry_operator');
-    // this.addSql('TRUNCATE registry_meta');
+    this.addSql('TRUNCATE registry_key');
+    this.addSql('TRUNCATE registry_operator');
+    this.addSql('TRUNCATE registry_meta');
 
     this.addSql(
-      'create table if not exists "el_meta_entity" ("block_number" int not null, "block_hash" varchar(255) not null, "timestamp" int not null, constraint "el_meta_entity_pkey" primary key ("block_number", "block_hash"));',
+      'create table "el_meta_entity" ("block_number" int not null, "block_hash" varchar(255) not null, "timestamp" int not null, constraint "el_meta_entity_pkey" primary key ("block_number", "block_hash"));',
     );
 
     this.addSql(
-      'create table if not exists "sr_module_entity" ("id" serial primary key, "module_id" int not null, "staking_module_address" varchar(42) not null, "staking_module_fee" int not null, "treasury_fee" int not null, "target_share" int not null, "status" int not null, "name" varchar(255) not null, "last_deposit_at" int not null, "last_deposit_block" int not null, "exited_validators_count" int not null, "type" varchar(255) not null, "active" boolean not null, "nonce" int not null);',
+      'create table "sr_module_entity" ("id" serial primary key, "module_id" int not null, "staking_module_address" varchar(42) not null, "staking_module_fee" int not null, "treasury_fee" int not null, "target_share" int not null, "status" int not null, "name" varchar(255) not null, "last_deposit_at" int not null, "last_deposit_block" int not null, "exited_validators_count" int not null, "type" varchar(255) not null, "active" boolean not null, "nonce" int not null);',
     );
-    // this.addSql(
-    //   'alter table "sr_module_entity" add constraint "sr_module_entity_module_id_unique" unique ("module_id");',
-    // );
+    this.addSql(
+      'alter table "sr_module_entity" add constraint "sr_module_entity_module_id_unique" unique ("module_id");',
+    );
     this.addSql(
       'alter table "sr_module_entity" add constraint "sr_module_entity_staking_module_address_unique" unique ("staking_module_address");',
     );
 
     this.addSql('drop table if exists "registry_meta" cascade;');
 
-    // this.addSql('alter table "registry_key" add column "module_address" varchar(255) not null;');
+    this.addSql('alter table "registry_key" add column "module_address" varchar(255) not null;');
     this.addSql('alter table "registry_key" drop constraint "registry_key_pkey";');
     this.addSql(
       'alter table "registry_key" add constraint "registry_key_pkey" primary key ("index", "operator_index", "module_address");',
     );
 
-    // this.addSql('alter table "registry_operator" add column "module_address" varchar(255) not null;');
+    this.addSql('alter table "registry_operator" add column "module_address" varchar(255) not null;');
     this.addSql('alter table "registry_operator" alter column "index" type int using ("index"::int);');
     this.addSql('alter table "registry_operator" drop constraint "registry_operator_pkey";');
     this.addSql('alter table "registry_operator" alter column "index" drop default;');

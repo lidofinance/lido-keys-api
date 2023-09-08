@@ -108,7 +108,7 @@ export class RegistryKeyBatchFetchService {
     totalAmount: number,
   ) {
     // TODO: move to constants/config cause this limit depends on eth node
-    const batchSize = 11;
+    const batchSize = 1100;
 
     const numberOfBatches = Math.ceil(totalAmount / batchSize);
     const promises: Promise<RegistryKey[]>[] = [];
