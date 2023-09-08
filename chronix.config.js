@@ -3,6 +3,6 @@ module.exports = {
     port: 8001,
   },
   commands: {
-    test: "yarn test:e2e:onchain"
+    test: "jest --config  jest-e2e-onchain.json"
   }
 };
