@@ -1,4 +1,5 @@
-import * as avro from 'avsc';
+import { pipeline } from 'node:stream/promises';
+import { IsolationLevel } from '@mikro-orm/core';
 import { Controller, Get, Version, Param, Query, NotFoundException, HttpStatus, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } from '@nestjs/swagger';
 import { SRModuleOperatorsKeysResponse, SRModulesOperatorsKeysStreamResponse } from './entities';
@@ -8,8 +9,7 @@ import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
 import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
-import { IsolationLevel } from '@mikro-orm/core';
-import { modulesOperatorsKeysTypeV1 } from './schemas/operator.schema';
+import { streamify } from 'common/streams';
 
 @Controller('/modules')
 @ApiTags('operators-keys')
@@ -86,46 +86,14 @@ export class SRModulesOperatorsKeysController {
     description: 'Meta has not exist yet, maybe data was not written in db yet',
     type: TooEarlyResponse,
   })
-  @ApiParam({
-    name: 'include_keys',
-    description: 'Whether include registry keys in the stream',
-  })
   @Get('operators/keys')
   async getModulesOperatorsKeysStream(@Res() reply: FastifyReply) {
-    const encoder = new avro.streams.BlockEncoder(modulesOperatorsKeysTypeV1);
+    const jsonStream = JSONStream.stringify();
 
-    function write(data: any) {
-      const end = new Promise((resolve) => {
-        if (!encoder.write(data)) {
-          encoder.once('drain', () => resolve(true));
-        } else {
-          process.nextTick(() => resolve(true));
-        }
-      });
-
-      return end;
-    }
-
-    reply.type('application/octet-stream').send(encoder);
+    reply.type('application/json').send(jsonStream);
 
     await this.entityManager.transactional(
-      async () => {
-        try {
-          for await (const record of this.srModulesOperatorsKeys.getModulesOperatorsKeysStream()) {
-            const { meta, stakingModule, operator, key } = record;
-            await write({
-              meta: meta?.elBlockSnapshot,
-              module: stakingModule,
-              operator,
-              key,
-            });
-          }
-        } catch (error) {
-          console.error('Error while streaming operators', { error });
-        } finally {
-          encoder.end();
-        }
-      },
+      () => pipeline([streamify(this.srModulesOperatorsKeys.getModulesOperatorsKeysGenerator()), jsonStream]),
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
   }
