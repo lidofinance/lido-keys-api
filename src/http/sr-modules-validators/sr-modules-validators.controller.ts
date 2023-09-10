@@ -17,11 +17,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { SRModulesValidatorsService } from './sr-modules-validators.service';
-import { ModuleId } from 'http/common/entities/';
+import { ModuleId } from '../common/entities/';
 import { ValidatorsQuery } from './entities/query';
 import { ExitPresignMessageListResponse, ExitValidatorListResponse } from './entities';
-import { OperatorIdParam } from 'http/common/entities/operator-id-param';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { OperatorId } from '../common/entities/operator-id';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
 
 @Controller('modules')
 @ApiTags('validators')
@@ -94,7 +94,7 @@ export class SRModulesValidatorsController {
   })
   getMessagesForOldestValidators(
     @Param('module_id') moduleId: ModuleId,
-    @Param() operator: OperatorIdParam,
+    @Param() operator: OperatorId,
     @Query() query: ValidatorsQuery,
   ) {
     return this.validatorsService.getVoluntaryExitMessages(moduleId, operator.operator_id, query);

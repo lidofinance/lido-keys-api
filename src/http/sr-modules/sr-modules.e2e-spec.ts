@@ -6,7 +6,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 
 import { KeyRegistryService, RegistryStorageModule, RegistryStorageService } from '../../common/registry';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
-import { dvtModule, curatedModule, dvtModuleResp, curatedModuleResp } from '../../storage/module.fixture';
+import { dvtModule, curatedModule, dvtModuleResp, curatedModuleResp } from '../module.fixture';
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
 import { ElMetaStorageService } from '../../storage/el-meta.storage';
 
@@ -17,6 +17,8 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { SRModulesController } from './sr-modules.controller';
 import { SRModulesService } from './sr-modules.service';
 
+import { elMeta } from '../el-meta.fixture';
+
 // import { validationOpt } from '../../main';
 
 describe('SRModulesController (e2e)', () => {
@@ -25,12 +27,6 @@ describe('SRModulesController (e2e)', () => {
   let moduleStorageService: SRModuleStorageService;
   let elMetaStorageService: ElMetaStorageService;
   let registryStorage: RegistryStorageService;
-
-  const elMeta = {
-    number: 74,
-    hash: '0x662e3e713207240b25d01324b6eccdc91493249a5048881544254994694530a5',
-    timestamp: 1691500803,
-  };
 
   async function cleanDB() {
     await moduleStorageService.removeAll();
@@ -196,6 +192,16 @@ describe('SRModulesController (e2e)', () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.id}`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+      });
+
+      it('should return 400 error if module_id is not a contract address or number', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/sjdnsjkfsjkbfsjdfbdjfb`);
+        expect(resp.status).toEqual(400);
+        expect(resp.body).toEqual({
+          error: 'Bad Request',
+          message: ['module_id must be a contract address or numeric value'],
+          statusCode: 400,
+        });
       });
     });
   });

@@ -23,7 +23,7 @@ export class SRModulesService {
     };
   }
 
-  async getModule(moduleId: ModuleId): Promise<SRModuleResponse> {
+  async getModule(moduleId: string | number): Promise<SRModuleResponse> {
     const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
 
     return {
