@@ -56,12 +56,8 @@ export class SRModulesValidatorsController {
     example: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
     description: 'Staking router module_id or contract address.',
   })
-  getOldestValidators(
-    @Param('module_id') moduleId: ModuleId,
-    @Param() operator: OperatorIdParam,
-    @Query() query: ValidatorsQuery,
-  ) {
-    return this.validatorsService.getOldestLidoValidators(moduleId, operator.operator_id, query);
+  getOldestValidators(@Param() module: ModuleId, @Param() operator: OperatorId, @Query() query: ValidatorsQuery) {
+    return this.validatorsService.getOldestLidoValidators(module.module_id, operator.operator_id, query);
   }
 
   @Version('1')
@@ -93,10 +89,10 @@ export class SRModulesValidatorsController {
     description: 'Staking router module_id or contract address.',
   })
   getMessagesForOldestValidators(
-    @Param('module_id') moduleId: ModuleId,
+    @Param() module: ModuleId,
     @Param() operator: OperatorId,
     @Query() query: ValidatorsQuery,
   ) {
-    return this.validatorsService.getVoluntaryExitMessages(moduleId, operator.operator_id, query);
+    return this.validatorsService.getVoluntaryExitMessages(module.module_id, operator.operator_id, query);
   }
 }
