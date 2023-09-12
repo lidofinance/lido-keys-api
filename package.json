@@ -72,7 +72,8 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.2",
-    "typechain": "^7.0.0"
+    "typechain": "^7.0.0",
+    "@types/k6": "~0.44.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.2.5",
