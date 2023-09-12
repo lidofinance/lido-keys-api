@@ -1,6 +1,6 @@
 ## API
 
-### /keys
+### List keys
 
 **GET** `/v1/keys`
 
