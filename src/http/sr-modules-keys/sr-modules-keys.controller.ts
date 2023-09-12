@@ -58,12 +58,16 @@ export class SRModulesKeysController {
     description: 'Staking router module_id or contract address.',
   })
   @Get(':module_id/keys')
-  async getModuleKeys(@Param('module_id') moduleId: ModuleId, @Query() filters: KeyQuery, @Res() reply: FastifyReply) {
+  async getModuleKeys(@Param() module: ModuleId, @Query() filters: KeyQuery, @Res() reply: FastifyReply) {
     await this.entityManager.transactional(
       async () => {
-        const { keysGenerator, module, meta } = await this.srModulesKeysService.getModuleKeys(moduleId, filters);
+        const {
+          keysGenerator,
+          module: srModule,
+          meta,
+        } = await this.srModulesKeysService.getModuleKeys(module.module_id, filters);
         const jsonStream = JSONStream.stringify(
-          '{ "meta": ' + JSON.stringify(meta) + ', "data": { "module": ' + JSON.stringify(module) + ', "keys": [',
+          '{ "meta": ' + JSON.stringify(meta) + ', "data": { "module": ' + JSON.stringify(srModule) + ', "keys": [',
           ',',
           ']}}',
         );
@@ -102,7 +106,7 @@ export class SRModulesKeysController {
     name: 'module_id',
     description: 'Staking router module_id or contract address.',
   })
-  getModuleKeysByPubkeys(@Param('module_id') moduleId: ModuleId, @Body() keys: KeysFindBody) {
-    return this.srModulesKeysService.getModuleKeysByPubKeys(moduleId, keys.pubkeys);
+  getModuleKeysByPubkeys(@Param() module: ModuleId, @Body() keys: KeysFindBody) {
+    return this.srModulesKeysService.getModuleKeysByPubKeys(module.module_id, keys.pubkeys);
   }
 }

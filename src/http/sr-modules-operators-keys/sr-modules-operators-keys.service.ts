@@ -16,7 +16,7 @@ export class SRModulesOperatorsKeysService {
   ) {}
 
   public async get(
-    moduleId: ModuleId,
+    moduleId: string | number,
     filters: KeyQuery,
   ): Promise<{
     keysGenerator: AsyncGenerator<Key>;

@@ -37,7 +37,7 @@ export class SRModulesKeysService {
   }
 
   async getModuleKeys(
-    moduleId: ModuleId,
+    moduleId: string | number,
     filters: KeyQuery,
   ): Promise<{
     keysGenerator: AsyncGenerator<Key>;
@@ -52,7 +52,7 @@ export class SRModulesKeysService {
     return { keysGenerator, module, meta: { elBlockSnapshot } };
   }
 
-  async getModuleKeysByPubKeys(moduleId: ModuleId, pubKeys: string[]): Promise<SRModuleKeyListResponse> {
+  async getModuleKeysByPubKeys(moduleId: string | number, pubKeys: string[]): Promise<SRModuleKeyListResponse> {
     const { keys, module, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
         const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);

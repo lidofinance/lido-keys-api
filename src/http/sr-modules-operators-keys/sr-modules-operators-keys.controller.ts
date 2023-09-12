@@ -39,20 +39,21 @@ export class SRModulesOperatorsKeysController {
     description: 'Staking router module_id or contract address.',
   })
   @Get(':module_id/operators/keys')
-  async getOperatorsKeys(
-    @Param('module_id') moduleId: ModuleId,
-    @Query() filters: KeyQuery,
-    @Res() reply: FastifyReply,
-  ) {
+  async getOperatorsKeys(@Param() module: ModuleId, @Query() filters: KeyQuery, @Res() reply: FastifyReply) {
     await this.entityManager.transactional(
       async () => {
-        const { operators, keysGenerator, module, meta } = await this.srModulesOperatorsKeys.get(moduleId, filters);
+        const {
+          operators,
+          keysGenerator,
+          module: srModule,
+          meta,
+        } = await this.srModulesOperatorsKeys.get(module.module_id, filters);
 
         const jsonStream = JSONStream.stringify(
           '{ "meta": ' +
             JSON.stringify(meta) +
             ', "data": { "module": ' +
-            JSON.stringify(module) +
+            JSON.stringify(srModule) +
             ', "operators": ' +
             JSON.stringify(operators) +
             ', "keys": [',

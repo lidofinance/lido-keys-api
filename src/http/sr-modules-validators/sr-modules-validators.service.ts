@@ -32,7 +32,7 @@ export class SRModulesValidatorsService {
   ) {}
 
   async getOldestLidoValidators(
-    moduleId: ModuleId,
+    moduleId: string | number,
     operatorId: number,
     filters: ValidatorsQuery,
   ): Promise<ExitValidatorListResponse> {
@@ -53,7 +53,7 @@ export class SRModulesValidatorsService {
   }
 
   async getVoluntaryExitMessages(
-    moduleId: ModuleId,
+    moduleId: string | number,
     operatorId: number,
     filters: ValidatorsQuery,
   ): Promise<ExitPresignMessageListResponse> {
@@ -86,7 +86,7 @@ export class SRModulesValidatorsService {
   }
 
   private async getOperatorOldestValidators(
-    moduleId: string,
+    moduleId: string | number,
     operatorIndex: number,
     filters: ValidatorsQuery,
   ): Promise<{ validators: Validator[]; clBlockSnapshot: CLBlockSnapshot }> {
