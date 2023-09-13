@@ -35,13 +35,11 @@ For running locally in container run
 
 To configure grafana go to `http://localhost:8000/dashboards` and dashboards from `./grafana` folder.
 
-For running KAPI you can also use image from this page https://docs.lido.fi/guides/tooling#keys-api. Please always use the SHA256 hash of the Docker image for the latest release: lidofinance/lido-keys-api@<latest-hash>.
+For running KAPI, one can also use the image from this page https://docs.lido.fi/guides/tooling#keys-api. Please always use the SHA256 hash of the Docker image for the latest release: lidofinance/lido-keys-api@<latest-hash>.
 
-## Tests
+## E2E tests
 
-Unit tests
-
-`$ yarn test`
+`$ yarn test:e2e`
 
 ## Environment variable
 

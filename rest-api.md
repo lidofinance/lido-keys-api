@@ -8,16 +8,14 @@
 
 Path: `/v1/keys`
 
-Endpoint returns list of keys for all modules.
+Returns list of keys for all modules.
 
-:::warning
-Response of this endpoint could be very large. However, due to the possibility of updates occurring during processing, pagination is not supported.
-:::
+> :warning: Response of this endpoint could be very large. However, due to the possibility of updates occurring during processing, pagination is not supported. :warning:
 
 Query:
 
-- `used` - filter for used/unused keys. Possible values: true/false;
-- `operatorIndex` - filter keys by operator index;
+- `used` - used/unused keys. Possible values: true/false;
+- `operatorIndex` - operator index;
 
 Request example:
 
@@ -62,9 +60,9 @@ class TooEarlyResponse implements HttpException {
 
 Path: `/v1/keys/{pubkey}`
 
-Return key by public key. `pubkey` should be in lowercase.
+Returns keys associated with a given public key. `pubkey` should be in lowercase.
 
-Param:
+Parameters:
 
 - `pubkey` - public key
 
@@ -101,7 +99,7 @@ class NotFoundException implements HttpException {
 
 Path: `/v1/keys/find`
 
-Returns all keys found in db.
+Returns all keys associated with provided list of keys.
 
 Request body:
 
@@ -143,7 +141,7 @@ class TooEarlyResponse implements HttpException {
 
 Path: `/v1/modules`
 
-Endpoint returns list of staking modules.
+Returns list of staking modules.
 
 Request example:
 
@@ -201,7 +199,7 @@ class TooEarlyResponse implements HttpException {
 
 Path: `/v1/modules/{module_id}`
 
-Endpoint returns staking module'd details;
+Returns staking module details.
 
 Parameters:
 
@@ -269,12 +267,12 @@ class NotFoundResponse implements HttpException {
 
 Path: `/v1/modules/keys/`
 
-Return keys for all modules grouped by staking router module.
+Returns keys for all modules grouped by staking module.
 
 Query:
 
-- `used` - filter for used/unused keys. Possible values: true/false;
-- `operatorIndex` - filter keys by operator index;
+- `used` - used/unused keys. Possible values: true/false;
+- `operatorIndex` - operator index;
 
 Request example:
 
@@ -320,8 +318,8 @@ Parameters:
 
 Query:
 
-- `used` - filter for used/unused keys. Possible values: true/false;
-- `operatorIndex` - filter keys by operator index;
+- `used` - used/unused keys. Possible values: true/false;
+- `operatorIndex` - operator index;
 
 Request example:
 
@@ -485,7 +483,7 @@ Path: `/v1/modules/{module_id}/validators/generate-unsigned-exit-messages/{opera
 
 Parameters:
 
-- `module_id` - staking router module contact address or id;
+- `module_id` - staking module contact address or id;
 
 Returns unsigned exit messages for N oldest validators for earliest epoch when voluntary exit can be processed.
 
@@ -643,7 +641,7 @@ class NotFoundException implements HttpException {
 
 Path: `/v1/modules/{module_id}/operators/{operator_id}`
 
-Return staking module operator by operator index.
+Returns staking module operator by operator index.
 
 Query:
 
@@ -694,7 +692,7 @@ Parameters:
 
 Query:
 
-- `used` - filter for used/unused keys. Possible values: true/false;
+- `used` - used/unused keys. Possible values: true/false;
 - `operatorIndex` - operator index;
 
 Request example:
