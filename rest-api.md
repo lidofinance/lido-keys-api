@@ -1,15 +1,29 @@
 ## API
 
-### /keys
+### Keys of staking modules
 
-**GET** `/v1/keys`
+> :warning: If API returns 425 code, it means database is not ready for work
+
+#### List keys
+
+Path: `/v1/keys`
 
 Endpoint returns list of keys for all modules.
+
+:::warning
+Response of this endpoint could be very large. However, due to the possibility of updates occurring during processing, pagination is not supported.
+:::
 
 Query:
 
 - `used` - filter for used/unused keys. Possible values: true/false;
-- `operatorIndex` - filter for keys of operator with index `operatorIndex`;
+- `operatorIndex` - filter keys by operator index;
+
+Request example:
+
+`curl http://localhost:3000/v1/keys`
+
+Response:
 
 ```typescript
 interface ELBlockSnapshot {
@@ -44,23 +58,21 @@ class TooEarlyResponse implements HttpException {
 }
 ```
 
-Example:
+#### Find key with duplicates
 
-```
-curl -X 'GET' 'http://localhost:3000/v1/keys'
-```
+Path: `/v1/keys/{pubkey}`
 
-:::warning
-Response of this endpoint could be very large but we can’t have a pagination here since data could be updated in the process.
-:::
+Return key by public key. `pubkey` should be in lowercase.
 
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
+Param:
 
-**GET** `/v1/keys/{pubkey}`
+- `pubkey` - public key
 
-Return key by public key with basic fields. `pubkey` should be in lowercase.
+Request example:
+
+`curl http://localhost:3005/v1/keys/pubkey`
+
+Response:
 
 ```typescript
 class Response {
@@ -85,13 +97,9 @@ class NotFoundException implements HttpException {
 }
 ```
 
-Example:
+#### Find keys by list of public keys
 
-```
-curl -X 'GET' 'http://localhost:3005/v1/keys/pubkey'
-```
-
-**POST** `/v1/keys/find`
+Path: `/v1/keys/find`
 
 Returns all keys found in db.
 
@@ -103,6 +111,10 @@ interface RequestBody {
   pubkeys: string[];
 }
 ```
+
+Request example:
+
+`curl -X POST http://localhost:3000/v1/keys/find -H 'Content-Type: application/json' -d '{"pubkeys":["pubkey0 "]}'`
 
 Response:
 
@@ -125,23 +137,19 @@ class TooEarlyResponse implements HttpException {
 }
 ```
 
-Example:
+### Staking modules
 
-```
-curl -X 'POST' 'http://localhost:3000/v1/keys/find' \
-  -H 'Content-Type: application/json' \
-  -d '{"pubkeys": ["pubkey0 "]}'
-```
+#### List of staking modules
 
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
+Path: `/v1/modules`
 
-### /modules
+Endpoint returns list of staking modules.
 
-**GET** `/v1/modules`
+Request example:
 
-Endpoint returns list of staking router modules.
+`curl http://localhost:3000/v1/modules`
+
+Response:
 
 ```typescript
 interface Module {
@@ -189,21 +197,21 @@ class TooEarlyResponse implements HttpException {
 }
 ```
 
-Example:
+#### Find staking module
 
-```
-curl -X 'GET' 'http://localhost:3000/v1/modules'
-```
+Path: `/v1/modules/{module_id}`
 
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
+Endpoint returns staking module'd details;
 
-**GET** `/v1/modules/{module_id}`
+Parameters:
 
-`module_id` - staking router module contact address or id;
+- `module_id` - staking module contact address or id;
 
-Endpoint return information about staking router module;
+Request example:
+
+`curl http://localhost:3000/v1/modules/1`
+
+Response:
 
 ```typescript
 interface Module {
@@ -213,7 +221,7 @@ interface Module {
   id: number;
   /// @notice address of module
   stakingModuleAddress: string;
-  /// @notice rewarf fee of the module
+  /// @notice reward fee of the module
   moduleFee: number;
   /// @notice treasury fee
   treasuryFee: number;
@@ -255,26 +263,24 @@ class NotFoundResponse implements HttpException {
 }
 ```
 
-Example:
+### Keys of staking module
 
-```
-curl -X 'GET' 'http://localhost:3000/v1/modules/1'
-```
+#### List keys grouped by modules
 
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
-
-### /modules/keys/
-
-**GET** `/v1/modules/keys/`
+Path: `/v1/modules/keys/`
 
 Return keys for all modules grouped by staking router module.
 
 Query:
 
 - `used` - filter for used/unused keys. Possible values: true/false;
-- `operatorIndex` - filter for keys of operator with index `operatorIndex`;
+- `operatorIndex` - filter keys by operator index;
+
+Request example:
+
+`curl http://localhost:3000/v1/modules/keys?used=true&operatorIndex=1`
+
+Response:
 
 ```typescript
 class Response {
@@ -302,30 +308,26 @@ class NotFoundException implements HttpException {
 }
 ```
 
-Example:
+#### List keys of staking module
 
-```
-curl -X 'GET' 'http://localhost:3000/v1/modules/keys?used=true&operatorIndex=1'
-```
+The endpoint returns a list of staking module keys.
 
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
+Path: `/v1/modules/{module_id}/keys`
 
-**GET** `/v1/modules/{module_id}/keys`
+Parameters:
 
-`module_id` - staking router module contact address or id;
-
-Endpoint returns list of keys for module.
+- `module_id` - staking module contact address or id;
 
 Query:
 
 - `used` - filter for used/unused keys. Possible values: true/false;
-- `operatorIndex` - filter for keys of operator with index `operatorIndex`;
+- `operatorIndex` - filter keys by operator index;
+
+Request example:
+
+`curl http://localhost:3000/v1/modules/1/keys?used=true&operatorIndex=1`
 
 Response:
-
-Response depends on `module type`
 
 ```typescript
 class Response {
@@ -353,23 +355,15 @@ class NotFoundException implements HttpException {
 }
 ```
 
-Example:
+#### Find keys of staking module by list of public keys
 
-```
-curl -X 'GET' \
-  'http://localhost:3000/v1/modules/1/keys?used=true&operatorIndex=1' \
-  -H 'accept: application/json'
-```
-
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
-
-**POST** `/v1/modules/{module_id}/keys/find`
-
-`module_id` - staking router module contact address or id;
+Path: `/v1/modules/{module_id}/keys/find`
 
 Returns all keys found in db.
+
+Parameters:
+
+`module_id` - staking module contact address or id;
 
 Request body:
 
@@ -379,6 +373,10 @@ interface RequestBody {
   pubkeys: string[];
 }
 ```
+
+Request example:
+
+`curl -X POST http://localhost:3000/v1/modules/1/keys/find -d '{"pubkeys": ["pubkey"]}'`
 
 Response:
 
@@ -408,30 +406,18 @@ class NotFoundException implements HttpException {
 }
 ```
 
-Example:
+### Validators
 
-```
-curl -X 'POST' \
-  'http://localhost:3000/v1/modules/1/keys/find' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "pubkeys": [
-    "pubkey"
-  ]
-}'
-```
+#### Lists N oldest lido validators
 
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
+Path: `/v1/modules/{module_id}/validators/validator-exits-to-prepare/{operator_id}`
 
-### /validators
+Parameters:
 
-**GET** `/v1/modules/{module_id}/validators/validator-exits-to-prepare/{operator_id}`
+- `module_id` - staking module contact address or id;
+- `operator_id` - operator index;
 
-`module_id` - staking router module contact address or id;
-
-This endpoint will return N of oldest lido validators for earliest epoch when voluntary exit can be processed for specific node operator and specific `StakingRouter` module. Node operator will use this validators list for preparing pre-sign exit messages. API will find `used` keys of node operator and find for these public keys N oldest validators in `Validator` table. We consider active validators (`active_ongoing` status) or validators in `pending_initialized`, `pending_queued` statuses. Module tables state fetched from `EL` should be newer than `Validator` table state fetched from `CL`. Otherwise API will return error on request.
+This endpoint will return N of oldest lido validators for earliest epoch when voluntary exit can be processed for specific node operator and specific `StakingRouter` module. Node operator will use this validators list for preparing pre-sign exit messages. API will find `used` keys of node operator and find for these public keys N oldest validators. We consider active validators (`active_ongoing` status) or validators in `pending_initialized`, `pending_queued` statuses. `block_number` fetched from `EL` should be newer or equal to `slot` fetched from `CL`. Otherwise API will return error on request.
 
 Query:
 
@@ -439,6 +425,12 @@ Only one filter is available. If both parameters are provided, `percent` has a h
 
 - `percent` - Percent of validators to exit. Default value is 10.
 - `max_amount` - Number of validators to exit. If validators number less than amount, return all validators.
+
+Request Example:
+
+`curl http://localhost:3000/v1/modules/1/validators/validator-exits-to-prepare/1?percent=10`
+
+Response:
 
 ```typescript
 interface Validator {
@@ -487,21 +479,15 @@ class InternalServerErrorExceptionDisable implements HttpException {
 }
 ```
 
-Example:
+#### Returns unsigned exit messages for N oldest validators
 
-```
-curl -X 'GET' 'http://localhost:3000/v1/modules/1/validators/validator-exits-to-prepare/1?percent=10'
-```
+Path: `/v1/modules/{module_id}/validators/generate-unsigned-exit-messages/{operator_id}`
 
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
+Parameters:
 
-**GET** `/v1/modules/{module_id}/validators/generate-unsigned-exit-messages/{operator_id}`
+- `module_id` - staking router module contact address or id;
 
-`module_id` - staking router module contact address or id;
-
-Return unsigned exit messages for N oldest validators for earliest epoch when voluntary exit can be processed.
+Returns unsigned exit messages for N oldest validators for earliest epoch when voluntary exit can be processed.
 
 Query:
 
@@ -509,6 +495,12 @@ Only one filter is available. If both parameters are provided, `percent` has a h
 
 - `percent` - Percent of validators to exit. Default value is 10.
 - `max_amount` - Number of validators to exit. If validators number less than amount, return all validators.
+
+Request example:
+
+`curl http://localhost:3000/v1/modules/1/validators/generate-unsigned-exit-messages/1?percent=10`
+
+Response:
 
 ```typescript
 interface ExitPresignMessage {
@@ -557,25 +549,19 @@ class InternalServerErrorExceptionDisable implements HttpException {
 }
 ```
 
-Example:
+### Operators
 
-```
-curl -X 'GET' \
-  'http://localhost:3000/v1/modules/1/validators/generate-unsigned-exit-messages/1?percent=10' \
-  -H 'accept: application/json'
-```
+#### List all operators for all staking modules
 
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
+Path: `/v1/operators`
 
-### /operators
+Returns operators grouped by staking module
 
-**GET** `/v1/operators`
+Request example:
 
-List of operators grouped by staking router module
+`curl http://localhost:3000/v1/operators`
 
-Query
+Response:
 
 ```typescript
 interface Operator {
@@ -611,21 +597,21 @@ class TooEarlyResponse implements HttpException {
 }
 ```
 
-Example:
+#### List operators of staking module
 
-```
-curl -X 'GET' 'http://localhost:3000/v1/operators'
-```
+Path: `/v1/modules/{module_id}/operators/`
 
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
+Returns list of staking module operators.
 
-**GET** `/v1/modules/{module_id}/operators/`
+Query:
 
-`module_id` - staking router module contact address or id;
+- `module_id` - staking module contact address or id;
 
-List of SR module operators
+Request example:
+
+`curl http://localhost:3000/v1/modules/1/operators`
+
+Response:
 
 ```typescript
 class Response {
@@ -653,22 +639,22 @@ class NotFoundException implements HttpException {
 }
 ```
 
-Example:
+#### Find staking module operator
 
-```
-curl -X 'GET' 'http://localhost:3000/v1/modules/1/operators'
-```
+Path: `/v1/modules/{module_id}/operators/{operator_id}`
 
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
+Return staking module operator by operator index.
 
-**GET** `/v1/modules/{module_id}/operators/{operator_id}`
+Query:
 
-`module_id` - staking router module contact address or id;
-`operator_id` - operator index;
+- `module_id` - staking module contact address or id;
+- `operator_id` - operator index;
 
-List of SR module operators
+Request example:
+
+`curl http://localhost:3005/v1/modules/1/operators/1`
+
+Response:
 
 ```typescript
 class Response {
@@ -696,24 +682,26 @@ class NotFoundException implements HttpException {
 }
 ```
 
-Example:
+### Staking module operators and keys
 
-```
-curl -X 'GET' 'http://localhost:3005/v1/modules/1/operators/1'
-```
+#### List staking module operators and keys
 
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
+Path: `/v1/modules/{module_id}/operators/keys`
 
-**GET** `/v1/modules/{module_id}/operators/keys`
+Parameters:
 
-`module_id` - staking router module contact address or id;
+- `module_id` - staking module contact address or id;
 
 Query:
 
 - `used` - filter for used/unused keys. Possible values: true/false;
-- `operatorIndex` - filter for keys of operator with index `operatorIndex`;
+- `operatorIndex` - operator index;
+
+Request example:
+
+`curl 'http://localhost:3000/v1/modules/1/operators/1`
+
+Response:
 
 ```typescript
 class Response {
@@ -742,19 +730,17 @@ class NotFoundException implements HttpException {
 }
 ```
 
-Example:
+### KAPI status
 
-```
-curl -X 'GET' 'http://localhost:3005/v1/modules/1/operators/1' -H 'accept: application/json'
-```
+#### Return KAPI status
 
-:::warning
-If API returns 425 code, it means database is not ready for work
-:::
+Path: /v1/status
 
-### /status
+Request example:
 
-**GET** /v1/status
+`curl https://keys-api.infra-staging.org/v1/status`
+
+Response:
 
 ```typescript
 class Response {
