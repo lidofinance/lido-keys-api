@@ -2,7 +2,7 @@
 
 ### Keys of staking modules
 
-> :warning: If API returns 425 code, it means database is not ready for work
+> :warning: If API returns 425 code, it means database is not ready for work :warning:
 
 #### List keys
 
