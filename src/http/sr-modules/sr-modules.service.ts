@@ -2,7 +2,6 @@ import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { ELBlockSnapshot, SRModule } from '../common/entities';
-import { ModuleId } from '../common/entities/';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 
 @Injectable()

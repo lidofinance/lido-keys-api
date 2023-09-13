@@ -1,5 +1,5 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ELBlockSnapshot, Key, ModuleId, Operator, SRModule } from 'http/common/entities';
+import { ELBlockSnapshot, Key, Operator, SRModule } from 'http/common/entities';
 import { KeyQuery } from 'http/common/entities';
 import { ConfigService } from 'common/config';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';

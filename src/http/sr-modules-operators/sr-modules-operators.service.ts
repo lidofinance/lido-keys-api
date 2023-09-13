@@ -1,6 +1,5 @@
 import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '../../common/config';
-import { ModuleId, Operator, SRModule } from '../common/entities/';
+import { Operator, SRModule } from '../common/entities/';
 import {
   GroupedByModuleOperatorListResponse,
   SRModuleOperatorListResponse,

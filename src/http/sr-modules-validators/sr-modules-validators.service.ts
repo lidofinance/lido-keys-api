@@ -7,7 +7,7 @@ import {
   ExitPresignMessage,
   ValidatorsQuery,
 } from './entities';
-import { CLBlockSnapshot, ModuleId } from 'http/common/entities/';
+import { CLBlockSnapshot } from 'http/common/entities/';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { Validator } from '@lido-nestjs/validators-registry';
 import { ValidatorsService } from 'validators';
