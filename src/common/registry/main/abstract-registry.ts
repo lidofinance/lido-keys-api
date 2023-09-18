@@ -110,7 +110,6 @@ export abstract class AbstractRegistryService {
       // TODO: use feature flag
       const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
 
-      // add moduleAddress
       const operatorKeys = result.filter((key) => key);
 
       this.logger.log('Keys fetched', {
@@ -133,12 +132,10 @@ export abstract class AbstractRegistryService {
 
   /** returns the latest operators data from the db */
   public async getOperatorsFromStorage(moduleAddress: string) {
-    // TODO: find for module
     return await this.operatorStorage.findAll(moduleAddress);
   }
 
   /** returns all the keys from storage */
-  // the same
   public async getOperatorsKeysFromStorage(moduleAddress: string) {
     return await this.keyStorage.findAll(moduleAddress);
   }
@@ -189,7 +186,6 @@ export abstract class AbstractRegistryService {
           await entityManager
             .createQueryBuilder(RegistryOperator)
             .insert(operatorsChunk)
-            // TODO: module_address or moduleAddress ?
             .onConflict(['index', 'module_address'])
             .merge()
             .execute();

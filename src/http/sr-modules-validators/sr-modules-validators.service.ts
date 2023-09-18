@@ -110,6 +110,8 @@ export class SRModulesValidatorsService {
           percent: percent,
         });
 
+        // validator.exit_epoch === FAR_FUTURE_EPOCH
+
         if (!result) {
           // if result of this method is null it means Validators Registry is disabled
           throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
@@ -126,7 +128,9 @@ export class SRModulesValidatorsService {
 
         // We need EL meta always be actual
         if (elBlockSnapshot.blockNumber < clMeta.blockNumber) {
-          this.logger.warn('Last Execution Layer block number in our database older than last Consensus Layer');
+          this.logger.warn(
+            'The Execution Layer node is behind the Consensus Layer node, check that the EL node is synced and running.',
+          );
           // add metric or alert on breaking el > cl condition
           // TODO: what answer will be better here?
           // TODO: describe in doc

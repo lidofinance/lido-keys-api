@@ -11,7 +11,7 @@ import {
   RegistryOperatorStorageService,
 } from '../../';
 import { keys, newKey, newOperator, operators, operatorWithDefaultsRecords } from '../fixtures/db.fixture';
-import { clone, compareTestMeta, compareTestMetaKeys, compareTestMetaOperators } from '../testing.utils';
+import { clone, compareTestMeta, compareTestKeys, compareTestOperators } from '../testing.utils';
 import { registryServiceMock } from '../mock-utils';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
@@ -128,8 +128,8 @@ describe('Registry', () => {
       await registryService.update(address, 'latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(address, registryService, { operators: operatorsWithModuleAddress });
+      await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestOperators(address, registryService, { operators: operatorsWithModuleAddress });
     });
 
     test('looking for totalSigningKeys', async () => {
@@ -150,8 +150,8 @@ describe('Registry', () => {
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
 
-      await compareTestMetaKeys(address, registryService, { keys: newKeys });
-      await compareTestMetaOperators(address, registryService, {
+      await compareTestKeys(address, registryService, { keys: newKeys });
+      await compareTestOperators(address, registryService, {
         operators: newOperators,
       });
     });
@@ -171,8 +171,8 @@ describe('Registry', () => {
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
 
-      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(address, registryService, {
+      await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestOperators(address, registryService, {
         operators: newOperators,
       });
     });
@@ -195,8 +195,8 @@ describe('Registry', () => {
       await registryService.update(address, 'latest');
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(address, registryService, {
+      await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestOperators(address, registryService, {
         operators: newOperators,
       });
     });
@@ -216,8 +216,8 @@ describe('Registry', () => {
       await registryService.update(address, 'latest');
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestMetaKeys(address, registryService, { keys: keysWithModuleAddress });
-      await compareTestMetaOperators(address, registryService, {
+      await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestOperators(address, registryService, {
         operators: newOperators,
       });
     });
@@ -237,11 +237,11 @@ describe('Registry', () => {
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
 
-      await compareTestMetaOperators(address, registryService, {
+      await compareTestOperators(address, registryService, {
         operators: newOperators,
       });
       const firstOperatorKeys = await (
-        await registryService.getAllKeysFromStorage(address)
+        await registryService.getModuleKeysFromStorage(address)
       ).filter(({ operatorIndex }) => operatorIndex === 0);
       expect(firstOperatorKeys.length).toBe(newOperators[0].totalSigningKeys);
     });

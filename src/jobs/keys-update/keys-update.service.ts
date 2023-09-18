@@ -146,6 +146,8 @@ export class KeysUpdateService {
           const currNonce = await moduleInstance.getCurrentNonce(module.stakingModuleAddress, currElMeta.hash);
           const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
 
+          await this.srModulesStorage.upsert(module, currNonce);
+
           // now updating decision should be here moduleInstance.updateKeys
           // TODO: operators list also the same ?
           if (moduleInStorage && moduleInStorage.nonce === currNonce) {
@@ -156,7 +158,6 @@ export class KeysUpdateService {
             return;
           }
 
-          await this.srModulesStorage.upsert(module, currNonce);
           await moduleInstance.update(module.stakingModuleAddress, currElMeta.hash);
         }
       },
@@ -176,6 +177,7 @@ export class KeysUpdateService {
         const elMeta = await this.stakingRouterService.getElBlockSnapshot();
 
         if (!elMeta) {
+          this.logger.warn("Meta is null, maybe data hasn't been written in db yet");
           return;
         }
 
@@ -224,5 +226,9 @@ export class KeysUpdateService {
     const addresses = contractModules.map((module) => module.stakingModuleAddress);
 
     return !storageModules.every((module) => addresses.includes(module.stakingModuleAddress));
+
+    // const addressesSet = new Set(contractModules.map((module) => module.stakingModuleAddress));
+
+    // return ![...storageModules].every((module) => addressesSet.has(module.stakingModuleAddress));
   }
 }

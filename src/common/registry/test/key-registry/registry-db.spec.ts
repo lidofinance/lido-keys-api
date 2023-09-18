@@ -36,7 +36,6 @@ describe('Registry', () => {
 
   const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');
 
-  // TODO: why we fix here mainnet
   jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
 
   beforeEach(async () => {

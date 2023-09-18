@@ -5,7 +5,7 @@ import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/
 
 import { ValidatorRegistryModule, ValidatorRegistryService, RegistryStorageService } from '../../';
 
-import { compareTestMetaOperators } from '../testing.utils';
+import { compareTestOperators } from '../testing.utils';
 
 import { operators } from '../fixtures/connect.fixture';
 import { MikroORM } from '@mikro-orm/core';
@@ -71,7 +71,7 @@ describe('Registry', () => {
 
     await registryService.update(address, blockHash);
 
-    await compareTestMetaOperators(address, registryService, {
+    await compareTestOperators(address, registryService, {
       operators: operatorsWithModuleAddress,
     });
     const keys = await registryService.getOperatorsKeysFromStorage(address);

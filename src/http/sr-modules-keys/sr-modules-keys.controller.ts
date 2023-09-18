@@ -44,7 +44,7 @@ export class SRModulesKeysController {
     type: TooEarlyResponse,
   })
   @Get('keys')
-  async getGroupedByModuleKeys(@Query() filters: KeyQuery) {
+  getGroupedByModuleKeys(@Query() filters: KeyQuery) {
     return this.srModulesKeysService.getGroupedByModuleKeys(filters);
   }
 

@@ -62,8 +62,6 @@ const findMigrations = (mainFolder: string, npmPackageNames: string[]): Migratio
 
   // TODO think about Nest.js logger
   console.log(`Found [${migrations.length}] DB migration files.`);
-  // console.log(migrations);
-
   return migrations;
 };
 
