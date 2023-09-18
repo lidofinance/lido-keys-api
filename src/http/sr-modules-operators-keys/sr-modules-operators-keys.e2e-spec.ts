@@ -123,6 +123,12 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
         // Get all keys and operators without filters
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/operators/keys`);
 
+        const respByContractAddress = await request(app.getHttpServer()).get(
+          `/v1/modules/${dvtModule.stakingModuleAddress}/operators/keys`,
+        );
+
+        expect(resp.body).toEqual(respByContractAddress.body);
+
         expect(resp.status).toEqual(200);
         expect(resp.body.data.operators).toEqual(expect.arrayContaining([operatorOneDvt, operatorTwoDvt]));
         expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeys));
