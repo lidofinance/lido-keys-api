@@ -23,7 +23,6 @@ import { elMeta } from '../el-meta.fixture';
 import { keys, dvtModuleKeys, curatedModuleKeys } from '../key.fixtures';
 import { SRModulesKeysController } from './sr-modules-keys.controller';
 import { SRModulesKeysService } from './sr-modules-keys.service';
-// import { validationOpt } from '../../main';
 
 describe('SRModulesKeysController (e2e)', () => {
   let app: INestApplication;

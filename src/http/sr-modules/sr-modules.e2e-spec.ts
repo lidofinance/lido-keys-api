@@ -19,8 +19,6 @@ import { SRModulesService } from './sr-modules.service';
 
 import { elMeta } from '../el-meta.fixture';
 
-// import { validationOpt } from '../../main';
-
 describe('SRModulesController (e2e)', () => {
   let app: INestApplication;
 
