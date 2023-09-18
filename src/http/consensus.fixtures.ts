@@ -79,8 +79,10 @@ export const block = {
   },
 };
 
+const epoch = Math.floor(Number(block.data.message.slot) / 32);
+
 export const consensusMetaResp: CLBlockSnapshot = {
-  epoch: Math.floor(Number(block.data.message.slot) / 32),
+  epoch,
   slot: Number(block.data.message.slot),
   root: block.data.message.state_root,
   timestamp: Number(block.data.message.body.execution_payload.timestamp),
@@ -296,6 +298,13 @@ export const dvtOpOneResp10percent = [
   },
 ];
 
+export const dvtOpOneRespExitMessages10percent = [
+  {
+    validator_index: '1',
+    epoch: String(epoch),
+  },
+];
+
 export const dvtOpOneResp20percent = [
   {
     validatorIndex: 1,
@@ -304,6 +313,17 @@ export const dvtOpOneResp20percent = [
   {
     validatorIndex: 5,
     key: '0xb3b9f4e915f9fb9ef9c55da1815071f3f728cc6fc434fba2c11e08db5b5fa22b71d5975cec30ef97e7fc901e5a04ee5b',
+  },
+];
+
+export const dvtOpOneRespExitMessages20percent = [
+  {
+    validator_index: '1',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '5',
+    epoch: String(epoch),
   },
 ];
 
@@ -327,6 +347,29 @@ export const dvtOpOneResp5maxAmount = [
   {
     validatorIndex: 8,
     key: '0xe3e9f4e915f9fb9ef9c55da1815071f3f728cc6fc434fba2c11e08db5b5fa22b71d5975cec30ef97e7fc901e5a04ee5b',
+  },
+];
+
+export const dvtOpOneRespExitMessages5maxAmount = [
+  {
+    validator_index: '1',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '5',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '6',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '7',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '8',
+    epoch: String(epoch),
   },
 ];
 
@@ -370,6 +413,49 @@ export const dvtOpOneResp100percent = [
   {
     validatorIndex: 13,
     key: '0xd8e9f4e915f9fb9ef9c55da1815071f3f728cc6fc434fba2c11e08db5b5fa22b71d5975cec30ef97e7fc901e5a04ee5b',
+  },
+];
+
+export const dvtOpOneRespExitMessages100percent = [
+  {
+    validator_index: '1',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '5',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '6',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '7',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '8',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '9',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '10',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '11',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '12',
+    epoch: String(epoch),
+  },
+  {
+    validator_index: '13',
+    epoch: String(epoch),
   },
 ];
 

@@ -47,6 +47,10 @@ import {
   dvtOpOneResp10percent,
   dvtOpOneResp20percent,
   dvtOpOneResp5maxAmount,
+  dvtOpOneRespExitMessages100percent,
+  dvtOpOneRespExitMessages10percent,
+  dvtOpOneRespExitMessages20percent,
+  dvtOpOneRespExitMessages5maxAmount,
 } from '../consensus.fixtures';
 // import { validationOpt } from '../../main';
 
@@ -175,7 +179,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
         await cleanDB();
       });
 
-      it("should return 10% validators by default for 'dvt' module when 'operator' is set to 'one'", async () => {
+      it("Should return 10% validators by default for 'dvt' module when 'operator' is set to 'one'", async () => {
         await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
         // Get all keys and operators without filters
         const resp = await request(app.getHttpServer()).get(
@@ -190,7 +194,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
         });
       });
 
-      it("should return 100% validators for 'dvt' module when 'operator' is set to 'one'", async () => {
+      it("Should return 100% validators for 'dvt' module when 'operator' is set to 'one'", async () => {
         await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
         // Get all keys and operators without filters
         const resp = await request(app.getHttpServer())
@@ -205,7 +209,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
         });
       });
 
-      it("should prioritize 'percent' over 'max_amount' when both are provided in the query", async () => {
+      it("Should prioritize 'percent' over 'max_amount' when both are provided in the query", async () => {
         await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
         // Get all keys and operators without filters
         const resp = await request(app.getHttpServer())
@@ -220,7 +224,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
         });
       });
 
-      it('should return 5 validators when max_amount is 5', async () => {
+      it('Should return 5 validators when max_amount is 5', async () => {
         await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
         // Get all keys and operators without filters
         const resp = await request(app.getHttpServer())
@@ -326,7 +330,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
         );
       });
 
-      it("should return a 500 error if 'el_meta' is older than 'cl_meta'", async () => {
+      it("Should return a 500 error if 'el_meta' is older than 'cl_meta'", async () => {
         await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber - 1 });
         // Get all keys and operators without filters
         const resp = await request(app.getHttpServer()).get(
@@ -341,8 +345,8 @@ describe('SRModulesValidatorsController (e2e)', () => {
         });
       });
 
-      it('should return a 404 error if the requested module does not exist', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber - 1 });
+      it('Should return a 404 error if the requested module does not exist', async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
         // Get all keys and operators without filters
         const resp = await request(app.getHttpServer()).get(`/v1/modules/777/validators/validator-exits-to-prepare/1`);
 
@@ -354,7 +358,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
         });
       });
 
-      it("should return empty list if operator doesn't exist", async () => {
+      it("Should return empty list if operator doesn't exist", async () => {
         await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
         // Get all keys and operators without filters
         const resp = await request(app.getHttpServer()).get(
@@ -377,7 +381,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return too early response if there are no meta', async () => {
+      it('Should return too early response if there are no meta', async () => {
         await moduleStorageService.upsert(dvtModule, 1);
         const resp = await request(app.getHttpServer()).get(
           `/v1/modules/${dvtModule.id}/validators/validator-exits-to-prepare/1`,
@@ -389,6 +393,216 @@ describe('SRModulesValidatorsController (e2e)', () => {
   });
 
   describe('The /v1/modules/{:module_id}/validators/generate-unsigned-exit-messages/{:operator_id} request', () => {
+    describe('api ready to work', () => {
+      beforeAll(async () => {
+        // lets save keys
+        await keysStorageService.save(keys);
+        // lets save modules
+        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1);
+        await validatorsRegistry.update(slot);
+      });
+
+      afterAll(async () => {
+        await cleanDB();
+      });
+
+      it("Should return 10% validators by default for 'dvt' module when 'operator' is set to 'one'", async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer()).get(
+          `/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`,
+        );
+
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data.length).toEqual(1);
+        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages10percent));
+        expect(resp.body.meta).toEqual({
+          clBlockSnapshot: consensusMetaResp,
+        });
+      });
+
+      it("Should return 100% validators for 'dvt' module when 'operator' is set to 'one'", async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer())
+          .get(`/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`)
+          .query({ percent: 100 });
+
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data.length).toEqual(10);
+        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages100percent));
+        expect(resp.body.meta).toEqual({
+          clBlockSnapshot: consensusMetaResp,
+        });
+      });
+
+      it("Should prioritize 'percent' over 'max_amount' when both are provided in the query", async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer())
+          .get(`/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`)
+          .query({ percent: 20, max_amount: 5 });
+
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data.length).toEqual(2);
+        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages20percent));
+        expect(resp.body.meta).toEqual({
+          clBlockSnapshot: consensusMetaResp,
+        });
+      });
+
+      it('Should return 5 validators when max_amount is 5', async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer())
+          .get(`/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`)
+          .query({ max_amount: 5 });
+
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data.length).toEqual(5);
+        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages5maxAmount));
+        expect(resp.body.meta).toEqual({
+          clBlockSnapshot: consensusMetaResp,
+        });
+      });
+
+      it('Should return 100% validators when max_amount exceeds the total validator amount', async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer())
+          .get(`/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`)
+          .query({ max_amount: 100 });
+
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data.length).toEqual(10);
+        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages100percent));
+        expect(resp.body.meta).toEqual({
+          clBlockSnapshot: consensusMetaResp,
+        });
+      });
+
+      it('Should return 100% validators when percent exceeds the total validator amount', async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer())
+          .get(`/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`)
+          .query({ percent: 200 });
+
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data.length).toEqual(10);
+        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages100percent));
+        expect(resp.body.meta).toEqual({
+          clBlockSnapshot: consensusMetaResp,
+        });
+      });
+
+      it('Should return empty list of validators when percent equal to 0', async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer())
+          .get(`/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`)
+          .query({ percent: 0 });
+
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data.length).toEqual(0);
+        expect(resp.body.data).toEqual([]);
+        expect(resp.body.meta).toEqual({
+          clBlockSnapshot: consensusMetaResp,
+        });
+      });
+
+      it('Should return empty list of validators when max_amount equal to 0', async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer())
+          .get(`/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`)
+          .query({ percent: 0 });
+
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data.length).toEqual(0);
+        expect(resp.body.data).toEqual([]);
+        expect(resp.body.meta).toEqual({
+          clBlockSnapshot: consensusMetaResp,
+        });
+      });
+
+      it('Should return 400 error if percent or max_amount are negative', async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer())
+          .get(`/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`)
+          .query({ percent: -1, max_amount: -1 });
+
+        expect(resp.status).toEqual(400);
+        expect(resp.body.message).toEqual(
+          expect.arrayContaining(['max_amount must not be less than 0', 'percent must not be less than 0']),
+        );
+      });
+
+      it('Should return 400 error if percent or max_amount is not number', async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer())
+          .get(`/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`)
+          .query({ max_amount: 'dfsdfds', percent: 'sdsdfsf' });
+
+        expect(resp.status).toEqual(400);
+        expect(resp.body.message).toEqual(
+          expect.arrayContaining([
+            'max_amount must not be less than 0',
+            'max_amount must be an integer number',
+            'percent must not be less than 0',
+            'percent must be an integer number',
+          ]),
+        );
+      });
+
+      it("Should return a 500 error if 'el_meta' is older than 'cl_meta'", async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber - 1 });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer()).get(
+          `/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`,
+        );
+
+        expect(resp.status).toEqual(500);
+        expect(resp.body).toEqual({
+          error: 'Internal Server Error',
+          message: 'Last Execution Layer block number in our database older than last Consensus Layer',
+          statusCode: 500,
+        });
+      });
+
+      it('Should return a 404 error if the requested module does not exist', async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer()).get(
+          `/v1/modules/777/validators/generate-unsigned-exit-messages/1`,
+        );
+
+        expect(resp.status).toEqual(404);
+        expect(resp.body).toEqual({
+          error: 'Not Found',
+          message: 'Module with moduleId 777 is not supported',
+          statusCode: 404,
+        });
+      });
+
+      it("Should return empty list if operator doesn't exist", async () => {
+        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+        // Get all keys and operators without filters
+        const resp = await request(app.getHttpServer()).get(
+          `/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/777`,
+        );
+
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data).toEqual([]);
+        expect(resp.body.meta).toEqual({
+          clBlockSnapshot: consensusMetaResp,
+        });
+      });
+    });
+
     describe('too early response case', () => {
       beforeEach(async () => {
         await cleanDB();
@@ -397,7 +611,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return too early response if there are no meta', async () => {
+      it('Should return too early response if there are no meta', async () => {
         await moduleStorageService.upsert(dvtModule, 1);
         const resp = await request(app.getHttpServer()).get(
           `/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`,
