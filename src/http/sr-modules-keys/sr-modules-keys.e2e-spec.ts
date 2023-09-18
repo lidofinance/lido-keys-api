@@ -23,7 +23,6 @@ import { elMeta } from '../el-meta.fixture';
 import { keys, dvtModuleKeys, curatedModuleKeys } from '../key.fixtures';
 import { SRModulesKeysController } from './sr-modules-keys.controller';
 import { SRModulesKeysService } from './sr-modules-keys.service';
-// import { validationOpt } from '../../main';
 
 describe('SRModulesKeysController (e2e)', () => {
   let app: INestApplication;
@@ -277,7 +276,7 @@ describe('SRModulesKeysController (e2e)', () => {
           .send({ pubkeys });
 
         expect(resp.status).toEqual(200);
-        expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeys));
+        expect(resp.body.data.keys).toEqual(expect.arrayContaining([dvtModuleKeys[0], dvtModuleKeys[1]]));
         expect(resp.body.data.module).toEqual(dvtModuleResp);
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
@@ -289,7 +288,6 @@ describe('SRModulesKeysController (e2e)', () => {
       });
 
       it('Should return an empty list if no keys satisfy the request', async () => {
-        // Get all keys without filters
         const pubkeys = ['somerandomkey'];
 
         const resp = await request(app.getHttpServer())

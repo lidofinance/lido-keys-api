@@ -1,5 +1,5 @@
 import { Injectable, Inject, InternalServerErrorException, LoggerService } from '@nestjs/common';
-import { ConfigService } from 'common/config';
+import { ConfigService } from '../../common/config';
 import {
   ExitValidatorListResponse,
   ExitValidator,
@@ -7,18 +7,18 @@ import {
   ExitPresignMessage,
   ValidatorsQuery,
 } from './entities';
-import { CLBlockSnapshot } from 'http/common/entities/';
+import { CLBlockSnapshot } from '../common/entities/';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { Validator } from '@lido-nestjs/validators-registry';
-import { ValidatorsService } from 'validators';
-import { StakingRouterService } from 'staking-router-modules/staking-router.service';
+import { ValidatorsService } from '../../validators';
+import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 import { EntityManager } from '@mikro-orm/knex';
 import {
   DEFAULT_EXIT_PERCENT,
   VALIDATORS_STATUSES_FOR_EXIT,
   VALIDATORS_REGISTRY_DISABLED_ERROR,
-} from 'validators/validators.constants';
-import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions';
+} from '../../validators/validators.constants';
+import { httpExceptionTooEarlyResp } from '../common/entities/http-exceptions';
 import { IsolationLevel } from '@mikro-orm/core';
 
 @Injectable()

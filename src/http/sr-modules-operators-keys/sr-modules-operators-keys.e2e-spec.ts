@@ -25,7 +25,6 @@ import { dvtModule, curatedModule, dvtModuleResp } from '../module.fixture';
 import { elMeta } from '../el-meta.fixture';
 import { keys, dvtModuleKeys } from '../key.fixtures';
 import { operators, operatorOneDvt, operatorTwoDvt } from '../operator.fixtures';
-// import { validationOpt } from '../../main';
 
 describe('SRModulesOperatorsKeysController (e2e)', () => {
   let app: INestApplication;
