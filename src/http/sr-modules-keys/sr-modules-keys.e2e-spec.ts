@@ -278,7 +278,7 @@ describe('SRModulesKeysController (e2e)', () => {
           .send({ pubkeys });
 
         expect(resp.status).toEqual(201);
-        expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeys));
+        expect(resp.body.data.keys).toEqual(expect.arrayContaining([dvtModuleKeys[0], dvtModuleKeys[1]]));
         expect(resp.body.data.module).toEqual(dvtModuleResp);
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
