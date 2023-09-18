@@ -15,6 +15,41 @@
       "sourceMaps": true,
       "stopOnEntry": false,
       "console": "integratedTerminal",
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Jest e2e",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": [
+        "test:e2e",
+      ],
+      "cwd": "${workspaceFolder}/src",
+      "autoAttachChildProcesses": true,
+      "restart": true,
+      "sourceMaps": true,
+      "stopOnEntry": false,
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "Jest file",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/jest",
+      "args": [
+        "${fileBasenameNoExtension}",
+        "--runInBand",
+        "--watch",
+        "--coverage=false",
+        "--no-cache"
+      ],
+      "cwd": "${workspaceRoot}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "sourceMaps": true,
+      "windows": {
+          "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+      }
     }
   ]
 }
