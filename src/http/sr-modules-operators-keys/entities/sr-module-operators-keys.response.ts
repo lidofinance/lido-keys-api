@@ -1,20 +1,17 @@
-import { ApiProperty, getSchemaPath, ApiExtraModels } from '@nestjs/swagger';
-import { Key, Operator, SRModule } from '../../common/entities/';
-import { ELMeta } from '../../common/entities/';
+import { ApiProperty, ApiExtraModels } from '@nestjs/swagger';
+import { Key, Operator, SRModule, ELMeta } from '../../common/entities/';
 
 @ApiExtraModels(Operator)
 @ApiExtraModels(Key)
 export class SROperatorsKeysModule {
   @ApiProperty({
-    type: 'array',
-    items: { oneOf: [{ $ref: getSchemaPath(Operator) }] },
+    type: () => [Operator],
     description: 'Operators of staking router module',
   })
   operators!: Operator[];
 
   @ApiProperty({
-    type: 'array',
-    items: { oneOf: [{ $ref: getSchemaPath(Key) }] },
+    type: () => [Key],
     description: 'Keys of staking router module',
   })
   keys!: Key[];

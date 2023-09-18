@@ -23,7 +23,6 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { dvtModule, curatedModule } from '../module.fixture';
 import { elMeta } from '../el-meta.fixture';
 import { keys, keyForOperatorTwo, keyForOperatorTwoDuplicate } from '../key.fixtures';
-// import { validationOpt } from '../../main';
 
 describe('KeyController (e2e)', () => {
   let app: INestApplication;
