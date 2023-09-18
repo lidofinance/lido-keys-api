@@ -119,7 +119,6 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
       });
 
       it('should return all keys for request without filters', async () => {
-        // Get all keys and operators without filters
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/operators/keys`);
 
         expect(resp.status).toEqual(200);

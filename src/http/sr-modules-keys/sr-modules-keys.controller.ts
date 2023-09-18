@@ -1,4 +1,16 @@
-import { Controller, Get, Version, Param, Query, Body, Post, NotFoundException, HttpStatus, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Version,
+  Param,
+  Query,
+  Body,
+  Post,
+  NotFoundException,
+  HttpStatus,
+  Res,
+  HttpCode,
+} from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
@@ -86,6 +98,7 @@ export class SRModulesKeysController {
 
   @Version('1')
   @Post(':module_id/keys/find')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get list of found staking router module keys in db from pubkey list.' })
   @ApiResponse({
     status: 200,
