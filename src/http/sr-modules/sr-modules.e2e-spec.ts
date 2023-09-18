@@ -167,6 +167,17 @@ describe('SRModulesController (e2e)', () => {
         });
       });
 
+      it('should return module by contract address', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.stakingModuleAddress}`);
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data).toEqual(dvtModuleResp);
+        expect(resp.body.elBlockSnapshot).toEqual({
+          blockNumber: elMeta.number,
+          blockHash: elMeta.hash,
+          timestamp: elMeta.timestamp,
+        });
+      });
+
       it("should return 404 if module doesn't exist", async () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/77`);
         expect(resp.status).toEqual(404);
@@ -187,6 +198,7 @@ describe('SRModulesController (e2e)', () => {
         });
       });
     });
+
     describe('too early response case', () => {
       beforeEach(async () => {
         await cleanDB();

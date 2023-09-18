@@ -203,6 +203,12 @@ describe('SRModuleOperatorsController (e2e)', () => {
         // Get all operators without filters
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/operators`);
 
+        const respByContractAddress = await request(app.getHttpServer()).get(
+          `/v1/modules/${dvtModule.stakingModuleAddress}/operators`,
+        );
+
+        expect(resp.body).toEqual(respByContractAddress.body);
+
         expect(resp.status).toEqual(200);
         expect(resp.body.data.operators).toBeDefined();
         expect(resp.body.data.operators).toEqual(expect.arrayContaining([operatorOneDvt, operatorTwoDvt]));

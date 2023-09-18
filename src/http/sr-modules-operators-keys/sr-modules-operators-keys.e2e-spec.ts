@@ -121,6 +121,12 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
       it('should return all keys for request without filters', async () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/operators/keys`);
 
+        const respByContractAddress = await request(app.getHttpServer()).get(
+          `/v1/modules/${dvtModule.stakingModuleAddress}/operators/keys`,
+        );
+
+        expect(resp.body).toEqual(respByContractAddress.body);
+
         expect(resp.status).toEqual(200);
         expect(resp.body.data.operators).toEqual(expect.arrayContaining([operatorOneDvt, operatorTwoDvt]));
         expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeys));
@@ -197,7 +203,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
       it('should return empty keys and operators lists for non-existent operator', async () => {
         const resp = await request(app.getHttpServer())
           .get(`/v1/modules/${dvtModule.id}/operators/keys`)
-          .query({ operatorIndex: 777 });
+          .query({ operatorIndex: 0 });
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data.operators).toEqual([]);
