@@ -387,4 +387,24 @@ describe('SRModulesValidatorsController (e2e)', () => {
       });
     });
   });
+
+  describe('The /v1/modules/{:module_id}/validators/generate-unsigned-exit-messages/{:operator_id} request', () => {
+    describe('too early response case', () => {
+      beforeEach(async () => {
+        await cleanDB();
+      });
+      afterEach(async () => {
+        await cleanDB();
+      });
+
+      it('should return too early response if there are no meta', async () => {
+        await moduleStorageService.upsert(dvtModule, 1);
+        const resp = await request(app.getHttpServer()).get(
+          `/v1/modules/${dvtModule.id}/validators/generate-unsigned-exit-messages/1`,
+        );
+        expect(resp.status).toEqual(425);
+        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+      });
+    });
+  });
 });
