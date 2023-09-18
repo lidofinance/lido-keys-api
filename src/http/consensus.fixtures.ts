@@ -1,4 +1,3 @@
-import { ConsensusMeta, Validator, ValidatorStatus } from '@lido-nestjs/validators-registry';
 import { CLBlockSnapshot } from './common/entities';
 
 export const header = {
