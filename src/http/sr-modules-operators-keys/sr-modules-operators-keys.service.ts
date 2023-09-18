@@ -26,7 +26,11 @@ export class SRModulesOperatorsKeysService {
     const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
     const keysGenerator: AsyncGenerator<Key> = await moduleInstance.getKeysStream(module.stakingModuleAddress, filters);
-    const operatorsFilter = filters.operatorIndex ? { index: filters.operatorIndex } : {};
+    const operatorsFilter = {};
+
+    if (filters.operatorIndex != undefined) {
+      operatorsFilter['index'] = filters.operatorIndex;
+    }
     const operators: Operator[] = await moduleInstance.getOperators(module.stakingModuleAddress, operatorsFilter);
 
     return { operators, keysGenerator, module, meta: { elBlockSnapshot } };

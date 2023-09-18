@@ -199,7 +199,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
       it('should return empty keys and operators lists for non-existent operator', async () => {
         const resp = await request(app.getHttpServer())
           .get(`/v1/modules/${dvtModule.id}/operators/keys`)
-          .query({ operatorIndex: 777 });
+          .query({ operatorIndex: 0 });
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data.operators).toEqual([]);
