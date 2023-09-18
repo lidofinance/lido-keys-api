@@ -125,7 +125,6 @@ describe('SRModulesKeysController (e2e)', () => {
       });
 
       it('Should return all keys for request without filters', async () => {
-        // Get all keys and operators without filters
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/keys`);
 
         expect(resp.status).toEqual(200);
@@ -179,7 +178,7 @@ describe('SRModulesKeysController (e2e)', () => {
         });
       });
 
-      it('Should return unused keys and operator one', async () => {
+      it('Should return unused keys for operator one', async () => {
         const resp = await request(app.getHttpServer())
           .get(`/v1/modules/${dvtModule.id}/keys`)
           .query({ used: false, operatorIndex: 1 });
@@ -271,13 +270,13 @@ describe('SRModulesKeysController (e2e)', () => {
 
       it('Should return all keys that satisfy the request', async () => {
         const pubkeys = [dvtModuleKeys[0].key, dvtModuleKeys[1].key];
-        // Get all keys and operators without filters
+
         const resp = await request(app.getHttpServer())
           .post(`/v1/modules/${dvtModule.id}/keys/find`)
           .set('Content-Type', 'application/json')
           .send({ pubkeys });
 
-        expect(resp.status).toEqual(201);
+        expect(resp.status).toEqual(200);
         expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeys));
         expect(resp.body.data.module).toEqual(dvtModuleResp);
         expect(resp.body.meta).toEqual({
@@ -298,7 +297,7 @@ describe('SRModulesKeysController (e2e)', () => {
           .set('Content-Type', 'application/json')
           .send({ pubkeys });
 
-        expect(resp.status).toEqual(201);
+        expect(resp.status).toEqual(200);
         expect(resp.body.data.keys).toEqual([]);
         expect(resp.body.data.module).toEqual(dvtModuleResp);
         expect(resp.body.meta).toEqual({
@@ -362,7 +361,6 @@ describe('SRModulesKeysController (e2e)', () => {
       });
 
       it('Should return all keys for request without filters', async () => {
-        // Get all keys and operators without filters
         const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`);
 
         expect(resp.status).toEqual(200);
@@ -440,7 +438,7 @@ describe('SRModulesKeysController (e2e)', () => {
         });
       });
 
-      it('Should return empty keys and operators lists for non-existent operator', async () => {
+      it('Should return empty keys lists for non-existent operator', async () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ operatorIndex: 777 });
 
         expect(resp.status).toEqual(200);
