@@ -1,9 +1,9 @@
 import { Controller, Get, Version, Param, Query, NotFoundException, HttpStatus, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } from '@nestjs/swagger';
 import { SRModuleOperatorsKeysResponse } from './entities';
-import { ModuleId, KeyQuery } from 'http/common/entities/';
+import { ModuleId, KeyQuery } from '../common/entities/';
 import { SRModulesOperatorsKeysService } from './sr-modules-operators-keys.service';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';

@@ -178,6 +178,16 @@ describe('SRModulesController (e2e)', () => {
           statusCode: 404,
         });
       });
+
+      it('should return 400 error if module_id is not a contract address or number', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/sjdnsjkfsjkbfsjdfbdjfb`);
+        expect(resp.status).toEqual(400);
+        expect(resp.body).toEqual({
+          error: 'Bad Request',
+          message: ['module_id must be a contract address or numeric value'],
+          statusCode: 400,
+        });
+      });
     });
     describe('too early response case', () => {
       beforeEach(async () => {
@@ -192,16 +202,6 @@ describe('SRModulesController (e2e)', () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.id}`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-
-      it('should return 400 error if module_id is not a contract address or number', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/sjdnsjkfsjkbfsjdfbdjfb`);
-        expect(resp.status).toEqual(400);
-        expect(resp.body).toEqual({
-          error: 'Bad Request',
-          message: ['module_id must be a contract address or numeric value'],
-          statusCode: 400,
-        });
       });
     });
   });

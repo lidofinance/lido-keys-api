@@ -1,7 +1,7 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from 'common/config';
 import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse } from './entities';
-import { ModuleId, KeyQuery, Key, ELBlockSnapshot, SRModule } from 'http/common/entities';
+import { KeyQuery, Key, ELBlockSnapshot, SRModule } from 'http/common/entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 import { EntityManager } from '@mikro-orm/knex';
