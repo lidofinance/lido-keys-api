@@ -3,6 +3,7 @@ import { ModuleMetadata } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { RegistryStorageModule, RegistryStorageService } from '../../';
 import { MikroORM } from '@mikro-orm/core';
+import { mikroORMConfig } from '../testing.utils';
 
 describe('Sync module initializing', () => {
   const testModules = async (imports: ModuleMetadata['imports']) => {
@@ -17,26 +18,10 @@ describe('Sync module initializing', () => {
   };
 
   test('forRoot', async () => {
-    await testModules([
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
-      RegistryStorageModule.forRoot({}),
-    ]);
+    await testModules([MikroOrmModule.forRoot(mikroORMConfig), RegistryStorageModule.forRoot({})]);
   });
 
   test('forFeature', async () => {
-    await testModules([
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
-      RegistryStorageModule.forFeature(),
-    ]);
+    await testModules([MikroOrmModule.forRoot(mikroORMConfig), RegistryStorageModule.forFeature()]);
   });
 });

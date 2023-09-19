@@ -8,6 +8,7 @@ import { key } from '../fixtures/key.fixture';
 import { RegistryKeyStorageService, KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../../';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { mikroORMConfig } from '../testing.utils';
 
 describe('Key', () => {
   const CHAIN_ID = process.env.CHAIN_ID || 1;
@@ -23,12 +24,7 @@ describe('Key', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),
     ];

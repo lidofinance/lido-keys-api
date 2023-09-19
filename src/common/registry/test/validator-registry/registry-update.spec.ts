@@ -11,7 +11,14 @@ import {
   RegistryOperatorStorageService,
 } from '../../';
 import { keys, newKey, newOperator, operators, operatorWithDefaultsRecords } from '../fixtures/db.fixture';
-import { clone, compareTestMeta, compareTestKeys, compareTestOperators } from '../testing.utils';
+import {
+  clone,
+  compareTestMeta,
+  compareTestKeys,
+  compareTestOperators,
+  clearDb,
+  mikroORMConfig,
+} from '../testing.utils';
 import { registryServiceMock } from '../mock-utils';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
@@ -34,6 +41,7 @@ describe('Validator registry', () => {
 
   let keyStorageService: RegistryKeyStorageService;
   let operatorStorageService: RegistryOperatorStorageService;
+  let mikroOrm: MikroORM;
 
   let moduleRef: TestingModule;
 
@@ -43,12 +51,7 @@ describe('Validator registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature({ provider }),
     ];
@@ -60,7 +63,8 @@ describe('Validator registry', () => {
     keyStorageService = moduleRef.get(RegistryKeyStorageService);
     operatorStorageService = moduleRef.get(RegistryOperatorStorageService);
 
-    const generator = moduleRef.get(MikroORM).getSchemaGenerator();
+    mikroOrm = moduleRef.get(MikroORM);
+    const generator = mikroOrm.getSchemaGenerator();
     await generator.updateSchema();
 
     await keyStorageService.save(keysWithModuleAddress);
@@ -69,7 +73,7 @@ describe('Validator registry', () => {
 
   afterEach(async () => {
     mockCall.mockReset();
-    await registryService.clear();
+    await clearDb(mikroOrm);
     await registryStorageService.onModuleDestroy();
   });
 
@@ -268,6 +272,7 @@ describe('Empty registry', () => {
   const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');
   const CHAIN_ID = process.env.CHAIN_ID || 1;
   const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
+  let mikroOrm: MikroORM;
 
   const keysWithModuleAddress = keys.map((key) => {
     return { ...key, moduleAddress: address };
@@ -281,12 +286,7 @@ describe('Empty registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       MockLoggerModule.forRoot({
         log: jest.fn(),
         error: jest.fn(),
@@ -300,12 +300,13 @@ describe('Empty registry', () => {
     }).compile();
     registryService = moduleRef.get(ValidatorRegistryService);
     registryStorageService = moduleRef.get(RegistryStorageService);
-    const generator = moduleRef.get(MikroORM).getSchemaGenerator();
+    mikroOrm = moduleRef.get(MikroORM);
+    const generator = mikroOrm.getSchemaGenerator();
     await generator.updateSchema();
   });
   afterEach(async () => {
     mockCall.mockReset();
-    await registryService.clear();
+    await clearDb(mikroOrm);
     await registryStorageService.onModuleDestroy();
   });
   test('init on update', async () => {

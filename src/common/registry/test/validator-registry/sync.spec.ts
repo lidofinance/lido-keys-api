@@ -6,6 +6,7 @@ import { getDefaultProvider, Provider } from '@ethersproject/providers';
 import { Test } from '@nestjs/testing';
 import { ValidatorRegistryModule, ValidatorRegistryService, RegistryStorageService } from '../../';
 import { MikroORM } from '@mikro-orm/core';
+import { mikroORMConfig } from '../testing.utils';
 
 describe('Sync module initializing', () => {
   const provider = getDefaultProvider('mainnet');
@@ -26,12 +27,7 @@ describe('Sync module initializing', () => {
 
   test('forRoot', async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forRoot({
         provider,
@@ -42,12 +38,7 @@ describe('Sync module initializing', () => {
 
   test('forFeature', async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature({
         provider,
@@ -58,12 +49,7 @@ describe('Sync module initializing', () => {
 
   test('forFeature + global provider', async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature(),
     ];

@@ -193,13 +193,4 @@ export abstract class AbstractRegistryService {
       );
     });
   }
-
-  /** clears the db */
-  // can we get rid of it?
-  public async clear() {
-    await this.entityManager.transactional(async (entityManager) => {
-      entityManager.nativeDelete(RegistryKey, {});
-      entityManager.nativeDelete(RegistryOperator, {});
-    });
-  }
 }
