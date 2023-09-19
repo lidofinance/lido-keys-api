@@ -158,7 +158,7 @@ describe('SRModulesKeysController (e2e)', () => {
         expect(resp.body).toEqual({ error: 'Bad Request', message: ['used must be a boolean value'], statusCode: 400 });
       });
 
-      it('Should return used keys and operator one', async () => {
+      it('Should return used keys for operator one', async () => {
         const resp = await request(app.getHttpServer())
           .get(`/v1/modules/${dvtModule.id}/keys`)
           .query({ used: true, operatorIndex: 1 });
@@ -390,7 +390,7 @@ describe('SRModulesKeysController (e2e)', () => {
         expect(resp.body).toEqual({ error: 'Bad Request', message: ['used must be a boolean value'], statusCode: 400 });
       });
 
-      it('Should return used keys and operator one', async () => {
+      it('Should return used keys for operator one', async () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ used: true, operatorIndex: 1 });
 
         const expectedKeysDvt = dvtModuleKeys.filter((key) => key.used && key.operatorIndex == 1);
@@ -412,7 +412,7 @@ describe('SRModulesKeysController (e2e)', () => {
         });
       });
 
-      it('Should return unused keys and operator one', async () => {
+      it('Should return unused keys for operator one', async () => {
         const resp = await request(app.getHttpServer())
           .get(`/v1/modules/keys`)
           .query({ used: false, operatorIndex: 1 });
