@@ -163,7 +163,7 @@ export abstract class AbstractRegistryService {
     return keysOpIndex;
   }
 
-  /** saves all the data to the db */
+  /** saves all data to the db for staking module*/
   public async saveOperators(moduleAddress: string, currentOperators: RegistryOperator[]) {
     // save all data in a transaction
     await this.entityManager.transactional(async (entityManager) => {
@@ -195,6 +195,7 @@ export abstract class AbstractRegistryService {
   }
 
   /** clears the db */
+  // can we get rid of it?
   public async clear() {
     await this.entityManager.transactional(async (entityManager) => {
       entityManager.nativeDelete(RegistryKey, {});

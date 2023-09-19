@@ -86,7 +86,9 @@ describe('Registry', () => {
         operators: operatorsWithModuleAddress,
       });
 
-      await registryService.update(address, 'latest');
+      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
+      await registryService.update(address, blockHash);
       expect(saveRegistryMock).toBeCalledTimes(1);
       // 2 - number of operators
       expect(saveKeyRegistryMock).toBeCalledTimes(2);
@@ -106,9 +108,11 @@ describe('Registry', () => {
         operators: operatorsWithModuleAddress,
       });
 
+      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
       // update function doesn't make a decision about update no more
       // so here would happen update if list of keys was changed
-      await registryService.update(address, 'latest');
+      await registryService.update(address, blockHash);
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock).toBeCalledTimes(2);
     });
@@ -125,7 +129,9 @@ describe('Registry', () => {
         operators: operatorsWithModuleAddress,
       });
 
-      await registryService.update(address, 'latest');
+      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
+      await registryService.update(address, blockHash);
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
@@ -146,7 +152,9 @@ describe('Registry', () => {
         operators: newOperators,
       });
 
-      await registryService.update(address, 'latest');
+      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
+      await registryService.update(address, blockHash);
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
 
@@ -167,7 +175,9 @@ describe('Registry', () => {
         operators: newOperators,
       });
 
-      await registryService.update(address, 'latest');
+      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
+      await registryService.update(address, blockHash);
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
 
@@ -192,7 +202,9 @@ describe('Registry', () => {
         operators: newOperators,
       });
 
-      await registryService.update(address, 'latest');
+      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
+      await registryService.update(address, blockHash);
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
@@ -213,7 +225,9 @@ describe('Registry', () => {
         operators: newOperators,
       });
 
-      await registryService.update(address, 'latest');
+      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
+      await registryService.update(address, blockHash);
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
@@ -233,7 +247,9 @@ describe('Registry', () => {
         keys: keysWithModuleAddress,
         operators: newOperators,
       });
-      await registryService.update(address, 'latest');
+      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
+      await registryService.update(address, blockHash);
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
 
