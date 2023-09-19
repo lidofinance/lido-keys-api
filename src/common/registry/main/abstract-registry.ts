@@ -158,8 +158,8 @@ export abstract class AbstractRegistryService {
 
   /** contract */
   /** returns the meta data from the contract */
-  public async getNonceFromContract(moduleAddress: string, blockHash: string): Promise<number> {
-    const keysOpIndex = await this.metaFetch.fetchKeysOpIndex(moduleAddress, { blockTag: { blockHash } });
+  public async getStakingModuleNonce(moduleAddress: string, blockHash: string): Promise<number> {
+    const keysOpIndex = await this.metaFetch.fetchStakingModuleNonce(moduleAddress, { blockTag: { blockHash } });
     return keysOpIndex;
   }
 

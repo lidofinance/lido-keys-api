@@ -11,9 +11,9 @@ export class RegistryMetaFetchService {
     return this.contract.attach(moduleAddress);
   }
 
-  /** fetches keys operation index */
-  public async fetchKeysOpIndex(moduleAddress: string, overrides: CallOverrides = {}): Promise<number> {
-    const bigNumber = await this.getContract(moduleAddress).getKeysOpIndex(overrides as any);
+  /** Fetches nonce from staking module contract */
+  public async fetchStakingModuleNonce(moduleAddress: string, overrides: CallOverrides = {}): Promise<number> {
+    const bigNumber = await this.getContract(moduleAddress).getNonce(overrides as any);
     return bigNumber.toNumber();
   }
 }
