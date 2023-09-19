@@ -119,9 +119,6 @@ export class KeysUpdateService {
       this.logger.warn('Previous data is newer than current data', prevElMeta);
       return;
     }
-
-    // TODO: еcли была реорганизация, может ли currElMeta.number быть меньше и нам надо обновиться ?
-
     const storageModules = await this.srModulesStorage.findAll();
     // get staking router modules from SR contract
     const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });

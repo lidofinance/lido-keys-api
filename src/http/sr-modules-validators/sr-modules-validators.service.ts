@@ -131,11 +131,9 @@ export class SRModulesValidatorsService {
           this.logger.warn(
             'The Execution Layer node is behind the Consensus Layer node, check that the EL node is synced and running.',
           );
-          // add metric or alert on breaking el > cl condition
-          // TODO: what answer will be better here?
-          // TODO: describe in doc
+          // TODO: add metric or alert on breaking el > cl condition
           throw new InternalServerErrorException(
-            'Last Execution Layer block number in our database older than last Consensus Layer',
+            'The Execution Layer node is behind the Consensus Layer node, check that the EL node is synced and running.',
           );
         }
 

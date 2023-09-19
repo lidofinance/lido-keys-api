@@ -71,7 +71,6 @@ export class ValidatorsService {
       return { validators: nextValidatorsToExit, meta };
     }
 
-    // TODO: if provided percent is 0 what should we do ?
     // return default value in this case is unpredictable. so lets return []
     if (filter.percent == 0) {
       return { validators: [], meta };
@@ -90,7 +89,6 @@ export class ValidatorsService {
   }
 
   private getPercentOfValidators(validators: Validator[], percent: number): Validator[] {
-    // TODO: Does this ceil method suit to our purposes?
     const amount = (validators.length * percent) / 100;
     // or const roundedAmount = amount < 1 ? 1 : Math.round(amount);
     const ceilAmount = Math.ceil(amount);
