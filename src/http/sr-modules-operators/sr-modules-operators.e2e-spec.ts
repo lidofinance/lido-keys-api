@@ -29,8 +29,6 @@ import {
   operatorOneDvt,
   operatorTwoDvt,
 } from '../operator.fixtures';
-import { SRModule } from 'http/common/entities';
-// import { validationOpt } from '../../main';
 
 describe('SRModuleOperatorsController (e2e)', () => {
   let app: INestApplication;

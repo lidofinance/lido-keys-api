@@ -1,4 +1,5 @@
 import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
+import { BLOCK_HASH_LEN } from './constants';
 import { ElMetaRepository } from './el-meta.repository';
 
 @Entity({ customRepository: () => ElMetaRepository })
@@ -16,7 +17,7 @@ export class ElMetaEntity {
   blockNumber: number;
 
   @PrimaryKey()
-  @Property({ length: 66 })
+  @Property({ length: BLOCK_HASH_LEN })
   blockHash: string;
 
   @Property()

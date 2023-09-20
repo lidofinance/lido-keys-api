@@ -1,5 +1,5 @@
 import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
-import { DEPOSIT_SIGNATURE_LEN, MODULE_ADDRESS_LEN, KEY_LEN } from './constants';
+import { DEPOSIT_SIGNATURE_LEN, ADDRESS_LEN, KEY_LEN } from './constants';
 import { RegistryKeyRepository } from './key.repository';
 
 @Entity({ customRepository: () => RegistryKeyRepository })
@@ -32,6 +32,6 @@ export class RegistryKey {
   used!: boolean;
 
   @PrimaryKey()
-  @Property({ length: MODULE_ADDRESS_LEN })
+  @Property({ length: ADDRESS_LEN })
   moduleAddress!: string;
 }

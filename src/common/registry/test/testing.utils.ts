@@ -7,8 +7,7 @@ type Expected = {
   operators: RegistryOperator[];
 };
 
-// TODO: why meta? if we compare keys
-export const compareTestMetaKeys = async (
+export const compareTestKeys = async (
   address: string,
   registryService: AbstractRegistryService,
   { keys }: Pick<Expected, 'keys'>,
@@ -21,8 +20,7 @@ export const compareTestMetaKeys = async (
   expect(fetchedAndSorted).toEqual(sorted);
 };
 
-// TODO: why meta? if we compare operators
-export const compareTestMetaOperators = async (
+export const compareTestOperators = async (
   address: string,
   registryService: AbstractRegistryService,
   { operators }: Pick<Expected, 'operators'>,
@@ -35,13 +33,29 @@ export const compareTestMeta = async (
   registryService: AbstractRegistryService,
   { keys, operators }: Expected,
 ) => {
-  await compareTestMetaKeys(address, registryService, { keys });
-  await compareTestMetaOperators(address, registryService, { operators });
-};
-
-// TODO: maybe add address as argument
-export const fetchKeyMock = (fromIndex = 0, toIndex = 1, expected: Array<any>) => {
-  return expected.splice(fromIndex, toIndex);
+  await compareTestKeys(address, registryService, { keys });
+  await compareTestOperators(address, registryService, { operators });
 };
 
 export const clone = <T>(obj: T) => JSON.parse(JSON.stringify(obj)) as T;
+
+/** clears the db */
+// can we get rid of it?
+export const clearDb = async (orm) => {
+  const em = orm.em;
+
+  await em.transactional(async (em) => {
+    const keyRepository = em.getRepository(RegistryKey);
+    await keyRepository.nativeDelete({});
+
+    const operatorRepository = em.getRepository(RegistryKey);
+    await operatorRepository.nativeDelete({});
+  });
+};
+
+export const mikroORMConfig = {
+  dbName: ':memory:',
+  type: 'sqlite' as const,
+  allowGlobalContext: true,
+  entities: ['./**/*.entity.ts'],
+};

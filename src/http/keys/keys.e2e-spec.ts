@@ -369,7 +369,6 @@ describe('KeyController (e2e)', () => {
           .send({ pubkeys });
 
         expect(resp.status).toEqual(200);
-        // as pubkeys contains 3 elements and keyForOperatorTwo has a duplicate
         expect(resp.body.data.length).toEqual(0);
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {

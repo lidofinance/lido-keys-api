@@ -25,7 +25,7 @@ export class CuratedModuleService implements StakingModuleInterface {
   }
 
   public async getCurrentNonce(moduleAddress: string, blockHash: string): Promise<number> {
-    const nonce = await this.keyRegistryService.getNonceFromContract(moduleAddress, blockHash);
+    const nonce = await this.keyRegistryService.getStakingModuleNonce(moduleAddress, blockHash);
     return nonce;
   }
 

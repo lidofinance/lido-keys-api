@@ -43,7 +43,6 @@ describe('Operators', () => {
 
     mockCall.mockImplementation(async () => {
       const iface = new Interface(Registry__factory.abi);
-      // TODO: moduleAddress depends on chain id
       operator['moduleAddress'] = address;
       return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
     });

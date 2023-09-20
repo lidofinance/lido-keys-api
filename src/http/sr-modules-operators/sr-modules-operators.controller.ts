@@ -80,7 +80,6 @@ export class SRModulesOperatorsController {
     description: 'Staking router module_id or contract address.',
   })
   @Get('modules/:module_id/operators/:operator_id')
-  //TODO: here should be validation
   getModuleOperator(@Param() module: ModuleId, @Param() operator: OperatorId) {
     return this.srModulesOperators.getModuleOperator(module.module_id, operator.operator_id);
   }

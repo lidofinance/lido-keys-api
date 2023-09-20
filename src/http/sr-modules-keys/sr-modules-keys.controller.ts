@@ -1,10 +1,22 @@
-import { Controller, Get, Version, Param, Query, Body, Post, NotFoundException, HttpStatus, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Version,
+  Param,
+  Query,
+  Body,
+  Post,
+  NotFoundException,
+  HttpStatus,
+  Res,
+  HttpCode,
+} from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
-import { ModuleId, KeyQuery } from 'http/common/entities/';
-import { KeysFindBody } from 'http/common/entities/pubkeys';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { ModuleId, KeyQuery } from '../common/entities/';
+import { KeysFindBody } from '../common/entities/pubkeys';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
@@ -32,7 +44,7 @@ export class SRModulesKeysController {
     type: TooEarlyResponse,
   })
   @Get('keys')
-  async getGroupedByModuleKeys(@Query() filters: KeyQuery) {
+  getGroupedByModuleKeys(@Query() filters: KeyQuery) {
     return this.srModulesKeysService.getGroupedByModuleKeys(filters);
   }
 
@@ -86,6 +98,7 @@ export class SRModulesKeysController {
 
   @Version('1')
   @Post(':module_id/keys/find')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get list of found staking router module keys in db from pubkey list.' })
   @ApiResponse({
     status: 200,

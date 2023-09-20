@@ -31,7 +31,7 @@ export class Operator implements RegistryOperator {
   @ApiProperty({ description: 'Ethereum 1 address which receives stETH rewards for this operator' })
   rewardAddress: string;
 
-  @ApiProperty({ description: 'The maximum number of validators to stake for this operator' })
+  @ApiProperty({ description: 'The number of keys vetted by the DAO and that can be used for the deposit' })
   stakingLimit: number;
 
   @ApiProperty({ description: 'Amount of stopped validators' })
