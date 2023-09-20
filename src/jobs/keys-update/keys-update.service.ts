@@ -119,14 +119,9 @@ export class KeysUpdateService {
       this.logger.warn('Previous data is newer than current data', prevElMeta);
       return;
     }
-
-    // TODO: еcли была реорганизация, может ли currElMeta.number быть меньше и нам надо обновиться ?
-
     const storageModules = await this.srModulesStorage.findAll();
     // get staking router modules from SR contract
     const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
-
-    // TODO: is it correct that i use here modules from blockchain instead of storage
 
     if (this.modulesWereDeleted(modules, storageModules)) {
       const error = new Error('Modules list is wrong');
@@ -141,12 +136,12 @@ export class KeysUpdateService {
 
         for (const module of modules) {
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-
-          // At the moment lets think that for all modules it is possible to make decision base on nonce value
           const currNonce = await moduleInstance.getCurrentNonce(module.stakingModuleAddress, currElMeta.hash);
           const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
+          // update staking module information
+          await this.srModulesStorage.upsert(module, currNonce);
 
-          // now updating decision should be here moduleInstance.updateKeys
+          // now updating decision should be here moduleInstance.update
           // TODO: operators list also the same ?
           if (moduleInStorage && moduleInStorage.nonce === currNonce) {
             // nothing changed, don't need to update
@@ -156,7 +151,6 @@ export class KeysUpdateService {
             return;
           }
 
-          await this.srModulesStorage.upsert(module, currNonce);
           await moduleInstance.update(module.stakingModuleAddress, currElMeta.hash);
         }
       },
@@ -176,6 +170,7 @@ export class KeysUpdateService {
         const elMeta = await this.stakingRouterService.getElBlockSnapshot();
 
         if (!elMeta) {
+          this.logger.warn("Meta is null, maybe data hasn't been written in db yet");
           return;
         }
 

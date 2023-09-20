@@ -326,7 +326,8 @@ describe('SRModulesValidatorsController (e2e)', () => {
         expect(resp.status).toEqual(500);
         expect(resp.body).toEqual({
           error: 'Internal Server Error',
-          message: 'Last Execution Layer block number in our database older than last Consensus Layer',
+          message:
+            'The Execution Layer node is behind the Consensus Layer node, check that the EL node is synced and running.',
           statusCode: 500,
         });
       });
@@ -541,7 +542,8 @@ describe('SRModulesValidatorsController (e2e)', () => {
         expect(resp.status).toEqual(500);
         expect(resp.body).toEqual({
           error: 'Internal Server Error',
-          message: 'Last Execution Layer block number in our database older than last Consensus Layer',
+          message:
+            'The Execution Layer node is behind the Consensus Layer node, check that the EL node is synced and running.',
           statusCode: 500,
         });
       });
