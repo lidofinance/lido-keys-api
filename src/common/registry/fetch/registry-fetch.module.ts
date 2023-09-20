@@ -1,6 +1,10 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { LidoContractModule, RegistryContractModule } from '@lido-nestjs/contracts';
-import { RegistryFetchModuleSyncOptions, RegistryFetchModuleAsyncOptions } from './interfaces/module.interface';
+import {
+  RegistryFetchModuleSyncOptions,
+  RegistryFetchModuleAsyncOptions,
+  REGISTRY_FETCH_OPTIONS_TOKEN,
+} from './interfaces/module.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';
 import { RegistryMetaFetchService } from './meta.fetch';
 import { RegistryKeyFetchService } from './key.fetch';
@@ -52,6 +56,12 @@ export class RegistryFetchModule {
           provider: options?.provider,
         }),
       ],
+      providers: [
+        {
+          provide: REGISTRY_FETCH_OPTIONS_TOKEN,
+          useValue: options?.keysBatchSize ? { keysBatchSize: options.keysBatchSize } : {},
+        },
+      ],
       exports: [LidoContractModule, RegistryContractModule],
     };
   }
@@ -61,7 +71,6 @@ export class RegistryFetchModule {
       module: RegistryFetchModule,
       imports: [
         ...(options.imports || []),
-        // TODO: why we need it here?
         LidoContractModule.forFeatureAsync({
           async useFactory(...args) {
             const config = await options.useFactory(...args);
@@ -80,6 +89,13 @@ export class RegistryFetchModule {
           },
           inject: options.inject,
         }),
+      ],
+      providers: [
+        {
+          provide: REGISTRY_FETCH_OPTIONS_TOKEN,
+          useFactory: options.useFactory,
+          inject: options.inject,
+        },
       ],
       exports: [LidoContractModule, RegistryContractModule],
     };

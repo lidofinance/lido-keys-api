@@ -110,7 +110,6 @@ export abstract class AbstractRegistryService {
       // TODO: use feature flag
       const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
 
-      // add moduleAddress
       const operatorKeys = result.filter((key) => key);
 
       this.logger.log('Keys fetched', {
@@ -133,12 +132,10 @@ export abstract class AbstractRegistryService {
 
   /** returns the latest operators data from the db */
   public async getOperatorsFromStorage(moduleAddress: string) {
-    // TODO: find for module
     return await this.operatorStorage.findAll(moduleAddress);
   }
 
   /** returns all the keys from storage */
-  // the same
   public async getOperatorsKeysFromStorage(moduleAddress: string) {
     return await this.keyStorage.findAll(moduleAddress);
   }
@@ -161,12 +158,12 @@ export abstract class AbstractRegistryService {
 
   /** contract */
   /** returns the meta data from the contract */
-  public async getNonceFromContract(moduleAddress: string, blockHash: string): Promise<number> {
-    const keysOpIndex = await this.metaFetch.fetchKeysOpIndex(moduleAddress, { blockTag: { blockHash } });
+  public async getStakingModuleNonce(moduleAddress: string, blockHash: string): Promise<number> {
+    const keysOpIndex = await this.metaFetch.fetchStakingModuleNonce(moduleAddress, { blockTag: { blockHash } });
     return keysOpIndex;
   }
 
-  /** saves all the data to the db */
+  /** saves all data to the db for staking module*/
   public async saveOperators(moduleAddress: string, currentOperators: RegistryOperator[]) {
     // save all data in a transaction
     await this.entityManager.transactional(async (entityManager) => {
@@ -189,20 +186,11 @@ export abstract class AbstractRegistryService {
           await entityManager
             .createQueryBuilder(RegistryOperator)
             .insert(operatorsChunk)
-            // TODO: module_address or moduleAddress ?
             .onConflict(['index', 'module_address'])
             .merge()
             .execute();
         }),
       );
-    });
-  }
-
-  /** clears the db */
-  public async clear() {
-    await this.entityManager.transactional(async (entityManager) => {
-      entityManager.nativeDelete(RegistryKey, {});
-      entityManager.nativeDelete(RegistryOperator, {});
     });
   }
 }

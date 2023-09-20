@@ -52,7 +52,7 @@ describe('Operators', () => {
 
     expect(operators).toBeInstanceOf(Array);
     expect(operators.length).toBeGreaterThan(0);
-  });
+  }, 30_000);
 
   test('fetch multiply operators', async () => {
     const operators = await fetchService.fetch(address, 1, 3);

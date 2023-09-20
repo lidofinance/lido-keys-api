@@ -8,6 +8,7 @@ import { key } from '../fixtures/key.fixture';
 import { RegistryKeyStorageService, KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../../';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { mikroORMConfig } from '../testing.utils';
 
 describe('Key', () => {
   const CHAIN_ID = process.env.CHAIN_ID || 1;
@@ -23,12 +24,7 @@ describe('Key', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),
     ];
@@ -52,11 +48,11 @@ describe('Key', () => {
     expect(validatorService.getToIndex({ totalSigningKeys: expected } as any)).toBe(expected);
   });
 
-  test('getAllKeysFromStorage', async () => {
+  test('getModuleKeysFromStorage', async () => {
     const expected = [{ index: 0, operatorIndex: 0, moduleAddress: address, ...key, used: false }];
     jest.spyOn(keyStorage, 'findAll').mockImplementation(async () => expected);
 
-    await expect(validatorService.getAllKeysFromStorage(address)).resolves.toBe(expected);
+    await expect(validatorService.getModuleKeysFromStorage(address)).resolves.toBe(expected);
   });
 
   test('getUsedKeysFromStorage', async () => {

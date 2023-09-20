@@ -5,7 +5,7 @@ import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/
 
 import { ValidatorRegistryModule, ValidatorRegistryService, RegistryStorageService } from '../../';
 
-import { compareTestMetaOperators } from '../testing.utils';
+import { clearDb, compareTestOperators } from '../testing.utils';
 
 import { operators } from '../fixtures/connect.fixture';
 import { MikroORM } from '@mikro-orm/core';
@@ -16,6 +16,7 @@ dotenv.config();
 
 describe('Registry', () => {
   let registryService: ValidatorRegistryService;
+  let mikroOrm: MikroORM;
 
   let storageService: RegistryStorageService;
   if (!process.env.CHAIN_ID) {
@@ -56,12 +57,13 @@ describe('Registry', () => {
     registryService = moduleRef.get(ValidatorRegistryService);
     storageService = moduleRef.get(RegistryStorageService);
 
-    const generator = moduleRef.get(MikroORM).getSchemaGenerator();
+    mikroOrm = moduleRef.get(MikroORM);
+    const generator = mikroOrm.getSchemaGenerator();
     await generator.updateSchema();
   });
 
   afterEach(async () => {
-    await registryService.clear();
+    await clearDb(mikroOrm);
 
     await storageService.onModuleDestroy();
   });
@@ -71,10 +73,10 @@ describe('Registry', () => {
 
     await registryService.update(address, blockHash);
 
-    await compareTestMetaOperators(address, registryService, {
+    await compareTestOperators(address, registryService, {
       operators: operatorsWithModuleAddress,
     });
     const keys = await registryService.getOperatorsKeysFromStorage(address);
     expect(keys).toHaveLength(15283);
-  }, 200_000);
+  }, 400_000);
 });

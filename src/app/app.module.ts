@@ -11,12 +11,12 @@ import { ConsensusProviderModule } from '../common/consensus-provider';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { JobsModule } from '../jobs';
 import { ScheduleModule } from '@nestjs/schedule';
-import config from 'mikro-orm.config';
+import config from '../mikro-orm.config';
 import { ValidatorsModule } from '../validators';
 import { LoggerModule } from '@lido-nestjs/logger';
 import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
-import { KeyRegistryModule } from 'common/registry';
-import { StakingRouterModule } from 'staking-router-modules';
+import { KeyRegistryModule } from '../common/registry';
+import { StakingRouterModule } from '../staking-router-modules';
 
 @Module({
   imports: [
@@ -46,9 +46,9 @@ import { StakingRouterModule } from 'staking-router-modules';
     }),
     ScheduleModule.forRoot(),
     KeyRegistryModule.forRootAsync({
-      inject: [SimpleFallbackJsonRpcBatchProvider],
-      async useFactory(provider) {
-        return { provider };
+      inject: [SimpleFallbackJsonRpcBatchProvider, ConfigService],
+      async useFactory(provider, configService) {
+        return { provider, keysBatchSize: configService?.get('KEYS_FETCH_BATCH_SIZE') };
       },
     }),
     StakingRouterModule,

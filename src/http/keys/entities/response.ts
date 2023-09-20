@@ -1,13 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { KeyWithModuleAddress } from './key-with-module-address';
-import { ELMeta } from '../../common/entities';
+import { ELMeta, Key } from '../../common/entities';
 
 export class KeyListResponse {
   @ApiProperty({
-    type: () => [KeyWithModuleAddress],
+    type: () => [Key],
     description: 'List of keys with general fields for all modules and SR module address',
   })
-  data!: KeyWithModuleAddress[];
+  data!: Key[];
 
   @ApiProperty({
     type: () => ELMeta,

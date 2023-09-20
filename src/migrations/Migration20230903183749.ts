@@ -38,9 +38,9 @@ export class Migration20230903183749 extends Migration {
   }
 
   async down(): Promise<void> {
-    // TODO: I think it will not work for keys of different modules with the same index and operatorIndex
+    // it will not work for keys of different modules with the same index and operatorIndex
     // also we will get  column "module_address" of relation "registry_key" contains null values during up of this transaction
-    // it the reason why I add here truncate
+    // it is the reason why truncate was added here
     this.addSql('TRUNCATE registry_key');
     this.addSql('TRUNCATE registry_operator');
 

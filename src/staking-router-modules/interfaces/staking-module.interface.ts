@@ -30,24 +30,20 @@ export interface StakingModule {
   active: boolean;
 }
 
-// TODO: in future Keys = CuratedKey (RegistryKey) | CommunityKey
-export type KeyEntity = RegistryKey;
-export type OperatorEntity = RegistryOperator;
-
 export interface StakingModuleInterface {
   update(moduleAddress: string, blockHash: string): Promise<void>;
 
-  getKeysStream(moduleAddress: string, filters: KeysFilter): AsyncGenerator<KeyEntity>;
+  getKeysStream(moduleAddress: string, filters: KeysFilter): AsyncGenerator<RegistryKey>;
 
-  getKeys(moduleAddress: string, filters: KeysFilter): Promise<KeyEntity[]>;
+  getKeys(moduleAddress: string, filters: KeysFilter): Promise<RegistryKey[]>;
 
-  getKeysByPubKeys(moduleAddress: string, pubKeys: string[]): Promise<KeyEntity[]>;
+  getKeysByPubKeys(moduleAddress: string, pubKeys: string[]): Promise<RegistryKey[]>;
 
-  getKeysByPubkey(moduleAddress: string, pubkey: string): Promise<KeyEntity[]>;
+  getKeysByPubkey(moduleAddress: string, pubkey: string): Promise<RegistryKey[]>;
 
-  getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<OperatorEntity[]>;
+  getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<RegistryOperator[]>;
 
-  getOperator(moduleAddress: string, index: number): Promise<OperatorEntity | null>;
+  getOperator(moduleAddress: string, index: number): Promise<RegistryOperator | null>;
 
   getCurrentNonce(moduleAddress: string, blockHash: string): Promise<number>;
 }

@@ -1,4 +1,4 @@
-import { STAKING_MODULE_TYPE } from 'staking-router-modules/constants';
+import { STAKING_MODULE_TYPE } from '../staking-router-modules/constants';
 
 export const curatedModule = {
   id: 1,
