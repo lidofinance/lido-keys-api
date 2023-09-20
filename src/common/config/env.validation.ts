@@ -11,7 +11,6 @@ import {
   IsBoolean,
   ValidateIf,
   IsNotEmpty,
-  MIN,
   IsPositive,
 } from 'class-validator';
 import { Environment, LogLevel, LogFormat } from './interfaces';

@@ -136,8 +136,6 @@ export class KeysUpdateService {
 
         for (const module of modules) {
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-
-          // At the moment, let's assume that it is possible to make decisions for all modules based on the nonce value
           const currNonce = await moduleInstance.getCurrentNonce(module.stakingModuleAddress, currElMeta.hash);
           const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
           // update staking module information

@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { MikroORM } from '@mikro-orm';
-import { MikroORM } from '@mikro-orm/core';
 import { RegistryKey, RegistryOperator } from '../';
 import { AbstractRegistryService } from '../main/abstract-registry';
 
@@ -44,7 +42,6 @@ export const clone = <T>(obj: T) => JSON.parse(JSON.stringify(obj)) as T;
 /** clears the db */
 // can we get rid of it?
 export const clearDb = async (orm) => {
-  // const orm = await MikroORM.init(mikroORMConfig);
   const em = orm.em;
 
   await em.transactional(async (em) => {

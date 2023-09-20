@@ -110,8 +110,6 @@ export class SRModulesValidatorsService {
           percent: percent,
         });
 
-        // validator.exit_epoch === FAR_FUTURE_EPOCH
-
         if (!result) {
           // if result of this method is null it means Validators Registry is disabled
           throw new InternalServerErrorException(VALIDATORS_REGISTRY_DISABLED_ERROR);
