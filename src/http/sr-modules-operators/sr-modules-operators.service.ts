@@ -1,6 +1,5 @@
 import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '../../common/config';
-import { ModuleId, Operator, SRModule } from '../common/entities/';
+import { Operator, SRModule } from '../common/entities/';
 import {
   GroupedByModuleOperatorListResponse,
   SRModuleOperatorListResponse,
@@ -15,7 +14,6 @@ import { IsolationLevel } from '@mikro-orm/core';
 export class SRModulesOperatorsService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected configService: ConfigService,
     protected stakingRouterService: StakingRouterService,
     protected readonly entityManager: EntityManager,
   ) {}
@@ -41,14 +39,13 @@ export class SRModulesOperatorsService {
     return { data: operatorsByModules, meta: { elBlockSnapshot } };
   }
 
-  public async getByModule(moduleId: ModuleId): Promise<SRModuleOperatorListResponse> {
+  public async getByModule(moduleId: string | number): Promise<SRModuleOperatorListResponse> {
     const { operators, module, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
         const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
 
         const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
-        //  /v1/operators return these common fields for all modules
         const operators: Operator[] = await moduleInstance.getOperators(module.stakingModuleAddress, {});
 
         return { operators, module, elBlockSnapshot };
@@ -64,7 +61,7 @@ export class SRModulesOperatorsService {
     };
   }
 
-  public async getModuleOperator(moduleId: ModuleId, operatorIndex: number): Promise<SRModuleOperatorResponse> {
+  public async getModuleOperator(moduleId: string | number, operatorIndex: number): Promise<SRModuleOperatorResponse> {
     const { operator, module, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
         const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);

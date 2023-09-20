@@ -19,8 +19,6 @@ export class StatusService {
 
   public async get(): Promise<Status> {
     const chainId = this.configService.get('CHAIN_ID');
-
-    // TODO: maybe move this code to sr-modules-service
     const { elMeta, clMeta } = await this.entityManager.transactional(
       async () => {
         const elMeta = await this.stakingRouterService.getElBlockSnapshot();

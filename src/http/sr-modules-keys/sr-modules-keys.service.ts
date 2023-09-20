@@ -1,9 +1,8 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ConfigService } from 'common/config';
 import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse } from './entities';
-import { ModuleId, KeyQuery, Key, ELBlockSnapshot, SRModule } from 'http/common/entities';
+import { KeyQuery, Key, ELBlockSnapshot, SRModule } from '../common/entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { StakingRouterService } from 'staking-router-modules/staking-router.service';
+import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
 
@@ -11,7 +10,6 @@ import { IsolationLevel } from '@mikro-orm/core';
 export class SRModulesKeysService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected configService: ConfigService,
     protected stakingRouterService: StakingRouterService,
     protected readonly entityManager: EntityManager,
   ) {}
@@ -37,7 +35,7 @@ export class SRModulesKeysService {
   }
 
   async getModuleKeys(
-    moduleId: ModuleId,
+    moduleId: string | number,
     filters: KeyQuery,
   ): Promise<{
     keysGenerator: AsyncGenerator<Key>;
@@ -52,7 +50,7 @@ export class SRModulesKeysService {
     return { keysGenerator, module, meta: { elBlockSnapshot } };
   }
 
-  async getModuleKeysByPubKeys(moduleId: ModuleId, pubKeys: string[]): Promise<SRModuleKeyListResponse> {
+  async getModuleKeysByPubKeys(moduleId: string | number, pubKeys: string[]): Promise<SRModuleKeyListResponse> {
     const { keys, module, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
         const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);

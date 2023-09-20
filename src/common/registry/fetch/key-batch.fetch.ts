@@ -3,13 +3,15 @@ import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { KeyBatchRecord, RegistryKey } from './interfaces/key.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';
-import { KEYS_LENGTH, SIGNATURE_LENGTH } from './key-batch.constants';
+import { KEYS_BATCH_SIZE, KEYS_LENGTH, SIGNATURE_LENGTH } from './key-batch.constants';
+import { RegistryFetchOptions, REGISTRY_FETCH_OPTIONS_TOKEN } from './interfaces/module.interface';
 
 @Injectable()
 export class RegistryKeyBatchFetchService {
   constructor(
     protected readonly operatorsService: RegistryOperatorFetchService,
     @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
+    @Inject(REGISTRY_FETCH_OPTIONS_TOKEN) private options: RegistryFetchOptions,
   ) {}
 
   private getContract(moduleAddress: string) {
@@ -107,8 +109,7 @@ export class RegistryKeyBatchFetchService {
     fromIndex: number,
     totalAmount: number,
   ) {
-    // TODO: move to constants/config cause this limit depends on eth node
-    const batchSize = 1100;
+    const batchSize = this.options.keysBatchSize || KEYS_BATCH_SIZE;
 
     const numberOfBatches = Math.ceil(totalAmount / batchSize);
     const promises: Promise<RegistryKey[]>[] = [];

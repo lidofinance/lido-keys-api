@@ -2,7 +2,6 @@ import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { ELBlockSnapshot, SRModule } from '../common/entities';
-import { ModuleId } from '../common/entities/';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 
 @Injectable()
@@ -23,7 +22,7 @@ export class SRModulesService {
     };
   }
 
-  async getModule(moduleId: ModuleId): Promise<SRModuleResponse> {
+  async getModule(moduleId: string | number): Promise<SRModuleResponse> {
     const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
 
     return {

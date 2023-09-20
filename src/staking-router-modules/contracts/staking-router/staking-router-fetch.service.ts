@@ -54,8 +54,7 @@ export class StakingRouterFetchService {
           blockTag,
         )) as STAKING_MODULE_TYPE;
 
-        // TODO: reconsider way of checking this module type without
-        // TODO: how to handle this case?
+        // TODO: reconsider way of checking this module type
         if (!Object.values(STAKING_MODULE_TYPE).includes(stakingModuleType)) {
           this.logger.error(new Error(`Staking Module type ${STAKING_MODULE_TYPE} is unknown`));
           process.exit(1);

@@ -36,7 +36,7 @@ describe('Meta', () => {
         const iface = new Interface(Registry__factory.abi);
         return iface.encodeFunctionResult('getKeysOpIndex', [expected]);
       });
-      const result = await fetchService.fetchKeysOpIndex(address);
+      const result = await fetchService.fetchStakingModuleNonce(address);
 
       expect(result).toEqual(expected);
       expect(mockCall).toBeCalledTimes(1);
