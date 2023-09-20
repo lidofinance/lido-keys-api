@@ -1,10 +1,7 @@
 import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
 import { CHAINS } from '@lido-nestjs/constants';
 import { Injectable, Inject } from '@nestjs/common';
-import { Trace } from '../decorators/trace';
 import { LOGGER_PROVIDER, LoggerService } from '../logger';
-
-const TRACE_TIMEOUT = 30 * 1000;
 
 @Injectable()
 export class ExecutionProviderService {
@@ -34,7 +31,6 @@ export class ExecutionProviderService {
    *
    * Returns block hash
    */
-  @Trace(TRACE_TIMEOUT)
   public async getBlockHash(blockHashOrBlockTag: number | string): Promise<string> {
     const block = await this.provider.getBlock(blockHashOrBlockTag);
     return block.hash;
@@ -44,7 +40,6 @@ export class ExecutionProviderService {
    *
    * Returns block
    */
-  @Trace(TRACE_TIMEOUT)
   public async getBlock(
     blockHashOrBlockTag: number | string,
   ): Promise<{ number: number; hash: string; timestamp: number }> {
