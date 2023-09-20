@@ -126,7 +126,6 @@ export class KeysUpdateService {
     const storageModules = await this.srModulesStorage.findAll();
     // get staking router modules from SR contract
     const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
-
     // TODO: is it correct that i use here modules from blockchain instead of storage
 
     if (this.modulesWereDeleted(modules, storageModules)) {
@@ -139,13 +138,11 @@ export class KeysUpdateService {
       async () => {
         // Update el meta in db
         await this.elMetaStorage.update(currElMeta);
-
-        for (const module of modules) {
-          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-
+        for (const srModule of modules) {
+          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(srModule.type);
           // At the moment lets think that for all modules it is possible to make decision base on nonce value
-          const currNonce = await moduleInstance.getCurrentNonce(module.stakingModuleAddress, currElMeta.hash);
-          const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
+          const currNonce = await moduleInstance.getCurrentNonce(srModule.stakingModuleAddress, currElMeta.hash);
+          const moduleInStorage = await this.srModulesStorage.findOneById(srModule.id);
 
           // now updating decision should be here moduleInstance.updateKeys
           // TODO: operators list also the same ?
@@ -154,11 +151,11 @@ export class KeysUpdateService {
             this.logger.log(
               `Nonce was not changed for staking module ${moduleInStorage.id}. Don't need to update keys and operators in database`,
             );
-            return;
+            continue;
           }
 
-          await this.srModulesStorage.upsert(module, currNonce);
-          await moduleInstance.update(module.stakingModuleAddress, currElMeta.hash);
+          await this.srModulesStorage.upsert(srModule, currNonce);
+          await moduleInstance.update(srModule.stakingModuleAddress, currElMeta.hash);
         }
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },

@@ -16,10 +16,11 @@ import { AppModule } from './app-testing.module';
 
 jest.setTimeout(100_000);
 
-describe('Simple DVT', () => {
+describe('Simple DVT deploy', () => {
   let sdk: chronix.SDK;
   let session: chronix.HardhatSession;
-  let initialState: chronix.StoryResult<'simple-dvt-mock/initial-state'>;
+  let deployState: chronix.StoryResult<'simple-dvt/deploy'>;
+  let reduceNOState: chronix.StoryResult<'simple-dvt/reduce-no'>;
 
   let moduleRef: TestingModule;
 
@@ -30,13 +31,15 @@ describe('Simple DVT', () => {
   let stakingRouterService: StakingRouterService;
   let keysUpdateService: KeysUpdateService;
 
-  let prevBlockNumber = 0;
+  // let prevBlockNumber = 0;
 
   beforeAll(async () => {
     sdk = await createSDK('http://localhost:8001');
 
-    session = await sdk.env.hardhat({});
-    initialState = await session.story('simple-dvt-mock/initial-state', {});
+    session = await sdk.env.hardhat({
+      fork: process.env.PROVIDERS_URLS,
+      chainId: 1,
+    });
 
     moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(ExecutionProviderService)
@@ -64,7 +67,7 @@ describe('Simple DVT', () => {
       .overrideProvider(ConfigService)
       .useValue({
         get(path) {
-          const conf = { LIDO_LOCATOR_ADDRESS: initialState.locatorAddress };
+          const conf = { LIDO_LOCATOR_ADDRESS: '0xC1d0b3DE6792Bf6b4b37EccdcC24e45978Cfd2Eb' };
           return conf[path];
         },
       })
@@ -89,52 +92,48 @@ describe('Simple DVT', () => {
     await moduleRef.close();
   });
 
-  test('initial state created', async () => {
+  test('reduce NO keys', async () => {
+    reduceNOState = await session.story('simple-dvt/reduce-no', {});
     expect((await session.provider.getBlock('latest')).number).toBeGreaterThan(0);
-    expect(initialState).toBeDefined();
-    expect(initialState.locatorAddress).toBeDefined();
+    expect(reduceNOState).toBeDefined();
+    expect(reduceNOState.nodeOperatorsCount).toBe(2);
   });
 
-  test('update keys api keys', async () => {
+  test('fetch initial keys', async () => {
     await keysUpdateService.update();
 
-    const currentBlockNumber = (await session.provider.getBlock('latest')).number;
-    const elSnapshot = await stakingRouterService.getElBlockSnapshot();
-
-    expect(elSnapshot).toBeDefined();
-    expect(elSnapshot?.blockNumber).toBe(currentBlockNumber);
-    prevBlockNumber = currentBlockNumber;
-
     const srModules = await stakingRouterService.getStakingModules();
+    expect(srModules).toHaveLength(1);
 
-    expect(srModules).toHaveLength(2);
+    const keysTotal = Object.values(reduceNOState.operators)
+      .map((op) => op.totalAddedValidators)
+      .reduce((sum, kCount) => (sum += kCount), 0);
 
-    const initialModules = [initialState.curatedModuleState, initialState.simpleDVTModuleState];
-    for (const [index, srModule] of srModules.entries()) {
+    for (const [, srModule] of srModules.entries()) {
       const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(srModule.type);
       const keys = await moduleInstance.getKeys(srModule.stakingModuleAddress, {});
       const operators = await moduleInstance.getOperators(srModule.stakingModuleAddress);
 
-      const onchainModuleState = initialModules[index];
-
-      expect(operators).toHaveLength(onchainModuleState.nodeOperatorsCount);
-      expect(keys).toHaveLength(onchainModuleState.keysCount * onchainModuleState.nodeOperatorsCount);
+      expect(operators).toHaveLength(2);
+      expect(keys).toHaveLength(keysTotal);
     }
   });
 
-  test('meta is updating correctly', async () => {
-    // mine new block
-    await session.provider.evm_mine();
-    const currentBlockNumber = (await session.provider.getBlock('latest')).number;
-    // check if the block has been changed
-    expect(prevBlockNumber).toBeLessThan(currentBlockNumber);
+  test('deploy simple dvt', async () => {
+    deployState = await session.story('simple-dvt/deploy', {});
+    expect((await session.provider.getBlock('latest')).number).toBeGreaterThan(0);
+    expect(deployState).toBeDefined();
+    expect(deployState.isAppReady).toBeTruthy();
+    expect(deployState.lidoLocatorAddress).toBeDefined();
+    expect(deployState.stakingRouterData.stakingModuleIds).toHaveLength(2);
+  });
 
+  test('fetch dvt operators', async () => {
     await keysUpdateService.update();
 
-    const elSnapshot = await stakingRouterService.getElBlockSnapshot();
-
-    expect(elSnapshot).toBeDefined();
-    expect(elSnapshot?.blockNumber).toBe(currentBlockNumber);
-    prevBlockNumber = currentBlockNumber;
+    const srModules = await stakingRouterService.getStakingModules();
+    expect(srModules).toHaveLength(2);
   });
+
+  test.todo('add keys');
 });
