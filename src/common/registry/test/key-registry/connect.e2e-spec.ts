@@ -2,11 +2,8 @@ import { Test } from '@nestjs/testing';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/execution';
-
 import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../../';
-
 import { clearDb, compareTestOperators, mikroORMConfig } from '../testing.utils';
-
 import { operators } from '../fixtures/connect.fixture';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';

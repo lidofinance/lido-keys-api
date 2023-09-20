@@ -102,25 +102,6 @@ describe('Registry', () => {
       });
     });
 
-    // this test now the same as same data. as both of them were based on keyOpIndex. now we check it on the level above
-    test('new key without keysOpIndex updating', async () => {
-      const saveRegistryMock = jest.spyOn(registryService, 'saveOperators');
-      const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
-
-      registryServiceMock(moduleRef, provider, {
-        keys: [...keysWithModuleAddress, { ...newKey, moduleAddress: address }],
-        operators: operatorsWithModuleAddress,
-      });
-
-      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
-
-      // update function doesn't make a decision about update no more
-      // so here would happen update if list of keys was changed
-      await registryService.update(address, blockHash);
-      expect(saveRegistryMock).toBeCalledTimes(1);
-      expect(saveKeyRegistryMock).toBeCalledTimes(2);
-    });
-
     test('keys is not mutating', async () => {
       const newKeys = clone(keysWithModuleAddress);
       newKeys[0].used = false;
@@ -191,7 +172,6 @@ describe('Registry', () => {
       });
     });
 
-    // TODO: What is the difference with test above?
     test('add operator with default records', async () => {
       const newOperators = clone([
         ...operatorsWithModuleAddress,
