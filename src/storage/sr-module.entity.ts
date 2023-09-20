@@ -1,16 +1,17 @@
 import { Entity, EntityRepositoryType, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { STAKING_MODULE_TYPE } from '../staking-router-modules/constants';
 import { StakingModule } from '../staking-router-modules/interfaces/staking-module.interface';
 import { MODULE_ADDRESS_LEN } from './constants';
 import { SRModuleRepository } from './sr-module.repository';
 
 @Entity({ customRepository: () => SRModuleRepository })
-export class SrModuleEntity {
+export class SrModuleEntity implements StakingModule {
   [EntityRepositoryType]?: SRModuleRepository;
 
   constructor(srModule: StakingModule, nonce: number) {
-    this.moduleId = srModule.id;
+    this.moduleId = srModule.moduleId;
     this.stakingModuleAddress = srModule.stakingModuleAddress;
-    this.stakingModuleFee = srModule.stakingModuleFee;
+    this.moduleFee = srModule.moduleFee;
     this.treasuryFee = srModule.treasuryFee;
     this.targetShare = srModule.targetShare;
     this.status = srModule.status;
@@ -39,7 +40,7 @@ export class SrModuleEntity {
 
   // part of the fee taken from staking rewards that goes to the staking module
   @Property()
-  stakingModuleFee: number;
+  moduleFee: number;
 
   // part of the fee taken from staking rewards that goes to the treasury
   @Property()
@@ -72,7 +73,7 @@ export class SrModuleEntity {
   // type of staking router module
   //TODO: use here enum
   @Property()
-  type: string;
+  type: string; //STAKING_MODULE_TYPE;
 
   // is module active
   @Property()

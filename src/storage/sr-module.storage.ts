@@ -36,15 +36,17 @@ export class SRModuleStorageService {
   async upsert(srModule: StakingModule, nonce: number) {
     // Try to find an existing entity by moduleId or stakingModuleAddress
     let existingModule = await this.repository.findOne({
-      moduleId: srModule.id,
+      moduleId: srModule.moduleId,
     });
+
+    srModule.stakingModuleAddress = srModule.stakingModuleAddress.toLowerCase();
 
     if (!existingModule) {
       // If the entity doesn't exist, create a new one
       existingModule = new SrModuleEntity(srModule, nonce);
     } else {
       // If the entity exists, update its properties
-      existingModule.stakingModuleFee = srModule.stakingModuleFee;
+      existingModule.moduleFee = srModule.moduleFee;
       existingModule.treasuryFee = srModule.treasuryFee;
       existingModule.targetShare = srModule.targetShare;
       existingModule.status = srModule.status;

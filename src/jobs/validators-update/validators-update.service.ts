@@ -88,7 +88,7 @@ export class ValidatorsUpdateService {
   private async updateValidators() {
     await this.jobService.wrapJob({ name: 'Update validators from ValidatorsRegistry' }, async () => {
       const meta = await this.validatorsService.updateValidators('finalized');
-      // meta shouldnt be null
+      // meta shouldn't be null
       // if update didnt happen, meta will be fetched from db
       this.lastBlockTimestampSec = meta?.timestamp ?? this.lastBlockTimestampSec;
       this.lastBlockNumber = meta?.blockNumber ?? this.lastBlockNumber;

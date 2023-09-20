@@ -1,8 +1,9 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
-import { ELBlockSnapshot, SRModule } from '../common/entities';
+import { ELBlockSnapshot, StakingModuleResponse } from '../common/entities';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
+import { SrModuleEntity } from 'storage/sr-module.entity';
 
 @Injectable()
 export class SRModulesService {
@@ -14,7 +15,7 @@ export class SRModulesService {
   async getModules(): Promise<SRModuleListResponse> {
     const { stakingModules, elBlockSnapshot } = await this.stakingRouterService.getStakingModulesAndMeta();
 
-    const stakingModuleListResponse = stakingModules.map((module) => new SRModule(module));
+    const stakingModuleListResponse = stakingModules.map((stakingModule) => new StakingModuleResponse(stakingModule));
 
     return {
       data: stakingModuleListResponse,
@@ -23,10 +24,11 @@ export class SRModulesService {
   }
 
   async getModule(moduleId: string | number): Promise<SRModuleResponse> {
-    const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
+    const { module, elBlockSnapshot }: { module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot } =
+      await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
 
     return {
-      data: module,
+      data: new StakingModuleResponse(module),
       elBlockSnapshot: new ELBlockSnapshot(elBlockSnapshot),
     };
   }

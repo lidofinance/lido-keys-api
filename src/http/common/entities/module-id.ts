@@ -1,10 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { isAddress } from 'ethers/lib/utils';
 
 function toModuleId(moduleId: string): string | number {
-  if (isContractAddress(moduleId)) {
-    return moduleId;
+  if (isAddress(moduleId)) {
+    return moduleId.toLowerCase();
   }
 
   if (Number(moduleId)) {
@@ -12,11 +13,6 @@ function toModuleId(moduleId: string): string | number {
   }
 
   throw new BadRequestException([`module_id must be a contract address or numeric value`]);
-}
-
-export function isContractAddress(address: string): boolean {
-  const contractAddressRegex = /^0x[0-9a-fA-F]{40}$/;
-  return contractAddressRegex.test(address);
 }
 
 export class ModuleId {

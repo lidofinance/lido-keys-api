@@ -124,7 +124,7 @@ describe('SRModulesKeysController (e2e)', () => {
       });
 
       it('Should return all keys for request without filters', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/keys`);
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/keys`);
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeys));
@@ -140,7 +140,7 @@ describe('SRModulesKeysController (e2e)', () => {
 
       it('Should return 400 error if operatorIndex is not a number', async () => {
         const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.id}/keys`)
+          .get(`/v1/modules/${dvtModule.moduleId}/keys`)
           .query({ used: false, operatorIndex: 'one' });
         expect(resp.status).toEqual(400);
         expect(resp.body).toEqual({
@@ -152,7 +152,7 @@ describe('SRModulesKeysController (e2e)', () => {
 
       it('Should return 400 error if used is not a boolean value', async () => {
         const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.id}/keys`)
+          .get(`/v1/modules/${dvtModule.moduleId}/keys`)
           .query({ used: 0, operatorIndex: 2 });
         expect(resp.status).toEqual(400);
         expect(resp.body).toEqual({ error: 'Bad Request', message: ['used must be a boolean value'], statusCode: 400 });
@@ -160,7 +160,7 @@ describe('SRModulesKeysController (e2e)', () => {
 
       it('Should return used keys for operator one', async () => {
         const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.id}/keys`)
+          .get(`/v1/modules/${dvtModule.moduleId}/keys`)
           .query({ used: true, operatorIndex: 1 });
 
         const expectedKeys = dvtModuleKeys.filter((key) => key.used && key.operatorIndex == 1);
@@ -179,7 +179,7 @@ describe('SRModulesKeysController (e2e)', () => {
 
       it('Should return unused keys for operator one', async () => {
         const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.id}/keys`)
+          .get(`/v1/modules/${dvtModule.moduleId}/keys`)
           .query({ used: false, operatorIndex: 1 });
 
         const expectedKeys = dvtModuleKeys.filter((key) => !key.used && key.operatorIndex == 1);
@@ -198,7 +198,7 @@ describe('SRModulesKeysController (e2e)', () => {
 
       it('Should return empty keys list for non-existent operator', async () => {
         const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.id}/keys`)
+          .get(`/v1/modules/${dvtModule.moduleId}/keys`)
           .query({ operatorIndex: 777 });
 
         expect(resp.status).toEqual(200);
@@ -244,7 +244,7 @@ describe('SRModulesKeysController (e2e)', () => {
 
       it('Should return too early response if there are no meta', async () => {
         await moduleStorageService.upsert(dvtModule, 1);
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/keys`);
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/keys`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
@@ -271,7 +271,7 @@ describe('SRModulesKeysController (e2e)', () => {
         const pubkeys = [dvtModuleKeys[0].key, dvtModuleKeys[1].key];
 
         const resp = await request(app.getHttpServer())
-          .post(`/v1/modules/${dvtModule.id}/keys/find`)
+          .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
           .set('Content-Type', 'application/json')
           .send({ pubkeys });
 
@@ -291,7 +291,7 @@ describe('SRModulesKeysController (e2e)', () => {
         const pubkeys = ['somerandomkey'];
 
         const resp = await request(app.getHttpServer())
-          .post(`/v1/modules/${dvtModule.id}/keys/find`)
+          .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
           .set('Content-Type', 'application/json')
           .send({ pubkeys });
 
@@ -309,7 +309,7 @@ describe('SRModulesKeysController (e2e)', () => {
 
       it('Should return validation error if pubkeys list was not provided', async () => {
         const resp = await request(app.getHttpServer())
-          .post(`/v1/modules/${dvtModule.id}/keys/find`)
+          .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
           .set('Content-Type', 'application/json')
           .send({ pubkeys: [] });
 
@@ -333,7 +333,7 @@ describe('SRModulesKeysController (e2e)', () => {
       it('Should return too early response if there are no meta', async () => {
         await moduleStorageService.upsert(dvtModule, 1);
         const resp = await request(app.getHttpServer())
-          .post(`/v1/modules/${dvtModule.id}/keys/find`)
+          .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
           .set('Content-Type', 'application/json')
           .send({ pubkeys: ['somerandomkey'] });
         expect(resp.status).toEqual(425);

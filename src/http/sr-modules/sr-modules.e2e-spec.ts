@@ -104,7 +104,7 @@ describe('SRModulesController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return all modules list', async () => {
+      it('Should return all modules list', async () => {
         const resp = await request(app.getHttpServer()).get('/v1/modules');
 
         expect(resp.status).toEqual(200);
@@ -127,7 +127,7 @@ describe('SRModulesController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return too early response if there are no modules in database', async () => {
+      it('Should return too early response if there are no modules in database', async () => {
         // lets save meta
         await elMetaStorageService.update(elMeta);
         const resp = await request(app.getHttpServer()).get('/v1/modules');
@@ -135,7 +135,7 @@ describe('SRModulesController (e2e)', () => {
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
 
-      it('should return too early response if there are no meta', async () => {
+      it('Should return too early response if there are no meta', async () => {
         await moduleStorageService.upsert(curatedModule, 1);
         const resp = await request(app.getHttpServer()).get('/v1/modules');
         expect(resp.status).toEqual(425);
@@ -156,8 +156,8 @@ describe('SRModulesController (e2e)', () => {
       afterAll(async () => {
         await cleanDB();
       });
-      it('should return module by id', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}`);
+      it('Should return module by id', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}`);
         expect(resp.status).toEqual(200);
         expect(resp.body.data).toEqual(dvtModuleResp);
         expect(resp.body.elBlockSnapshot).toEqual({
@@ -167,7 +167,7 @@ describe('SRModulesController (e2e)', () => {
         });
       });
 
-      it('should return module by contract address', async () => {
+      it('Should return module by contract address', async () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.stakingModuleAddress}`);
         expect(resp.status).toEqual(200);
         expect(resp.body.data).toEqual(dvtModuleResp);
@@ -178,7 +178,20 @@ describe('SRModulesController (e2e)', () => {
         });
       });
 
-      it("should return 404 if module doesn't exist", async () => {
+      it('Should return the module by contract address in a case-agnostic way', async () => {
+        const resp = await request(app.getHttpServer()).get(
+          `/v1/modules/${dvtModule.stakingModuleAddress.toUpperCase()}`,
+        );
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data).toEqual(dvtModuleResp);
+        expect(resp.body.elBlockSnapshot).toEqual({
+          blockNumber: elMeta.number,
+          blockHash: elMeta.hash,
+          timestamp: elMeta.timestamp,
+        });
+      });
+
+      it("Should return 404 if module doesn't exist", async () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/77`);
         expect(resp.status).toEqual(404);
         expect(resp.body).toEqual({
@@ -188,7 +201,7 @@ describe('SRModulesController (e2e)', () => {
         });
       });
 
-      it('should return 400 error if module_id is not a contract address or number', async () => {
+      it('Should return 400 error if module_id is not a contract address or number', async () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/sjdnsjkfsjkbfsjdfbdjfb`);
         expect(resp.status).toEqual(400);
         expect(resp.body).toEqual({
@@ -207,9 +220,9 @@ describe('SRModulesController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return too early response if there are no meta', async () => {
+      it('Should return too early response if there are no meta', async () => {
         await moduleStorageService.upsert(curatedModule, 1);
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.id}`);
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
