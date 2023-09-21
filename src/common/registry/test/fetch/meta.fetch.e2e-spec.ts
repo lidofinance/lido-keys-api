@@ -23,7 +23,7 @@ describe('Operators', () => {
   });
 
   test('fetch keysOpIndex', async () => {
-    const keysOpIndex = await fetchService.fetchKeysOpIndex(address);
+    const keysOpIndex = await fetchService.fetchStakingModuleNonce(address);
     expect(typeof keysOpIndex).toBe('number');
     expect(keysOpIndex).toBeGreaterThan(0);
   });

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Key, SRModule, ELMeta } from 'http/common/entities/';
+import { Key, SRModule, ELMeta } from '../../common/entities/';
 
 export class KeyListWithModule {
   @ApiProperty({
