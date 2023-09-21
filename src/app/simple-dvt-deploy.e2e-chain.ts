@@ -147,7 +147,7 @@ describe('Simple DVT deploy', () => {
     expect(operators).toHaveLength(0);
   });
 
-  test('add simple-dvt node operator', async () => {
+  test('add simple-dvt node operator with key', async () => {
     const simpleDvtState = deployState.stakingRouterData.stakingModules[1];
 
     sdvtNodeOperator1 = await session.story('simple-dvt/add-node-operator', {
@@ -156,13 +156,21 @@ describe('Simple DVT deploy', () => {
       rewardAddress: '0x' + '5'.repeat(40),
     });
 
+    await session.story('simple-dvt/add-node-operator-keys', {
+      norAddress: simpleDvtState.stakingModuleAddress,
+      keysCount: 1,
+      keys: '0x' + '5'.repeat(96),
+      signatures: '0x' + '5'.repeat(192),
+      noId: sdvtNodeOperator1.nodeOperatorId,
+    });
+
     await keysUpdateService.update();
 
     const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
     const keys = await moduleInstance.getKeys(simpleDvtState.stakingModuleAddress, {});
     const operators = await moduleInstance.getOperators(simpleDvtState.stakingModuleAddress);
 
-    expect(keys).toHaveLength(0);
+    expect(keys).toHaveLength(1);
     expect(operators).toHaveLength(1);
     expect(operators[0].name).toBe(sdvtNodeOperator1.name);
   });
