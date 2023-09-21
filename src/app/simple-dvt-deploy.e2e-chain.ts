@@ -128,11 +128,22 @@ describe('Simple DVT deploy', () => {
     expect(deployState.stakingRouterData.stakingModuleIds).toHaveLength(2);
   });
 
-  test('fetch dvt operators', async () => {
+  test('module must be added to keys api', async () => {
     await keysUpdateService.update();
 
     const srModules = await stakingRouterService.getStakingModules();
     expect(srModules).toHaveLength(2);
+  });
+
+  test('simple dvt module must be empty', async () => {
+    const simpleDvtState = deployState.stakingRouterData.stakingModules[1];
+
+    const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
+    const keys = await moduleInstance.getKeys(simpleDvtState.stakingModuleAddress, {});
+    const operators = await moduleInstance.getOperators(simpleDvtState.stakingModuleAddress);
+
+    expect(keys).toHaveLength(0);
+    expect(operators).toHaveLength(0);
   });
 
   test.todo('add keys');
