@@ -21,6 +21,7 @@ describe('Simple DVT deploy', () => {
   let session: chronix.HardhatSession;
   let deployState: chronix.StoryResult<'simple-dvt/deploy'>;
   let reduceNOState: chronix.StoryResult<'simple-dvt/reduce-no'>;
+  let sdvtNodeOperator1: chronix.StoryResult<'simple-dvt/add-node-operator'>;
 
   let moduleRef: TestingModule;
 
@@ -146,5 +147,23 @@ describe('Simple DVT deploy', () => {
     expect(operators).toHaveLength(0);
   });
 
-  test.todo('add keys');
+  test('add simple-dvt node operator', async () => {
+    const simpleDvtState = deployState.stakingRouterData.stakingModules[1];
+
+    sdvtNodeOperator1 = await session.story('simple-dvt/add-node-operator', {
+      norAddress: simpleDvtState.stakingModuleAddress,
+      name: 'simple dvt operator',
+      rewardAddress: '0x' + '5'.repeat(40),
+    });
+
+    await keysUpdateService.update();
+
+    const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
+    const keys = await moduleInstance.getKeys(simpleDvtState.stakingModuleAddress, {});
+    const operators = await moduleInstance.getOperators(simpleDvtState.stakingModuleAddress);
+
+    expect(keys).toHaveLength(0);
+    expect(operators).toHaveLength(1);
+    expect(operators[0].name).toBe(sdvtNodeOperator1.name);
+  });
 });

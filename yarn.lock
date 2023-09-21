@@ -3247,7 +3247,7 @@ async-eventemitter@^0.2.2:
   dependencies:
     async "^2.4.0"
 
-"async-eventemitter@github:ahultgren/async-eventemitter#fa06e39e56786ba541c180061dbf2c0a5bbf951c":
+async-eventemitter@ahultgren/async-eventemitter#fa06e39e56786ba541c180061dbf2c0a5bbf951c:
   version "0.2.3"
   resolved "https://codeload.github.com/ahultgren/async-eventemitter/tar.gz/fa06e39e56786ba541c180061dbf2c0a5bbf951c"
   dependencies:
@@ -3983,13 +3983,13 @@ bignumber.js@^9.0.0:
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.1.2.tgz#b7c4242259c008903b13707983b5f4bbd31eda0c"
   integrity sha512-2/mKyZH9K85bzOEfhXDBFZTGd1CTs+5IHpeFQo9luiBG7hghdC851Pj2WAhb6E3R6b9tZj/XKhbg4fum+Kepug==
 
+"bignumber.js@git+https://github.com/debris/bignumber.js#master":
+  version "2.0.7"
+  resolved "git+https://github.com/debris/bignumber.js#c7a38de919ed75e6fb6ba38051986e294b328df9"
+
 "bignumber.js@git+https://github.com/debris/bignumber.js.git#94d7146671b9719e00a09c29b01a691bc85048c2":
   version "2.0.7"
   resolved "git+https://github.com/debris/bignumber.js.git#94d7146671b9719e00a09c29b01a691bc85048c2"
-
-"bignumber.js@git+https://github.com/debris/bignumber.js.git#master":
-  version "2.0.7"
-  resolved "git+https://github.com/debris/bignumber.js.git#c7a38de919ed75e6fb6ba38051986e294b328df9"
 
 "bignumber.js@git+https://github.com/frozeman/bignumber.js-nolookahead.git":
   version "2.0.7"
@@ -11058,10 +11058,10 @@ simple-concat@^1.0.0:
   resolved "https://registry.yarnpkg.com/simple-concat/-/simple-concat-1.0.1.tgz#f46976082ba35c2263f1c8ab5edfe26c41c9552f"
   integrity sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==
 
-simple-dvt-v1@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/simple-dvt-v1/-/simple-dvt-v1-0.0.4.tgz#f58afcab9d97db8a0881ffb1e4c4443a6760e2ff"
-  integrity sha512-h9KuBfrpxRWaMJNJ1YXi1S0AAKa5IR+FL3qgWB24mOi0bmGnkvSZ7ZqYxQkhjYDB5Sbkdk13Rr8sqzVCPJMAHg==
+simple-dvt-v1@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/simple-dvt-v1/-/simple-dvt-v1-0.0.5.tgz#6c221ab3757931c62736117388a3db4da340589c"
+  integrity sha512-NEtatJ7KZFWjSyKzDD03V1wxbHXvi2oi65SVZ+LVHQNKIUO/tYIOtTRa01y6AH20wEl3hL/W68GS3+/wOLOH6g==
   dependencies:
     "@aragon/apps-agent" "^2.1.0"
     "@aragon/apps-finance" "^3.0.0"
