@@ -32,6 +32,8 @@ export const dvtModule: StakingModule = {
   active: true,
 };
 
+export const dvtModuleInUpperCase = '0x0165878A594CA255338ADFA4D48449F69242EB8F';
+
 export const srModules = [curatedModule, dvtModule];
 
 export const curatedModuleResp: StakingModuleResponse = {
