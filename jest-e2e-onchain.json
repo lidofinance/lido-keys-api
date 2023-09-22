@@ -1,0 +1,11 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "testRegex": ".e2e-chain.ts$",
+  "rootDir": ".",
+  "modulePaths": ["<rootDir>/src"],
+  "transform": {
+    "^.+\\.ts?$": "ts-jest"
+  },
+  "testEnvironment": "node"
+}
+

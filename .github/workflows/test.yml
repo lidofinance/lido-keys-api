@@ -24,3 +24,4 @@ jobs:
         env:
           PROVIDERS_URLS: ${{ secrets.PROVIDERS_URLS }}
           CHAIN_ID: ${{ secrets.CHAIN_ID }}
+          CHRONIX_PROVIDER_MAINNET_URL: ${{ secrets.CHRONIX_PROVIDER_MAINNET_URL }}
