@@ -36,9 +36,14 @@ describe('Simple DVT deploy', () => {
 
   beforeAll(async () => {
     sdk = await createSDK('http://localhost:8001');
+    const forkUrl = process.env.CHRONIX_PROVIDER_MAINNET_URL;
+
+    if (!forkUrl || forkUrl.length < 1) {
+      throw new Error('CHRONIX_PROVIDER_MAINNET_URL is not valid');
+    }
 
     session = await sdk.env.hardhat({
-      fork: process.env.CHRONIX_PROVIDER_MAINNET_URL,
+      fork: forkUrl,
       chainId: 1,
     });
 
