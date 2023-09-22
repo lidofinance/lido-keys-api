@@ -42,6 +42,7 @@ describe('Simple DVT deploy', () => {
 
     if (!forkUrl || forkUrl.length < 1) {
       console.log('forkUrl', forkUrl);
+      console.log('PROVIDERS_URLS', process.env.PROVIDERS_URLS, !!process.env.PROVIDERS_URLS);
       throw new Error('CHRONIX_PROVIDER_MAINNET_URL is not valid');
     }
 
