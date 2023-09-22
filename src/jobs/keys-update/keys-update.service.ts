@@ -138,17 +138,18 @@ export class KeysUpdateService {
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
           const currNonce = await moduleInstance.getCurrentNonce(module.stakingModuleAddress, currElMeta.hash);
           const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
+          const prevNonce = moduleInStorage?.nonce;
           // update staking module information
           await this.srModulesStorage.upsert(module, currNonce);
 
           // now updating decision should be here moduleInstance.update
           // TODO: operators list also the same ?
-          if (moduleInStorage && moduleInStorage.nonce === currNonce) {
+          if (moduleInStorage && prevNonce === currNonce) {
             // nothing changed, don't need to update
             this.logger.log(
               `Nonce was not changed for staking module ${moduleInStorage.id}. Don't need to update keys and operators in database`,
             );
-            return;
+            continue;
           }
 
           await moduleInstance.update(module.stakingModuleAddress, currElMeta.hash);
