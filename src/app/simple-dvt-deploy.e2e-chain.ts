@@ -38,7 +38,7 @@ describe('Simple DVT deploy', () => {
     sdk = await createSDK('http://localhost:8001');
 
     session = await sdk.env.hardhat({
-      fork: process.env.PROVIDERS_URLS,
+      fork: process.env.CHRONIX_PROVIDER_MAINNET_URL,
       chainId: 1,
     });
 
