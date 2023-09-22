@@ -17,6 +17,21 @@ export const curatedModule: StakingModule = {
   active: true,
 };
 
+export const updatedCuratedModule: StakingModule = {
+  moduleId: 1,
+  stakingModuleAddress: '0xec65a140aa3e981100a9beca4e685f962f0cf6c9',
+  moduleFee: 1000,
+  treasuryFee: 1000,
+  targetShare: 1000,
+  status: 1,
+  name: 'curated-onchain-v1',
+  type: 'curated-onchain-v1' as STAKING_MODULE_TYPE,
+  lastDepositAt: 1691500733,
+  lastDepositBlock: 10,
+  exitedValidatorsCount: 1,
+  active: false,
+};
+
 export const dvtModule: StakingModule = {
   moduleId: 2,
   stakingModuleAddress: '0x0165878a594ca255338adfa4d48449f69242eb8f',

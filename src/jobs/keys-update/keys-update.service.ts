@@ -143,6 +143,7 @@ export class KeysUpdateService {
           const currNonce = await moduleInstance.getCurrentNonce(contractModule.stakingModuleAddress, currElMeta.hash);
           // Read module in storage
           const moduleInStorage = await this.srModulesStorage.findOneById(contractModule.moduleId);
+
           // update staking module information
           await this.srModulesStorage.upsert(contractModule, currNonce);
 

@@ -6,7 +6,6 @@ import { StakingRouterService } from '../../staking-router-modules/staking-route
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
 import { SrModuleEntity } from 'storage/sr-module.entity';
-import { SRModuleRepository } from 'storage/sr-module.repository';
 
 @Injectable()
 export class SRModulesKeysService {
