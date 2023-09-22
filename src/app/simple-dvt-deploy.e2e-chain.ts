@@ -3,6 +3,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { createSDK, chronix } from 'chronix';
+import * as dotenv from 'dotenv';
 
 import { RegistryKeyStorageService } from '../common/registry';
 import { ElMetaStorageService } from '../storage/el-meta.storage';
@@ -14,6 +15,7 @@ import { PrometheusService } from '../common/prometheus';
 import { StakingRouterService } from '../staking-router-modules/staking-router.service';
 import { AppModule } from './app-testing.module';
 
+dotenv.config();
 jest.setTimeout(100_000);
 
 describe('Simple DVT deploy', () => {
