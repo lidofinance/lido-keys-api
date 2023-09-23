@@ -119,6 +119,8 @@ describe('Simple DVT deploy', () => {
 
     for (const [, srModule] of srModules.entries()) {
       const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(srModule.type);
+      console.log('srModule', srModule);
+      console.log('keys total', keysTotal);
       const keys = await moduleInstance.getKeys(srModule.stakingModuleAddress, {});
       const operators = await moduleInstance.getOperators(srModule.stakingModuleAddress);
 
@@ -156,6 +158,8 @@ describe('Simple DVT deploy', () => {
 
   test('add simple-dvt node operator with key', async () => {
     const simpleDvtState = deployState.stakingRouterData.stakingModules[1];
+
+    console.log('add simple-dvt node operator with key', simpleDvtState);
 
     sdvtNodeOperator1 = await session.story('simple-dvt/add-node-operator', {
       norAddress: simpleDvtState.stakingModuleAddress,
