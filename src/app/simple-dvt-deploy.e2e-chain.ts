@@ -132,8 +132,6 @@ describe('Simple DVT deploy', () => {
 
     for (const [, srModule] of srModules.entries()) {
       const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(srModule.type);
-      console.log('srModule', srModule);
-      console.log('keys total', keysTotal);
       const srModuleAddress = convertAddressToLowerCase(srModule.stakingModuleAddress);
       const keys = await moduleInstance.getKeys(srModuleAddress, {});
       const operators = await moduleInstance.getOperators(srModuleAddress);
