@@ -5,7 +5,7 @@ import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } fro
 import { SRModuleOperatorsKeysResponse, SRModulesOperatorsKeysStreamResponse } from './entities';
 import { ModuleId, KeyQuery } from 'http/common/entities/';
 import { SRModulesOperatorsKeysService } from './sr-modules-operators-keys.service';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
@@ -41,20 +41,21 @@ export class SRModulesOperatorsKeysController {
     description: 'Staking router module_id or contract address.',
   })
   @Get(':module_id/operators/keys')
-  async getOperatorsKeys(
-    @Param('module_id') moduleId: ModuleId,
-    @Query() filters: KeyQuery,
-    @Res() reply: FastifyReply,
-  ) {
+  async getOperatorsKeys(@Param() module: ModuleId, @Query() filters: KeyQuery, @Res() reply: FastifyReply) {
     await this.entityManager.transactional(
       async () => {
-        const { operators, keysGenerator, module, meta } = await this.srModulesOperatorsKeys.get(moduleId, filters);
+        const {
+          operators,
+          keysGenerator,
+          module: srModule,
+          meta,
+        } = await this.srModulesOperatorsKeys.get(module.module_id, filters);
 
         const jsonStream = JSONStream.stringify(
           '{ "meta": ' +
             JSON.stringify(meta) +
             ', "data": { "module": ' +
-            JSON.stringify(module) +
+            JSON.stringify(srModule) +
             ', "operators": ' +
             JSON.stringify(operators) +
             ', "keys": [',

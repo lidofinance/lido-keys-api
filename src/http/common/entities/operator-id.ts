@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, Min } from 'class-validator';
 
-export class OperatorIdParam {
+export class OperatorId {
   @ApiProperty({
     name: 'operator_id',
     description: 'Operator index',

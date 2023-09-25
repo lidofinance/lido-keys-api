@@ -1,15 +1,14 @@
 import { RegistryKey, RegistryOperator } from 'common/registry';
 import { KeysFilter, OperatorsFilter } from './filters';
-import { STAKING_MODULE_TYPE } from '../constants';
 
 // interface of modules we get from SR contract
 export interface StakingModule {
   // unique id of the staking module
-  id: number;
+  moduleId: number;
   // address of staking module
   stakingModuleAddress: string;
   // part of the fee taken from staking rewards that goes to the staking module
-  stakingModuleFee: number;
+  moduleFee: number;
   // part of the fee taken from staking rewards that goes to the treasury
   treasuryFee: number;
   // target percent of total validators in protocol, in BP
@@ -25,31 +24,27 @@ export interface StakingModule {
   // number of exited validators
   exitedValidatorsCount: number;
   // type of staking router module
-  type: STAKING_MODULE_TYPE;
+  type: string; //STAKING_MODULE_TYPE;
   // is module active
   active: boolean;
 }
 
-// TODO: in future Keys = CuratedKey (RegistryKey) | CommunityKey
-export type KeyEntity = RegistryKey;
-export type OperatorEntity = RegistryOperator;
-
 export interface StakingModuleInterface {
   update(moduleAddress: string, blockHash: string): Promise<void>;
 
-  getKeysStream(moduleAddress: string, filters: KeysFilter): AsyncGenerator<KeyEntity>;
+  getKeysStream(moduleAddress: string, filters: KeysFilter): AsyncGenerator<RegistryKey>;
 
-  getKeys(moduleAddress: string, filters: KeysFilter): Promise<KeyEntity[]>;
+  getKeys(moduleAddress: string, filters: KeysFilter): Promise<RegistryKey[]>;
 
-  getKeysByPubKeys(moduleAddress: string, pubKeys: string[]): Promise<KeyEntity[]>;
+  getKeysByPubKeys(moduleAddress: string, pubKeys: string[]): Promise<RegistryKey[]>;
 
-  getKeysByPubkey(moduleAddress: string, pubkey: string): Promise<KeyEntity[]>;
+  getKeysByPubkey(moduleAddress: string, pubkey: string): Promise<RegistryKey[]>;
 
-  getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<OperatorEntity[]>;
+  getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<RegistryOperator[]>;
 
-  getOperatorsStream(moduleAddress: string, filters?: OperatorsFilter): AsyncGenerator<OperatorEntity>;
+  getOperatorsStream(moduleAddress: string, filters?: OperatorsFilter): AsyncGenerator<RegistryOperator>;
 
-  getOperator(moduleAddress: string, index: number): Promise<OperatorEntity | null>;
+  getOperator(moduleAddress: string, index: number): Promise<RegistryOperator | null>;
 
   getCurrentNonce(moduleAddress: string, blockHash: string): Promise<number>;
 }

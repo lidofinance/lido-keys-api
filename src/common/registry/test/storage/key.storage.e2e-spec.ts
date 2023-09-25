@@ -4,6 +4,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { key } from '../fixtures/key.fixture';
 import { RegistryStorageModule, RegistryStorageService, RegistryKeyStorageService } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { mikroORMConfig } from '../testing.utils';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,15 +19,7 @@ describe('Keys', () => {
   const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
 
   beforeEach(async () => {
-    const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
-      RegistryStorageModule.forFeature(),
-    ];
+    const imports = [MikroOrmModule.forRoot(mikroORMConfig), RegistryStorageModule.forFeature()];
 
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     storageService = moduleRef.get(RegistryKeyStorageService);

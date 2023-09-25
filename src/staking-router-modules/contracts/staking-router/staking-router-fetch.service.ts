@@ -4,15 +4,8 @@ import { STAKING_MODULE_TYPE } from '../../constants';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingModuleInterfaceService } from '../staking-module-interface';
 import { LidoLocatorService } from '../lido-locator';
-// TODO: maybe we need to move generated to the same folder with contracts
-import { StakingRouter__factory } from '../../../generated';
-// TODO: maybe ../../../ shows us that we need to move execution-provider on level up
-import { ExecutionProvider } from '../../../common/execution-provider';
 import { BlockTag } from '../interfaces';
-// TODO: maybe it is time to stop using trace decorators in code and use it only in debug mode
-import { Trace } from '../../../common/decorators/trace';
-
-const TRACE_TIMEOUT = 30 * 1000;
+import { StakingRouter, STAKING_ROUTER_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
 
 @Injectable()
 export class StakingRouterFetchService {
@@ -20,25 +13,23 @@ export class StakingRouterFetchService {
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly stakingModuleInterface: StakingModuleInterfaceService,
     protected readonly lidoLocatorService: LidoLocatorService,
-    protected readonly provider: ExecutionProvider,
+    @Inject(STAKING_ROUTER_CONTRACT_TOKEN) protected readonly contract: StakingRouter,
   ) {}
 
-  private getSRContract(contractAddress: string) {
-    // TODO: use attach instead
-    return StakingRouter__factory.connect(contractAddress, this.provider);
+  private getContract(contractAddress: string) {
+    return this.contract.attach(contractAddress);
   }
 
   /**
    *
-   * @returns Staking Router modules list
+   * @returns Staking modules list
    */
-  @Trace(TRACE_TIMEOUT)
   public async getStakingModules(blockTag: BlockTag): Promise<StakingModule[]> {
     const stakingRouterAddress = await this.lidoLocatorService.getStakingRouter(blockTag);
 
     this.logger.log('Staking router module address', stakingRouterAddress);
 
-    const srContract = this.getSRContract(stakingRouterAddress);
+    const srContract = this.getContract(stakingRouterAddress);
     const modules = await srContract.getStakingModules({ blockTag } as any);
 
     this.logger.log(`Fetched ${modules.length} modules`);
@@ -54,17 +45,16 @@ export class StakingRouterFetchService {
           blockTag,
         )) as STAKING_MODULE_TYPE;
 
-        // TODO: reconsider way of checking this module type without
-        // TODO: how to handle this case?
+        // TODO: reconsider way of checking this module type
         if (!Object.values(STAKING_MODULE_TYPE).includes(stakingModuleType)) {
           this.logger.error(new Error(`Staking Module type ${STAKING_MODULE_TYPE} is unknown`));
           process.exit(1);
         }
 
         return {
-          id: stakingModule.id,
-          stakingModuleAddress: stakingModule.stakingModuleAddress,
-          stakingModuleFee: stakingModule.stakingModuleFee,
+          moduleId: stakingModule.id,
+          stakingModuleAddress: stakingModule.stakingModuleAddress.toLowerCase(),
+          moduleFee: stakingModule.stakingModuleFee,
           treasuryFee: stakingModule.treasuryFee,
           targetShare: stakingModule.targetShare,
           status: stakingModule.status,

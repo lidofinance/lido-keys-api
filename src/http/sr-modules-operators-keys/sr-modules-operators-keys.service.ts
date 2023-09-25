@@ -1,40 +1,44 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ELBlockSnapshot, ModuleId, SRModule } from 'http/common/entities';
-import { KeyQuery } from 'http/common/entities';
-import { ConfigService } from 'common/config';
+import { ELBlockSnapshot, Key, Operator, StakingModuleResponse } from '../common/entities';
+import { KeyQuery } from '../common/entities';
+
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
-import { KeyEntity, OperatorEntity } from 'staking-router-modules/interfaces/staking-module.interface';
 import { EntityManager } from '@mikro-orm/knex';
 import { MetaStreamRecord, ModulesOperatorsKeysRecord } from './sr-modules-operators-keys.types';
+import { SrModuleEntity } from 'storage/sr-module.entity';
 
 @Injectable()
 export class SRModulesOperatorsKeysService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected readonly configService: ConfigService,
     protected readonly stakingRouterService: StakingRouterService,
-    readonly entityManager: EntityManager,
+    protected readonly entityManager: EntityManager,
   ) {}
 
   public async get(
-    moduleId: ModuleId,
+    moduleId: string | number,
     filters: KeyQuery,
   ): Promise<{
-    keysGenerator: AsyncGenerator<KeyEntity>;
-    operators: OperatorEntity[];
-    module: SRModule;
+    keysGenerator: AsyncGenerator<Key>;
+    operators: Operator[];
+    module: StakingModuleResponse;
     meta: { elBlockSnapshot: ELBlockSnapshot };
   }> {
-    const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
+    const { module, elBlockSnapshot }: { module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot } =
+      await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
 
     const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
-    const keysGenerator: AsyncGenerator<KeyEntity> = moduleInstance.getKeysStream(module.stakingModuleAddress, filters);
-    const operatorsFilter = filters.operatorIndex ? { index: filters.operatorIndex } : {};
-    const operators: OperatorEntity[] = await moduleInstance.getOperators(module.stakingModuleAddress, operatorsFilter);
+    const keysGenerator: AsyncGenerator<Key> = moduleInstance.getKeysStream(module.stakingModuleAddress, filters);
+    const operatorsFilter = {};
 
-    return { operators, keysGenerator, module, meta: { elBlockSnapshot } };
+    if (filters.operatorIndex != undefined) {
+      operatorsFilter['index'] = filters.operatorIndex;
+    }
+    const operators: Operator[] = await moduleInstance.getOperators(module.stakingModuleAddress, operatorsFilter);
+
+    return { operators, keysGenerator, module: new StakingModuleResponse(module), meta: { elBlockSnapshot } };
   }
 
   public async *getModulesOperatorsKeysGenerator(): AsyncGenerator<ModulesOperatorsKeysRecord> {

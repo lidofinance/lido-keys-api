@@ -4,14 +4,13 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ModuleRef } from '@nestjs/core';
 import { StakingModuleInterface } from './interfaces/staking-module.interface';
 import { httpExceptionTooEarlyResp } from '../http/common/entities/http-exceptions';
-import { ELBlockSnapshot, ModuleId, SRModule } from '../http/common/entities';
+import { ELBlockSnapshot } from '../http/common/entities';
 import { config } from './staking-module-impl-config';
 import { IsolationLevel } from '@mikro-orm/core';
-import { SrModuleEntity } from 'storage/sr-module.entity';
+import { SrModuleEntity } from '../storage/sr-module.entity';
 import { SRModuleStorageService } from '../storage/sr-module.storage';
 import { ElMetaStorageService } from '../storage/el-meta.storage';
-import { ElMetaEntity } from 'storage/el-meta.entity';
-import { isValidContractAddress } from './utils';
+import { ElMetaEntity } from '../storage/el-meta.entity';
 
 @Injectable()
 export class StakingRouterService {
@@ -37,16 +36,12 @@ export class StakingRouterService {
    * @param moduleId - id or address of staking module
    * @returns Staking module from database
    */
-  public async getStakingModule(moduleId: ModuleId): Promise<SrModuleEntity | null> {
-    if (isValidContractAddress(moduleId)) {
+  public async getStakingModule(moduleId: string | number): Promise<SrModuleEntity | null> {
+    if (typeof moduleId == 'string') {
       return await this.srModulesStorage.findOneByContractAddress(moduleId);
     }
 
-    if (Number(moduleId)) {
-      return await this.srModulesStorage.findOneById(Number(moduleId));
-    }
-
-    return null;
+    return await this.srModulesStorage.findOneById(moduleId);
   }
 
   public getStakingRouterModuleImpl(moduleType: string): StakingModuleInterface {
@@ -102,8 +97,8 @@ export class StakingRouterService {
    * @returns staking module from database and execution layer meta
    */
   public async getStakingModuleAndMeta(
-    moduleId: ModuleId,
-  ): Promise<{ module: SRModule; elBlockSnapshot: ELBlockSnapshot }> {
+    moduleId: string | number,
+  ): Promise<{ module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot }> {
     const { stakingModule, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
         const stakingModule = await this.getStakingModule(moduleId);
@@ -123,7 +118,6 @@ export class StakingRouterService {
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
 
-    // TODO: in this module sometime we return module from db as it is , sometime use SRModule from http/entities. need to choose how we will do it
-    return { module: new SRModule(stakingModule), elBlockSnapshot: new ELBlockSnapshot(elBlockSnapshot) };
+    return { module: stakingModule, elBlockSnapshot: new ELBlockSnapshot(elBlockSnapshot) };
   }
 }

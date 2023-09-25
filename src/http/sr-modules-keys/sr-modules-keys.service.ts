@@ -1,33 +1,31 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ConfigService } from 'common/config';
 import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse } from './entities';
-import { ModuleId, KeyQuery, Key, ELBlockSnapshot, SRModule } from 'http/common/entities';
+import { KeyQuery, Key, ELBlockSnapshot, StakingModuleResponse } from '../common/entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { StakingRouterService } from 'staking-router-modules/staking-router.service';
-import { KeyEntity } from 'staking-router-modules/interfaces/staking-module.interface';
+import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
+import { SrModuleEntity } from 'storage/sr-module.entity';
 
 @Injectable()
 export class SRModulesKeysService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected configService: ConfigService,
     protected stakingRouterService: StakingRouterService,
     protected readonly entityManager: EntityManager,
   ) {}
 
   async getGroupedByModuleKeys(filters: KeyQuery): Promise<GroupedByModuleKeyListResponse> {
-    const { stakingModules, elBlockSnapshot } = await this.stakingRouterService.getStakingModulesAndMeta();
-    const srModulesKeys: { keys: Key[]; module: SRModule }[] = [];
+    const { stakingModules, elBlockSnapshot }: { stakingModules: SrModuleEntity[]; elBlockSnapshot: ELBlockSnapshot } =
+      await this.stakingRouterService.getStakingModulesAndMeta();
+    const srModulesKeys: { keys: Key[]; module: StakingModuleResponse }[] = [];
 
-    for (const module of stakingModules) {
+    for (const stakingModule of stakingModules) {
       // read from config name of module that implement functions to fetch and store keys for type
-      // TODO: check what will happen if implementation is not a provider of StakingRouterModule
-      const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-      const keys: Key[] = await moduleInstance.getKeys(module.stakingModuleAddress, filters);
+      const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(stakingModule.type);
+      const keys: Key[] = await moduleInstance.getKeys(stakingModule.stakingModuleAddress, filters);
 
-      srModulesKeys.push({ keys, module: new SRModule(module) });
+      srModulesKeys.push({ keys, module: new StakingModuleResponse(stakingModule) });
     }
 
     return {
@@ -39,30 +37,29 @@ export class SRModulesKeysService {
   }
 
   async getModuleKeys(
-    moduleId: ModuleId,
+    moduleId: string | number,
     filters: KeyQuery,
   ): Promise<{
-    keysGenerator: AsyncGenerator<KeyEntity>;
-    module: SRModule;
+    keysGenerator: AsyncGenerator<Key>;
+    module: StakingModuleResponse;
     meta: { elBlockSnapshot: ELBlockSnapshot };
   }> {
-    const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
+    const { module, elBlockSnapshot }: { module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot } =
+      await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
     const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
-    const keysGenerator: AsyncGenerator<KeyEntity> = await moduleInstance.getKeysStream(
-      module.stakingModuleAddress,
-      filters,
-    );
+    const keysGenerator: AsyncGenerator<Key> = await moduleInstance.getKeysStream(module.stakingModuleAddress, filters);
 
-    return { keysGenerator, module, meta: { elBlockSnapshot } };
+    return { keysGenerator, module: new StakingModuleResponse(module), meta: { elBlockSnapshot } };
   }
 
-  async getModuleKeysByPubKeys(moduleId: ModuleId, pubKeys: string[]): Promise<SRModuleKeyListResponse> {
+  async getModuleKeysByPubKeys(moduleId: string | number, pubKeys: string[]): Promise<SRModuleKeyListResponse> {
     const { keys, module, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
-        const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
+        const { module, elBlockSnapshot }: { module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot } =
+          await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
         const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-        const keys: KeyEntity[] = await moduleInstance.getKeysByPubKeys(module.stakingModuleAddress, pubKeys);
+        const keys: Key[] = await moduleInstance.getKeysByPubKeys(module.stakingModuleAddress, pubKeys);
 
         return { keys, module, elBlockSnapshot };
       },
@@ -70,7 +67,7 @@ export class SRModulesKeysService {
     );
 
     return {
-      data: { keys, module },
+      data: { keys, module: new StakingModuleResponse(module) },
       meta: { elBlockSnapshot },
     };
   }

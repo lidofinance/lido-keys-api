@@ -6,13 +6,10 @@ import {
   RegistryOperator,
   RegistryOperatorStorageService,
 } from '../common/registry';
-import { Trace } from '../common/decorators/trace';
 import { LOGGER_PROVIDER, LoggerService } from '../common/logger';
 import { QueryOrder } from '@mikro-orm/core';
 import { StakingModuleInterface } from './interfaces/staking-module.interface';
 import { KeysFilter, OperatorsFilter } from './interfaces/filters';
-
-const TRACE_TIMEOUT = 15 * 60 * 1000;
 
 @Injectable()
 export class CuratedModuleService implements StakingModuleInterface {
@@ -23,15 +20,12 @@ export class CuratedModuleService implements StakingModuleInterface {
     protected readonly operatorStorageService: RegistryOperatorStorageService,
   ) {}
 
-  // we need it
-  @Trace(TRACE_TIMEOUT)
   public async update(moduleAddress: string, blockHash: string): Promise<void> {
     await this.keyRegistryService.update(moduleAddress, blockHash);
   }
 
-  // we need it
   public async getCurrentNonce(moduleAddress: string, blockHash: string): Promise<number> {
-    const nonce = await this.keyRegistryService.getNonceFromContract(moduleAddress, blockHash);
+    const nonce = await this.keyRegistryService.getStakingModuleNonce(moduleAddress, blockHash);
     return nonce;
   }
 
@@ -53,7 +47,7 @@ export class CuratedModuleService implements StakingModuleInterface {
     return keys;
   }
 
-  public async *getKeysStream(contractAddress: string, filters: KeysFilter): AsyncGenerator<RegistryKey> {
+  public async *getKeysStream(moduleAddress: string, filters: KeysFilter): AsyncGenerator<RegistryKey> {
     const where = {};
     if (filters.operatorIndex != undefined) {
       where['operator_index'] = filters.operatorIndex;
@@ -63,7 +57,7 @@ export class CuratedModuleService implements StakingModuleInterface {
       where['used'] = filters.used;
     }
 
-    where['module_address'] = contractAddress;
+    where['module_address'] = moduleAddress;
 
     const keyStream = this.keyStorageService.findStream(where, [
       'index',

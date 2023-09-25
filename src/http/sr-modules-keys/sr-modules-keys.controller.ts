@@ -1,10 +1,22 @@
-import { Controller, Get, Version, Param, Query, Body, Post, NotFoundException, HttpStatus, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Version,
+  Param,
+  Query,
+  Body,
+  Post,
+  NotFoundException,
+  HttpStatus,
+  Res,
+  HttpCode,
+} from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
-import { ModuleId, KeyQuery } from 'http/common/entities/';
-import { KeysFindBody } from 'http/common/entities/pubkeys';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { ModuleId, KeyQuery } from '../common/entities/';
+import { KeysFindBody } from '../common/entities/pubkeys';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
@@ -32,7 +44,7 @@ export class SRModulesKeysController {
     type: TooEarlyResponse,
   })
   @Get('keys')
-  async getGroupedByModuleKeys(@Query() filters: KeyQuery) {
+  getGroupedByModuleKeys(@Query() filters: KeyQuery) {
     return this.srModulesKeysService.getGroupedByModuleKeys(filters);
   }
 
@@ -58,12 +70,16 @@ export class SRModulesKeysController {
     description: 'Staking router module_id or contract address.',
   })
   @Get(':module_id/keys')
-  async getModuleKeys(@Param('module_id') moduleId: ModuleId, @Query() filters: KeyQuery, @Res() reply: FastifyReply) {
+  async getModuleKeys(@Param() module: ModuleId, @Query() filters: KeyQuery, @Res() reply: FastifyReply) {
     await this.entityManager.transactional(
       async () => {
-        const { keysGenerator, module, meta } = await this.srModulesKeysService.getModuleKeys(moduleId, filters);
+        const {
+          keysGenerator,
+          module: srModule,
+          meta,
+        } = await this.srModulesKeysService.getModuleKeys(module.module_id, filters);
         const jsonStream = JSONStream.stringify(
-          '{ "meta": ' + JSON.stringify(meta) + ', "data": { "module": ' + JSON.stringify(module) + ', "keys": [',
+          '{ "meta": ' + JSON.stringify(meta) + ', "data": { "module": ' + JSON.stringify(srModule) + ', "keys": [',
           ',',
           ']}}',
         );
@@ -82,6 +98,7 @@ export class SRModulesKeysController {
 
   @Version('1')
   @Post(':module_id/keys/find')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get list of found staking router module keys in db from pubkey list.' })
   @ApiResponse({
     status: 200,
@@ -102,7 +119,7 @@ export class SRModulesKeysController {
     name: 'module_id',
     description: 'Staking router module_id or contract address.',
   })
-  getModuleKeysByPubkeys(@Param('module_id') moduleId: ModuleId, @Body() keys: KeysFindBody) {
-    return this.srModulesKeysService.getModuleKeysByPubKeys(moduleId, keys.pubkeys);
+  getModuleKeysByPubkeys(@Param() module: ModuleId, @Body() keys: KeysFindBody) {
+    return this.srModulesKeysService.getModuleKeysByPubKeys(module.module_id, keys.pubkeys);
   }
 }

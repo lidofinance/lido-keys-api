@@ -6,7 +6,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 
 import { KeyRegistryService, RegistryStorageModule, RegistryStorageService } from '../../common/registry';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
-import { dvtModule, curatedModule, dvtModuleResp, curatedModuleResp } from '../../storage/module.fixture';
+import { dvtModule, curatedModule, dvtModuleResp, curatedModuleResp, dvtModuleInUpperCase } from '../module.fixture';
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
 import { ElMetaStorageService } from '../../storage/el-meta.storage';
 
@@ -17,7 +17,7 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { SRModulesController } from './sr-modules.controller';
 import { SRModulesService } from './sr-modules.service';
 
-// import { validationOpt } from '../../main';
+import { elMeta } from '../el-meta.fixture';
 
 describe('SRModulesController (e2e)', () => {
   let app: INestApplication;
@@ -25,12 +25,6 @@ describe('SRModulesController (e2e)', () => {
   let moduleStorageService: SRModuleStorageService;
   let elMetaStorageService: ElMetaStorageService;
   let registryStorage: RegistryStorageService;
-
-  const elMeta = {
-    number: 74,
-    hash: '0x662e3e713207240b25d01324b6eccdc91493249a5048881544254994694530a5',
-    timestamp: 1691500803,
-  };
 
   async function cleanDB() {
     await moduleStorageService.removeAll();
@@ -110,7 +104,7 @@ describe('SRModulesController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return all modules list', async () => {
+      it('Should return all modules list', async () => {
         const resp = await request(app.getHttpServer()).get('/v1/modules');
 
         expect(resp.status).toEqual(200);
@@ -133,7 +127,7 @@ describe('SRModulesController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return too early response if there are no modules in database', async () => {
+      it('Should return too early response if there are no modules in database', async () => {
         // lets save meta
         await elMetaStorageService.update(elMeta);
         const resp = await request(app.getHttpServer()).get('/v1/modules');
@@ -141,7 +135,7 @@ describe('SRModulesController (e2e)', () => {
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
 
-      it('should return too early response if there are no meta', async () => {
+      it('Should return too early response if there are no meta', async () => {
         await moduleStorageService.upsert(curatedModule, 1);
         const resp = await request(app.getHttpServer()).get('/v1/modules');
         expect(resp.status).toEqual(425);
@@ -162,8 +156,9 @@ describe('SRModulesController (e2e)', () => {
       afterAll(async () => {
         await cleanDB();
       });
-      it('should return module by id', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}`);
+
+      it('Should return module by id', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}`);
         expect(resp.status).toEqual(200);
         expect(resp.body.data).toEqual(dvtModuleResp);
         expect(resp.body.elBlockSnapshot).toEqual({
@@ -173,7 +168,29 @@ describe('SRModulesController (e2e)', () => {
         });
       });
 
-      it("should return 404 if module doesn't exist", async () => {
+      it('Should return module by contract address', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.stakingModuleAddress}`);
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data).toEqual(dvtModuleResp);
+        expect(resp.body.elBlockSnapshot).toEqual({
+          blockNumber: elMeta.number,
+          blockHash: elMeta.hash,
+          timestamp: elMeta.timestamp,
+        });
+      });
+
+      it('Should return the module by contract address in a case-agnostic way', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModuleInUpperCase}`);
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data).toEqual(dvtModuleResp);
+        expect(resp.body.elBlockSnapshot).toEqual({
+          blockNumber: elMeta.number,
+          blockHash: elMeta.hash,
+          timestamp: elMeta.timestamp,
+        });
+      });
+
+      it("Should return 404 if module doesn't exist", async () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/77`);
         expect(resp.status).toEqual(404);
         expect(resp.body).toEqual({
@@ -182,7 +199,18 @@ describe('SRModulesController (e2e)', () => {
           statusCode: 404,
         });
       });
+
+      it('Should return 400 error if module_id is not a contract address or number', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/sjdnsjkfsjkbfsjdfbdjfb`);
+        expect(resp.status).toEqual(400);
+        expect(resp.body).toEqual({
+          error: 'Bad Request',
+          message: ['module_id must be a contract address or numeric value'],
+          statusCode: 400,
+        });
+      });
     });
+
     describe('too early response case', () => {
       beforeEach(async () => {
         await cleanDB();
@@ -191,9 +219,9 @@ describe('SRModulesController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return too early response if there are no meta', async () => {
+      it('Should return too early response if there are no meta', async () => {
         await moduleStorageService.upsert(curatedModule, 1);
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.id}`);
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });

@@ -117,19 +117,15 @@ export class KeysUpdateService {
 
     if (prevElMeta && prevElMeta?.blockNumber > currElMeta.number) {
       this.logger.warn('Previous data is newer than current data', prevElMeta);
-      console.log('curr', currElMeta);
       return;
     }
-
-    // TODO: еcли была реорганизация, может ли currElMeta.number быть меньше и нам надо обновиться ?
-
+    // Get modules from storage
     const storageModules = await this.srModulesStorage.findAll();
-    // get staking router modules from SR contract
-    const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
+    // Get staking modules from SR contract
+    const contractModules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
 
-    // TODO: is it correct that i use here modules from blockchain instead of storage
-
-    if (this.modulesWereDeleted(modules, storageModules)) {
+    //Is this scenario impossible ?
+    if (this.modulesWereDeleted(contractModules, storageModules)) {
       const error = new Error('Modules list is wrong');
       this.logger.error(error);
       process.exit(1);
@@ -137,28 +133,31 @@ export class KeysUpdateService {
 
     await this.entityManager.transactional(
       async () => {
-        // Update el meta in db
+        // Update EL meta in db
         await this.elMetaStorage.update(currElMeta);
 
-        for (const module of modules) {
-          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
+        for (const contractModule of contractModules) {
+          // Find implementation for staking module
+          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(contractModule.type);
+          // Read current nonce from contract
+          const currNonce = await moduleInstance.getCurrentNonce(contractModule.stakingModuleAddress, currElMeta.hash);
+          // Read module in storage
+          const moduleInStorage = await this.srModulesStorage.findOneById(contractModule.moduleId);
+          const prevNonce = moduleInStorage?.nonce;
+          // update staking module information
+          await this.srModulesStorage.upsert(contractModule, currNonce);
 
-          // At the moment lets think that for all modules it is possible to make decision base on nonce value
-          const currNonce = await moduleInstance.getCurrentNonce(module.stakingModuleAddress, currElMeta.hash);
-          const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
-
-          // now updating decision should be here moduleInstance.updateKeys
+          // now updating decision should be here moduleInstance.update
           // TODO: operators list also the same ?
-          if (moduleInStorage && moduleInStorage.nonce === currNonce) {
+          if (moduleInStorage && prevNonce === currNonce) {
             // nothing changed, don't need to update
             this.logger.log(
               `Nonce was not changed for staking module ${moduleInStorage.id}. Don't need to update keys and operators in database`,
             );
-            return;
+            continue;
           }
 
-          await this.srModulesStorage.upsert(module, currNonce);
-          await moduleInstance.update(module.stakingModuleAddress, currElMeta.hash);
+          await moduleInstance.update(contractModule.stakingModuleAddress, currElMeta.hash);
         }
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
@@ -177,6 +176,7 @@ export class KeysUpdateService {
         const elMeta = await this.stakingRouterService.getElBlockSnapshot();
 
         if (!elMeta) {
+          this.logger.warn("Meta is null, maybe data hasn't been written in db yet");
           return;
         }
 
@@ -221,9 +221,9 @@ export class KeysUpdateService {
 
   private modulesWereDeleted(contractModules: StakingModule[], storageModules: SrModuleEntity[]): boolean {
     // we want to check here that all modules from storageModules exist in list contractModules
-    // will check contractAddress
-    const addresses = contractModules.map((module) => module.stakingModuleAddress);
+    // will check moduleId
+    const ids = contractModules.map((contractModule) => contractModule.moduleId);
 
-    return !storageModules.every((module) => addresses.includes(module.stakingModuleAddress));
+    return !storageModules.every((contractModule) => ids.includes(contractModule.moduleId));
   }
 }

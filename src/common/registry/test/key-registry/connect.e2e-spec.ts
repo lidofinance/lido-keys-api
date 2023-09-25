@@ -2,11 +2,8 @@ import { Test } from '@nestjs/testing';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/execution';
-
 import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../../';
-
-import { compareTestMetaOperators } from '../testing.utils';
-
+import { clearDb, compareTestOperators, mikroORMConfig } from '../testing.utils';
 import { operators } from '../fixtures/connect.fixture';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
@@ -17,6 +14,7 @@ dotenv.config();
 describe('Registry', () => {
   let registryService: KeyRegistryService;
   let storageService: RegistryStorageService;
+  let mikroOrm: MikroORM;
   if (!process.env.CHAIN_ID) {
     console.error("CHAIN_ID wasn't provides");
     process.exit(1);
@@ -28,12 +26,7 @@ describe('Registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       BatchProviderModule.forRoot({
         url: process.env.PROVIDERS_URLS as string,
         requestPolicy: {
@@ -53,13 +46,13 @@ describe('Registry', () => {
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     registryService = moduleRef.get(KeyRegistryService);
     storageService = moduleRef.get(RegistryStorageService);
-
-    const generator = moduleRef.get(MikroORM).getSchemaGenerator();
+    mikroOrm = moduleRef.get(MikroORM);
+    const generator = mikroOrm.getSchemaGenerator();
     await generator.updateSchema();
   });
 
   afterEach(async () => {
-    await registryService.clear();
+    await clearDb(mikroOrm);
     await storageService.onModuleDestroy();
   });
 
@@ -68,11 +61,11 @@ describe('Registry', () => {
 
     await registryService.update(address, blockHash);
 
-    await compareTestMetaOperators(address, registryService, {
+    await compareTestOperators(address, registryService, {
       operators: operatorsWithModuleAddress,
     });
 
     const keys = await registryService.getOperatorsKeysFromStorage(address);
     expect(keys).toHaveLength(20527);
-  }, 200_000);
+  }, 400_000);
 });

@@ -17,11 +17,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { SRModulesValidatorsService } from './sr-modules-validators.service';
-import { ModuleId } from 'http/common/entities/';
+import { ModuleId } from '../common/entities/';
 import { ValidatorsQuery } from './entities/query';
 import { ExitPresignMessageListResponse, ExitValidatorListResponse } from './entities';
-import { OperatorIdParam } from 'http/common/entities/operator-id-param';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { OperatorId } from '../common/entities/operator-id';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
 
 @Controller('modules')
 @ApiTags('validators')
@@ -56,12 +56,8 @@ export class SRModulesValidatorsController {
     example: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
     description: 'Staking router module_id or contract address.',
   })
-  getOldestValidators(
-    @Param('module_id') moduleId: ModuleId,
-    @Param() operator: OperatorIdParam,
-    @Query() query: ValidatorsQuery,
-  ) {
-    return this.validatorsService.getOldestLidoValidators(moduleId, operator.operator_id, query);
+  getOldestValidators(@Param() module: ModuleId, @Param() operator: OperatorId, @Query() query: ValidatorsQuery) {
+    return this.validatorsService.getOldestLidoValidators(module.module_id, operator.operator_id, query);
   }
 
   @Version('1')
@@ -93,10 +89,10 @@ export class SRModulesValidatorsController {
     description: 'Staking router module_id or contract address.',
   })
   getMessagesForOldestValidators(
-    @Param('module_id') moduleId: ModuleId,
-    @Param() operator: OperatorIdParam,
+    @Param() module: ModuleId,
+    @Param() operator: OperatorId,
     @Query() query: ValidatorsQuery,
   ) {
-    return this.validatorsService.getVoluntaryExitMessages(moduleId, operator.operator_id, query);
+    return this.validatorsService.getVoluntaryExitMessages(module.module_id, operator.operator_id, query);
   }
 }

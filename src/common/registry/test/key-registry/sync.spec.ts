@@ -6,6 +6,7 @@ import { getDefaultProvider, Provider } from '@ethersproject/providers';
 import { Test } from '@nestjs/testing';
 import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../../index';
 import { MikroORM } from '@mikro-orm/core';
+import { mikroORMConfig } from '../testing.utils';
 
 describe('Sync module initializing', () => {
   const provider = getDefaultProvider('mainnet');
@@ -26,12 +27,7 @@ describe('Sync module initializing', () => {
 
   test('forRoot', async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forRoot({
         provider,

@@ -47,6 +47,7 @@ export class ValidatorRegistryModule {
         {
           provide: REGISTRY_GLOBAL_OPTIONS_TOKEN,
           useFactory: options.useFactory,
+          inject: options.inject,
         },
       ],
       exports: [RegistryFetchModule],
