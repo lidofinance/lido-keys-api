@@ -199,7 +199,7 @@ describe('Simple DVT deploy', () => {
     expect(operators[0].name).toBe(sdvtNodeOperator1.name);
   });
 
-  test('add simple-dvt node operator with key', async () => {
+  test('add new simple-dvt node operator without key', async () => {
     const simpleDvtState = deployState.stakingRouterData.stakingModules[1];
     const srModuleAddress = convertAddressToLowerCase(simpleDvtState.stakingModuleAddress);
     const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
