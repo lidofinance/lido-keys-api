@@ -67,6 +67,26 @@ export abstract class AbstractRegistryService {
     );
   }
 
+  public async updateOperators(moduleAddress: string, blockHash: string): Promise<void> {
+    // returned operators in asc order
+    // or add count method and add return largest index
+    const prevOperators = await this.getOperatorsFromStorage(moduleAddress);
+    const prevOperatorsCount = prevOperators.length;
+    const currOperatorsCount = await this.operatorFetch.count(moduleAddress, { blockTag: { blockHash } });
+
+    if (prevOperatorsCount === currOperatorsCount) {
+      return;
+    }
+
+    // add operator ?
+    const fromIndex = prevOperators[prevOperatorsCount - 1].index + 1;
+    const toIndex = currOperatorsCount;
+
+    const newOperators = await this.operatorFetch.fetch(moduleAddress, fromIndex, toIndex);
+
+    this.operatorStorage.save(newOperators);
+  }
+
   /** returns operators from the contract */
   public async getOperatorsFromContract(moduleAddress: string, blockHash: string) {
     const overrides = { blockTag: { blockHash } };

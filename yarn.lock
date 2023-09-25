@@ -85,7 +85,7 @@
     "@aragon/apps-vault" "^4.0.0"
     "@aragon/os" "4.2.0"
 
-"@aragon/apps-lido@github:lidofinance/aragon-apps#master":
+"@aragon/apps-lido@lidofinance/aragon-apps#master":
   version "1.0.0"
   resolved "https://codeload.github.com/lidofinance/aragon-apps/tar.gz/b09834d29c0db211ddd50f50905cbeff257fc8e0"
 
@@ -4456,10 +4456,10 @@ chrome-trace-event@^1.0.2:
   resolved "https://registry.yarnpkg.com/chrome-trace-event/-/chrome-trace-event-1.0.3.tgz#1015eced4741e15d06664a957dbbf50d041e26ac"
   integrity sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==
 
-chronix@^0.0.2-beta-plugin-v8:
-  version "0.0.2-beta-plugin-v8"
-  resolved "https://registry.yarnpkg.com/chronix/-/chronix-0.0.2-beta-plugin-v8.tgz#c150d1bf98d645f6141887e00ef392dd6b1e3cba"
-  integrity sha512-vezF88/XlyciZpvFv9tLdXFaMPEOKVMHBr5e1XNXUP/q6eNHU22lUZwKHLCMFO/ZDtjWyMwHOiNVQCBsP+JtBQ==
+chronix@^0.0.2-beta-plugin-v9:
+  version "0.0.2-beta-plugin-v9"
+  resolved "https://registry.yarnpkg.com/chronix/-/chronix-0.0.2-beta-plugin-v9.tgz#5e08c4bd0bca1a6698bfe927402cc15e2e665a40"
+  integrity sha512-dOoGuUxidxfEV3hhqOAkmzhNryJCnQUvUJMROPsG4HxLAnn1uM+/HeKyudl0XWDgj1TQ7kXtJo90jnFQxni3Ww==
   dependencies:
     "@aragon/os" "^4.4.0"
     "@nomiclabs/hardhat-ethers" "^2.2.3"

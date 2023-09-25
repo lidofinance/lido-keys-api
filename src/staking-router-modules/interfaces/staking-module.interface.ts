@@ -33,6 +33,8 @@ export interface StakingModule {
 export interface StakingModuleInterface {
   update(moduleAddress: string, blockHash: string): Promise<void>;
 
+  updateOperators(moduleAddress: string, blockHash: string): Promise<void>;
+
   getKeysStream(moduleAddress: string, filters: KeysFilter): AsyncGenerator<RegistryKey>;
 
   getKeys(moduleAddress: string, filters: KeysFilter): Promise<RegistryKey[]>;

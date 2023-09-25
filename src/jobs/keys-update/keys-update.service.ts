@@ -147,13 +147,10 @@ export class KeysUpdateService {
           // update staking module information
           await this.srModulesStorage.upsert(contractModule, currNonce);
 
-          // now updating decision should be here moduleInstance.update
-          // TODO: operators list also the same ?
-          if (moduleInStorage && prevNonce === currNonce) {
-            // nothing changed, don't need to update
-            this.logger.log(
-              `Nonce was not changed for staking module ${moduleInStorage.id}. Don't need to update keys and operators in database`,
-            );
+          this.logger.log(`Nonce previous value: ${prevNonce}, nonce current value: ${currNonce}`);
+
+          if (prevNonce === currNonce) {
+            await moduleInstance.updateOperators(contractModule.stakingModuleAddress, currElMeta.hash);
             continue;
           }
 
