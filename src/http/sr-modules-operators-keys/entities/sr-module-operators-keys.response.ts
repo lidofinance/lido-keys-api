@@ -1,4 +1,4 @@
-import { ApiProperty, ApiExtraModels } from '@nestjs/swagger';
+import { ApiProperty, ApiExtraModels, getSchemaPath } from '@nestjs/swagger';
 import { Key, Operator, StakingModuleResponse, ELMeta } from '../../common/entities/';
 
 @ApiExtraModels(Operator)
@@ -41,24 +41,24 @@ export class SRModuleOperatorsKeysResponse {
 export class SRModulesOperatorsKeysStreamResponse {
   @ApiProperty({
     type: 'array',
-    items: { oneOf: [{ $ref: getSchemaPath(CuratedOperator) }] },
+    items: { oneOf: [{ $ref: getSchemaPath(Operator) }] },
     description: 'Operators of staking router module',
   })
-  operators?: SRModuleOperator[];
+  operators?: Operator[];
 
   @ApiProperty({
     type: 'array',
-    items: { oneOf: [{ $ref: getSchemaPath(CuratedKey) }] },
+    items: { oneOf: [{ $ref: getSchemaPath(Key) }] },
     description: 'Keys of staking router module',
   })
-  keys?: SRModuleKey[];
+  keys?: Key[];
 
   @ApiProperty({
     type: 'array',
-    items: { oneOf: [{ $ref: getSchemaPath(SRModule) }] },
+    items: { oneOf: [{ $ref: getSchemaPath(StakingModuleResponse) }] },
     description: 'List of Staking Router',
   })
-  modules?: SRModule[];
+  modules?: StakingModuleResponse[];
 
   @ApiProperty({
     nullable: true,
