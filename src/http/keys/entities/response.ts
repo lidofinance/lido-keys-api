@@ -4,14 +4,14 @@ import { ELMeta, Key } from '../../common/entities';
 export class KeyListResponse {
   @ApiProperty({
     type: () => [Key],
-    description: 'List of keys with general fields for all modules and SR module address',
+    description: 'List of keys for all modules',
   })
   data!: Key[];
 
   @ApiProperty({
     type: () => ELMeta,
     nullable: true,
-    description: 'Meta for keys endpoints',
+    description: 'Meta',
   })
   meta!: ELMeta;
 }

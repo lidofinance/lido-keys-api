@@ -4,13 +4,13 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ModuleRef } from '@nestjs/core';
 import { StakingModuleInterface } from './interfaces/staking-module.interface';
 import { httpExceptionTooEarlyResp } from '../http/common/entities/http-exceptions';
-import { ELBlockSnapshot, SRModule } from '../http/common/entities';
+import { ELBlockSnapshot } from '../http/common/entities';
 import { config } from './staking-module-impl-config';
 import { IsolationLevel } from '@mikro-orm/core';
-import { SrModuleEntity } from 'storage/sr-module.entity';
+import { SrModuleEntity } from '../storage/sr-module.entity';
 import { SRModuleStorageService } from '../storage/sr-module.storage';
 import { ElMetaStorageService } from '../storage/el-meta.storage';
-import { ElMetaEntity } from 'storage/el-meta.entity';
+import { ElMetaEntity } from '../storage/el-meta.entity';
 
 @Injectable()
 export class StakingRouterService {
@@ -98,7 +98,7 @@ export class StakingRouterService {
    */
   public async getStakingModuleAndMeta(
     moduleId: string | number,
-  ): Promise<{ module: SRModule; elBlockSnapshot: ELBlockSnapshot }> {
+  ): Promise<{ module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot }> {
     const { stakingModule, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
         const stakingModule = await this.getStakingModule(moduleId);
@@ -118,7 +118,6 @@ export class StakingRouterService {
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
 
-    // TODO: in this module sometime we return module from db as it is , sometime use SRModule from http/entities. need to choose how we will do it
-    return { module: new SRModule(stakingModule), elBlockSnapshot: new ELBlockSnapshot(elBlockSnapshot) };
+    return { module: stakingModule, elBlockSnapshot: new ELBlockSnapshot(elBlockSnapshot) };
   }
 }

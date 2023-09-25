@@ -4,18 +4,19 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { operator } from '../fixtures/operator.fixture';
 import { RegistryStorageModule, RegistryStorageService, RegistryOperatorStorageService } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
-import { ConfigService } from '../../../config';
 import { mikroORMConfig } from '../testing.utils';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 describe('Operators', () => {
   let storageService: RegistryOperatorStorageService;
   let registryService: RegistryStorageService;
-  const configService: ConfigService = new ConfigService();
-  if (!configService.get('CHAIN_ID')) {
+  if (!process.env.CHAIN_ID) {
     console.error("CHAIN_ID wasn't provides");
     process.exit(1);
   }
-  const address = REGISTRY_CONTRACT_ADDRESSES[configService.get('CHAIN_ID')];
+  const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
 
   beforeEach(async () => {
     const imports = [MikroOrmModule.forRoot(mikroORMConfig), RegistryStorageModule.forFeature()];

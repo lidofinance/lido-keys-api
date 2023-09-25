@@ -199,7 +199,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
 
       it('should return all operators that satisfy the request', async () => {
         // Get all operators without filters
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/operators`);
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators`);
 
         const respByContractAddress = await request(app.getHttpServer()).get(
           `/v1/modules/${dvtModule.stakingModuleAddress}/operators`,
@@ -219,7 +219,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
           },
         });
 
-        const resp2 = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.id}/operators`);
+        const resp2 = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}/operators`);
 
         expect(resp2.status).toEqual(200);
         expect(resp2.body.data.operators).toEqual(expect.arrayContaining([operatorOneCurated, operatorTwoCurated]));
@@ -270,7 +270,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
         await operatorsStorageService.save(operators);
         await moduleStorageService.upsert(curatedModule, 1);
 
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.id}/operators`);
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}/operators`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
@@ -296,7 +296,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
 
       it('should return operator and module', async () => {
         const resp = await request(app.getHttpServer()).get(
-          `/v1/modules/${dvtModule.id}/operators/${operatorOneDvt.index}`,
+          `/v1/modules/${dvtModule.moduleId}/operators/${operatorOneDvt.index}`,
         );
 
         expect(resp.status).toEqual(200);
@@ -311,7 +311,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
       });
 
       it('should return 404 if operator was not found', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/operators/777`);
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/777`);
         expect(resp.status).toEqual(404);
         expect(resp.body).toEqual({
           error: 'Not Found',
@@ -331,7 +331,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
       });
 
       it('should return 400 error if operator_id is not a number', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.id}/operators/somenumber`);
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/somenumber`);
         expect(resp.status).toEqual(400);
         expect(resp.body).toEqual({
           error: 'Bad Request',
@@ -368,7 +368,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
         await moduleStorageService.upsert(curatedModule, 1);
 
         const resp = await request(app.getHttpServer()).get(
-          `/v1/modules/${curatedModule.id}/operators/${operatorOneCurated.index}`,
+          `/v1/modules/${curatedModule.moduleId}/operators/${operatorOneCurated.index}`,
         );
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiExtraModels } from '@nestjs/swagger';
-import { SRModule, ELMeta, Operator } from '../../common/entities/';
+import { StakingModuleResponse, ELMeta, Operator } from '../../common/entities/';
 
 @ApiExtraModels(Operator)
 export class OperatorAndSRModule {
@@ -11,9 +11,9 @@ export class OperatorAndSRModule {
 
   @ApiProperty({
     description: 'Detailed Staking Router information',
-    type: () => SRModule,
+    type: () => StakingModuleResponse,
   })
-  module!: SRModule;
+  module!: StakingModuleResponse;
 }
 
 export class SRModuleOperatorResponse {

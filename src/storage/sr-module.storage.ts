@@ -1,5 +1,3 @@
-import { QueryOrder } from '@mikro-orm/core';
-import { FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { StakingModule } from '../staking-router-modules/interfaces/staking-module.interface';
 import { SrModuleEntity } from './sr-module.entity';
@@ -8,14 +6,6 @@ import { SRModuleRepository } from './sr-module.repository';
 @Injectable()
 export class SRModuleStorageService {
   constructor(private readonly repository: SRModuleRepository) {}
-
-  /** find module */
-  async find<P extends string = never>(
-    where: FilterQuery<SrModuleEntity>,
-    options?: FindOptions<SrModuleEntity, P>,
-  ): Promise<SrModuleEntity[]> {
-    return await this.repository.find(where, options);
-  }
 
   /** find key by index */
   async findOneById(moduleId: number): Promise<SrModuleEntity | null> {
@@ -28,23 +18,24 @@ export class SRModuleStorageService {
 
   /** find all keys */
   async findAll(): Promise<SrModuleEntity[]> {
-    return await this.repository.findAll({
-      orderBy: [{ id: QueryOrder.ASC }],
-    });
+    return await this.repository.findAll();
   }
 
-  async upsert(srModule: StakingModule, nonce: number) {
+  async upsert(srModule: StakingModule, nonce: number): Promise<void> {
     // Try to find an existing entity by moduleId or stakingModuleAddress
     let existingModule = await this.repository.findOne({
-      moduleId: srModule.id,
+      moduleId: srModule.moduleId,
     });
 
     if (!existingModule) {
       // If the entity doesn't exist, create a new one
-      existingModule = new SrModuleEntity(srModule, nonce);
+      existingModule = new SrModuleEntity(
+        { ...srModule, stakingModuleAddress: srModule.stakingModuleAddress.toLowerCase() },
+        nonce,
+      );
     } else {
       // If the entity exists, update its properties
-      existingModule.stakingModuleFee = srModule.stakingModuleFee;
+      existingModule.moduleFee = srModule.moduleFee;
       existingModule.treasuryFee = srModule.treasuryFee;
       existingModule.targetShare = srModule.targetShare;
       existingModule.status = srModule.status;
@@ -52,15 +43,12 @@ export class SRModuleStorageService {
       existingModule.lastDepositAt = srModule.lastDepositAt;
       existingModule.lastDepositBlock = srModule.lastDepositBlock;
       existingModule.exitedValidatorsCount = srModule.exitedValidatorsCount;
-      existingModule.type = srModule.type;
       existingModule.active = srModule.active;
       existingModule.nonce = nonce;
     }
 
     // Save the entity (either a new one or an updated one)
     await this.repository.persistAndFlush(existingModule);
-
-    return existingModule;
   }
 
   /** removes all modules */

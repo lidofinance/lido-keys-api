@@ -7,7 +7,7 @@ import {
   ExitPresignMessage,
   ValidatorsQuery,
 } from './entities';
-import { CLBlockSnapshot } from '../common/entities/';
+import { CLBlockSnapshot, ELBlockSnapshot } from '../common/entities/';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { Validator } from '@lido-nestjs/validators-registry';
 import { ValidatorsService } from '../../validators';
@@ -20,6 +20,7 @@ import {
 } from '../../validators/validators.constants';
 import { httpExceptionTooEarlyResp } from '../common/entities/http-exceptions';
 import { IsolationLevel } from '@mikro-orm/core';
+import { SrModuleEntity } from 'storage/sr-module.entity';
 
 @Injectable()
 export class SRModulesValidatorsService {
@@ -92,7 +93,8 @@ export class SRModulesValidatorsService {
   ): Promise<{ validators: Validator[]; clBlockSnapshot: CLBlockSnapshot }> {
     const { validators, meta } = await this.entityManager.transactional(
       async () => {
-        const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
+        const { module, elBlockSnapshot }: { module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot } =
+          await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
 
         // read from config name of module that implement functions to fetch and store keys for type
         // TODO: check what will happen if implementation is not a provider of StakingRouterModule

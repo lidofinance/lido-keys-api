@@ -18,6 +18,19 @@ import { AppModule } from './app-testing.module';
 dotenv.config();
 jest.setTimeout(100_000);
 
+function convertAddressToLowerCase(input: string): string {
+  const prefix = '0x';
+
+  if (input.startsWith(prefix)) {
+    const addressPart = input.slice(prefix.length);
+    const lowercasedAddressPart = addressPart.toLowerCase();
+    return `${prefix}${lowercasedAddressPart}`;
+  } else {
+    // If the input doesn't start with '0x', return it as is.
+    return input;
+  }
+}
+
 describe('Simple DVT deploy', () => {
   let sdk: chronix.SDK;
   let session: chronix.HardhatSession;
@@ -119,8 +132,9 @@ describe('Simple DVT deploy', () => {
 
     for (const [, srModule] of srModules.entries()) {
       const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(srModule.type);
-      const keys = await moduleInstance.getKeys(srModule.stakingModuleAddress, {});
-      const operators = await moduleInstance.getOperators(srModule.stakingModuleAddress);
+      const srModuleAddress = convertAddressToLowerCase(srModule.stakingModuleAddress);
+      const keys = await moduleInstance.getKeys(srModuleAddress, {});
+      const operators = await moduleInstance.getOperators(srModuleAddress);
 
       expect(operators).toHaveLength(2);
       expect(keys).toHaveLength(keysTotal);
@@ -146,9 +160,10 @@ describe('Simple DVT deploy', () => {
   test('simple dvt module must be empty', async () => {
     const simpleDvtState = deployState.stakingRouterData.stakingModules[1];
 
+    const srModuleAddress = convertAddressToLowerCase(simpleDvtState.stakingModuleAddress);
     const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
-    const keys = await moduleInstance.getKeys(simpleDvtState.stakingModuleAddress, {});
-    const operators = await moduleInstance.getOperators(simpleDvtState.stakingModuleAddress);
+    const keys = await moduleInstance.getKeys(srModuleAddress, {});
+    const operators = await moduleInstance.getOperators(srModuleAddress);
 
     expect(keys).toHaveLength(0);
     expect(operators).toHaveLength(0);
@@ -173,9 +188,11 @@ describe('Simple DVT deploy', () => {
 
     await keysUpdateService.update();
 
+    const srModuleAddress = convertAddressToLowerCase(simpleDvtState.stakingModuleAddress);
+
     const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
-    const keys = await moduleInstance.getKeys(simpleDvtState.stakingModuleAddress, {});
-    const operators = await moduleInstance.getOperators(simpleDvtState.stakingModuleAddress);
+    const keys = await moduleInstance.getKeys(srModuleAddress, {});
+    const operators = await moduleInstance.getOperators(srModuleAddress);
 
     expect(keys).toHaveLength(1);
     expect(operators).toHaveLength(1);

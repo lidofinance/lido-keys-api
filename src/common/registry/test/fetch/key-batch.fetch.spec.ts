@@ -5,6 +5,7 @@ import { Interface } from '@ethersproject/abi';
 import { getDefaultProvider } from '@ethersproject/providers';
 import { keysResponse, usedStatuses, mergedKeys, mergedSignatures } from '../fixtures/key-batch.fixture';
 import { RegistryFetchModule, RegistryKeyBatchFetchService } from '../../';
+
 describe('Keys', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
   const CHAIN_ID = process.env.CHAIN_ID || 1;

@@ -5,11 +5,11 @@ import { STAKING_MODULE_TYPE } from '../constants';
 // interface of modules we get from SR contract
 export interface StakingModule {
   // unique id of the staking module
-  id: number;
+  moduleId: number;
   // address of staking module
   stakingModuleAddress: string;
   // part of the fee taken from staking rewards that goes to the staking module
-  stakingModuleFee: number;
+  moduleFee: number;
   // part of the fee taken from staking rewards that goes to the treasury
   treasuryFee: number;
   // target percent of total validators in protocol, in BP
@@ -25,7 +25,7 @@ export interface StakingModule {
   // number of exited validators
   exitedValidatorsCount: number;
   // type of staking router module
-  type: STAKING_MODULE_TYPE;
+  type: string; //STAKING_MODULE_TYPE;
   // is module active
   active: boolean;
 }

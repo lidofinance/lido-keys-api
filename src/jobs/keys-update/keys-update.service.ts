@@ -119,11 +119,13 @@ export class KeysUpdateService {
       this.logger.warn('Previous data is newer than current data', prevElMeta);
       return;
     }
+    // Get modules from storage
     const storageModules = await this.srModulesStorage.findAll();
-    // get staking router modules from SR contract
-    const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
+    // Get staking modules from SR contract
+    const contractModules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
 
-    if (this.modulesWereDeleted(modules, storageModules)) {
+    //Is this scenario impossible ?
+    if (this.modulesWereDeleted(contractModules, storageModules)) {
       const error = new Error('Modules list is wrong');
       this.logger.error(error);
       process.exit(1);
@@ -131,16 +133,19 @@ export class KeysUpdateService {
 
     await this.entityManager.transactional(
       async () => {
-        // Update el meta in db
+        // Update EL meta in db
         await this.elMetaStorage.update(currElMeta);
 
-        for (const module of modules) {
-          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-          const currNonce = await moduleInstance.getCurrentNonce(module.stakingModuleAddress, currElMeta.hash);
-          const moduleInStorage = await this.srModulesStorage.findOneById(module.id);
+        for (const contractModule of contractModules) {
+          // Find implementation for staking module
+          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(contractModule.type);
+          // Read current nonce from contract
+          const currNonce = await moduleInstance.getCurrentNonce(contractModule.stakingModuleAddress, currElMeta.hash);
+          // Read module in storage
+          const moduleInStorage = await this.srModulesStorage.findOneById(contractModule.moduleId);
           const prevNonce = moduleInStorage?.nonce;
           // update staking module information
-          await this.srModulesStorage.upsert(module, currNonce);
+          await this.srModulesStorage.upsert(contractModule, currNonce);
 
           // now updating decision should be here moduleInstance.update
           // TODO: operators list also the same ?
@@ -152,7 +157,7 @@ export class KeysUpdateService {
             continue;
           }
 
-          await moduleInstance.update(module.stakingModuleAddress, currElMeta.hash);
+          await moduleInstance.update(contractModule.stakingModuleAddress, currElMeta.hash);
         }
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
@@ -216,9 +221,9 @@ export class KeysUpdateService {
 
   private modulesWereDeleted(contractModules: StakingModule[], storageModules: SrModuleEntity[]): boolean {
     // we want to check here that all modules from storageModules exist in list contractModules
-    // will check contractAddress
-    const addresses = contractModules.map((module) => module.stakingModuleAddress);
+    // will check moduleId
+    const ids = contractModules.map((contractModule) => contractModule.moduleId);
 
-    return !storageModules.every((module) => addresses.includes(module.stakingModuleAddress));
+    return !storageModules.every((contractModule) => ids.includes(contractModule.moduleId));
   }
 }

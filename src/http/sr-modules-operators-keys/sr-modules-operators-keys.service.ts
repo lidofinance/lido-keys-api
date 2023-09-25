@@ -1,9 +1,10 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ELBlockSnapshot, Key, Operator, SRModule } from '../common/entities';
+import { ELBlockSnapshot, Key, Operator, StakingModuleResponse } from '../common/entities';
 import { KeyQuery } from '../common/entities';
 
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
+import { SrModuleEntity } from 'storage/sr-module.entity';
 
 @Injectable()
 export class SRModulesOperatorsKeysService {
@@ -18,10 +19,11 @@ export class SRModulesOperatorsKeysService {
   ): Promise<{
     keysGenerator: AsyncGenerator<Key>;
     operators: Operator[];
-    module: SRModule;
+    module: StakingModuleResponse;
     meta: { elBlockSnapshot: ELBlockSnapshot };
   }> {
-    const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
+    const { module, elBlockSnapshot }: { module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot } =
+      await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
 
     const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
@@ -33,6 +35,6 @@ export class SRModulesOperatorsKeysService {
     }
     const operators: Operator[] = await moduleInstance.getOperators(module.stakingModuleAddress, operatorsFilter);
 
-    return { operators, keysGenerator, module, meta: { elBlockSnapshot } };
+    return { operators, keysGenerator, module: new StakingModuleResponse(module), meta: { elBlockSnapshot } };
   }
 }

@@ -47,8 +47,8 @@ import { StakingRouterModule } from '../staking-router-modules';
     ScheduleModule.forRoot(),
     KeyRegistryModule.forRootAsync({
       inject: [SimpleFallbackJsonRpcBatchProvider, ConfigService],
-      async useFactory(provider, configService) {
-        return { provider, keysBatchSize: configService?.get('KEYS_FETCH_BATCH_SIZE') };
+      async useFactory(provider: SimpleFallbackJsonRpcBatchProvider, configService: ConfigService) {
+        return { provider, keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE') };
       },
     }),
     StakingRouterModule,

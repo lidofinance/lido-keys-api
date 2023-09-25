@@ -1,5 +1,5 @@
 import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
-import { Operator, SRModule } from '../common/entities/';
+import { ELBlockSnapshot, Operator, StakingModuleResponse } from '../common/entities/';
 import {
   GroupedByModuleOperatorListResponse,
   SRModuleOperatorListResponse,
@@ -9,6 +9,7 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
+import { SrModuleEntity } from 'storage/sr-module.entity';
 
 @Injectable()
 export class SRModulesOperatorsService {
@@ -21,14 +22,18 @@ export class SRModulesOperatorsService {
   public async getAll(): Promise<GroupedByModuleOperatorListResponse> {
     const { operatorsByModules, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
-        const { stakingModules, elBlockSnapshot } = await this.stakingRouterService.getStakingModulesAndMeta();
-        const operatorsByModules: { operators: Operator[]; module: SRModule }[] = [];
+        const {
+          stakingModules,
+          elBlockSnapshot,
+        }: { stakingModules: SrModuleEntity[]; elBlockSnapshot: ELBlockSnapshot } =
+          await this.stakingRouterService.getStakingModulesAndMeta();
+        const operatorsByModules: { operators: Operator[]; module: StakingModuleResponse }[] = [];
 
-        for (const module of stakingModules) {
-          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-          const operators: Operator[] = await moduleInstance.getOperators(module.stakingModuleAddress, {});
+        for (const stakingModule of stakingModules) {
+          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(stakingModule.type);
+          const operators: Operator[] = await moduleInstance.getOperators(stakingModule.stakingModuleAddress, {});
 
-          operatorsByModules.push({ operators, module: new SRModule(module) });
+          operatorsByModules.push({ operators, module: new StakingModuleResponse(stakingModule) });
         }
 
         return { operatorsByModules, elBlockSnapshot };
@@ -42,7 +47,8 @@ export class SRModulesOperatorsService {
   public async getByModule(moduleId: string | number): Promise<SRModuleOperatorListResponse> {
     const { operators, module, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
-        const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
+        const { module, elBlockSnapshot }: { module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot } =
+          await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
 
         const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
@@ -55,7 +61,7 @@ export class SRModulesOperatorsService {
     return {
       data: {
         operators,
-        module,
+        module: new StakingModuleResponse(module),
       },
       meta: { elBlockSnapshot },
     };
@@ -64,7 +70,8 @@ export class SRModulesOperatorsService {
   public async getModuleOperator(moduleId: string | number, operatorIndex: number): Promise<SRModuleOperatorResponse> {
     const { operator, module, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
-        const { module, elBlockSnapshot } = await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
+        const { module, elBlockSnapshot }: { module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot } =
+          await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
         const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
         const operator: Operator | null = await moduleInstance.getOperator(module.stakingModuleAddress, operatorIndex);
@@ -80,7 +87,7 @@ export class SRModulesOperatorsService {
       );
     }
     return {
-      data: { operator, module },
+      data: { operator, module: new StakingModuleResponse(module) },
       meta: { elBlockSnapshot },
     };
   }
