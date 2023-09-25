@@ -24,7 +24,6 @@ import { IsolationLevel } from '@mikro-orm/core';
 @Injectable()
 export abstract class AbstractRegistryService {
   constructor(
-    @Inject(REGISTRY_CONTRACT_TOKEN) protected registryContract: Registry,
     @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
 
     protected readonly metaFetch: RegistryMetaFetchService,
@@ -67,30 +66,30 @@ export abstract class AbstractRegistryService {
     );
   }
 
-  public async updateOperators(moduleAddress: string, blockHash: string): Promise<void> {
-    // returned operators in asc order
-    // or add count method and add return largest index
-    const prevOperators = await this.getOperatorsFromStorage(moduleAddress);
-    const prevOperatorsCount = prevOperators.length;
-    const currOperatorsCount = await this.operatorFetch.count(moduleAddress, { blockTag: { blockHash } });
-
-    if (prevOperatorsCount === currOperatorsCount) {
-      return;
-    }
-
-    // add operator ?
-    const fromIndex = prevOperators[prevOperatorsCount - 1].index + 1;
-    const toIndex = currOperatorsCount;
-
-    const newOperators = await this.operatorFetch.fetch(moduleAddress, fromIndex, toIndex);
-
-    this.operatorStorage.save(newOperators);
+  /**
+   *
+   * @param moduleAddress contract address
+   * @param prevBlockHash previous block number for that operators were updated
+   * @param currBlockHash current block number
+   * @returns were operators updated or not
+   */
+  public async operatorsWereUpdated(
+    moduleAddress: string,
+    fromBlockNumber: number,
+    toBlockNumber: number,
+  ): Promise<boolean> {
+    return await this.operatorFetch.operatorsWereUpdated(moduleAddress, fromBlockNumber, toBlockNumber);
   }
 
   /** returns operators from the contract */
   public async getOperatorsFromContract(moduleAddress: string, blockHash: string) {
     const overrides = { blockTag: { blockHash } };
     return await this.operatorFetch.fetch(moduleAddress, 0, -1, overrides);
+  }
+
+  public async updateOperators(moduleAddress, blockHash): Promise<void> {
+    const currentOperators = await this.getOperatorsFromContract(moduleAddress, blockHash);
+    await this.saveOperators(moduleAddress, currentOperators);
   }
 
   /** returns the right border of the update keys range */

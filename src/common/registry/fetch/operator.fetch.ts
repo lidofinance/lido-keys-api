@@ -14,6 +14,51 @@ export class RegistryOperatorFetchService {
     return this.contract.attach(moduleAddress);
   }
 
+  public async operatorsWereUpdated(
+    moduleAddress: string,
+    fromBlockNumber: number,
+    toBlockNumber: number,
+  ): Promise<boolean> {
+    if (fromBlockNumber > toBlockNumber) {
+      return false;
+    }
+
+    const nodeOperatorAddedFilter = this.getContract(moduleAddress).filters['NodeOperatorAdded']();
+    const nodeOperatorAddedEvents = await this.getContract(moduleAddress).queryFilter(
+      nodeOperatorAddedFilter,
+      fromBlockNumber,
+      toBlockNumber,
+    );
+
+    if (nodeOperatorAddedEvents.length) {
+      return true;
+    }
+
+    const nodeOperatorNameSetFilter = this.getContract(moduleAddress).filters['NodeOperatorNameSet']();
+    const nodeOperatorNameSetEvents = await this.getContract(moduleAddress).queryFilter(
+      nodeOperatorNameSetFilter,
+      fromBlockNumber,
+      toBlockNumber,
+    );
+
+    if (nodeOperatorNameSetEvents.length) {
+      return true;
+    }
+    const nodeOperatorRewardAddressSetFilter =
+      this.getContract(moduleAddress).filters['NodeOperatorRewardAddressSet']();
+    const nodeOperatorRewardAddressSetEvents = await this.getContract(moduleAddress).queryFilter(
+      nodeOperatorRewardAddressSetFilter,
+      fromBlockNumber,
+      toBlockNumber,
+    );
+
+    if (nodeOperatorRewardAddressSetEvents.length) {
+      return true;
+    }
+
+    return false;
+  }
+
   /** fetches number of operators */
   public async count(moduleAddress: string, overrides: CallOverrides = {}): Promise<number> {
     const bigNumber = await this.getContract(moduleAddress).getNodeOperatorsCount(overrides as any);

@@ -24,6 +24,14 @@ export class CuratedModuleService implements StakingModuleInterface {
     await this.keyRegistryService.update(moduleAddress, blockHash);
   }
 
+  public async operatorsWereUpdated(
+    moduleAddress: string,
+    fromBlockNumber: number,
+    toBlockNumber: number,
+  ): Promise<boolean> {
+    return await this.keyRegistryService.operatorsWereUpdated(moduleAddress, fromBlockNumber, toBlockNumber);
+  }
+
   public async updateOperators(moduleAddress: string, blockHash: string): Promise<void> {
     await this.keyRegistryService.updateOperators(moduleAddress, blockHash);
   }

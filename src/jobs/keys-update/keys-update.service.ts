@@ -150,7 +150,21 @@ export class KeysUpdateService {
           this.logger.log(`Nonce previous value: ${prevNonce}, nonce current value: ${currNonce}`);
 
           if (prevNonce === currNonce) {
-            await moduleInstance.updateOperators(contractModule.stakingModuleAddress, currElMeta.hash);
+            // case when prevELMeta is undefined but prevNonce === currNonce looks like invalid
+            if (
+              prevElMeta &&
+              prevElMeta.blockNumber + 1 <= currElMeta.number &&
+              (await moduleInstance.operatorsWereUpdated(
+                contractModule.stakingModuleAddress,
+                prevElMeta.blockNumber + 1,
+                currElMeta.number,
+              ))
+            ) {
+              this.logger.log('Update events happened, need to update operators');
+              await moduleInstance.updateOperators(contractModule.stakingModuleAddress, currElMeta.hash);
+            }
+
+            this.logger.log('No need to update operators');
             continue;
           }
 
