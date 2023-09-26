@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Key, SRModule, ELMeta } from 'http/common/entities/';
+import { Key, StakingModuleResponse, ELMeta } from '../../common/entities/';
 
 export class KeyListWithModule {
   @ApiProperty({
@@ -10,9 +10,9 @@ export class KeyListWithModule {
 
   @ApiProperty({
     description: 'Detailed Staking Router information',
-    type: () => SRModule,
+    type: () => StakingModuleResponse,
   })
-  module!: SRModule;
+  module!: StakingModuleResponse;
 }
 
 export class GroupedByModuleKeyListResponse {

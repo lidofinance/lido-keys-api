@@ -2,9 +2,19 @@ import { Test } from '@nestjs/testing';
 import { getDefaultProvider } from '@ethersproject/providers';
 import { isAddress } from '@ethersproject/address';
 import { RegistryFetchModule, RegistryOperatorFetchService } from '../../';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 describe('Operators', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
+  if (!process.env.CHAIN_ID) {
+    console.error(process.env.CHAIN_ID, process.env.PROVIDERS_URLS, "CHAIN_ID wasn't provides");
+    process.exit(1);
+  }
+  const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
+
   let fetchService: RegistryOperatorFetchService;
 
   beforeEach(async () => {
@@ -14,13 +24,13 @@ describe('Operators', () => {
   });
 
   test('count', async () => {
-    const count = await fetchService.count();
+    const count = await fetchService.count(address);
     expect(typeof count).toBe('number');
     expect(count).toBeGreaterThan(0);
   });
 
   test('fetch one operator', async () => {
-    const operator = await fetchService.fetchOne(0);
+    const operator = await fetchService.fetchOne(address, 0);
 
     expect(operator).toBeInstanceOf(Object);
     expect(typeof operator.active).toBe('boolean');
@@ -36,14 +46,16 @@ describe('Operators', () => {
   });
 
   test('fetch all operators', async () => {
-    const operators = await fetchService.fetch();
+    const operators = await fetchService.fetch(address, 0, -1, {
+      blockTag: 9641262,
+    });
 
     expect(operators).toBeInstanceOf(Array);
     expect(operators.length).toBeGreaterThan(0);
-  });
+  }, 30_000);
 
   test('fetch multiply operators', async () => {
-    const operators = await fetchService.fetch(1, 3);
+    const operators = await fetchService.fetch(address, 1, 3);
 
     expect(operators).toBeInstanceOf(Array);
     expect(operators.length).toBe(2);

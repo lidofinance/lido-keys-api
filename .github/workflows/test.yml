@@ -19,3 +19,9 @@ jobs:
         run: yarn lint
       - name: Run tests
         run: yarn test
+      - name: Run tests
+        run: yarn test:e2e
+        env:
+          PROVIDERS_URLS: ${{ secrets.PROVIDERS_URLS }}
+          CHAIN_ID: ${{ secrets.CHAIN_ID }}
+          CHRONIX_PROVIDER_MAINNET_URL: ${{ secrets.CHRONIX_PROVIDER_MAINNET_URL }}

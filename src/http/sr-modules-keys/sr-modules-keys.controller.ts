@@ -1,21 +1,41 @@
-import { Controller, Get, Version, Param, Query, Body, Post, NotFoundException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Version,
+  Param,
+  Query,
+  Body,
+  Post,
+  NotFoundException,
+  HttpStatus,
+  Res,
+  HttpCode,
+} from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
-import { ModuleId, KeyQuery } from 'http/common/entities/';
-import { KeysFindBody } from 'http/common/entities/pubkeys';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { ModuleId, KeyQuery } from '../common/entities/';
+import { KeysFindBody } from '../common/entities/pubkeys';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
+import { IsolationLevel } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/knex';
+import * as JSONStream from 'jsonstream';
+import type { FastifyReply } from 'fastify';
 
 @Controller('modules')
 @ApiTags('sr-module-keys')
 export class SRModulesKeysController {
-  constructor(protected readonly srModulesService: SRModulesKeysService) {}
+  constructor(
+    protected readonly srModulesKeysService: SRModulesKeysService,
+    protected readonly entityManager: EntityManager,
+  ) {}
 
   @Version('1')
   @ApiOperation({ summary: 'Get keys for all modules grouped by staking router module.' })
   @ApiResponse({
     status: 200,
-    description: 'Keys for all modules grouped by staking router module.',
+    description:
+      'Keys for all modules are grouped by the staking router module. Receiving results from this endpoint may take some time, so please use it carefully.',
     type: GroupedByModuleKeyListResponse,
   })
   @ApiResponse({
@@ -25,7 +45,7 @@ export class SRModulesKeysController {
   })
   @Get('keys')
   getGroupedByModuleKeys(@Query() filters: KeyQuery) {
-    return this.srModulesService.getGroupedByModuleKeys(filters);
+    return this.srModulesKeysService.getGroupedByModuleKeys(filters);
   }
 
   @Version('1')
@@ -50,12 +70,35 @@ export class SRModulesKeysController {
     description: 'Staking router module_id or contract address.',
   })
   @Get(':module_id/keys')
-  getModuleKeys(@Param('module_id') moduleId: ModuleId, @Query() filters: KeyQuery) {
-    return this.srModulesService.getModuleKeys(moduleId, filters);
+  async getModuleKeys(@Param() module: ModuleId, @Query() filters: KeyQuery, @Res() reply: FastifyReply) {
+    await this.entityManager.transactional(
+      async () => {
+        const {
+          keysGenerator,
+          module: srModule,
+          meta,
+        } = await this.srModulesKeysService.getModuleKeys(module.module_id, filters);
+        const jsonStream = JSONStream.stringify(
+          '{ "meta": ' + JSON.stringify(meta) + ', "data": { "module": ' + JSON.stringify(srModule) + ', "keys": [',
+          ',',
+          ']}}',
+        );
+
+        reply.type('application/json').send(jsonStream);
+
+        for await (const keysBatch of keysGenerator) {
+          jsonStream.write(keysBatch);
+        }
+
+        jsonStream.end();
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
   }
 
   @Version('1')
   @Post(':module_id/keys/find')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get list of found staking router module keys in db from pubkey list.' })
   @ApiResponse({
     status: 200,
@@ -76,7 +119,7 @@ export class SRModulesKeysController {
     name: 'module_id',
     description: 'Staking router module_id or contract address.',
   })
-  getModuleKeysByPubkeys(@Param('module_id') moduleId: ModuleId, @Body() keys: KeysFindBody) {
-    return this.srModulesService.getModuleKeysByPubkeys(moduleId, keys.pubkeys);
+  getModuleKeysByPubkeys(@Param() module: ModuleId, @Body() keys: KeysFindBody) {
+    return this.srModulesKeysService.getModuleKeysByPubKeys(module.module_id, keys.pubkeys);
   }
 }

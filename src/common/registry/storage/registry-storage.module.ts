@@ -2,31 +2,19 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { RegistryStorageModuleSyncOptions, RegistryStorageModuleAsyncOptions } from './interfaces/module.interface';
 import { RegistryStorageService } from './registry-storage.service';
 import { RegistryOperatorStorageService } from './operator.storage';
-import { RegistryMetaStorageService } from './meta.storage';
 import { RegistryKeyStorageService } from './key.storage';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { RegistryKey } from './key.entity';
 import { RegistryOperator } from './operator.entity';
-import { RegistryMeta } from './meta.entity';
 
 @Module({
   imports: [
     MikroOrmModule.forFeature({
-      entities: [RegistryKey, RegistryOperator, RegistryMeta],
+      entities: [RegistryKey, RegistryOperator],
     }),
   ],
-  providers: [
-    RegistryStorageService,
-    RegistryOperatorStorageService,
-    RegistryMetaStorageService,
-    RegistryKeyStorageService,
-  ],
-  exports: [
-    RegistryStorageService,
-    RegistryOperatorStorageService,
-    RegistryMetaStorageService,
-    RegistryKeyStorageService,
-  ],
+  providers: [RegistryStorageService, RegistryOperatorStorageService, RegistryKeyStorageService],
+  exports: [RegistryStorageService, RegistryOperatorStorageService, RegistryKeyStorageService],
 })
 export class RegistryStorageModule {
   static forRoot(options?: RegistryStorageModuleSyncOptions): DynamicModule {

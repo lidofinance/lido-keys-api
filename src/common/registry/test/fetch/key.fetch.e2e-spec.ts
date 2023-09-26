@@ -1,9 +1,19 @@
 import { Test } from '@nestjs/testing';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryKeyFetchService } from '../../';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 describe('Keys', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
+  if (!process.env.CHAIN_ID) {
+    console.error("CHAIN_ID wasn't provides");
+    process.exit(1);
+  }
+  const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
+
   let fetchService: RegistryKeyFetchService;
 
   beforeEach(async () => {
@@ -13,7 +23,7 @@ describe('Keys', () => {
   });
 
   test('fetch one key', async () => {
-    const key = await fetchService.fetchOne(21, 0, { blockTag: 6912872 });
+    const key = await fetchService.fetchOne(address, 21, 0, { blockTag: 6912872 });
 
     expect(key).toBeInstanceOf(Object);
 
@@ -24,14 +34,18 @@ describe('Keys', () => {
   });
 
   test('fetch operator keys', async () => {
-    const keys = await fetchService.fetch(21, 0, -1, { blockTag: 6912872 });
+    const keys = await fetchService.fetch(address, 21, 0, -1, {
+      blockTag: 6912872,
+    });
 
     expect(keys).toBeInstanceOf(Array);
     expect(keys.length).toBe(3);
   }, 15_000);
 
   test('fetch multiply operators', async () => {
-    const keys = await fetchService.fetch(21, 0, 2, { blockTag: 6912872 });
+    const keys = await fetchService.fetch(address, 21, 0, 2, {
+      blockTag: 6912872,
+    });
 
     expect(keys).toBeInstanceOf(Array);
     expect(keys.length).toBe(2);

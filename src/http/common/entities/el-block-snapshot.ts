@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SRModuleMeta } from './sr-module-meta';
+import { ElMetaEntity } from '../../../storage/el-meta.entity';
 
-export class ELBlockSnapshot {
-  constructor(meta: SRModuleMeta) {
+export class ELBlockSnapshot implements ElMetaEntity {
+  constructor(meta: ElMetaEntity) {
     this.blockNumber = meta.blockNumber;
     this.blockHash = meta.blockHash;
     this.timestamp = meta.timestamp;

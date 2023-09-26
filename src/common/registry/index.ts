@@ -17,10 +17,6 @@ export * from './storage/key.entity';
 export * from './storage/key.repository';
 export * from './storage/key.storage';
 
-export * from './storage/meta.entity';
-export * from './storage/meta.repository';
-export * from './storage/meta.storage';
-
 export * from './storage/operator.entity';
 export * from './storage/operator.repository';
 export * from './storage/operator.storage';

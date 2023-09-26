@@ -4,6 +4,7 @@ import { ModuleMetadata } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { RegistryStorageModule, RegistryStorageService } from '../../';
 import { MikroORM } from '@mikro-orm/core';
+import { mikroORMConfig } from '../testing.utils';
 
 @Injectable()
 class TestService {}
@@ -35,12 +36,7 @@ describe('Async module initializing', () => {
   test('forRootAsync', async () => {
     await testModules([
       TestModule.forRoot(),
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       RegistryStorageModule.forRootAsync({
         async useFactory() {
           return {};
@@ -53,12 +49,7 @@ describe('Async module initializing', () => {
   test('forFeatureAsync', async () => {
     await testModules([
       TestModule.forRoot(),
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       RegistryStorageModule.forFeatureAsync({
         async useFactory() {
           return {};

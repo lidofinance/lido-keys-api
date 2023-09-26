@@ -1,18 +1,22 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Registry, REGISTRY_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { KeyBatchRecord, RegistryKey } from './interfaces/key.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';
-import { KEYS_LENGTH, SIGNATURE_LENGTH } from './key-batch.constants';
+import { KEYS_BATCH_SIZE, KEYS_LENGTH, SIGNATURE_LENGTH } from './key-batch.constants';
+import { RegistryFetchOptions, REGISTRY_FETCH_OPTIONS_TOKEN } from './interfaces/module.interface';
 
 @Injectable()
 export class RegistryKeyBatchFetchService {
   constructor(
-    @Inject(REGISTRY_CONTRACT_TOKEN)
-    private contract: Registry,
-
-    private operatorsService: RegistryOperatorFetchService,
+    protected readonly operatorsService: RegistryOperatorFetchService,
+    @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
+    @Inject(REGISTRY_FETCH_OPTIONS_TOKEN) private options: RegistryFetchOptions,
   ) {}
+
+  private getContract(moduleAddress: string) {
+    return this.contract.attach(moduleAddress);
+  }
 
   /**
    * Split one big string into array of strings
@@ -48,7 +52,12 @@ export class RegistryKeyBatchFetchService {
     return this.splitMergedRecord(unformattedKeys, KEYS_LENGTH);
   }
 
-  public formatKeys(operatorIndex: number, unformattedRecords: KeyBatchRecord, startIndex: number): RegistryKey[] {
+  public formatKeys(
+    moduleAddress: string,
+    operatorIndex: number,
+    unformattedRecords: KeyBatchRecord,
+    startIndex: number,
+  ): RegistryKey[] {
     const keys = this.unformattedKeysToArray(unformattedRecords[0]);
     const signatures = this.unformattedSignaturesToArray(unformattedRecords[1]);
     const usedStatuses = unformattedRecords[2];
@@ -65,12 +74,14 @@ export class RegistryKeyBatchFetchService {
         key: keys[chunkIndex],
         depositSignature: signatures[chunkIndex],
         used,
+        moduleAddress,
       };
     });
   }
 
-  /** fetches operator's keys */
+  /** fetches operator's keys from specific module */
   public async fetch(
+    moduleAddress: string,
     operatorIndex: number,
     fromIndex = 0,
     toIndex = -1,
@@ -81,20 +92,24 @@ export class RegistryKeyBatchFetchService {
     }
 
     if (toIndex == null || toIndex === -1) {
-      const operator = await this.operatorsService.fetchOne(operatorIndex, overrides);
+      const operator = await this.operatorsService.fetchOne(moduleAddress, operatorIndex, overrides);
 
       toIndex = operator.totalSigningKeys;
     }
 
     const [offset, limit] = this.convertIndicesToOffsetAndTotal(fromIndex, toIndex);
-    const unformattedKeys = await this.fetchSigningKeysInBatches(operatorIndex, offset, limit);
+    const unformattedKeys = await this.fetchSigningKeysInBatches(moduleAddress, operatorIndex, offset, limit);
 
     return unformattedKeys;
   }
 
-  public async fetchSigningKeysInBatches(operatorIndex: number, fromIndex: number, totalAmount: number) {
-    // TODO: move to constants/config cause this limit depends on eth node
-    const batchSize = 1100;
+  public async fetchSigningKeysInBatches(
+    moduleAddress: string,
+    operatorIndex: number,
+    fromIndex: number,
+    totalAmount: number,
+  ) {
+    const batchSize = this.options.keysBatchSize || KEYS_BATCH_SIZE;
 
     const numberOfBatches = Math.ceil(totalAmount / batchSize);
     const promises: Promise<RegistryKey[]>[] = [];
@@ -104,8 +119,12 @@ export class RegistryKeyBatchFetchService {
       const currentBatchSize = Math.min(batchSize, totalAmount - i * batchSize);
 
       const promise = (async () => {
-        const keys = await this.contract.getSigningKeys(operatorIndex, currentFromIndex, currentBatchSize);
-        return this.formatKeys(operatorIndex, keys, currentFromIndex);
+        const keys = await this.getContract(moduleAddress).getSigningKeys(
+          operatorIndex,
+          currentFromIndex,
+          currentBatchSize,
+        );
+        return this.formatKeys(moduleAddress, operatorIndex, keys, currentFromIndex);
       })();
 
       promises.push(promise);

@@ -7,15 +7,12 @@ import { RegistryMetaFetchService } from '../fetch/meta.fetch';
 import { RegistryKeyFetchService } from '../fetch/key.fetch';
 import { RegistryOperatorFetchService } from '../fetch/operator.fetch';
 
-import { RegistryMetaStorageService } from '../storage/meta.storage';
 import { RegistryKeyStorageService } from '../storage/key.storage';
 import { RegistryOperatorStorageService } from '../storage/operator.storage';
 
-import { RegistryMeta } from '../storage/meta.entity';
 import { RegistryKey } from '../storage/key.entity';
 import { RegistryOperator } from '../storage/operator.entity';
 
-import { compareMeta } from '../utils/meta.utils';
 import { compareOperators } from '../utils/operator.utils';
 
 import { REGISTRY_GLOBAL_OPTIONS_TOKEN } from './constants';
@@ -27,11 +24,9 @@ import { IsolationLevel } from '@mikro-orm/core';
 @Injectable()
 export abstract class AbstractRegistryService {
   constructor(
-    @Inject(REGISTRY_CONTRACT_TOKEN) protected registryContract: Registry,
     @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
 
     protected readonly metaFetch: RegistryMetaFetchService,
-    protected readonly metaStorage: RegistryMetaStorageService,
 
     protected readonly keyFetch: RegistryKeyFetchService,
     protected readonly keyBatchFetch: RegistryKeyBatchFetchService,
@@ -48,39 +43,9 @@ export abstract class AbstractRegistryService {
   ) {}
 
   /** collects changed data from the contract and store it to the db */
-  public async update(blockHashOrBlockTag: string | number) {
-    const prevMeta = await this.getMetaDataFromStorage();
-    const currMeta = await this.getMetaDataFromContract(blockHashOrBlockTag);
-
-    const isSameContractState = compareMeta(prevMeta, currMeta);
-
-    this.logger.log('Collected metadata', { prevMeta, currMeta });
-
-    const previousBlockNumber = prevMeta?.blockNumber ?? -1;
-    const currentBlockNumber = currMeta.blockNumber;
-
-    // TODO: maybe blockhash instead blocknumber?
-    if (previousBlockNumber > currentBlockNumber) {
-      this.logger.warn('Previous data is newer than current data');
-      return;
-    }
-
-    if (isSameContractState) {
-      this.logger.debug?.('Same state, no data update required', { currMeta });
-
-      await this.entityManager.transactional(async (entityManager) => {
-        await entityManager.nativeDelete(RegistryMeta, {});
-        await entityManager.persist(new RegistryMeta(currMeta));
-      });
-
-      this.logger.debug?.('Updated metadata in the DB', { currMeta });
-      return;
-    }
-
-    const blockHash = currMeta.blockHash;
-
-    const previousOperators = await this.getOperatorsFromStorage();
-    const currentOperators = await this.getOperatorsFromContract(blockHash);
+  public async update(moduleAddress: string, blockHash: string) {
+    const previousOperators = await this.getOperatorsFromStorage(moduleAddress);
+    const currentOperators = await this.getOperatorsFromContract(moduleAddress, blockHash);
 
     this.logger.log('Collected operators', {
       previousOperators: previousOperators.length,
@@ -89,43 +54,40 @@ export abstract class AbstractRegistryService {
 
     await this.entityManager.transactional(
       async () => {
-        await this.saveOperatorsAndMeta(currentOperators, currMeta);
+        await this.saveOperators(moduleAddress, currentOperators);
 
-        this.logger.log('Saved data operators and meta to the DB', {
+        this.logger.log('Saved data operators to the DB', {
           operators: currentOperators.length,
-          currMeta,
         });
 
-        await this.syncUpdatedKeysWithContract(previousOperators, currentOperators, blockHash);
+        await this.syncUpdatedKeysWithContract(moduleAddress, previousOperators, currentOperators, blockHash);
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
     );
-
-    return currMeta;
   }
 
-  /** contract */
-  /** returns the meta data from the contract */
-  public async getMetaDataFromContract(blockHashOrBlockTag: string | number): Promise<RegistryMeta> {
-    const { provider } = this.registryContract;
-    const block = await provider.getBlock(blockHashOrBlockTag);
-    const blockHash = block.hash;
-    const blockTag = { blockHash };
-
-    const keysOpIndex = await this.metaFetch.fetchKeysOpIndex({ blockTag });
-
-    return {
-      blockNumber: block.number,
-      blockHash,
-      keysOpIndex,
-      timestamp: block.timestamp,
-    };
+  /**
+   *
+   * @param moduleAddress contract address
+   * @returns Check if operators have been changed
+   */
+  public async operatorsWereChanged(
+    moduleAddress: string,
+    fromBlockNumber: number,
+    toBlockNumber: number,
+  ): Promise<boolean> {
+    return await this.operatorFetch.operatorsWereChanged(moduleAddress, fromBlockNumber, toBlockNumber);
   }
 
   /** returns operators from the contract */
-  public async getOperatorsFromContract(blockHash: string) {
+  public async getOperatorsFromContract(moduleAddress: string, blockHash: string) {
     const overrides = { blockTag: { blockHash } };
-    return await this.operatorFetch.fetch(0, -1, overrides);
+    return await this.operatorFetch.fetch(moduleAddress, 0, -1, overrides);
+  }
+
+  public async updateOperators(moduleAddress, blockHash): Promise<void> {
+    const currentOperators = await this.getOperatorsFromContract(moduleAddress, blockHash);
+    await this.saveOperators(moduleAddress, currentOperators);
   }
 
   /** returns the right border of the update keys range */
@@ -133,6 +95,7 @@ export abstract class AbstractRegistryService {
 
   /** sync keys with contract */
   public async syncUpdatedKeysWithContract(
+    moduleAddress: string,
     previousOperators: RegistryOperator[],
     currentOperators: RegistryOperator[],
     blockHash: string,
@@ -162,7 +125,8 @@ export abstract class AbstractRegistryService {
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
       // TODO: use feature flag
-      const result = await this.keyBatchFetch.fetch(operatorIndex, fromIndex, toIndex, overrides);
+      const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
+
       const operatorKeys = result.filter((key) => key);
 
       this.logger.log('Keys fetched', {
@@ -183,19 +147,14 @@ export abstract class AbstractRegistryService {
 
   /** storage */
 
-  /** returns the latest meta data from the db */
-  public async getMetaDataFromStorage() {
-    return await this.metaStorage.get();
-  }
-
   /** returns the latest operators data from the db */
-  public async getOperatorsFromStorage() {
-    return await this.operatorStorage.findAll();
+  public async getOperatorsFromStorage(moduleAddress: string) {
+    return await this.operatorStorage.findAll(moduleAddress);
   }
 
   /** returns all the keys from storage */
-  public async getOperatorsKeysFromStorage() {
-    return await this.keyStorage.findAll();
+  public async getOperatorsKeysFromStorage(moduleAddress: string) {
+    return await this.keyStorage.findAll(moduleAddress);
   }
 
   public async saveKeys(keys: RegistryKey[]) {
@@ -206,7 +165,7 @@ export abstract class AbstractRegistryService {
           await entityManager
             .createQueryBuilder(RegistryKey)
             .insert(keysChunk)
-            .onConflict(['index', 'operator_index'])
+            .onConflict(['index', 'operator_index', 'module_address'])
             .merge()
             .execute();
         }),
@@ -214,17 +173,26 @@ export abstract class AbstractRegistryService {
     });
   }
 
-  /** saves all the data to the db */
-  public async saveOperatorsAndMeta(currentOperators: RegistryOperator[], currMeta: RegistryMeta) {
+  /** contract */
+  /** returns the meta data from the contract */
+  public async getStakingModuleNonce(moduleAddress: string, blockHash: string): Promise<number> {
+    const keysOpIndex = await this.metaFetch.fetchStakingModuleNonce(moduleAddress, { blockTag: { blockHash } });
+    return keysOpIndex;
+  }
+
+  /** saves all data to the db for staking module*/
+  public async saveOperators(moduleAddress: string, currentOperators: RegistryOperator[]) {
     // save all data in a transaction
     await this.entityManager.transactional(async (entityManager) => {
       await Promise.all(
         // remove all keys from the database that are greater than the total number of keys
         // it's needed to clear the list in db when removing keys from the contract
+
         currentOperators.map(async (operator) => {
           await entityManager.nativeDelete(RegistryKey, {
             index: { $gte: operator.totalSigningKeys },
             operatorIndex: operator.index,
+            moduleAddress,
           });
         }),
       );
@@ -235,24 +203,11 @@ export abstract class AbstractRegistryService {
           await entityManager
             .createQueryBuilder(RegistryOperator)
             .insert(operatorsChunk)
-            .onConflict('index')
+            .onConflict(['index', 'module_address'])
             .merge()
             .execute();
         }),
       );
-
-      // replace metadata with new one
-      await entityManager.nativeDelete(RegistryMeta, {});
-      await entityManager.persist(new RegistryMeta(currMeta));
-    });
-  }
-
-  /** clears the db */
-  public async clear() {
-    await this.entityManager.transactional(async (entityManager) => {
-      entityManager.nativeDelete(RegistryKey, {});
-      entityManager.nativeDelete(RegistryOperator, {});
-      entityManager.nativeDelete(RegistryMeta, {});
     });
   }
 }

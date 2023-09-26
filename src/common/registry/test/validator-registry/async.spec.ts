@@ -6,6 +6,7 @@ import { getNetwork } from '@ethersproject/networks';
 import { getDefaultProvider } from '@ethersproject/providers';
 import { ValidatorRegistryModule, ValidatorRegistryService, RegistryStorageService } from '../../';
 import { MikroORM } from '@mikro-orm/core';
+import { mikroORMConfig } from '../testing.utils';
 
 describe('Async module initializing', () => {
   const provider = getDefaultProvider('mainnet');
@@ -26,12 +27,7 @@ describe('Async module initializing', () => {
 
   test('forRootAsync', async () => {
     await testModules([
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forRootAsync({
         async useFactory() {
@@ -43,12 +39,7 @@ describe('Async module initializing', () => {
 
   test('forFeatureAsync', async () => {
     await testModules([
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeatureAsync({
         async useFactory() {

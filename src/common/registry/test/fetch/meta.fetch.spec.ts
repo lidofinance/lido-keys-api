@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { Registry__factory } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES, Registry__factory } from '@lido-nestjs/contracts';
 import { getNetwork } from '@ethersproject/networks';
 import { Interface } from '@ethersproject/abi';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
@@ -8,6 +8,8 @@ import { RegistryFetchModule, RegistryMetaFetchService } from '../../';
 describe('Meta', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
   let fetchService: RegistryMetaFetchService;
+  const CHAIN_ID = process.env.CHAIN_ID || 1;
+  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
 
   const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');
 
@@ -34,7 +36,7 @@ describe('Meta', () => {
         const iface = new Interface(Registry__factory.abi);
         return iface.encodeFunctionResult('getKeysOpIndex', [expected]);
       });
-      const result = await fetchService.fetchKeysOpIndex();
+      const result = await fetchService.fetchStakingModuleNonce(address);
 
       expect(result).toEqual(expected);
       expect(mockCall).toBeCalledTimes(1);

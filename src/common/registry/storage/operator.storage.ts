@@ -17,20 +17,23 @@ export class RegistryOperatorStorageService {
   }
 
   /** find all operators */
-  async findAll(): Promise<RegistryOperator[]> {
-    return await this.repository.findAll({
-      orderBy: [{ index: QueryOrder.ASC }],
-    });
+  async findAll(moduleAddress: string): Promise<RegistryOperator[]> {
+    return await this.repository.find(
+      { moduleAddress },
+      {
+        orderBy: [{ index: QueryOrder.ASC }],
+      },
+    );
   }
 
   /** find operator by index */
-  async findOneByIndex(operatorIndex: number): Promise<RegistryOperator | null> {
-    return await this.repository.findOne({ index: operatorIndex });
+  async findOneByIndex(moduleAddress: string, operatorIndex: number): Promise<RegistryOperator | null> {
+    return await this.repository.findOne({ moduleAddress, index: operatorIndex });
   }
 
   /** removes operator by index */
-  async removeOneByIndex(operatorIndex: number) {
-    return await this.repository.nativeDelete({ index: operatorIndex });
+  async removeOneByIndex(moduleAddress: string, operatorIndex: number) {
+    return await this.repository.nativeDelete({ moduleAddress, index: operatorIndex });
   }
 
   /** removes all operators */
