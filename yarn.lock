@@ -85,7 +85,7 @@
     "@aragon/apps-vault" "^4.0.0"
     "@aragon/os" "4.2.0"
 
-"@aragon/apps-lido@github:lidofinance/aragon-apps#master":
+"@aragon/apps-lido@lidofinance/aragon-apps#master":
   version "1.0.0"
   resolved "https://codeload.github.com/lidofinance/aragon-apps/tar.gz/b09834d29c0db211ddd50f50905cbeff257fc8e0"
 
@@ -2480,6 +2480,11 @@
   version "0.0.29"
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==
+
+"@types/k6@~0.44.2":
+  version "0.44.3"
+  resolved "https://registry.yarnpkg.com/@types/k6/-/k6-0.44.3.tgz#bbd6c7ebed1970f537fce8d46af41d3d19631ac2"
+  integrity sha512-Ulu+xGZZQhZfk3hpLRo7oj69oSMBUfK7+FYdUtD3Dsj+nPyWQAH6j/GX5rLuHJ4SWZkdyEZ7Xmam7tBM8G2Srw==
 
 "@types/long@^4.0.1":
   version "4.0.2"
