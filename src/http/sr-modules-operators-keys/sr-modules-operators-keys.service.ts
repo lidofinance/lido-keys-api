@@ -1,61 +1,40 @@
-import { Inject, Injectable, NotFoundException, LoggerService } from '@nestjs/common';
-import { ELBlockSnapshot, ModuleId, SRModule } from 'http/common/entities';
-import { CuratedOperator, CuratedKey } from 'http/common/entities';
-import { KeyQuery } from 'http/common/entities';
-import { ConfigService } from 'common/config';
-import { SRModuleOperatorsKeysResponse } from './entities';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { ELBlockSnapshot, Key, Operator, StakingModuleResponse } from '../common/entities';
+import { KeyQuery } from '../common/entities';
+
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { CuratedModuleService, STAKING_MODULE_TYPE } from 'staking-router-modules';
-import { KeysUpdateService } from 'jobs/keys-update';
-import { httpExceptionTooEarlyResp } from 'http/common/entities/http-exceptions/too-early-resp';
+import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
+import { SrModuleEntity } from 'storage/sr-module.entity';
 
 @Injectable()
 export class SRModulesOperatorsKeysService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected readonly curatedService: CuratedModuleService,
-    protected readonly configService: ConfigService,
-    protected keysUpdateService: KeysUpdateService,
+    protected stakingRouterService: StakingRouterService,
   ) {}
 
-  public async get(moduleId: ModuleId, filters: KeyQuery): Promise<SRModuleOperatorsKeysResponse> {
-    const stakingModule = await this.keysUpdateService.getStakingModule(moduleId);
+  public async get(
+    moduleId: string | number,
+    filters: KeyQuery,
+  ): Promise<{
+    keysGenerator: AsyncGenerator<Key>;
+    operators: Operator[];
+    module: StakingModuleResponse;
+    meta: { elBlockSnapshot: ELBlockSnapshot };
+  }> {
+    const { module, elBlockSnapshot }: { module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot } =
+      await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
 
-    if (!stakingModule) {
-      throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
+    const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
+
+    const keysGenerator: AsyncGenerator<Key> = await moduleInstance.getKeysStream(module.stakingModuleAddress, filters);
+    const operatorsFilter = {};
+
+    if (filters.operatorIndex != undefined) {
+      operatorsFilter['index'] = filters.operatorIndex;
     }
+    const operators: Operator[] = await moduleInstance.getOperators(module.stakingModuleAddress, operatorsFilter);
 
-    // We suppose if module in list, Keys API knows how to work with it
-    // it is also important to have consistent module info and meta
-
-    if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-      const { keys, operators, meta } = await this.curatedService.getData({
-        used: filters.used,
-        operatorIndex: filters.operatorIndex,
-      });
-
-      if (!meta) {
-        this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
-        throw httpExceptionTooEarlyResp();
-      }
-
-      const curatedKeys: CuratedKey[] = keys.map((key) => new CuratedKey(key));
-      const curatedOperators: CuratedOperator[] = operators.map((op) => new CuratedOperator(op));
-      const elBlockSnapshot = new ELBlockSnapshot(meta);
-
-      return {
-        data: {
-          operators: curatedOperators,
-          keys: curatedKeys,
-          module: new SRModule(meta.keysOpIndex, stakingModule),
-        },
-
-        meta: {
-          elBlockSnapshot,
-        },
-      };
-    }
-
-    throw new NotFoundException(`Modules with other types are not supported`);
+    return { operators, keysGenerator, module: new StakingModuleResponse(module), meta: { elBlockSnapshot } };
   }
 }

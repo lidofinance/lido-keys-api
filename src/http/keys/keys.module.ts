@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
-import { LoggerModule } from 'common/logger';
-import { KeysUpdateModule } from 'jobs/keys-update';
+import { LoggerModule } from '../../common/logger';
 import { KeysController } from './keys.controller';
 import { KeysService } from './keys.service';
 
 @Module({
-  // TODO: transfer the desired method from KeysUpdateModule
-  imports: [LoggerModule, KeysUpdateModule],
+  imports: [LoggerModule],
   controllers: [KeysController],
   providers: [KeysService],
 })

@@ -1,6 +1,6 @@
 {
   "name": "lido-keys-api",
-  "version": "0.8.0",
+  "version": "0.8.2",
   "description": "Lido Node Operators keys service",
   "author": "Lido team",
   "private": true,
@@ -20,7 +20,7 @@
     "url": "https://github.com/lidofinance/lido-keys-api/issues"
   },
   "scripts": {
-    "postinstall": "rimraf ./node_modules/@ethersproject/abstract-provider/src.ts/*.ts",
+    "postinstall": "rimraf ./node_modules/@ethersproject/abstract-provider/src.ts/*.ts && yarn chronix:compile",
     "mikro-orm": "./node_modules/mikro-orm",
     "prebuild": "rimraf dist",
     "build": "nest build",
@@ -34,17 +34,18 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/common/contracts/abi/*.json"
+    "test:e2e": "jest --config jest-e2e.json && chronix test",
+    "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/staking-router-modules/contracts/abi/*.json",
+    "chronix:compile": "chronix compile",
+    "chronix:test": "chronix test"
   },
   "dependencies": {
     "@lido-nestjs/consensus": "^1.5.0",
     "@lido-nestjs/constants": "^5.0.0",
-    "@lido-nestjs/contracts": "^8.0.0",
+    "@lido-nestjs/contracts": "^9.0.0",
     "@lido-nestjs/execution": "^1.11.0",
     "@lido-nestjs/fetch": "^1.4.0",
     "@lido-nestjs/logger": "^1.3.2",
-    "@lido-nestjs/registry": "^6.2.0",
     "@lido-nestjs/validators-registry": "^1.2.1",
     "@mikro-orm/cli": "^5.5.3",
     "@mikro-orm/core": "^5.5.3",
@@ -68,6 +69,7 @@
     "class-validator": "^0.13.2",
     "ethers": "^5.5.4",
     "fastify-swagger": "^4.13.1",
+    "jsonstream": "^1.0.3",
     "prom-client": "^14.0.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
@@ -76,6 +78,7 @@
     "@types/k6": "~0.44.2"
   },
   "devDependencies": {
+    "@mikro-orm/sqlite": "5.5.3",
     "@nestjs/cli": "^8.2.5",
     "@nestjs/schematics": "^8.0.5",
     "@nestjs/testing": "^8.2.5",
@@ -85,11 +88,13 @@
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
+    "chronix": "^0.0.2-beta-plugin-v9",
     "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.4.7",
     "prettier": "^2.5.1",
+    "simple-dvt-v1": "^0.0.7",
     "supertest": "^6.2.1",
     "ts-jest": "^27.1.3",
     "ts-loader": "^9.2.6",

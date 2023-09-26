@@ -4,10 +4,11 @@ module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   testRegex: '.*\\.spec\\.ts$',
   collectCoverageFrom: ['src/**/*.ts'],
-  rootDir: ".",
-  modulePaths: ["<rootDir>/src"],
+  rootDir: '.',
+  modulePaths: ['<rootDir>/src'],
   transform: {
     '^.+\\.ts?$': 'ts-jest',
   },
+  testEnvironment: 'node',
   setupFiles: ['dotenv/config'],
 };

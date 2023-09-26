@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsOptional, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class Query {
+export class ValidatorsQuery {
   @ApiProperty({
     required: false,
     description: 'Number of validators to exit. If validators number less than amount, return all validators.',

@@ -1,20 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { StakingModule } from 'common/contracts';
+import { STAKING_MODULE_TYPE } from 'staking-router-modules/constants';
+import { SrModuleEntity } from 'storage/sr-module.entity';
 
-export class SRModule {
-  constructor(nonce: number, module: StakingModule) {
-    this.nonce = nonce;
-    this.type = module.type;
-    this.id = module.id;
-    this.stakingModuleAddress = module.stakingModuleAddress;
-    // todo: maybe rename field stakingModuleFee
-    this.moduleFee = module?.stakingModuleFee ?? null;
-    this.treasuryFee = module?.treasuryFee ?? null;
-    this.targetShare = module?.targetShare ?? null;
-    this.status = module?.status ?? null;
-    this.name = module.name;
-    this.lastDepositAt = module?.lastDepositAt ?? null;
-    this.lastDepositBlock = module?.lastDepositBlock ?? null;
+export class StakingModuleResponse implements Omit<SrModuleEntity, 'id' | 'moduleId'> {
+  constructor(stakingModule: SrModuleEntity) {
+    this.nonce = stakingModule.nonce;
+    this.type = stakingModule.type;
+    this.id = stakingModule.moduleId;
+    this.stakingModuleAddress = stakingModule.stakingModuleAddress;
+    this.moduleFee = stakingModule.moduleFee;
+    this.treasuryFee = stakingModule.treasuryFee;
+    this.targetShare = stakingModule.targetShare;
+    this.status = stakingModule.status;
+    this.name = stakingModule.name;
+    this.lastDepositAt = stakingModule.lastDepositAt;
+    this.lastDepositBlock = stakingModule.lastDepositBlock;
+    this.exitedValidatorsCount = stakingModule.exitedValidatorsCount;
+    this.active = stakingModule.active;
   }
 
   @ApiProperty({
@@ -24,62 +26,64 @@ export class SRModule {
   nonce: number;
 
   @ApiProperty({
-    description: 'type of module',
+    description: 'Type of module',
   })
-  type: string;
+  type: string; //STAKING_MODULE_TYPE;
 
   @ApiProperty({
-    description: 'unique id of the module',
+    description: 'Unique id of the module',
   })
   id: number;
 
   @ApiProperty({
-    description: 'address of module',
-    nullable: true,
+    description: 'Address of module',
   })
   stakingModuleAddress: string;
 
   @ApiProperty({
-    description: 'rewarf fee of the module',
-    nullable: true,
+    description: 'Reward fee of the module',
   })
-  moduleFee: number | null;
+  moduleFee: number;
 
   @ApiProperty({
-    description: 'treasury fee',
-    nullable: true,
+    description: 'Treasury fee',
   })
-  treasuryFee: number | null;
+  treasuryFee: number;
 
   @ApiProperty({
-    description: 'target percent of total keys in protocol, in BP',
-    nullable: true,
+    description: 'Target percent of total keys in protocol, in BP',
   })
-  targetShare: number | null;
+  targetShare: number;
 
   @ApiProperty({
     description:
-      'module status if module can not accept the deposits or can participate in further reward distribution',
-    nullable: true,
+      'Module status if module can not accept the deposits or can participate in further reward distribution',
   })
-  status: number | null;
+  status: number;
 
   @ApiProperty({
-    description: 'name of module',
+    description: 'Name of module',
   })
   name: string;
 
   @ApiProperty({
     description: 'block.timestamp of the last deposit of the module',
-    nullable: true,
   })
-  lastDepositAt: number | null;
+  lastDepositAt: number;
 
   @ApiProperty({
     description: 'block.number of the last deposit of the module',
     nullable: true,
   })
-  lastDepositBlock: number | null;
+  lastDepositBlock: number;
 
-  //   exitedValidatorsCount: number;
+  @ApiProperty({
+    description: 'Exited validators count',
+  })
+  exitedValidatorsCount: number;
+
+  @ApiProperty({
+    description: 'Module activation status',
+  })
+  active: boolean;
 }

@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SRModule, ELBlockSnapshot } from 'http/common/entities/';
+import { StakingModuleResponse, ELBlockSnapshot } from '../../common/entities/';
 
 export class SRModuleListResponse {
   @ApiProperty({
-    type: () => [SRModule],
+    type: () => [StakingModuleResponse],
     description: 'List of staking router modules with detailed information',
   })
-  data!: SRModule[];
+  data!: StakingModuleResponse[];
 
   @ApiProperty({
     type: () => ELBlockSnapshot,
@@ -17,10 +17,10 @@ export class SRModuleListResponse {
 
 export class SRModuleResponse {
   @ApiProperty({
-    type: () => SRModule,
+    type: () => StakingModuleResponse,
     description: 'Detailed staking router module information',
   })
-  data!: SRModule;
+  data!: StakingModuleResponse;
 
   @ApiProperty({
     type: () => ELBlockSnapshot,

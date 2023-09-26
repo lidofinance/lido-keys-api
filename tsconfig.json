@@ -19,5 +19,6 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
   },
+  "exclude": ["node_modules"],
   "include": ["src/**/*", "test/**/*", "benchmarks/*"],
 }

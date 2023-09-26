@@ -2,7 +2,7 @@ import { HealthCheckService, MemoryHealthIndicator, HealthCheck } from '@nestjs/
 import { Controller, Get } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { HEALTH_URL } from './health.constants';
-import { HEAP_USED_THRESHOLD } from 'common/health/constants';
+import { HEAP_USED_THRESHOLD } from './constants';
 
 @Controller(HEALTH_URL)
 @ApiExcludeController()
