@@ -24,7 +24,6 @@ import { IsolationLevel } from '@mikro-orm/core';
 @Injectable()
 export abstract class AbstractRegistryService {
   constructor(
-    @Inject(REGISTRY_CONTRACT_TOKEN) protected registryContract: Registry,
     @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
 
     protected readonly metaFetch: RegistryMetaFetchService,
@@ -67,10 +66,28 @@ export abstract class AbstractRegistryService {
     );
   }
 
+  /**
+   *
+   * @param moduleAddress contract address
+   * @returns Check if operators have been changed
+   */
+  public async operatorsWereChanged(
+    moduleAddress: string,
+    fromBlockNumber: number,
+    toBlockNumber: number,
+  ): Promise<boolean> {
+    return await this.operatorFetch.operatorsWereChanged(moduleAddress, fromBlockNumber, toBlockNumber);
+  }
+
   /** returns operators from the contract */
   public async getOperatorsFromContract(moduleAddress: string, blockHash: string) {
     const overrides = { blockTag: { blockHash } };
     return await this.operatorFetch.fetch(moduleAddress, 0, -1, overrides);
+  }
+
+  public async updateOperators(moduleAddress, blockHash): Promise<void> {
+    const currentOperators = await this.getOperatorsFromContract(moduleAddress, blockHash);
+    await this.saveOperators(moduleAddress, currentOperators);
   }
 
   /** returns the right border of the update keys range */

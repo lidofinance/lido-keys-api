@@ -147,13 +147,25 @@ export class KeysUpdateService {
           // update staking module information
           await this.srModulesStorage.upsert(contractModule, currNonce);
 
-          // now updating decision should be here moduleInstance.update
-          // TODO: operators list also the same ?
-          if (moduleInStorage && prevNonce === currNonce) {
-            // nothing changed, don't need to update
-            this.logger.log(
-              `Nonce was not changed for staking module ${moduleInStorage.id}. Don't need to update keys and operators in database`,
-            );
+          this.logger.log(`Nonce previous value: ${prevNonce}, nonce current value: ${currNonce}`);
+
+          if (prevNonce === currNonce) {
+            // case when prevELMeta is undefined but prevNonce === currNonce looks like invalid
+            // use here prevElMeta.blockNumber + 1 because operators were updated in database for  prevElMeta.blockNumber block
+            if (
+              prevElMeta &&
+              prevElMeta.blockNumber < currElMeta.number &&
+              (await moduleInstance.operatorsWereChanged(
+                contractModule.stakingModuleAddress,
+                prevElMeta.blockNumber + 1,
+                currElMeta.number,
+              ))
+            ) {
+              this.logger.log('Update events happened, need to update operators');
+              await moduleInstance.updateOperators(contractModule.stakingModuleAddress, currElMeta.hash);
+            }
+
+            this.logger.log('No need to update operators');
             continue;
           }
 
