@@ -63,6 +63,15 @@ describe('SRModulesKeysController (e2e)', () => {
     }
   }
 
+  class RegistryKeyStorageServiceMock extends RegistryKeyStorageService {
+    async *findStream(where, fields): AsyncIterable<any> {
+      const result = await this.find(where);
+      for (const key of result) {
+        yield key;
+      }
+    }
+  }
+
   beforeAll(async () => {
     const imports = [
       //  sqlite3 only supports serializable transactions, ignoring the isolation level param
@@ -83,6 +92,8 @@ describe('SRModulesKeysController (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
       .overrideProvider(KeyRegistryService)
       .useClass(KeysRegistryServiceMock)
+      .overrideProvider(RegistryKeyStorageService)
+      .useClass(RegistryKeyStorageServiceMock)
       .compile();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);

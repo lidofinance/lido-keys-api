@@ -82,6 +82,15 @@ describe('SRModulesValidatorsController (e2e)', () => {
     }
   }
 
+  class RegistryKeyStorageServiceMock extends RegistryKeyStorageService {
+    async *findStream(where, fields): AsyncIterable<any> {
+      const result = await this.find(where);
+      for (const key of result) {
+        yield key;
+      }
+    }
+  }
+
   const consensusServiceMock = {
     getBlockV2: (args: { blockId: string | number }) => {
       return block;
@@ -135,6 +144,8 @@ describe('SRModulesValidatorsController (e2e)', () => {
       })
       .overrideProvider(ConsensusService)
       .useValue(consensusServiceMock)
+      .overrideProvider(RegistryKeyStorageService)
+      .useClass(RegistryKeyStorageServiceMock)
       .compile();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);

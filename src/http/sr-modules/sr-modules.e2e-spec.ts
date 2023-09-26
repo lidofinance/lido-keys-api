@@ -4,7 +4,12 @@ import { Global, INestApplication, Module, ValidationPipe, VersioningType } from
 import { MikroORM } from '@mikro-orm/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 
-import { KeyRegistryService, RegistryStorageModule, RegistryStorageService } from '../../common/registry';
+import {
+  KeyRegistryService,
+  RegistryKeyStorageService,
+  RegistryStorageModule,
+  RegistryStorageService,
+} from '../../common/registry';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
 import { dvtModule, curatedModule, dvtModuleResp, curatedModuleResp, dvtModuleInUpperCase } from '../module.fixture';
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
@@ -45,6 +50,15 @@ describe('SRModulesController (e2e)', () => {
     }
   }
 
+  class RegistryKeyStorageServiceMock extends RegistryKeyStorageService {
+    async *findStream(where, fields): AsyncIterable<any> {
+      const result = await this.find(where);
+      for (const key of result) {
+        yield key;
+      }
+    }
+  }
+
   beforeAll(async () => {
     const imports = [
       //  sqlite3 only supports serializable transactions, ignoring the isolation level param
@@ -66,6 +80,8 @@ describe('SRModulesController (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
       .overrideProvider(KeyRegistryService)
       .useClass(KeysRegistryServiceMock)
+      .overrideProvider(RegistryKeyStorageService)
+      .useClass(RegistryKeyStorageServiceMock)
       .compile();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);

@@ -54,7 +54,7 @@ describe('KeyController (e2e)', () => {
   }
 
   class RegistryKeyStorageServiceMock extends RegistryKeyStorageService {
-    async *findStream(where: FilterQuery<RegistryKey>, fields?: string[] | undefined): AsyncIterable<RegistryKey> {
+    async *findStream(where: FilterQuery<RegistryKey>, fields): AsyncIterable<RegistryKey> {
       const result = await this.find(where);
       for (const key of result) {
         yield key;
