@@ -69,16 +69,14 @@ export abstract class AbstractRegistryService {
   /**
    *
    * @param moduleAddress contract address
-   * @param prevBlockHash previous block number for that operators were updated
-   * @param currBlockHash current block number
-   * @returns were operators updated or not
+   * @returns Check if operators have been changed
    */
-  public async operatorsWereUpdated(
+  public async operatorsWereChanged(
     moduleAddress: string,
     fromBlockNumber: number,
     toBlockNumber: number,
   ): Promise<boolean> {
-    return await this.operatorFetch.operatorsWereUpdated(moduleAddress, fromBlockNumber, toBlockNumber);
+    return await this.operatorFetch.operatorsWereChanged(moduleAddress, fromBlockNumber, toBlockNumber);
   }
 
   /** returns operators from the contract */

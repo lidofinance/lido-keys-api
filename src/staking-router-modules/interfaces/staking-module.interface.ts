@@ -33,7 +33,7 @@ export interface StakingModule {
 export interface StakingModuleInterface {
   update(moduleAddress: string, blockHash: string): Promise<void>;
 
-  operatorsWereUpdated(moduleAddress: string, fromBlockNumber: number, toBlockNumber: number): Promise<boolean>;
+  operatorsWereChanged(moduleAddress: string, fromBlockNumber: number, toBlockNumber: number): Promise<boolean>;
 
   updateOperators(moduleAddress: string, blockHash: string): Promise<void>;
 

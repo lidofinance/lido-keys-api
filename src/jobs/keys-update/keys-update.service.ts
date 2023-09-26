@@ -151,10 +151,11 @@ export class KeysUpdateService {
 
           if (prevNonce === currNonce) {
             // case when prevELMeta is undefined but prevNonce === currNonce looks like invalid
+            // use here prevElMeta.blockNumber + 1 because operators were updated in database for  prevElMeta.blockNumber block
             if (
               prevElMeta &&
-              prevElMeta.blockNumber + 1 <= currElMeta.number &&
-              (await moduleInstance.operatorsWereUpdated(
+              prevElMeta.blockNumber < currElMeta.number &&
+              (await moduleInstance.operatorsWereChanged(
                 contractModule.stakingModuleAddress,
                 prevElMeta.blockNumber + 1,
                 currElMeta.number,

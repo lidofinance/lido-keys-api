@@ -85,7 +85,7 @@
     "@aragon/apps-vault" "^4.0.0"
     "@aragon/os" "4.2.0"
 
-"@aragon/apps-lido@lidofinance/aragon-apps#master":
+"@aragon/apps-lido@github:lidofinance/aragon-apps#master":
   version "1.0.0"
   resolved "https://codeload.github.com/lidofinance/aragon-apps/tar.gz/b09834d29c0db211ddd50f50905cbeff257fc8e0"
 
@@ -11058,10 +11058,10 @@ simple-concat@^1.0.0:
   resolved "https://registry.yarnpkg.com/simple-concat/-/simple-concat-1.0.1.tgz#f46976082ba35c2263f1c8ab5edfe26c41c9552f"
   integrity sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==
 
-simple-dvt-v1@^0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/simple-dvt-v1/-/simple-dvt-v1-0.0.5.tgz#6c221ab3757931c62736117388a3db4da340589c"
-  integrity sha512-NEtatJ7KZFWjSyKzDD03V1wxbHXvi2oi65SVZ+LVHQNKIUO/tYIOtTRa01y6AH20wEl3hL/W68GS3+/wOLOH6g==
+simple-dvt-v1@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/simple-dvt-v1/-/simple-dvt-v1-0.0.7.tgz#fb366f03a3b2aa90352c59361e0da9ef69ce0705"
+  integrity sha512-hEzxC7SUgJylLkUP+dtCvRGJ0N7BUULeOwR34GTdNM4HsYVHRBuonsyHgwhcQ5wof1mzTXO6l4jv3ZOSEVUbHQ==
   dependencies:
     "@aragon/apps-agent" "^2.1.0"
     "@aragon/apps-finance" "^3.0.0"

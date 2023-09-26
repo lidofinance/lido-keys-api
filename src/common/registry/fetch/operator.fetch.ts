@@ -14,7 +14,7 @@ export class RegistryOperatorFetchService {
     return this.contract.attach(moduleAddress);
   }
 
-  public async operatorsWereUpdated(
+  public async operatorsWereChanged(
     moduleAddress: string,
     fromBlockNumber: number,
     toBlockNumber: number,
