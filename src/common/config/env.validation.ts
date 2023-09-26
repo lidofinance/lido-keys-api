@@ -11,6 +11,7 @@ import {
   IsBoolean,
   ValidateIf,
   IsNotEmpty,
+  IsPositive,
 } from 'class-validator';
 import { Environment, LogLevel, LogFormat } from './interfaces';
 import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
@@ -165,6 +166,15 @@ export class EnvironmentVariables {
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
   UPDATE_VALIDATORS_INTERVAL_MS = 10000;
+
+  @IsOptional()
+  @IsString()
+  LIDO_LOCATOR_ADDRESS = '';
+
+  @IsOptional()
+  @IsPositive()
+  @Transform(({ value }) => parseInt(value, 10))
+  KEYS_FETCH_BATCH_SIZE = 1100;
 }
 
 export function validate(config: Record<string, unknown>) {

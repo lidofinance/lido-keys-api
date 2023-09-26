@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { Registry__factory } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES, Registry__factory } from '@lido-nestjs/contracts';
 import { getNetwork } from '@ethersproject/networks';
 import { Interface } from '@ethersproject/abi';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
@@ -9,6 +9,8 @@ import { RegistryFetchModule, RegistryOperatorFetchService } from '../../';
 describe('Operators', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
   let fetchService: RegistryOperatorFetchService;
+  const CHAIN_ID = process.env.CHAIN_ID || 1;
+  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
 
   const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');
 
@@ -30,20 +32,21 @@ describe('Operators', () => {
       const iface = new Interface(Registry__factory.abi);
       return iface.encodeFunctionResult('getNodeOperatorsCount', [expected]);
     });
-    const result = await fetchService.count();
+    const result = await fetchService.count(address);
 
     expect(result).toBe(expected);
     expect(mockCall).toBeCalledTimes(1);
   });
 
   test('fetchOne', async () => {
-    const expected = { index: 1, ...operator };
+    const expected = { index: 1, moduleAddress: address, ...operator };
 
     mockCall.mockImplementation(async () => {
       const iface = new Interface(Registry__factory.abi);
+      operator['moduleAddress'] = address;
       return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
     });
-    const result = await fetchService.fetchOne(expected.index);
+    const result = await fetchService.fetchOne(address, expected.index);
 
     expect(result).toEqual(expected);
     expect(mockCall).toBeCalledTimes(1);
@@ -55,9 +58,10 @@ describe('Operators', () => {
 
     mockCall.mockImplementation(async () => {
       const iface = new Interface(Registry__factory.abi);
+      operator['moduleAddress'] = address;
       return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
     });
-    const result = await fetchService.fetch(expectedFirst.index, expectedSecond.index + 1);
+    const result = await fetchService.fetch(address, expectedFirst.index, expectedSecond.index + 1);
 
     expect(result).toEqual([expectedFirst, expectedSecond]);
     expect(mockCall).toBeCalledTimes(2);
@@ -73,15 +77,16 @@ describe('Operators', () => {
       })
       .mockImplementationOnce(async () => {
         const iface = new Interface(Registry__factory.abi);
+        operator['moduleAddress'] = address;
         return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
       });
-    const result = await fetchService.fetch();
+    const result = await fetchService.fetch(address);
 
     expect(result).toEqual([expected]);
     expect(mockCall).toBeCalledTimes(2);
   });
 
   test('fetch. fromIndex > toIndex', async () => {
-    await expect(() => fetchService.fetch(2, 1)).rejects.toThrow();
+    await expect(() => fetchService.fetch(address, 2, 1)).rejects.toThrow();
   });
 });

@@ -1,9 +1,12 @@
 import { Test } from '@nestjs/testing';
 import { operator } from '../fixtures/operator.fixture';
 import { RegistryOperatorStorageService, RegistryOperator, RegistryOperatorRepository } from '../../';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 
 describe('Operators', () => {
-  const registryOperator = { index: 1, ...operator };
+  const CHAIN_ID = process.env.CHAIN_ID || 1;
+  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
+  const registryOperator = { index: 1, moduleAddress: address, ...operator };
   const mockRegistryOperatorRepository = {
     findAll: jest.fn().mockImplementation(() => {
       return Promise.resolve([]);
@@ -57,17 +60,17 @@ describe('Operators', () => {
   });
 
   test('findAll', async () => {
-    await expect(storageService.findAll()).resolves.toEqual([]);
-    expect(mockRegistryOperatorRepository.findAll).toBeCalledTimes(1);
+    await expect(storageService.findAll(address)).resolves.toEqual([]);
+    expect(mockRegistryOperatorRepository.find).toBeCalledTimes(1);
   });
 
   test('findOneByIndex', async () => {
-    await expect(storageService.findOneByIndex(registryOperator.index)).resolves.toEqual(registryOperator);
+    await expect(storageService.findOneByIndex(address, registryOperator.index)).resolves.toEqual(registryOperator);
     expect(mockRegistryOperatorRepository.findOne).toBeCalledTimes(1);
   });
 
   test('removeOneByIndex', async () => {
-    await expect(storageService.removeOneByIndex(registryOperator.index)).resolves.toEqual(1);
+    await expect(storageService.removeOneByIndex(address, registryOperator.index)).resolves.toEqual(1);
     expect(mockRegistryOperatorRepository.nativeDelete).toBeCalledTimes(1);
   });
 

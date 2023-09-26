@@ -1,8 +1,8 @@
 import { HttpException, Module } from '@nestjs/common';
 import { FetchService, FETCH_GLOBAL_OPTIONS_TOKEN } from '@lido-nestjs/fetch';
 import { MiddlewareModule } from '@lido-nestjs/middleware';
-import { ConfigService } from 'common/config';
-import { PrometheusService } from 'common/prometheus';
+import { ConfigService } from '../config';
+import { PrometheusService } from '../prometheus';
 import { CONSENSUS_RETRY_ATTEMPTS, CONSENSUS_RETRY_DELAY } from './consensus-provider.constants';
 import { ConsensusFetchService } from './consensus-fetch.service';
 

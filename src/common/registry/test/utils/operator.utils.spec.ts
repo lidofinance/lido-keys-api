@@ -10,6 +10,7 @@ describe('Compare operators util', () => {
     stoppedValidators: 0,
     totalSigningKeys: 1,
     usedSigningKeys: 1,
+    moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
   };
 
   const operatorTwo = {
@@ -21,6 +22,7 @@ describe('Compare operators util', () => {
     stoppedValidators: 0,
     totalSigningKeys: 2,
     usedSigningKeys: 2,
+    moduleAddress: '0x9D4AF1Ee19Dad8857db3a45B0374c81c8A1C6320',
   };
 
   test('null - null', async () => {

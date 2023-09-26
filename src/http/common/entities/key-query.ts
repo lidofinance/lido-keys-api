@@ -15,6 +15,7 @@ const toBoolean = (value, propertyName: string): boolean => {
   throw new BadRequestException([`${propertyName.toLocaleLowerCase()} must be a boolean value`]);
 };
 
+// TODO: use it in staking-module-service
 export class KeyQuery {
   @ApiProperty({
     required: false,

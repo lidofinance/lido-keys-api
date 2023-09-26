@@ -5,10 +5,10 @@ import {
   SRModuleOperatorListResponse,
   SRModuleOperatorResponse,
 } from './entities';
-import { ModuleId } from 'http/common/entities/';
+import { ModuleId } from '../common/entities/';
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
-import { OperatorIdParam } from 'http/common/entities/operator-id-param';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { OperatorId } from '../common/entities/operator-id';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
 
 @Controller('/')
 @ApiTags('operators')
@@ -54,8 +54,8 @@ export class SRModulesOperatorsController {
     description: 'Staking router module_id or contract address.',
   })
   @Get('modules/:module_id/operators')
-  getModuleOperators(@Param('module_id') moduleId: ModuleId) {
-    return this.srModulesOperators.getByModule(moduleId);
+  getModuleOperators(@Param() module: ModuleId) {
+    return this.srModulesOperators.getByModule(module.module_id);
   }
 
   @Version('1')
@@ -80,8 +80,7 @@ export class SRModulesOperatorsController {
     description: 'Staking router module_id or contract address.',
   })
   @Get('modules/:module_id/operators/:operator_id')
-  // here should be validaton
-  getModuleOperator(@Param('module_id') moduleId: ModuleId, @Param() operator: OperatorIdParam) {
-    return this.srModulesOperators.getModuleOperator(moduleId, operator.operator_id);
+  getModuleOperator(@Param() module: ModuleId, @Param() operator: OperatorId) {
+    return this.srModulesOperators.getModuleOperator(module.module_id, operator.operator_id);
   }
 }

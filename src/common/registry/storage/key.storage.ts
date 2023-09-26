@@ -17,41 +17,45 @@ export class RegistryKeyStorageService {
   }
 
   /** find all keys */
-  async findAll(): Promise<RegistryKey[]> {
-    return await this.repository.findAll({
-      orderBy: [{ operatorIndex: QueryOrder.ASC }, { index: QueryOrder.ASC }],
-    });
+  async findAll(moduleAddress: string): Promise<RegistryKey[]> {
+    return await this.repository.find(
+      { moduleAddress },
+      {
+        orderBy: [{ operatorIndex: QueryOrder.ASC }, { index: QueryOrder.ASC }],
+      },
+    );
   }
 
   /** find used keys */
-  async findUsed(): Promise<RegistryKey[]> {
-    return await this.repository.find({ used: true });
+  async findUsed(moduleAddress: string): Promise<RegistryKey[]> {
+    return await this.repository.find({ used: true, moduleAddress });
   }
 
   /** find all keys by operator */
-  async findByOperatorIndex(operatorIndex: number): Promise<RegistryKey[]> {
-    return await this.repository.find({ operatorIndex });
+  async findByOperatorIndex(moduleAddress: string, operatorIndex: number): Promise<RegistryKey[]> {
+    return await this.repository.find({ operatorIndex, moduleAddress });
   }
 
   /** find key by pubkey */
-  async findByPubkey(key: string): Promise<RegistryKey[]> {
-    return await this.repository.find({ key: key.toLocaleLowerCase() });
+  async findByPubkey(moduleAddress: string, key: string): Promise<RegistryKey[]> {
+    return await this.repository.find({ moduleAddress, key: key.toLocaleLowerCase() });
   }
 
   /** find key by signature */
-  async findBySignature(depositSignature: string): Promise<RegistryKey[]> {
+  async findBySignature(moduleAddress, depositSignature: string): Promise<RegistryKey[]> {
     depositSignature = depositSignature.toLocaleLowerCase();
-    return await this.repository.find({ depositSignature });
+    return await this.repository.find({ moduleAddress, depositSignature });
   }
 
   /** find key by index */
-  async findOneByIndex(operatorIndex: number, keyIndex: number): Promise<RegistryKey | null> {
-    return await this.repository.findOne({ operatorIndex, index: keyIndex });
+  async findOneByIndex(moduleAddress, operatorIndex: number, keyIndex: number): Promise<RegistryKey | null> {
+    return await this.repository.findOne({ moduleAddress, operatorIndex, index: keyIndex });
   }
 
   /** removes key by index */
-  async removeOneByIndex(operatorIndex: number, keyIndex: number) {
+  async removeOneByIndex(moduleAddress, operatorIndex: number, keyIndex: number) {
     return await this.repository.nativeDelete({
+      moduleAddress,
       operatorIndex,
       index: keyIndex,
     });

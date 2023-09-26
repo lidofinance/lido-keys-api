@@ -8,22 +8,32 @@ import {
   ValidatorRegistryService,
   RegistryStorageService,
   RegistryKeyStorageService,
-  RegistryMetaStorageService,
   RegistryOperatorStorageService,
 } from '../../';
-import { keys, meta, operators } from '../fixtures/db.fixture';
-import { compareTestMeta } from '../testing.utils';
+import { keys, operators } from '../fixtures/db.fixture';
+import { clearDb, compareTestMeta, mikroORMConfig } from '../testing.utils';
 import { MikroORM } from '@mikro-orm/core';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 
 describe('Registry', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
+  const CHAIN_ID = process.env.CHAIN_ID || 1;
+  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
+
+  const keysWithModuleAddress = keys.map((key) => {
+    return { ...key, moduleAddress: address };
+  });
+
+  const operatorsWithModuleAddress = operators.map((key) => {
+    return { ...key, moduleAddress: address };
+  });
 
   let registryService: ValidatorRegistryService;
   let registryStorageService: RegistryStorageService;
 
   let keyStorageService: RegistryKeyStorageService;
-  let metaStorageService: RegistryMetaStorageService;
   let operatorStorageService: RegistryOperatorStorageService;
+  let mikroOrm: MikroORM;
 
   const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');
 
@@ -31,12 +41,7 @@ describe('Registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature({ provider }),
     ];
@@ -45,24 +50,26 @@ describe('Registry', () => {
     registryStorageService = moduleRef.get(RegistryStorageService);
 
     keyStorageService = moduleRef.get(RegistryKeyStorageService);
-    metaStorageService = moduleRef.get(RegistryMetaStorageService);
     operatorStorageService = moduleRef.get(RegistryOperatorStorageService);
 
-    const generator = moduleRef.get(MikroORM).getSchemaGenerator();
+    mikroOrm = moduleRef.get(MikroORM);
+    const generator = mikroOrm.getSchemaGenerator();
     await generator.updateSchema();
 
-    await keyStorageService.save(keys);
-    await metaStorageService.save(meta);
-    await operatorStorageService.save(operators);
+    await keyStorageService.save(keysWithModuleAddress);
+    await operatorStorageService.save(operatorsWithModuleAddress);
   });
 
   afterEach(async () => {
     mockCall.mockReset();
-    await registryService.clear();
+    await clearDb(mikroOrm);
     await registryStorageService.onModuleDestroy();
   });
 
   test('db init is correct', async () => {
-    await compareTestMeta(registryService, { keys, meta, operators });
+    await compareTestMeta(address, registryService, {
+      keys: keysWithModuleAddress,
+      operators: operatorsWithModuleAddress,
+    });
   });
 });

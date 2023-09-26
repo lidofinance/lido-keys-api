@@ -2,163 +2,112 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   KeyRegistryService,
   RegistryKeyStorageService,
-  RegistryMetaStorageService,
   RegistryKey,
-  RegistryMeta,
   RegistryOperator,
   RegistryOperatorStorageService,
-} from 'common/registry';
-import { EntityManager } from '@mikro-orm/postgresql';
-import { Trace } from 'common/decorators/trace';
-import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
-import { IsolationLevel } from '@mikro-orm/core';
-
-const TRACE_TIMEOUT = 15 * 60 * 1000;
-
-export interface KeysFilter {
-  used?: boolean;
-  operatorIndex?: number;
-}
+} from '../common/registry';
+import { LOGGER_PROVIDER, LoggerService } from '../common/logger';
+import { QueryOrder } from '@mikro-orm/core';
+import { StakingModuleInterface } from './interfaces/staking-module.interface';
+import { KeysFilter, OperatorsFilter } from './interfaces/filters';
 
 @Injectable()
-export class CuratedModuleService {
+export class CuratedModuleService implements StakingModuleInterface {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly keyRegistryService: KeyRegistryService,
     protected readonly keyStorageService: RegistryKeyStorageService,
-    protected readonly metaStorageService: RegistryMetaStorageService,
     protected readonly operatorStorageService: RegistryOperatorStorageService,
-    protected readonly entityManager: EntityManager,
   ) {}
 
-  @Trace(TRACE_TIMEOUT)
-  public async updateKeys(blockHashOrBlockTag: string | number): Promise<void> {
-    await this.keyRegistryService.update(blockHashOrBlockTag);
+  public async update(moduleAddress: string, blockHash: string): Promise<void> {
+    await this.keyRegistryService.update(moduleAddress, blockHash);
   }
 
-  public async getKeyWithMetaByPubkey(pubkey: string): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
-    const { keys, meta } = await this.entityManager.transactional(
-      async () => {
-        const keys = await this.keyStorageService.findByPubkey(pubkey.toLocaleLowerCase());
-        const meta = await this.getMetaDataFromStorage();
-
-        return { keys, meta };
-      },
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
-
-    return { keys, meta };
+  public async operatorsWereChanged(
+    moduleAddress: string,
+    fromBlockNumber: number,
+    toBlockNumber: number,
+  ): Promise<boolean> {
+    return await this.keyRegistryService.operatorsWereChanged(moduleAddress, fromBlockNumber, toBlockNumber);
   }
 
-  public async getKeysWithMetaByPubkeys(
-    pubkeys: string[],
-  ): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
-    const { keys, meta } = await this.entityManager.transactional(
-      async () => {
-        const keys = await this.getKeysByPubkeys(pubkeys);
-        const meta = await this.getMetaDataFromStorage();
-
-        return { keys, meta };
-      },
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
-
-    return { keys, meta };
+  public async updateOperators(moduleAddress: string, blockHash: string): Promise<void> {
+    await this.keyRegistryService.updateOperators(moduleAddress, blockHash);
   }
 
-  public async getKeysWithMeta(filters: KeysFilter): Promise<{ keys: RegistryKey[]; meta: RegistryMeta | null }> {
-    const { keys, meta } = await this.entityManager.transactional(
-      async () => {
-        const where = {};
-        if (filters.operatorIndex != undefined) {
-          where['operatorIndex'] = filters.operatorIndex;
-        }
-
-        if (filters.used != undefined) {
-          where['used'] = filters.used;
-        }
-
-        const keys = await this.keyStorageService.find(where);
-        const meta = await this.getMetaDataFromStorage();
-
-        return { keys, meta };
-      },
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
-
-    return { keys, meta };
+  public async getCurrentNonce(moduleAddress: string, blockHash: string): Promise<number> {
+    const nonce = await this.keyRegistryService.getStakingModuleNonce(moduleAddress, blockHash);
+    return nonce;
   }
 
-  public async getMetaDataFromStorage(): Promise<RegistryMeta | null> {
-    return await this.metaStorageService.get();
+  public async getKeys(moduleAddress: string, filters: KeysFilter): Promise<RegistryKey[]> {
+    const where = {};
+    if (filters.operatorIndex != undefined) {
+      where['operatorIndex'] = filters.operatorIndex;
+    }
+
+    if (filters.used != undefined) {
+      where['used'] = filters.used;
+    }
+
+    // we store keys of modules with the same impl at the same table
+    where['moduleAddress'] = moduleAddress;
+
+    const keys = await this.keyStorageService.find(where);
+
+    return keys;
   }
 
-  public async getOperatorsWithMeta(): Promise<{ operators: RegistryOperator[]; meta: RegistryMeta | null }> {
-    const { operators, meta } = await this.entityManager.transactional(
-      async () => {
-        const operators = await this.operatorStorageService.findAll();
-        const meta = await this.getMetaDataFromStorage();
+  public async *getKeysStream(moduleAddress: string, filters: KeysFilter): AsyncGenerator<RegistryKey> {
+    const where = {};
+    if (filters.operatorIndex != undefined) {
+      where['operatorIndex'] = filters.operatorIndex;
+    }
 
-        return { operators, meta };
-      },
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
+    if (filters.used != undefined) {
+      where['used'] = filters.used;
+    }
 
-    return { operators, meta };
+    where['moduleAddress'] = moduleAddress;
+
+    const batchSize = 10000;
+    let offset = 0;
+
+    while (true) {
+      const chunk = await this.keyStorageService.find(where, { limit: batchSize, offset });
+      if (chunk.length === 0) {
+        break;
+      }
+
+      offset += batchSize;
+
+      for (const record of chunk) {
+        yield record;
+      }
+    }
   }
 
-  public async getOperatorByIndex(
-    index: number,
-  ): Promise<{ operator: RegistryOperator | null; meta: RegistryMeta | null }> {
-    const { operator, meta } = await this.entityManager.transactional(
-      async () => {
-        const operator = await this.operatorStorageService.findOneByIndex(index);
-        const meta = await this.getMetaDataFromStorage();
-
-        return { operator, meta };
-      },
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
-
-    return { operator, meta };
+  public async getKeysByPubKeys(moduleAddress: string, pubKeys: string[]): Promise<RegistryKey[]> {
+    return await this.keyStorageService.find({ key: { $in: pubKeys }, moduleAddress });
   }
 
-  public async getData(filters: KeysFilter): Promise<{
-    operators: RegistryOperator[];
-    keys: RegistryKey[];
-    meta: RegistryMeta | null;
-  }> {
-    const { operators, keys, meta } = await this.entityManager.transactional(
-      async () => {
-        const keysWhere = {};
-        const operatorsWhere = {};
-        if (filters.operatorIndex != undefined) {
-          keysWhere['operatorIndex'] = filters.operatorIndex;
-          operatorsWhere['index'] = filters.operatorIndex;
-        }
-
-        if (filters.used != undefined) {
-          keysWhere['used'] = filters.used;
-        }
-
-        const operators = await this.operatorStorageService.find(operatorsWhere);
-        const keys = await this.keyStorageService.find(keysWhere);
-        const meta = await this.getMetaDataFromStorage();
-
-        return { operators, keys, meta };
-      },
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
-
-    return { operators, keys, meta };
+  public async getKeysByPubkey(moduleAddress: string, pubKey: string): Promise<RegistryKey[]> {
+    return await this.keyStorageService.find({ key: pubKey.toLocaleLowerCase(), moduleAddress });
   }
 
-  /**
-   * Returns all keys found in db from pubkey list
-   * @param pubKeys - public keys
-   * @returns keys from DB
-   */
-  private async getKeysByPubkeys(pubKeys: string[]): Promise<RegistryKey[]> {
-    return await this.keyStorageService.find({ key: { $in: pubKeys } });
+  public async getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<RegistryOperator[]> {
+    const where = {};
+    if (filters?.index != undefined) {
+      where['index'] = filters.index;
+    }
+    // we store operators of modules with the same impl at the same table
+    where['moduleAddress'] = moduleAddress;
+    return await this.operatorStorageService.find(where, { orderBy: [{ index: QueryOrder.ASC }] });
+  }
+
+  public async getOperator(moduleAddress: string, index: number): Promise<RegistryOperator | null> {
+    const operators = await this.operatorStorageService.find({ moduleAddress, index });
+    return operators[0];
   }
 }

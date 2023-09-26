@@ -7,4 +7,5 @@ export interface RegistryOperator {
   stoppedValidators: number;
   totalSigningKeys: number;
   usedSigningKeys: number;
+  moduleAddress: string;
 }

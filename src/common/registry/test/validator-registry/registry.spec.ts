@@ -12,9 +12,14 @@ import {
   ValidatorRegistryService,
 } from '../..';
 import { MikroORM } from '@mikro-orm/core';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { mikroORMConfig } from '../testing.utils';
 
 describe('Validator', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
+  const CHAIN_ID = process.env.CHAIN_ID || 1;
+  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
+
   let validatorService: ValidatorRegistryService;
   let keyStorage: RegistryKeyStorageService;
   let storageService: RegistryStorageService;
@@ -25,12 +30,7 @@ describe('Validator', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature({ provider }),
     ];
@@ -55,9 +55,9 @@ describe('Validator', () => {
   });
 
   test('getValidatorsKeysFromStorage', async () => {
-    const expected = [{ index: 0, operatorIndex: 0, ...key }];
+    const expected = [{ index: 0, operatorIndex: 0, moduleAddress: address, ...key }];
     jest.spyOn(keyStorage, 'findUsed').mockImplementation(async () => expected);
 
-    await expect(validatorService.getValidatorsKeysFromStorage()).resolves.toBe(expected);
+    await expect(validatorService.getValidatorsKeysFromStorage(address)).resolves.toBe(expected);
   });
 });
