@@ -200,7 +200,7 @@ describe('Registry', () => {
       });
     });
 
-    test('delete keys from operator', async () => {
+    test('decrease of usedSigningKeys will not result in the removal of a key', async () => {
       // keys will be updated in range form = usedSigningKeys to=totalSigningKeys
       const newOperators = clone(operatorsWithModuleAddress);
       newOperators[0].usedSigningKeys--;
@@ -244,33 +244,57 @@ describe('Registry', () => {
       await compareTestOperators(address, registryService, {
         operators: newOperators,
       });
-      const keysOfoperator0 = await (
+
+      const newOperator0Keys = keysWithModuleAddress
+        .filter(({ operatorIndex }) => operatorIndex === 0)
+        .sort((a, b) => a.operatorIndex - b.operatorIndex)
+        .slice(0, -1);
+
+      await compareTestKeys(address, registryService, {
+        keys: newOperator0Keys,
+      });
+
+      const keysOfOperator0 = await (
         await registryService.getModuleKeysFromStorage(address)
       ).filter(({ operatorIndex }) => operatorIndex === 0);
-      expect(keysOfoperator0.length).toBe(newOperators[0].totalSigningKeys);
+
+      expect(keysOfOperator0.length).toBe(newOperators[0].totalSigningKeys);
     });
 
-    // test('usedSigningKeys value changed in operator', async () => {
-    //   const newOperators = clone(operatorsWithModuleAddress);
-    //   newOperators[0].usedSigningKeys++;
+    test('during update previous operator usedSigningKeys value is being used', async () => {
+      const newOperators = clone(operatorsWithModuleAddress);
+      newOperators[0].usedSigningKeys++;
 
-    //   const saveOperatorsRegistryMock = jest.spyOn(registryService, 'saveOperators');
-    //   const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
+      const saveOperatorsRegistryMock = jest.spyOn(registryService, 'saveOperators');
+      const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
-    //   registryServiceMock(moduleRef, provider, {
-    //     keys: keysWithModuleAddress,
-    //     operators: newOperators,
-    //   });
+      const newKeys = clone([
+        ...keysWithModuleAddress,
+        {
+          operatorIndex: 0,
+          index: 3,
+          key: '0xa544bc44d8eacbf4dd6a2d6087b43f4c67fd5618651b97effcb30997bf49e5d7acf0100ef14e5d087cc228bc78d498e6',
+          depositSignature:
+            '0x967875a0104d1f674538e2ec0df4be0a61ef08061cdcfa83e5a63a43dadb772d29053368224e5d8e046ba1a78490f5fc0f0186f23af0465d0a82b2db2e7535782fe12e1fd1cd4f6eb77d8dc7a4f7ab0fde31435d5fa98a013e0a716c5e1ef6a2',
+          used: true,
+          moduleAddress: address,
+        },
+      ]);
 
-    //   const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+      registryServiceMock(moduleRef, provider, {
+        keys: newKeys,
+        operators: newOperators,
+      });
 
-    //   await registryService.update(address, blockHash);
-    //   expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
-    //   expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-    //   await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
-    //   await compareTestOperators(address, registryService, {
-    //     operators: newOperators,
-    //   });
-    // });
+      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
+      await registryService.update(address, blockHash);
+      expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
+      await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestOperators(address, registryService, {
+        operators: newOperators,
+      });
+    });
   });
 });

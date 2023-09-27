@@ -75,8 +75,11 @@ describe('Operators', () => {
       })
       .mockImplementationOnce(async () => {
         const iface = new Interface(Registry__factory.abi);
-        return iface.encodeFunctionResult('getNodeOperator', operatorFields({ ...operator, moduleAddress: address }));
+        operator['moduleAddress'] = address;
+        // operatorFields(operator);
+        return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
       });
+    console.log('aaaaa', expected);
     const result = await fetchService.fetch(address);
 
     expect(result).toEqual([expected]);

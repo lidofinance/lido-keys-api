@@ -270,8 +270,25 @@ describe('Simple DVT deploy', () => {
   });
 
   it('block is changing every iteration', async () => {
-    console.log(await elMetaStorageService.get());
+    const prevBlockNumber = (await session.provider.getBlock('latest')).number;
     await keysUpdateService.update();
-    console.log(await elMetaStorageService.get());
+
+    const prevElSnapshot = await stakingRouterService.getElBlockSnapshot();
+
+    expect(prevElSnapshot).toBeDefined();
+    expect(prevElSnapshot?.blockNumber).toBe(prevBlockNumber);
+
+    //  mine new block
+    await session.provider.evm_mine();
+    const currentBlockNumber = (await session.provider.getBlock('latest')).number;
+    // // check if the block has been changed
+    expect(prevBlockNumber).toBeLessThan(currentBlockNumber);
+
+    await keysUpdateService.update();
+
+    const currentElSnapshot = await stakingRouterService.getElBlockSnapshot();
+
+    expect(currentElSnapshot).toBeDefined();
+    expect(currentElSnapshot?.blockNumber).toBe(currentBlockNumber);
   });
 });

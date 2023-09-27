@@ -255,11 +255,20 @@ describe('Validator registry', () => {
         operators: newOperators,
       });
 
-      const firstOperatorKeys = await (
+      const newOperator0Keys = keysWithModuleAddress
+        .filter(({ operatorIndex }) => operatorIndex === 0)
+        .sort((a, b) => a.operatorIndex - b.operatorIndex)
+        .slice(0, -1);
+
+      await compareTestKeys(address, registryService, {
+        keys: newOperator0Keys,
+      });
+
+      const keysOfOperator0 = await (
         await registryService.getOperatorsKeysFromStorage(address)
       ).filter(({ operatorIndex }) => operatorIndex === 0);
 
-      expect(firstOperatorKeys.length).toBe(newOperators[0].totalSigningKeys);
+      expect(keysOfOperator0.length).toBe(newOperators[0].totalSigningKeys);
     });
   });
 });
@@ -304,11 +313,13 @@ describe('Empty registry', () => {
     const generator = mikroOrm.getSchemaGenerator();
     await generator.updateSchema();
   });
+
   afterEach(async () => {
     mockCall.mockReset();
     await clearDb(mikroOrm);
     await registryStorageService.onModuleDestroy();
   });
+
   test('init on update', async () => {
     const saveRegistryMock = jest.spyOn(registryService, 'saveOperators');
     const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');

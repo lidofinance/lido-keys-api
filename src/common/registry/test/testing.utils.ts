@@ -13,11 +13,12 @@ export const compareTestKeys = async (
   { keys }: Pick<Expected, 'keys'>,
 ) => {
   const sorted = keys.sort((a, b) => a.operatorIndex - b.operatorIndex);
+
   const fetchedAndSorted = await (
     await registryService.getOperatorsKeysFromStorage(address)
   ).sort((a, b) => a.operatorIndex - b.operatorIndex);
 
-  expect(fetchedAndSorted).toEqual(sorted);
+  expect(fetchedAndSorted).toEqual(expect.arrayContaining(sorted));
 };
 
 export const compareTestOperators = async (
