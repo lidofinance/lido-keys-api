@@ -78,7 +78,7 @@ describe('Validator registry', () => {
   });
 
   describe('update', () => {
-    test('same data', async () => {
+    test('no update is required', async () => {
       const saveOperatorRegistryMock = jest.spyOn(registryService, 'saveOperators');
       const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
@@ -117,11 +117,11 @@ describe('Validator registry', () => {
       expect(saveKeyRegistryMock).toBeCalledTimes(2);
     });
 
-    test('keys is not mutating', async () => {
+    test('used keys are immutable', async () => {
       const newKeys = clone(keysWithModuleAddress);
       newKeys[0].used = false;
 
-      const saveRegistryMock = jest.spyOn(registryService, 'saveOperators');
+      const saveOperatorsRegistryMock = jest.spyOn(registryService, 'saveOperators');
       const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
@@ -132,7 +132,7 @@ describe('Validator registry', () => {
       const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
       await registryService.update(address, blockHash);
-      expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
       await compareTestOperators(address, registryService, { operators: operatorsWithModuleAddress });
@@ -143,7 +143,7 @@ describe('Validator registry', () => {
       const newOperators = clone(operatorsWithModuleAddress);
       newOperators[0].totalSigningKeys++;
 
-      const saveRegistryMock = jest.spyOn(registryService, 'saveOperators');
+      const saveOperatorsRegistryMock = jest.spyOn(registryService, 'saveOperators');
       const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
@@ -154,7 +154,7 @@ describe('Validator registry', () => {
       const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
       await registryService.update(address, blockHash);
-      expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
       await compareTestOperators(address, registryService, {
@@ -235,7 +235,7 @@ describe('Validator registry', () => {
       });
     });
 
-    test('out of total signing keys limit', async () => {
+    test('remove keys with index higher than totalSigningKeys', async () => {
       const newOperators = clone(operatorsWithModuleAddress);
       newOperators[0].totalSigningKeys--;
       const saveOperatorRegistryMock = jest.spyOn(registryService, 'saveOperators');

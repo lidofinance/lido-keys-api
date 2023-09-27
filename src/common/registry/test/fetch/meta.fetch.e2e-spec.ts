@@ -22,9 +22,9 @@ describe('Operators', () => {
     fetchService = moduleRef.get(RegistryMetaFetchService);
   });
 
-  test('fetch keysOpIndex', async () => {
-    const keysOpIndex = await fetchService.fetchStakingModuleNonce(address);
-    expect(typeof keysOpIndex).toBe('number');
-    expect(keysOpIndex).toBeGreaterThan(0);
+  test('fetch nonce', async () => {
+    const nonce = await fetchService.fetchStakingModuleNonce(address);
+    expect(typeof nonce).toBe('number');
+    expect(nonce).toBeGreaterThan(0);
   });
 });

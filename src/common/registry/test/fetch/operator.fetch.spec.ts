@@ -52,8 +52,8 @@ describe('Operators', () => {
   });
 
   test('fetch', async () => {
-    const expectedFirst = { index: 1, ...operator };
-    const expectedSecond = { index: 2, ...operator };
+    const expectedFirst = { index: 1, moduleAddress: address, ...operator };
+    const expectedSecond = { index: 2, moduleAddress: address, ...operator };
 
     mockCall.mockImplementation(async () => {
       const iface = new Interface(Registry__factory.abi);
@@ -66,7 +66,7 @@ describe('Operators', () => {
   });
 
   test('fetch all', async () => {
-    const expected = { index: 0, ...operator };
+    const expected = { index: 0, moduleAddress: address, ...operator };
 
     mockCall
       .mockImplementationOnce(async () => {
