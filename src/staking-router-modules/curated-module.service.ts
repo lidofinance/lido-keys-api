@@ -24,6 +24,18 @@ export class CuratedModuleService implements StakingModuleInterface {
     await this.keyRegistryService.update(moduleAddress, blockHash);
   }
 
+  public async operatorsWereChanged(
+    moduleAddress: string,
+    fromBlockNumber: number,
+    toBlockNumber: number,
+  ): Promise<boolean> {
+    return await this.keyRegistryService.operatorsWereChanged(moduleAddress, fromBlockNumber, toBlockNumber);
+  }
+
+  public async updateOperators(moduleAddress: string, blockHash: string): Promise<void> {
+    await this.keyRegistryService.updateOperators(moduleAddress, blockHash);
+  }
+
   public async getCurrentNonce(moduleAddress: string, blockHash: string): Promise<number> {
     const nonce = await this.keyRegistryService.getStakingModuleNonce(moduleAddress, blockHash);
     return nonce;

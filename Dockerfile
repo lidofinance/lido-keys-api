@@ -1,8 +1,10 @@
 FROM node:18.14.2-alpine3.16 as building
 
+RUN apk add --no-cache git=2.36.6-r0
+
 WORKDIR /app
 
-COPY package.json yarn.lock ./
+COPY package.json yarn.lock chronix.config.ts ./
 COPY ./tsconfig*.json ./
 COPY ./src ./src
 

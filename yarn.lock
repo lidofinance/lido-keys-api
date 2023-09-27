@@ -2481,6 +2481,11 @@
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==
 
+"@types/k6@~0.44.2":
+  version "0.44.3"
+  resolved "https://registry.yarnpkg.com/@types/k6/-/k6-0.44.3.tgz#bbd6c7ebed1970f537fce8d46af41d3d19631ac2"
+  integrity sha512-Ulu+xGZZQhZfk3hpLRo7oj69oSMBUfK7+FYdUtD3Dsj+nPyWQAH6j/GX5rLuHJ4SWZkdyEZ7Xmam7tBM8G2Srw==
+
 "@types/long@^4.0.1":
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/@types/long/-/long-4.0.2.tgz#b74129719fc8d11c01868010082d483b7545591a"
@@ -4456,10 +4461,10 @@ chrome-trace-event@^1.0.2:
   resolved "https://registry.yarnpkg.com/chrome-trace-event/-/chrome-trace-event-1.0.3.tgz#1015eced4741e15d06664a957dbbf50d041e26ac"
   integrity sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==
 
-chronix@^0.0.2-beta-plugin-v8:
-  version "0.0.2-beta-plugin-v8"
-  resolved "https://registry.yarnpkg.com/chronix/-/chronix-0.0.2-beta-plugin-v8.tgz#c150d1bf98d645f6141887e00ef392dd6b1e3cba"
-  integrity sha512-vezF88/XlyciZpvFv9tLdXFaMPEOKVMHBr5e1XNXUP/q6eNHU22lUZwKHLCMFO/ZDtjWyMwHOiNVQCBsP+JtBQ==
+chronix@^0.0.2-beta-plugin-v9:
+  version "0.0.2-beta-plugin-v9"
+  resolved "https://registry.yarnpkg.com/chronix/-/chronix-0.0.2-beta-plugin-v9.tgz#5e08c4bd0bca1a6698bfe927402cc15e2e665a40"
+  integrity sha512-dOoGuUxidxfEV3hhqOAkmzhNryJCnQUvUJMROPsG4HxLAnn1uM+/HeKyudl0XWDgj1TQ7kXtJo90jnFQxni3Ww==
   dependencies:
     "@aragon/os" "^4.4.0"
     "@nomiclabs/hardhat-ethers" "^2.2.3"
@@ -11070,10 +11075,10 @@ simple-concat@^1.0.0:
   resolved "https://registry.yarnpkg.com/simple-concat/-/simple-concat-1.0.1.tgz#f46976082ba35c2263f1c8ab5edfe26c41c9552f"
   integrity sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==
 
-simple-dvt-v1@^0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/simple-dvt-v1/-/simple-dvt-v1-0.0.5.tgz#6c221ab3757931c62736117388a3db4da340589c"
-  integrity sha512-NEtatJ7KZFWjSyKzDD03V1wxbHXvi2oi65SVZ+LVHQNKIUO/tYIOtTRa01y6AH20wEl3hL/W68GS3+/wOLOH6g==
+simple-dvt-v1@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/simple-dvt-v1/-/simple-dvt-v1-0.0.7.tgz#fb366f03a3b2aa90352c59361e0da9ef69ce0705"
+  integrity sha512-hEzxC7SUgJylLkUP+dtCvRGJ0N7BUULeOwR34GTdNM4HsYVHRBuonsyHgwhcQ5wof1mzTXO6l4jv3ZOSEVUbHQ==
   dependencies:
     "@aragon/apps-agent" "^2.1.0"
     "@aragon/apps-finance" "^3.0.0"
