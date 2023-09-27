@@ -13,7 +13,7 @@ import {
 import { keys, newKey, newOperator, operators, operatorWithDefaultsRecords } from '../fixtures/db.fixture';
 import {
   clone,
-  compareTestMeta,
+  compareTestKeysAndOperators,
   compareTestKeys,
   compareTestOperators,
   mikroORMConfig,
@@ -81,8 +81,8 @@ describe('Registry', () => {
   });
 
   describe('update', () => {
-    test('same data', async () => {
-      const saveRegistryMock = jest.spyOn(registryService, 'saveOperators');
+    test('no update is required', async () => {
+      const saveOperatorsRegistryMock = jest.spyOn(registryService, 'saveOperators');
       const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
@@ -93,20 +93,22 @@ describe('Registry', () => {
       const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
       await registryService.update(address, blockHash);
-      expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
       // 2 - number of operators
       expect(saveKeyRegistryMock).toBeCalledTimes(2);
-      await compareTestMeta(address, registryService, {
+      await compareTestKeysAndOperators(address, registryService, {
         keys: keysWithModuleAddress,
         operators: operatorsWithModuleAddress,
       });
     });
 
-    test('keys is not mutating', async () => {
+    test('used keys are immutable', async () => {
+      // this test is based on usedSigningKeys = 3 value of operator with index 0
+      // so keys will be updated from usedSigningKeys to totalSigningKeys
       const newKeys = clone(keysWithModuleAddress);
       newKeys[0].used = false;
 
-      const saveRegistryMock = jest.spyOn(registryService, 'saveOperators');
+      const saveOperatorsRegistryMock = jest.spyOn(registryService, 'saveOperators');
       const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
@@ -117,19 +119,19 @@ describe('Registry', () => {
       const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
       await registryService.update(address, blockHash);
-      expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
       await compareTestOperators(address, registryService, { operators: operatorsWithModuleAddress });
     });
 
-    test('looking for totalSigningKeys', async () => {
+    test('new key is added to database if totalSigningKeys is increased', async () => {
       const newKeys = clone([...keysWithModuleAddress, { ...newKey, moduleAddress: address }]);
 
       const newOperators = clone(operatorsWithModuleAddress);
       newOperators[0].totalSigningKeys++;
 
-      const saveRegistryMock = jest.spyOn(registryService, 'saveOperators');
+      const saveOperatorsRegistryMock = jest.spyOn(registryService, 'saveOperators');
       const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
@@ -140,7 +142,7 @@ describe('Registry', () => {
       const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
       await registryService.update(address, blockHash);
-      expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
 
       await compareTestKeys(address, registryService, { keys: newKeys });
@@ -150,6 +152,7 @@ describe('Registry', () => {
     });
 
     test('add new operator', async () => {
+      // operators is always updated during run of update function
       const newOperators = clone([...operatorsWithModuleAddress, { ...newOperator, moduleAddress: address }]);
 
       const saveOperatorRegistryMock = jest.spyOn(registryService, 'saveOperators');
@@ -198,10 +201,11 @@ describe('Registry', () => {
     });
 
     test('delete keys from operator', async () => {
+      // keys will be updated in range form = usedSigningKeys to=totalSigningKeys
       const newOperators = clone(operatorsWithModuleAddress);
       newOperators[0].usedSigningKeys--;
 
-      const saveRegistryMock = jest.spyOn(registryService, 'saveOperators');
+      const saveOperatorsRegistryMock = jest.spyOn(registryService, 'saveOperators');
       const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
       registryServiceMock(moduleRef, provider, {
@@ -212,7 +216,7 @@ describe('Registry', () => {
       const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
       await registryService.update(address, blockHash);
-      expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
       await compareTestOperators(address, registryService, {
@@ -220,12 +224,12 @@ describe('Registry', () => {
       });
     });
 
-    test('out of total signing keys limit', async () => {
+    test('remove keys with index higher than totalSigningKeys', async () => {
       // during update we remove all keys from the database that are greater than the total number of keys
       const newOperators = clone(operatorsWithModuleAddress);
       newOperators[0].totalSigningKeys--;
 
-      const saveRegistryMock = jest.spyOn(registryService, 'saveOperators');
+      const saveOperatorsRegistryMock = jest.spyOn(registryService, 'saveOperators');
       const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
       registryServiceMock(moduleRef, provider, {
         keys: keysWithModuleAddress,
@@ -234,16 +238,39 @@ describe('Registry', () => {
       const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
       await registryService.update(address, blockHash);
-      expect(saveRegistryMock).toBeCalledTimes(1);
+      expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
 
       await compareTestOperators(address, registryService, {
         operators: newOperators,
       });
-      const firstOperatorKeys = await (
+      const keysOfoperator0 = await (
         await registryService.getModuleKeysFromStorage(address)
       ).filter(({ operatorIndex }) => operatorIndex === 0);
-      expect(firstOperatorKeys.length).toBe(newOperators[0].totalSigningKeys);
+      expect(keysOfoperator0.length).toBe(newOperators[0].totalSigningKeys);
     });
+
+    // test('usedSigningKeys value changed in operator', async () => {
+    //   const newOperators = clone(operatorsWithModuleAddress);
+    //   newOperators[0].usedSigningKeys++;
+
+    //   const saveOperatorsRegistryMock = jest.spyOn(registryService, 'saveOperators');
+    //   const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
+
+    //   registryServiceMock(moduleRef, provider, {
+    //     keys: keysWithModuleAddress,
+    //     operators: newOperators,
+    //   });
+
+    //   const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
+    //   await registryService.update(address, blockHash);
+    //   expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
+    //   expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
+    //   await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
+    //   await compareTestOperators(address, registryService, {
+    //     operators: newOperators,
+    //   });
+    // });
   });
 });

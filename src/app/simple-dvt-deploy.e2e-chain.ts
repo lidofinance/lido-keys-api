@@ -131,15 +131,13 @@ describe('Simple DVT deploy', () => {
       .map((op) => op.totalAddedValidators)
       .reduce((sum, kCount) => (sum += kCount), 0);
 
-    for (const [, srModule] of srModules.entries()) {
-      const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(srModule.type);
-      const srModuleAddress = convertAddressToLowerCase(srModule.stakingModuleAddress);
-      const keys = await moduleInstance.getKeys(srModuleAddress, {});
-      const operators = await moduleInstance.getOperators(srModuleAddress);
+    const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(srModules[0].type);
+    const srModuleAddress = convertAddressToLowerCase(srModules[0].stakingModuleAddress);
+    const keys = await moduleInstance.getKeys(srModuleAddress, {});
+    const operators = await moduleInstance.getOperators(srModuleAddress);
 
-      expect(operators).toHaveLength(2);
-      expect(keys).toHaveLength(keysTotal);
-    }
+    expect(operators).toHaveLength(2);
+    expect(keys).toHaveLength(keysTotal);
   });
 
   test('deploy simple dvt', async () => {
@@ -165,7 +163,9 @@ describe('Simple DVT deploy', () => {
     const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
     const keys = await moduleInstance.getKeys(srModuleAddress, {});
     const operators = await moduleInstance.getOperators(srModuleAddress);
+    const dvtModule = await stakingRouterService.getStakingModule(simpleDvtState.id);
 
+    expect(dvtModule?.nonce).toEqual(0);
     expect(keys).toHaveLength(0);
     expect(operators).toHaveLength(0);
   });
@@ -194,7 +194,9 @@ describe('Simple DVT deploy', () => {
     const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
     const keys = await moduleInstance.getKeys(srModuleAddress, {});
     const operators = await moduleInstance.getOperators(srModuleAddress);
+    const dvtModule = await stakingRouterService.getStakingModule(simpleDvtState.id);
 
+    expect(dvtModule?.nonce).toEqual(1);
     expect(keys).toHaveLength(1);
     expect(operators).toHaveLength(1);
     expect(operators[0].name).toBe(sdvtNodeOperator1.name);
@@ -213,13 +215,15 @@ describe('Simple DVT deploy', () => {
 
     const currentKeys = await moduleInstance.getKeys(srModuleAddress, {});
     const currentOperators = await moduleInstance.getOperators(srModuleAddress);
+    const dvtModule = await stakingRouterService.getStakingModule(simpleDvtState.id);
 
+    expect(dvtModule?.nonce).toEqual(1);
     expect(currentKeys).toHaveLength(1);
     expect(currentOperators).toHaveLength(2);
     expect(currentOperators[1].name).toBe(dvtNodeOperator2WithoutKeys.name);
   });
 
-  test('update operator', async () => {
+  test('update operator name', async () => {
     const simpleDvtState = deployState.stakingRouterData.stakingModules[1];
     const srModuleAddress = convertAddressToLowerCase(simpleDvtState.stakingModuleAddress);
     const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
@@ -234,10 +238,18 @@ describe('Simple DVT deploy', () => {
 
     const keys1 = await moduleInstance.getKeys(srModuleAddress, {});
     const operators1 = await moduleInstance.getOperators(srModuleAddress);
+    const dvtModule = await stakingRouterService.getStakingModule(simpleDvtState.id);
 
+    expect(dvtModule?.nonce).toEqual(1);
     expect(keys1).toHaveLength(1);
     expect(operators1).toHaveLength(2);
     expect(operators1[1].name).toBe('some other name');
+  });
+
+  it('update operator reward address', async () => {
+    const simpleDvtState = deployState.stakingRouterData.stakingModules[1];
+    const srModuleAddress = convertAddressToLowerCase(simpleDvtState.stakingModuleAddress);
+    const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
 
     await session.story('simple-dvt/set-node-operator-reward-address', {
       norAddress: simpleDvtState.stakingModuleAddress,
@@ -249,9 +261,17 @@ describe('Simple DVT deploy', () => {
 
     const keys2 = await moduleInstance.getKeys(srModuleAddress, {});
     const operators2 = await moduleInstance.getOperators(srModuleAddress);
+    const dvtModule = await stakingRouterService.getStakingModule(simpleDvtState.id);
 
+    expect(dvtModule?.nonce).toEqual(1);
     expect(keys2).toHaveLength(1);
     expect(operators2).toHaveLength(2);
     expect(operators2[1].rewardAddress).toBe('0x' + '3'.repeat(40));
+  });
+
+  it('block is changing every iteration', async () => {
+    console.log(await elMetaStorageService.get());
+    await keysUpdateService.update();
+    console.log(await elMetaStorageService.get());
   });
 });

@@ -43,8 +43,7 @@ describe('Operators', () => {
 
     mockCall.mockImplementation(async () => {
       const iface = new Interface(Registry__factory.abi);
-      operator['moduleAddress'] = address;
-      return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
+      return iface.encodeFunctionResult('getNodeOperator', operatorFields({ ...operator, moduleAddress: address }));
     });
     const result = await fetchService.fetchOne(address, expected.index);
 
@@ -58,8 +57,7 @@ describe('Operators', () => {
 
     mockCall.mockImplementation(async () => {
       const iface = new Interface(Registry__factory.abi);
-      operator['moduleAddress'] = address;
-      return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
+      return iface.encodeFunctionResult('getNodeOperator', operatorFields({ ...operator, moduleAddress: address }));
     });
     const result = await fetchService.fetch(address, expectedFirst.index, expectedSecond.index + 1);
 
@@ -77,8 +75,7 @@ describe('Operators', () => {
       })
       .mockImplementationOnce(async () => {
         const iface = new Interface(Registry__factory.abi);
-        operator['moduleAddress'] = address;
-        return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
+        return iface.encodeFunctionResult('getNodeOperator', operatorFields({ ...operator, moduleAddress: address }));
       });
     const result = await fetchService.fetch(address);
 

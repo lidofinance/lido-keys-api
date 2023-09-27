@@ -28,7 +28,7 @@ export const compareTestOperators = async (
   expect(operators).toEqual(await registryService.getOperatorsFromStorage(address));
 };
 
-export const compareTestMeta = async (
+export const compareTestKeysAndOperators = async (
   address: string,
   registryService: AbstractRegistryService,
   { keys, operators }: Expected,

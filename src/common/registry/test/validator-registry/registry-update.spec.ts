@@ -13,7 +13,7 @@ import {
 import { keys, newKey, newOperator, operators, operatorWithDefaultsRecords } from '../fixtures/db.fixture';
 import {
   clone,
-  compareTestMeta,
+  compareTestKeysAndOperators,
   compareTestKeys,
   compareTestOperators,
   clearDb,
@@ -95,7 +95,7 @@ describe('Validator registry', () => {
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
       // 2 - number of operators
       expect(saveKeyRegistryMock).toBeCalledTimes(2);
-      await compareTestMeta(address, registryService, {
+      await compareTestKeysAndOperators(address, registryService, {
         keys: keysWithModuleAddress,
         operators: operatorsWithModuleAddress,
       });
@@ -321,7 +321,7 @@ describe('Empty registry', () => {
     await registryService.update(address, blockHash);
     expect(saveRegistryMock).toBeCalledTimes(1);
     expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-    await compareTestMeta(address, registryService, {
+    await compareTestKeysAndOperators(address, registryService, {
       keys: keysWithModuleAddress,
       operators: operatorsWithModuleAddress,
     });
