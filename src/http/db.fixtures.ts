@@ -1,6 +1,56 @@
-import { dvtModule, curatedModule } from './module.fixture';
+import { RegistryKey, RegistryOperator } from '../common/registry';
 
-export const dvtModuleKeys = [
+import { AddressZero } from '@ethersproject/constants';
+import { STAKING_MODULE_TYPE } from 'staking-router-modules/constants';
+import { StakingModule } from '../staking-router-modules/interfaces/staking-module.interface';
+
+export const curatedModule: StakingModule = {
+  moduleId: 1,
+  stakingModuleAddress: '0xdc64a140aa3e981100a9beca4e685f962f0cf6c9',
+  moduleFee: 100,
+  treasuryFee: 100,
+  targetShare: 100,
+  status: 0,
+  name: 'curated-onchain-v1',
+  type: 'curated-onchain-v1' as STAKING_MODULE_TYPE,
+  lastDepositAt: 1691500732,
+  lastDepositBlock: 9,
+  exitedValidatorsCount: 0,
+  active: true,
+};
+
+export const dvtModule: StakingModule = {
+  moduleId: 2,
+  stakingModuleAddress: '0x0165878a594ca255338adfa4d48449f69242eb8f',
+  moduleFee: 100,
+  treasuryFee: 100,
+  targetShare: 100,
+  status: 0,
+  name: 'simple-dvt-onchain-v1',
+  type: 'simple-dvt-onchain-v1' as STAKING_MODULE_TYPE,
+  lastDepositAt: 1691500733,
+  lastDepositBlock: 10,
+  exitedValidatorsCount: 0,
+  active: true,
+};
+
+export const updatedCuratedModule: StakingModule = {
+  moduleId: 1,
+  stakingModuleAddress: '0xec65a140aa3e981100a9beca4e685f962f0cf6c9',
+  moduleFee: 1000,
+  treasuryFee: 1000,
+  targetShare: 1000,
+  status: 1,
+  name: 'curated-onchain-v1',
+  type: 'curated-onchain-v1' as STAKING_MODULE_TYPE,
+  lastDepositAt: 1691500733,
+  lastDepositBlock: 10,
+  exitedValidatorsCount: 1,
+  active: false,
+};
+export const srModules = [curatedModule, dvtModule];
+
+export const dvtModuleKeys: RegistryKey[] = [
   {
     operatorIndex: 1,
     index: 1,
@@ -111,7 +161,7 @@ export const dvtModuleKeys = [
   },
 ];
 
-export const keyForOperatorTwo = {
+export const curatedKeyWithDuplicate: RegistryKey = {
   operatorIndex: 2,
   index: 5,
   moduleAddress: curatedModule.stakingModuleAddress,
@@ -121,9 +171,7 @@ export const keyForOperatorTwo = {
   used: true,
 };
 
-export const keyForOperatorTwoDuplicate = { ...keyForOperatorTwo, index: 6 };
-
-export const curatedModuleKeys = [
+export const curatedModuleKeys: RegistryKey[] = [
   {
     operatorIndex: 1,
     index: 1,
@@ -160,8 +208,62 @@ export const curatedModuleKeys = [
       '0x967875a0104d1f674538e2ec0df4be0a61ef08061cdcfa83e5a63a43dadb772d29053368224e5d8e046ba1a78490f5fc0f0186f23af0465d0a82b2db2e7535782fe12e1fd1cd4f6eb77d8dc7a4f7ab0fde31435d5fa98a013e0a716c5e1ef6a2',
     used: true,
   },
-  keyForOperatorTwo,
-  keyForOperatorTwoDuplicate,
+
+  curatedKeyWithDuplicate,
+  {
+    ...curatedKeyWithDuplicate,
+    index: 6,
+  },
 ];
 
 export const keys = [...dvtModuleKeys, ...curatedModuleKeys];
+
+export const operatorOneCurated: RegistryOperator = {
+  index: 1,
+  active: true,
+  name: 'test',
+  rewardAddress: AddressZero,
+  stoppedValidators: 0,
+  stakingLimit: 1,
+  usedSigningKeys: 2,
+  totalSigningKeys: 3,
+  moduleAddress: curatedModule.stakingModuleAddress,
+};
+
+export const operatorTwoCurated: RegistryOperator = {
+  index: 2,
+  active: true,
+  name: 'test',
+  rewardAddress: AddressZero,
+  stoppedValidators: 0,
+  stakingLimit: 1,
+  usedSigningKeys: 2,
+  totalSigningKeys: 3,
+  moduleAddress: curatedModule.stakingModuleAddress,
+};
+
+export const operatorOneDvt: RegistryOperator = {
+  index: 1,
+  active: true,
+  name: 'test',
+  rewardAddress: AddressZero,
+  stoppedValidators: 0,
+  stakingLimit: 1,
+  usedSigningKeys: 2,
+  totalSigningKeys: 3,
+  moduleAddress: dvtModule.stakingModuleAddress,
+};
+
+export const operatorTwoDvt: RegistryOperator = {
+  index: 2,
+  active: true,
+  name: 'test',
+  rewardAddress: AddressZero,
+  stoppedValidators: 0,
+  stakingLimit: 1,
+  usedSigningKeys: 2,
+  totalSigningKeys: 3,
+  moduleAddress: dvtModule.stakingModuleAddress,
+};
+
+export const operators = [operatorOneCurated, operatorTwoCurated, operatorOneDvt, operatorTwoDvt];

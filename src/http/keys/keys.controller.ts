@@ -12,11 +12,10 @@ import {
   Res,
 } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
-
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
 import { KeyListResponse } from './entities';
-import { KeyQuery } from '../common/entities';
+import { Key, KeyQuery } from '../common/entities';
 import { KeysFindBody } from '../common/entities/pubkeys';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import * as JSONStream from 'jsonstream';
@@ -53,7 +52,8 @@ export class KeysController {
         try {
           for (const keysGenerator of keysGenerators) {
             for await (const keysBatch of keysGenerator) {
-              jsonStream.write(keysBatch);
+              const keyReponse = new Key(keysBatch);
+              jsonStream.write(keyReponse);
             }
           }
         } finally {
