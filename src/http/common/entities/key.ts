@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { RegistryKey } from '../../../common/registry';
+import { addressToChecksum } from '../utils';
 
 // maybe Partial<RegistryKey> in future
 export class Key implements RegistryKey {
@@ -8,7 +9,7 @@ export class Key implements RegistryKey {
     this.depositSignature = key.depositSignature;
     this.operatorIndex = key.operatorIndex;
     this.used = key.used;
-    this.moduleAddress = key.moduleAddress;
+    this.moduleAddress = addressToChecksum(key.moduleAddress);
     this.index = key.index;
   }
 

@@ -5,6 +5,7 @@ import { StakingRouterService } from '../../staking-router-modules/staking-route
 import { ELBlockSnapshot, Key, KeyQuery } from '../common/entities';
 import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
+import { RegistryKey } from 'common/registry';
 
 @Injectable()
 export class KeysService {
@@ -44,9 +45,9 @@ export class KeysService {
 
         for (const module of stakingModules) {
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-          const keys: Key[] = await moduleInstance.getKeysByPubkey(module.stakingModuleAddress, pubkey);
-
-          collectedKeys.push(keys);
+          const keys: RegistryKey[] = await moduleInstance.getKeysByPubkey(module.stakingModuleAddress, pubkey);
+          const keysResp = keys.map((key) => new Key(key));
+          collectedKeys.push(keysResp);
         }
 
         return { keys: collectedKeys.flat(), elBlockSnapshot };
@@ -72,8 +73,9 @@ export class KeysService {
 
         for (const module of stakingModules) {
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-          const keys: Key[] = await moduleInstance.getKeysByPubKeys(module.stakingModuleAddress, pubKeys);
-          collectedKeys.push(keys);
+          const keys: RegistryKey[] = await moduleInstance.getKeysByPubKeys(module.stakingModuleAddress, pubKeys);
+          const keysResp = keys.map((key) => new Key(key));
+          collectedKeys.push(keysResp);
         }
 
         return { keys: collectedKeys.flat(), elBlockSnapshot };

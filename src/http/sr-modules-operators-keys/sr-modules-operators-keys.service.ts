@@ -5,6 +5,7 @@ import { KeyQuery } from '../common/entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 import { SrModuleEntity } from 'storage/sr-module.entity';
+import { RegistryOperator } from '../../common/registry';
 
 @Injectable()
 export class SRModulesOperatorsKeysService {
@@ -33,8 +34,18 @@ export class SRModulesOperatorsKeysService {
     if (filters.operatorIndex != undefined) {
       operatorsFilter['index'] = filters.operatorIndex;
     }
-    const operators: Operator[] = await moduleInstance.getOperators(module.stakingModuleAddress, operatorsFilter);
+    const operators: RegistryOperator[] = await moduleInstance.getOperators(
+      module.stakingModuleAddress,
+      operatorsFilter,
+    );
 
-    return { operators, keysGenerator, module: new StakingModuleResponse(module), meta: { elBlockSnapshot } };
+    const operatorsResp = operators.map((op) => new Operator(op));
+
+    return {
+      operators: operatorsResp,
+      keysGenerator,
+      module: new StakingModuleResponse(module),
+      meta: { elBlockSnapshot },
+    };
   }
 }

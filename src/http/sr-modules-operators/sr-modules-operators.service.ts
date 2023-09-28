@@ -10,6 +10,7 @@ import { StakingRouterService } from '../../staking-router-modules/staking-route
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
 import { SrModuleEntity } from 'storage/sr-module.entity';
+import { RegistryOperator } from '../../common/registry';
 
 @Injectable()
 export class SRModulesOperatorsService {
@@ -31,9 +32,13 @@ export class SRModulesOperatorsService {
 
         for (const stakingModule of stakingModules) {
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(stakingModule.type);
-          const operators: Operator[] = await moduleInstance.getOperators(stakingModule.stakingModuleAddress, {});
+          const operators: RegistryOperator[] = await moduleInstance.getOperators(
+            stakingModule.stakingModuleAddress,
+            {},
+          );
+          const operatorsResp = operators.map((op) => new Operator(op));
 
-          operatorsByModules.push({ operators, module: new StakingModuleResponse(stakingModule) });
+          operatorsByModules.push({ operators: operatorsResp, module: new StakingModuleResponse(stakingModule) });
         }
 
         return { operatorsByModules, elBlockSnapshot };
@@ -52,9 +57,11 @@ export class SRModulesOperatorsService {
 
         const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
-        const operators: Operator[] = await moduleInstance.getOperators(module.stakingModuleAddress, {});
+        const operators: RegistryOperator[] = await moduleInstance.getOperators(module.stakingModuleAddress, {});
 
-        return { operators, module, elBlockSnapshot };
+        const operatorsResp = operators.map((op) => new Operator(op));
+
+        return { operators: operatorsResp, module, elBlockSnapshot };
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
@@ -74,7 +81,10 @@ export class SRModulesOperatorsService {
           await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
         const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
-        const operator: Operator | null = await moduleInstance.getOperator(module.stakingModuleAddress, operatorIndex);
+        const operator: RegistryOperator | null = await moduleInstance.getOperator(
+          module.stakingModuleAddress,
+          operatorIndex,
+        );
 
         return { operator, module, elBlockSnapshot };
       },
@@ -87,7 +97,7 @@ export class SRModulesOperatorsService {
       );
     }
     return {
-      data: { operator, module: new StakingModuleResponse(module) },
+      data: { operator: new Operator(operator), module: new StakingModuleResponse(module) },
       meta: { elBlockSnapshot },
     };
   }

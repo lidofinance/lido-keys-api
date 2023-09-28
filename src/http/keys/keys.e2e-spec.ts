@@ -16,13 +16,11 @@ import { SRModuleStorageService } from '../../storage/sr-module.storage';
 import { ElMetaStorageService } from '../../storage/el-meta.storage';
 import { KeysService } from './keys.service';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
-
 import * as request from 'supertest';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-
-import { dvtModule, curatedModule } from '../module.fixture';
 import { elMeta } from '../el-meta.fixture';
-import { keys, keyForOperatorTwo, keyForOperatorTwoDuplicate } from '../key.fixtures';
+import { curatedKeyWithDuplicate, curatedModule, curatedModuleKeys, dvtModule, keys } from '../db.fixtures';
+import { curatedModuleKeysResponse, dvtModuleKeysResponse } from 'http/keys.fixtures';
 
 describe('KeyController (e2e)', () => {
   let app: INestApplication;
@@ -119,7 +117,9 @@ describe('KeyController (e2e)', () => {
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data.length).toEqual(keys.length);
-        expect(resp.body.data).toEqual(expect.arrayContaining(keys));
+        expect(resp.body.data).toEqual(
+          expect.arrayContaining([...curatedModuleKeysResponse, ...dvtModuleKeysResponse]),
+        );
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
             blockNumber: elMeta.number,
@@ -132,7 +132,7 @@ describe('KeyController (e2e)', () => {
       it('should return used keys', async () => {
         const resp = await request(app.getHttpServer()).get('/v1/keys').query({ used: true });
 
-        const expectedKeys = keys.filter((key) => key.used);
+        const expectedKeys = [...curatedModuleKeysResponse, ...dvtModuleKeysResponse].filter((key) => key.used);
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data.length).toEqual(expectedKeys.length);
@@ -148,7 +148,7 @@ describe('KeyController (e2e)', () => {
 
       it('should return unused keys', async () => {
         const resp = await request(app.getHttpServer()).get('/v1/keys').query({ used: false });
-        const expectedKeys = keys.filter((key) => !key.used);
+        const expectedKeys = [...curatedModuleKeysResponse, ...dvtModuleKeysResponse].filter((key) => !key.used);
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data.length).toEqual(expectedKeys.length);
@@ -164,7 +164,9 @@ describe('KeyController (e2e)', () => {
 
       it('should return used keys for operator 1', async () => {
         const resp = await request(app.getHttpServer()).get('/v1/keys').query({ used: true, operatorIndex: 1 });
-        const expectedKeys = keys.filter((key) => key.used && key.operatorIndex == 1);
+        const expectedKeys = [...curatedModuleKeysResponse, ...dvtModuleKeysResponse].filter(
+          (key) => key.used && key.operatorIndex == 1,
+        );
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data.length).toEqual(expectedKeys.length);
@@ -180,7 +182,9 @@ describe('KeyController (e2e)', () => {
 
       it('should return unused keys for operator 1', async () => {
         const resp = await request(app.getHttpServer()).get('/v1/keys').query({ used: false, operatorIndex: 1 });
-        const expectedKeys = keys.filter((key) => !key.used && key.operatorIndex == 1);
+        const expectedKeys = [...dvtModuleKeysResponse, ...curatedModuleKeysResponse].filter(
+          (key) => !key.used && key.operatorIndex == 1,
+        );
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data.length).toEqual(expectedKeys.length);
@@ -339,7 +343,9 @@ describe('KeyController (e2e)', () => {
 
       it('should return all keys that satisfy the request', async () => {
         // Get all keys without filters
-        const pubkeys = [keys[0].key, keys[1].key, keyForOperatorTwo.key];
+        const pubkeys = [curatedModuleKeys[0].key, curatedModuleKeys[1].key, curatedKeyWithDuplicate.key];
+
+        const expectedResp = curatedModuleKeysResponse.filter((curatedKey) => pubkeys.includes(curatedKey.key));
 
         const resp = await request(app.getHttpServer())
           .post('/v1/keys/find')
@@ -349,7 +355,7 @@ describe('KeyController (e2e)', () => {
         expect(resp.status).toEqual(200);
         // as pubkeys contains 3 elements and keyForOperatorTwo has a duplicate
         expect(resp.body.data.length).toEqual(4);
-        expect(resp.body.data).toEqual(expect.arrayContaining([keys[0], keys[1], keyForOperatorTwo]));
+        expect(resp.body.data).toEqual(expect.arrayContaining(expectedResp));
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
             blockNumber: elMeta.number,
@@ -441,11 +447,15 @@ describe('KeyController (e2e)', () => {
       });
 
       it('should return all keys that satisfy the request', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/keys/${keyForOperatorTwoDuplicate.key}`);
+        const resp = await request(app.getHttpServer()).get(`/v1/keys/${curatedKeyWithDuplicate.key}`);
         expect(resp.status).toEqual(200);
+        const expectedResp = curatedModuleKeysResponse.filter(
+          (curatedKey) => curatedKeyWithDuplicate.key == curatedKey.key,
+        );
+
         // as pubkeys contains 3 elements and keyForOperatorTwo has a duplicate
         expect(resp.body.data.length).toEqual(2);
-        expect(resp.body.data).toEqual(expect.arrayContaining([keyForOperatorTwo, keyForOperatorTwoDuplicate]));
+        expect(resp.body.data).toEqual(expect.arrayContaining(expectedResp));
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
             blockNumber: elMeta.number,

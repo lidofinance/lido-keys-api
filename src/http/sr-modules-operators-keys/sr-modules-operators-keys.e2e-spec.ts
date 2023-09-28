@@ -21,10 +21,11 @@ import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import * as request from 'supertest';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 
-import { dvtModule, curatedModule, dvtModuleResp } from '../module.fixture';
+import { dvtModuleResp } from '../module.fixture';
 import { elMeta } from '../el-meta.fixture';
-import { keys, dvtModuleKeys } from '../key.fixtures';
-import { operators, operatorOneDvt, operatorTwoDvt } from '../operator.fixtures';
+import { keys, operators, dvtModule, curatedModule } from '../db.fixtures';
+import { dvtModuleKeysResponse } from '../keys.fixtures';
+import { dvtOperatorsResp } from '../operator.fixtures';
 
 describe('SRModulesOperatorsKeysController (e2e)', () => {
   let app: INestApplication;
@@ -128,8 +129,8 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
         expect(resp.body).toEqual(respByContractAddress.body);
 
         expect(resp.status).toEqual(200);
-        expect(resp.body.data.operators).toEqual(expect.arrayContaining([operatorOneDvt, operatorTwoDvt]));
-        expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeys));
+        expect(resp.body.data.operators).toEqual(expect.arrayContaining(dvtOperatorsResp));
+        expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeysResponse));
         expect(resp.body.data.module).toEqual(dvtModuleResp);
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
@@ -165,10 +166,11 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
           .get(`/v1/modules/${dvtModule.moduleId}/operators/keys`)
           .query({ used: true, operatorIndex: 1 });
 
-        const expectedKeys = dvtModuleKeys.filter((key) => key.used && key.operatorIndex == 1);
+        const expectedKeys = dvtModuleKeysResponse.filter((key) => key.used && key.operatorIndex == 1);
+        const expectedOperators = dvtOperatorsResp.filter((op) => op.index == 1);
 
         expect(resp.status).toEqual(200);
-        expect(resp.body.data.operators).toEqual(expect.arrayContaining([operatorOneDvt]));
+        expect(resp.body.data.operators).toEqual(expect.arrayContaining(expectedOperators));
         expect(resp.body.data.keys).toEqual(expect.arrayContaining(expectedKeys));
         expect(resp.body.data.module).toEqual(dvtModuleResp);
         expect(resp.body.meta).toEqual({
@@ -185,10 +187,11 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
           .get(`/v1/modules/${dvtModule.moduleId}/operators/keys`)
           .query({ used: false, operatorIndex: 1 });
 
-        const expectedKeys = dvtModuleKeys.filter((key) => !key.used && key.operatorIndex == 1);
+        const expectedKeys = dvtModuleKeysResponse.filter((key) => !key.used && key.operatorIndex == 1);
+        const expectedOperators = dvtOperatorsResp.filter((op) => op.index == 1);
 
         expect(resp.status).toEqual(200);
-        expect(resp.body.data.operators).toEqual(expect.arrayContaining([operatorOneDvt]));
+        expect(resp.body.data.operators).toEqual(expect.arrayContaining(expectedOperators));
         expect(resp.body.data.keys).toEqual(expect.arrayContaining(expectedKeys));
         expect(resp.body.data.module).toEqual(dvtModuleResp);
         expect(resp.body.meta).toEqual({

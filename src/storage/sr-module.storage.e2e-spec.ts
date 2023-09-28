@@ -3,7 +3,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { StorageModule } from './storage.module';
 import { SRModuleStorageService } from './sr-module.storage';
 import { MikroORM } from '@mikro-orm/core';
-import { curatedModule, dvtModule, updatedCuratedModule } from '../http/module.fixture';
+import { curatedModule, dvtModule, updatedCuratedModule } from '../http/db.fixtures';
 
 describe('Staking Module Storage', () => {
   let srModuleStorageService: SRModuleStorageService;
