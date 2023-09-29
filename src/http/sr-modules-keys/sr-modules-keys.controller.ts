@@ -14,13 +14,14 @@ import {
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
-import { ModuleId, KeyQuery, Key } from '../common/entities/';
+import { KeyQuery, Key } from '../common/entities/';
 import { KeysFindBody } from '../common/entities/pubkeys';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
+import { ModuleIdPipe } from 'http/common/pipeline/module-id-pipe';
 
 @Controller('modules')
 @ApiTags('sr-module-keys')
@@ -67,17 +68,22 @@ export class SRModulesKeysController {
   })
   @ApiParam({
     name: 'module_id',
+    type: String,
     description: 'Staking router module_id or contract address.',
   })
   @Get(':module_id/keys')
-  async getModuleKeys(@Param() module: ModuleId, @Query() filters: KeyQuery, @Res() reply: FastifyReply) {
+  async getModuleKeys(
+    @Param('module_id', ModuleIdPipe) module_id: string | number,
+    @Query() filters: KeyQuery,
+    @Res() reply: FastifyReply,
+  ) {
     await this.entityManager.transactional(
       async () => {
         const {
           keysGenerator,
           module: srModule,
           meta,
-        } = await this.srModulesKeysService.getModuleKeys(module.module_id, filters);
+        } = await this.srModulesKeysService.getModuleKeys(module_id, filters);
         const jsonStream = JSONStream.stringify(
           '{ "meta": ' + JSON.stringify(meta) + ', "data": { "module": ' + JSON.stringify(srModule) + ', "keys": [',
           ',',
@@ -86,8 +92,8 @@ export class SRModulesKeysController {
 
         reply.type('application/json').send(jsonStream);
 
-        for await (const keysBatch of keysGenerator) {
-          const keyReponse = new Key(keysBatch);
+        for await (const key of keysGenerator) {
+          const keyReponse = new Key(key);
           jsonStream.write(keyReponse);
         }
 
@@ -118,9 +124,10 @@ export class SRModulesKeysController {
   })
   @ApiParam({
     name: 'module_id',
+    type: String,
     description: 'Staking router module_id or contract address.',
   })
-  getModuleKeysByPubkeys(@Param() module: ModuleId, @Body() keys: KeysFindBody) {
-    return this.srModulesKeysService.getModuleKeysByPubKeys(module.module_id, keys.pubkeys);
+  getModuleKeysByPubkeys(@Param('module_id', ModuleIdPipe) module_id: string | number, @Body() keys: KeysFindBody) {
+    return this.srModulesKeysService.getModuleKeysByPubKeys(module_id, keys.pubkeys);
   }
 }

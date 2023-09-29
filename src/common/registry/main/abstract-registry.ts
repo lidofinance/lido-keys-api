@@ -1,5 +1,4 @@
 import { Inject, Injectable, LoggerService, Optional } from '@nestjs/common';
-import { Registry, REGISTRY_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
 import { EntityManager } from '@mikro-orm/knex';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 
