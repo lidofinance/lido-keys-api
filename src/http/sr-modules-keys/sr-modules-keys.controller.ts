@@ -14,7 +14,7 @@ import {
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
-import { ModuleId, KeyQuery } from '../common/entities/';
+import { ModuleId, KeyQuery, Key } from '../common/entities/';
 import { KeysFindBody } from '../common/entities/pubkeys';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { IsolationLevel } from '@mikro-orm/core';
@@ -87,7 +87,8 @@ export class SRModulesKeysController {
         reply.type('application/json').send(jsonStream);
 
         for await (const keysBatch of keysGenerator) {
-          jsonStream.write(keysBatch);
+          const keyReponse = new Key(keysBatch);
+          jsonStream.write(keyReponse);
         }
 
         jsonStream.end();

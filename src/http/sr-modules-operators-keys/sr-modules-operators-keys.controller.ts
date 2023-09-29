@@ -3,7 +3,7 @@ import { IsolationLevel } from '@mikro-orm/core';
 import { Controller, Get, Version, Param, Query, NotFoundException, HttpStatus, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } from '@nestjs/swagger';
 import { SRModuleOperatorsKeysResponse, SRModulesOperatorsKeysStreamResponse } from './entities';
-import { ModuleId, KeyQuery } from 'http/common/entities/';
+import { ModuleId, KeyQuery, Key } from 'http/common/entities/';
 import { SRModulesOperatorsKeysService } from './sr-modules-operators-keys.service';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { EntityManager } from '@mikro-orm/knex';
@@ -66,7 +66,8 @@ export class SRModulesOperatorsKeysController {
         reply.type('application/json').send(jsonStream);
 
         for await (const keysBatch of keysGenerator) {
-          jsonStream.write(keysBatch);
+          const keyReponse = new Key(keysBatch);
+          jsonStream.write(keyReponse);
         }
 
         jsonStream.end();

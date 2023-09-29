@@ -11,7 +11,7 @@ import {
   RegistryStorageService,
 } from '../../common/registry';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
-import { dvtModule, curatedModule, dvtModuleResp, curatedModuleResp, dvtModuleInUpperCase } from '../module.fixture';
+import { dvtModuleResp, curatedModuleResp, dvtModuleAddressWithChecksum } from '../module.fixture';
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
 import { ElMetaStorageService } from '../../storage/el-meta.storage';
 
@@ -23,6 +23,7 @@ import { SRModulesController } from './sr-modules.controller';
 import { SRModulesService } from './sr-modules.service';
 
 import { elMeta } from '../el-meta.fixture';
+import { curatedModule, dvtModule } from '../db.fixtures';
 
 describe('SRModulesController (e2e)', () => {
   let app: INestApplication;
@@ -196,7 +197,7 @@ describe('SRModulesController (e2e)', () => {
       });
 
       it('Should return the module by contract address in a case-agnostic way', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModuleInUpperCase}`);
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModuleAddressWithChecksum}`);
         expect(resp.status).toEqual(200);
         expect(resp.body.data).toEqual(dvtModuleResp);
         expect(resp.body.elBlockSnapshot).toEqual({

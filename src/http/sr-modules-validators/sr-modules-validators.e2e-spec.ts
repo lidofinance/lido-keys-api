@@ -22,9 +22,8 @@ import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import * as request from 'supertest';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 
-import { dvtModule, curatedModule } from '../module.fixture';
 import { elMeta } from '../el-meta.fixture';
-import { keys } from '../key.fixtures';
+import { keys, dvtModule, curatedModule } from '../db.fixtures';
 import { ConfigService } from '../../common/config';
 import {
   ConsensusMetaEntity,
@@ -263,6 +262,9 @@ describe('SRModulesValidatorsController (e2e)', () => {
           .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
           .query({ percent: 200 });
 
+        console.log(resp.body);
+
+        // sometime get 400
         expect(resp.status).toEqual(200);
         expect(resp.body.data.length).toEqual(10);
         expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp100percent));

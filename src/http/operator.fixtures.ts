@@ -1,53 +1,19 @@
-import { AddressZero } from '@ethersproject/constants';
-import { RegistryOperator } from '../common/registry';
-import { curatedModule, dvtModule } from './module.fixture';
+import { Operator } from './common/entities';
+import { operatorOneCurated, operatorOneDvt, operatorTwoCurated, operatorTwoDvt } from './db.fixtures';
+import { curatedModuleAddressWithCheckSum, dvtModuleAddressWithChecksum } from './module.fixture';
 
-export const operatorOneCurated: RegistryOperator = {
-  index: 1,
-  active: true,
-  name: 'test',
-  rewardAddress: AddressZero,
-  stoppedValidators: 0,
-  stakingLimit: 1,
-  usedSigningKeys: 2,
-  totalSigningKeys: 3,
-  moduleAddress: curatedModule.stakingModuleAddress,
-};
+// export const operatorOneDvtResp: Operator = { ...operatorOneDvt, moduleAddress: dvtModuleAddressWithChecksum };
+// export const operatorOneCuratedResp: Operator = {
+//   ...operatorOneCurated,
+//   moduleAddress: curatedModuleAddressWithCheckSum,
+// };
 
-export const operatorTwoCurated: RegistryOperator = {
-  index: 2,
-  active: true,
-  name: 'test',
-  rewardAddress: AddressZero,
-  stoppedValidators: 0,
-  stakingLimit: 1,
-  usedSigningKeys: 2,
-  totalSigningKeys: 3,
-  moduleAddress: curatedModule.stakingModuleAddress,
-};
+export const dvtOperatorsResp: Operator[] = [operatorOneDvt, operatorTwoDvt].map((op) => ({
+  ...op,
+  moduleAddress: dvtModuleAddressWithChecksum,
+}));
 
-export const operatorOneDvt: RegistryOperator = {
-  index: 1,
-  active: true,
-  name: 'test',
-  rewardAddress: AddressZero,
-  stoppedValidators: 0,
-  stakingLimit: 1,
-  usedSigningKeys: 2,
-  totalSigningKeys: 3,
-  moduleAddress: dvtModule.stakingModuleAddress,
-};
-
-export const operatorTwoDvt: RegistryOperator = {
-  index: 2,
-  active: true,
-  name: 'test',
-  rewardAddress: AddressZero,
-  stoppedValidators: 0,
-  stakingLimit: 1,
-  usedSigningKeys: 2,
-  totalSigningKeys: 3,
-  moduleAddress: dvtModule.stakingModuleAddress,
-};
-
-export const operators = [operatorOneCurated, operatorTwoCurated, operatorOneDvt, operatorTwoDvt];
+export const curatedOperatorsResp: Operator[] = [operatorOneCurated, operatorTwoCurated].map((op) => ({
+  ...op,
+  moduleAddress: curatedModuleAddressWithCheckSum,
+}));

@@ -14,15 +14,14 @@ import { StakingRouterModule } from '../../staking-router-modules/staking-router
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
 import { ElMetaStorageService } from '../../storage/el-meta.storage';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
-
 import * as request from 'supertest';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-
-import { dvtModule, curatedModule, dvtModuleResp, curatedModuleResp } from '../module.fixture';
-import { elMeta } from '../el-meta.fixture';
-import { keys, dvtModuleKeys, curatedModuleKeys } from '../key.fixtures';
 import { SRModulesKeysController } from './sr-modules-keys.controller';
 import { SRModulesKeysService } from './sr-modules-keys.service';
+import { curatedModule, dvtModule, keys } from '../db.fixtures';
+import { dvtModuleResp, curatedModuleResp } from '../module.fixture';
+import { curatedModuleKeysResponse, dvtModuleKeysResponse } from '../keys.fixtures';
+import { elMeta } from '../el-meta.fixture';
 
 describe('SRModulesKeysController (e2e)', () => {
   let app: INestApplication;
@@ -40,11 +39,11 @@ describe('SRModulesKeysController (e2e)', () => {
 
   const keysByModules = [
     {
-      keys: dvtModuleKeys,
+      keys: dvtModuleKeysResponse,
       module: dvtModuleResp,
     },
     {
-      keys: curatedModuleKeys,
+      keys: curatedModuleKeysResponse,
       module: curatedModuleResp,
     },
   ];
@@ -138,7 +137,7 @@ describe('SRModulesKeysController (e2e)', () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/keys`);
 
         expect(resp.status).toEqual(200);
-        expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeys));
+        expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeysResponse));
         expect(resp.body.data.module).toEqual(dvtModuleResp);
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
@@ -174,7 +173,7 @@ describe('SRModulesKeysController (e2e)', () => {
           .get(`/v1/modules/${dvtModule.moduleId}/keys`)
           .query({ used: true, operatorIndex: 1 });
 
-        const expectedKeys = dvtModuleKeys.filter((key) => key.used && key.operatorIndex == 1);
+        const expectedKeys = dvtModuleKeysResponse.filter((key) => key.used && key.operatorIndex == 1);
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data.keys).toEqual(expect.arrayContaining(expectedKeys));
@@ -193,7 +192,7 @@ describe('SRModulesKeysController (e2e)', () => {
           .get(`/v1/modules/${dvtModule.moduleId}/keys`)
           .query({ used: false, operatorIndex: 1 });
 
-        const expectedKeys = dvtModuleKeys.filter((key) => !key.used && key.operatorIndex == 1);
+        const expectedKeys = dvtModuleKeysResponse.filter((key) => !key.used && key.operatorIndex == 1);
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data.keys).toEqual(expect.arrayContaining(expectedKeys));
@@ -279,7 +278,7 @@ describe('SRModulesKeysController (e2e)', () => {
       });
 
       it('Should return all keys that satisfy the request', async () => {
-        const pubkeys = [dvtModuleKeys[0].key, dvtModuleKeys[1].key];
+        const pubkeys = [dvtModuleKeysResponse[0].key, dvtModuleKeysResponse[1].key];
 
         const resp = await request(app.getHttpServer())
           .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
@@ -287,7 +286,9 @@ describe('SRModulesKeysController (e2e)', () => {
           .send({ pubkeys });
 
         expect(resp.status).toEqual(200);
-        expect(resp.body.data.keys).toEqual(expect.arrayContaining([dvtModuleKeys[0], dvtModuleKeys[1]]));
+        expect(resp.body.data.keys).toEqual(
+          expect.arrayContaining([dvtModuleKeysResponse[0], dvtModuleKeysResponse[1]]),
+        );
         expect(resp.body.data.module).toEqual(dvtModuleResp);
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
@@ -404,8 +405,8 @@ describe('SRModulesKeysController (e2e)', () => {
       it('Should return used keys for operator one', async () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ used: true, operatorIndex: 1 });
 
-        const expectedKeysDvt = dvtModuleKeys.filter((key) => key.used && key.operatorIndex == 1);
-        const expectedKeysCurated = curatedModuleKeys.filter((key) => key.used && key.operatorIndex == 1);
+        const expectedKeysDvt = dvtModuleKeysResponse.filter((key) => key.used && key.operatorIndex == 1);
+        const expectedKeysCurated = curatedModuleKeysResponse.filter((key) => key.used && key.operatorIndex == 1);
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data).toEqual(
@@ -428,8 +429,8 @@ describe('SRModulesKeysController (e2e)', () => {
           .get(`/v1/modules/keys`)
           .query({ used: false, operatorIndex: 1 });
 
-        const expectedKeysDvt = dvtModuleKeys.filter((key) => !key.used && key.operatorIndex == 1);
-        const expectedKeysCurated = curatedModuleKeys.filter((key) => !key.used && key.operatorIndex == 1);
+        const expectedKeysDvt = dvtModuleKeysResponse.filter((key) => !key.used && key.operatorIndex == 1);
+        const expectedKeysCurated = curatedModuleKeysResponse.filter((key) => !key.used && key.operatorIndex == 1);
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data).toEqual(

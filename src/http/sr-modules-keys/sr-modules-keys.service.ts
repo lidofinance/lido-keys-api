@@ -6,6 +6,7 @@ import { StakingRouterService } from '../../staking-router-modules/staking-route
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
 import { SrModuleEntity } from 'storage/sr-module.entity';
+import { RegistryKey } from 'common/registry';
 
 @Injectable()
 export class SRModulesKeysService {
@@ -23,9 +24,10 @@ export class SRModulesKeysService {
     for (const stakingModule of stakingModules) {
       // read from config name of module that implement functions to fetch and store keys for type
       const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(stakingModule.type);
-      const keys: Key[] = await moduleInstance.getKeys(stakingModule.stakingModuleAddress, filters);
+      const keys: RegistryKey[] = await moduleInstance.getKeys(stakingModule.stakingModuleAddress, filters);
+      const keysResp = keys.map((key) => new Key(key));
 
-      srModulesKeys.push({ keys, module: new StakingModuleResponse(stakingModule) });
+      srModulesKeys.push({ keys: keysResp, module: new StakingModuleResponse(stakingModule) });
     }
 
     return {
@@ -59,7 +61,7 @@ export class SRModulesKeysService {
         const { module, elBlockSnapshot }: { module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot } =
           await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
         const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
-        const keys: Key[] = await moduleInstance.getKeysByPubKeys(module.stakingModuleAddress, pubKeys);
+        const keys: RegistryKey[] = await moduleInstance.getKeysByPubKeys(module.stakingModuleAddress, pubKeys);
 
         return { keys, module, elBlockSnapshot };
       },
@@ -67,7 +69,7 @@ export class SRModulesKeysService {
     );
 
     return {
-      data: { keys, module: new StakingModuleResponse(module) },
+      data: { keys: keys.map((key) => new Key(key)), module: new StakingModuleResponse(module) },
       meta: { elBlockSnapshot },
     };
   }

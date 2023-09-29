@@ -18,18 +18,12 @@ import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 
 import * as request from 'supertest';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-
-import { dvtModule, curatedModule, srModules, dvtModuleResp, curatedModuleResp } from '../module.fixture';
-import { elMeta } from '../el-meta.fixture';
 import { SRModulesOperatorsController } from './sr-modules-operators.controller';
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
-import {
-  operators,
-  operatorOneCurated,
-  operatorTwoCurated,
-  operatorOneDvt,
-  operatorTwoDvt,
-} from '../operator.fixtures';
+import { elMeta } from '../el-meta.fixture';
+import { operators, dvtModule, curatedModule, srModules } from '../db.fixtures';
+import { dvtModuleResp, curatedModuleResp } from '../module.fixture';
+import { dvtOperatorsResp, curatedOperatorsResp } from '../operator.fixtures';
 
 describe('SRModuleOperatorsController (e2e)', () => {
   let app: INestApplication;
@@ -41,11 +35,11 @@ describe('SRModuleOperatorsController (e2e)', () => {
 
   const operatorByModules = [
     {
-      operators: [operatorOneDvt, operatorTwoDvt],
+      operators: dvtOperatorsResp,
       module: dvtModuleResp,
     },
     {
-      operators: [operatorOneCurated, operatorTwoCurated],
+      operators: curatedOperatorsResp,
       module: curatedModuleResp,
     },
   ];
@@ -221,7 +215,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
 
         expect(resp.status).toEqual(200);
         expect(resp.body.data.operators).toBeDefined();
-        expect(resp.body.data.operators).toEqual(expect.arrayContaining([operatorOneDvt, operatorTwoDvt]));
+        expect(resp.body.data.operators).toEqual(expect.arrayContaining(dvtOperatorsResp));
 
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
@@ -234,7 +228,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
         const resp2 = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}/operators`);
 
         expect(resp2.status).toEqual(200);
-        expect(resp2.body.data.operators).toEqual(expect.arrayContaining([operatorOneCurated, operatorTwoCurated]));
+        expect(resp2.body.data.operators).toEqual(expect.arrayContaining(curatedOperatorsResp));
 
         expect(resp2.body.meta).toEqual({
           elBlockSnapshot: {
@@ -258,7 +252,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
       });
 
       it('should return 400 error if module_id is not a contract address or number', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/operators`);
+        const resp = await request(app.getHttpServer()).get('/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/operators');
         expect(resp.status).toEqual(400);
         expect(resp.body).toEqual({
           error: 'Bad Request',
@@ -307,12 +301,13 @@ describe('SRModuleOperatorsController (e2e)', () => {
       });
 
       it('should return operator and module', async () => {
-        const resp = await request(app.getHttpServer()).get(
-          `/v1/modules/${dvtModule.moduleId}/operators/${operatorOneDvt.index}`,
-        );
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/1`);
+
+        const operator = dvtOperatorsResp.find((op) => op.index == 1);
 
         expect(resp.status).toEqual(200);
-        expect(resp.body.data).toEqual({ operator: operatorOneDvt, module: dvtModuleResp });
+        expect(resp.body.data.operator).toBeDefined();
+        expect(resp.body.data).toEqual({ operator, module: dvtModuleResp });
         expect(resp.body.meta).toEqual({
           elBlockSnapshot: {
             blockNumber: elMeta.number,
@@ -333,7 +328,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
       });
 
       it('should return 404 if module was not found', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/777/operators/${operatorOneDvt.index}`);
+        const resp = await request(app.getHttpServer()).get('/v1/modules/777/operators/1');
         expect(resp.status).toEqual(404);
         expect(resp.body).toEqual({
           error: 'Not Found',
@@ -353,9 +348,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
       });
 
       it('should return 400 error if module_id is not a contract address or number', async () => {
-        const resp = await request(app.getHttpServer()).get(
-          `/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/operators/${operatorOneCurated.index}`,
-        );
+        const resp = await request(app.getHttpServer()).get('/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/operators/1');
         expect(resp.status).toEqual(400);
         expect(resp.body).toEqual({
           error: 'Bad Request',
@@ -379,9 +372,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
         await operatorsStorageService.save(operators);
         await moduleStorageService.upsert(curatedModule, 1);
 
-        const resp = await request(app.getHttpServer()).get(
-          `/v1/modules/${curatedModule.moduleId}/operators/${operatorOneCurated.index}`,
-        );
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}/operators/1`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });

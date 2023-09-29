@@ -1,13 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { STAKING_MODULE_TYPE } from 'staking-router-modules/constants';
 import { SrModuleEntity } from 'storage/sr-module.entity';
+import { addressToChecksum } from '../utils';
 
 export class StakingModuleResponse implements Omit<SrModuleEntity, 'id' | 'moduleId'> {
   constructor(stakingModule: SrModuleEntity) {
     this.nonce = stakingModule.nonce;
     this.type = stakingModule.type;
     this.id = stakingModule.moduleId;
-    this.stakingModuleAddress = stakingModule.stakingModuleAddress;
+    this.stakingModuleAddress = addressToChecksum(stakingModule.stakingModuleAddress);
     this.moduleFee = stakingModule.moduleFee;
     this.treasuryFee = stakingModule.treasuryFee;
     this.targetShare = stakingModule.targetShare;

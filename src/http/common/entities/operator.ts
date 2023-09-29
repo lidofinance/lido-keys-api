@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { RegistryOperator } from '../../../common/registry';
+import { addressToChecksum } from '../utils';
 
 export class Operator implements RegistryOperator {
   constructor(operator: RegistryOperator) {
@@ -12,7 +13,7 @@ export class Operator implements RegistryOperator {
     this.usedSigningKeys = operator.usedSigningKeys;
     this.index = operator.index;
     this.active = operator.active;
-    this.moduleAddress = operator.moduleAddress;
+    this.moduleAddress = addressToChecksum(operator.moduleAddress);
   }
 
   @ApiProperty({
