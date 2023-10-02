@@ -4,12 +4,16 @@ import { isAddress } from 'ethers/lib/utils';
 //or T - string?
 export class ModuleIdPipe implements PipeTransform<string, string | number> {
   transform(value: string) {
-    if (isAddress(value)) {
-      return value.toLowerCase();
+    const trimmedValue = value.trim();
+
+    if (isAddress(trimmedValue)) {
+      return trimmedValue.toLowerCase();
     }
 
-    if (Number(value)) {
-      return Number(value);
+    const nonNegativeIntegerRegex = /^(0|[1-9]\d*)$/;
+
+    if (nonNegativeIntegerRegex.test(trimmedValue)) {
+      return Number(trimmedValue);
     }
 
     throw new BadRequestException([`module_id must be a contract address or numeric value`]);

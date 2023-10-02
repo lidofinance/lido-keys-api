@@ -8,7 +8,7 @@ import {
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
 import { OperatorId } from '../common/entities/operator-id';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
-import { ModuleIdPipe } from 'http/common/pipeline/module-id-pipe';
+import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
 
 @Controller('/')
 @ApiTags('operators')

@@ -3,7 +3,7 @@ import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } fro
 import { SRModuleListResponse, SRModuleResponse } from './entities';
 import { SRModulesService } from './sr-modules.service';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
-import { ModuleIdPipe } from 'http/common/pipeline/module-id-pipe';
+import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
 
 @Controller('modules')
 @ApiTags('modules')

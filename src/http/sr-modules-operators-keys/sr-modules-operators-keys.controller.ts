@@ -8,7 +8,7 @@ import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
 import { IsolationLevel } from '@mikro-orm/core';
-import { ModuleIdPipe } from 'http/common/pipeline/module-id-pipe';
+import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
 
 @Controller('/modules')
 @ApiTags('operators-keys')

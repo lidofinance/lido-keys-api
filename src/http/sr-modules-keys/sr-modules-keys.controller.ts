@@ -21,7 +21,7 @@ import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
-import { ModuleIdPipe } from 'http/common/pipeline/module-id-pipe';
+import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
 
 @Controller('modules')
 @ApiTags('sr-module-keys')
