@@ -1,7 +1,6 @@
 import { BadRequestException, PipeTransform } from '@nestjs/common';
 import { isAddress } from 'ethers/lib/utils';
 
-//or T - string?
 export class ModuleIdPipe implements PipeTransform<string, string | number> {
   transform(value: string) {
     const trimmedValue = value.trim();
