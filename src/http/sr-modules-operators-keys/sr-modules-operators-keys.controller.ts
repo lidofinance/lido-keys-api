@@ -1,13 +1,14 @@
 import { Controller, Get, Version, Param, Query, NotFoundException, HttpStatus, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } from '@nestjs/swagger';
 import { SRModuleOperatorsKeysResponse } from './entities';
-import { ModuleId, KeyQuery, Key } from '../common/entities/';
+import { KeyQuery, Key } from '../common/entities/';
 import { SRModulesOperatorsKeysService } from './sr-modules-operators-keys.service';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
 import { IsolationLevel } from '@mikro-orm/core';
+import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
 
 @Controller('/modules')
 @ApiTags('operators-keys')
@@ -36,10 +37,15 @@ export class SRModulesOperatorsKeysController {
   })
   @ApiParam({
     name: 'module_id',
+    type: String,
     description: 'Staking router module_id or contract address.',
   })
   @Get(':module_id/operators/keys')
-  async getOperatorsKeys(@Param() module: ModuleId, @Query() filters: KeyQuery, @Res() reply: FastifyReply) {
+  async getOperatorsKeys(
+    @Param('module_id', ModuleIdPipe) module_id: string | number,
+    @Query() filters: KeyQuery,
+    @Res() reply: FastifyReply,
+  ) {
     await this.entityManager.transactional(
       async () => {
         const {
@@ -47,7 +53,7 @@ export class SRModulesOperatorsKeysController {
           keysGenerator,
           module: srModule,
           meta,
-        } = await this.srModulesOperatorsKeys.get(module.module_id, filters);
+        } = await this.srModulesOperatorsKeys.get(module_id, filters);
 
         const jsonStream = JSONStream.stringify(
           '{ "meta": ' +
@@ -63,9 +69,9 @@ export class SRModulesOperatorsKeysController {
 
         reply.type('application/json').send(jsonStream);
 
-        for await (const keysBatch of keysGenerator) {
-          const keyReponse = new Key(keysBatch);
-          jsonStream.write(keyReponse);
+        for await (const key of keysGenerator) {
+          const keyResponse = new Key(key);
+          jsonStream.write(keyResponse);
         }
 
         jsonStream.end();

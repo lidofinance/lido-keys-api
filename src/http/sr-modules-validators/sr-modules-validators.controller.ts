@@ -17,11 +17,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { SRModulesValidatorsService } from './sr-modules-validators.service';
-import { ModuleId } from '../common/entities/';
 import { ValidatorsQuery } from './entities/query';
 import { ExitPresignMessageListResponse, ExitValidatorListResponse } from './entities';
 import { OperatorId } from '../common/entities/operator-id';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
+import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
 
 @Controller('modules')
 @ApiTags('validators')
@@ -53,11 +53,15 @@ export class SRModulesValidatorsController {
   })
   @ApiParam({
     name: 'module_id',
-    example: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+    type: String,
     description: 'Staking router module_id or contract address.',
   })
-  getOldestValidators(@Param() module: ModuleId, @Param() operator: OperatorId, @Query() query: ValidatorsQuery) {
-    return this.validatorsService.getOldestLidoValidators(module.module_id, operator.operator_id, query);
+  getOldestValidators(
+    @Param('module_id', ModuleIdPipe) module_id: string | number,
+    @Param() operator: OperatorId,
+    @Query() query: ValidatorsQuery,
+  ) {
+    return this.validatorsService.getOldestLidoValidators(module_id, operator.operator_id, query);
   }
 
   @Version('1')
@@ -85,14 +89,14 @@ export class SRModulesValidatorsController {
   })
   @ApiParam({
     name: 'module_id',
-    example: '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5',
+    type: String,
     description: 'Staking router module_id or contract address.',
   })
   getMessagesForOldestValidators(
-    @Param() module: ModuleId,
+    @Param('module_id', ModuleIdPipe) module_id: string | number,
     @Param() operator: OperatorId,
     @Query() query: ValidatorsQuery,
   ) {
-    return this.validatorsService.getVoluntaryExitMessages(module.module_id, operator.operator_id, query);
+    return this.validatorsService.getVoluntaryExitMessages(module_id, operator.operator_id, query);
   }
 }
