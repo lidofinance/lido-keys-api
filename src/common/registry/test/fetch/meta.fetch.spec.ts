@@ -28,13 +28,13 @@ describe('Meta', () => {
     mockSend.mockReset();
   });
 
-  describe('Keys op index', () => {
-    test('fetchKeysOpIndex', async () => {
+  describe('Nonce', () => {
+    test('getNonce', async () => {
       const expected = 10;
 
       mockCall.mockImplementation(async () => {
         const iface = new Interface(Registry__factory.abi);
-        return iface.encodeFunctionResult('getKeysOpIndex', [expected]);
+        return iface.encodeFunctionResult('getNonce', [expected]);
       });
       const result = await fetchService.fetchStakingModuleNonce(address);
 

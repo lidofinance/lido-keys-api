@@ -11,7 +11,7 @@ import {
   RegistryOperatorStorageService,
 } from '../..';
 import { keys, operators } from '../fixtures/db.fixture';
-import { clearDb, compareTestMeta, mikroORMConfig } from '../testing.utils';
+import { clearDb, compareTestKeysAndOperators, mikroORMConfig } from '../testing.utils';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 
@@ -68,7 +68,7 @@ describe('Registry', () => {
   });
 
   test('db init is correct', async () => {
-    await compareTestMeta(address, registryService, {
+    await compareTestKeysAndOperators(address, registryService, {
       keys: keysWithModuleAddress,
       operators: operatorsWithModuleAddress,
     });

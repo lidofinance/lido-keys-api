@@ -43,8 +43,7 @@ describe('Operators', () => {
 
     mockCall.mockImplementation(async () => {
       const iface = new Interface(Registry__factory.abi);
-      operator['moduleAddress'] = address;
-      return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
+      return iface.encodeFunctionResult('getNodeOperator', operatorFields({ ...operator, moduleAddress: address }));
     });
     const result = await fetchService.fetchOne(address, expected.index);
 
@@ -53,13 +52,12 @@ describe('Operators', () => {
   });
 
   test('fetch', async () => {
-    const expectedFirst = { index: 1, ...operator };
-    const expectedSecond = { index: 2, ...operator };
+    const expectedFirst = { index: 1, moduleAddress: address, ...operator };
+    const expectedSecond = { index: 2, moduleAddress: address, ...operator };
 
     mockCall.mockImplementation(async () => {
       const iface = new Interface(Registry__factory.abi);
-      operator['moduleAddress'] = address;
-      return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
+      return iface.encodeFunctionResult('getNodeOperator', operatorFields({ ...operator, moduleAddress: address }));
     });
     const result = await fetchService.fetch(address, expectedFirst.index, expectedSecond.index + 1);
 
@@ -68,7 +66,7 @@ describe('Operators', () => {
   });
 
   test('fetch all', async () => {
-    const expected = { index: 0, ...operator };
+    const expected = { index: 0, moduleAddress: address, ...operator };
 
     mockCall
       .mockImplementationOnce(async () => {
@@ -78,8 +76,10 @@ describe('Operators', () => {
       .mockImplementationOnce(async () => {
         const iface = new Interface(Registry__factory.abi);
         operator['moduleAddress'] = address;
+        // operatorFields(operator);
         return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
       });
+    console.log('aaaaa', expected);
     const result = await fetchService.fetch(address);
 
     expect(result).toEqual([expected]);
