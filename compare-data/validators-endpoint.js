@@ -30,38 +30,18 @@ async function fetchData(endpoint, method = 'get', data = null) {
   }
 }
 
-// Function to compare two objects, excluding the "index" field
-function compareObjects(obj1, obj2) {
-  // Create copies of objects without the "index" field
-  const strippedObj1 = { ...obj1 };
-  const strippedObj2 = { ...obj2 };
-  // TODO change obj1 on old obj2 new
-  // remove index from new
-  delete strippedObj1.index;
-  delete strippedObj2.index;
-
-  // Convert objects to JSON strings and compare
-  for (const key in strippedObj1) {
-    if (strippedObj1[key] !== strippedObj2[key]) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 // Function to check the structure of the response
 function checkResponseStructure(response) {
   return response && response.hasOwnProperty('data') && response.hasOwnProperty('meta');
 }
 
 // Main function to compare endpoints
-async function compareEndpoints(path = '', query = '', method = 'get', data = null) {
-  const endpoint1 = `${baseEndpoint1}/${path}${query}`;
-  const endpoint2 = `${baseEndpoint2}/${path}${query}`;
+async function compareEndpoints(path = '', messages = 0) {
+  const endpoint1 = `${baseEndpoint1}/${path}`;
+  const endpoint2 = `${baseEndpoint2}/${path}`;
 
-  const response1 = await fetchData(endpoint1, method, data);
-  const response2 = await fetchData(endpoint2, method, data);
+  const response1 = await fetchData(endpoint1);
+  const response2 = await fetchData(endpoint2);
 
   // Check the structure of the responses
   if (!checkResponseStructure(response1) || !checkResponseStructure(response2)) {
@@ -72,7 +52,7 @@ async function compareEndpoints(path = '', query = '', method = 'get', data = nu
   const meta1 = response1.meta;
   const meta2 = response2.meta;
 
-  if (meta1.elBlockSnapshot.blockHash !== meta2.elBlockSnapshot.blockHash) {
+  if (meta1.clBlockSnapshot.blockHash !== meta2.clBlockSnapshot.blockHash) {
     console.log('The "blockHash" property in the "meta" field is different.');
     return;
   }
@@ -81,8 +61,14 @@ async function compareEndpoints(path = '', query = '', method = 'get', data = nu
   const data2 = response2.data;
 
   // Sort data arrays by "key"
-  data1.sort((a, b) => a.key.localeCompare(b.key));
-  data2.sort((a, b) => a.key.localeCompare(b.key));
+
+  if (messages) {
+    data1.sort((a, b) => parseInt(a.validator_index, 10) - parseInt(b.validator_index, 10));
+    data2.sort((a, b) => parseInt(a.validator_index, 10) - parseInt(b.validator_index, 10));
+  } else {
+    data1.sort((a, b) => a.validatorIndex - b.validatorIndex);
+    data2.sort((a, b) => a.validatorIndex - b.validatorIndex);
+  }
 
   // Check if the lists have the same length
   if (data1.length !== data2.length) {
@@ -92,10 +78,11 @@ async function compareEndpoints(path = '', query = '', method = 'get', data = nu
 
   // Compare each object in the lists
   for (let i = 0; i < data1.length; i++) {
-    if (!compareObjects(data1[i], data2[i])) {
-      console.log(`Object at index ${i} is different.`);
-      console.log(data1[i], data2[i]);
-      return;
+    for (const key in data1[i]) {
+      if (data1[i][key] !== data2[i][key]) {
+        console.log(`Object at index ${i} is different.`);
+        return;
+      }
     }
   }
 
@@ -103,22 +90,11 @@ async function compareEndpoints(path = '', query = '', method = 'get', data = nu
 }
 
 async function runComparison() {
-  console.log('Comparing endpoints with used query parameter:');
-  await compareEndpoints('v1/keys/', '?used=true');
+  console.log('Comparing endpoints with prepared for exit validators:');
+  await compareEndpoints('v1/modules/1/validators/validator-exits-to-prepare/10', 0);
 
-  console.log('Comparing endpoints with unused query parameter:');
-  await compareEndpoints('v1/keys/', '?used=false');
-
-  console.log('\nComparing endpoints without query parameter:');
-  await compareEndpoints('v1/keys/');
-
-  const pubkey = process.env.PUBKEY_FOR_TEST;
-  console.log('\nCompare for pubkey search');
-  await compareEndpoints('v1/keys/', pubkey, '');
-
-  console.log('\nCompare for pubkeys find method');
-  const pubkeys = [pubkey];
-  await compareEndpoints('v1/keys/find', '', 'post', { pubkeys });
+  console.log('Comparing endpoints with exit messages:', 1);
+  await compareEndpoints('v1/modules/1/validators/generate-unsigned-exit-messages/10', 1);
 }
 
 // Call the main function to start the comparison
