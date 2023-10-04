@@ -25,7 +25,6 @@ export class LidoLocatorService {
   async getStakingRouter(blockTag: BlockTag) {
     // if set address via attach this.contract.address will still have the same address
     this.loggerService.log('Contract locator address', this.getContract().address);
-    q;
     return await this.getContract().stakingRouter({ blockTag } as any);
   }
 }
