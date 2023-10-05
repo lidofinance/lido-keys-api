@@ -85,7 +85,7 @@
     "@aragon/apps-vault" "^4.0.0"
     "@aragon/os" "4.2.0"
 
-"@aragon/apps-lido@github:lidofinance/aragon-apps#master":
+"@aragon/apps-lido@lidofinance/aragon-apps#master":
   version "1.0.0"
   resolved "https://codeload.github.com/lidofinance/aragon-apps/tar.gz/b09834d29c0db211ddd50f50905cbeff257fc8e0"
 
@@ -4461,10 +4461,10 @@ chrome-trace-event@^1.0.2:
   resolved "https://registry.yarnpkg.com/chrome-trace-event/-/chrome-trace-event-1.0.3.tgz#1015eced4741e15d06664a957dbbf50d041e26ac"
   integrity sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==
 
-chronix@0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/chronix/-/chronix-0.0.6.tgz#508eb0878fa22fb654bc0f1276bfe071b7506a55"
-  integrity sha512-1sq/+xiqdlWlMQCbBobsnUpZf4Dkru/UqHiv1MLXFhB63iRW8k6TsiWPO0Bg2oI+UhwOrbr71xJh+9WW+Qo/RA==
+chronix@^0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/chronix/-/chronix-0.0.9.tgz#e3a2a4fdd9638d8be033cc6c84b6798f0041dada"
+  integrity sha512-qeZ905Sj4saeq+0TMOMa5IIMgWgUggkie1Ht6WJpv7GUVBRAnyH2pZrO3q8b2Ou7Vxh1WoTESz4+7nJh2mhNMw==
   dependencies:
     "@aragon/os" "^4.4.0"
     "@nomiclabs/hardhat-ethers" "^2.2.3"
