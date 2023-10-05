@@ -38,7 +38,9 @@
     "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/staking-router-modules/contracts/abi/*.json",
     "chronix:compile": "chronix compile",
     "chronix:test": "chronix test",
-    "test:alerts": "promtool test rules alerts/*.test.yml"
+    "test:alerts": "promtool test rules alerts/*.test.yml",
+    "chronix:start": "chronix start",
+    "fork:init": "node chronix-init"
   },
   "dependencies": {
     "@lido-nestjs/consensus": "^1.5.0",
@@ -89,7 +91,7 @@
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
-    "chronix": "0.0.6",
+    "chronix": "^0.0.9",
     "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
