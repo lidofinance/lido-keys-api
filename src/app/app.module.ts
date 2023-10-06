@@ -40,6 +40,9 @@ import { StakingRouterModule } from '../staking-router-modules';
           debug: false,
           registerRequestContext: true,
           allowGlobalContext: false,
+          pool: {
+            max: 150,
+          },
         };
       },
       inject: [ConfigService],

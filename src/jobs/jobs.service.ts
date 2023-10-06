@@ -36,7 +36,7 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
    * Initializes jobs
    */
   protected async initialize(): Promise<void> {
-    await this.keysUpdateService.initialize();
+    // await this.keysUpdateService.initialize();
     if (this.validatorUpdateService.isDisabledRegistry()) {
       this.prometheusService.validatorsEnabled.set(0);
       this.logger.log('Job for updating validators is disabled');

@@ -53,12 +53,12 @@ export class ValidatorsUpdateService {
   public async initialize() {
     // at first start timer for checking update
     // if timer isnt cleared in 60 minutes period, we will consider it as nodejs frizzing and exit
-    this.checkValidatorsUpdateTimeout();
+    // this.checkValidatorsUpdateTimeout();
     await this.updateValidators().catch((error) => this.logger.error(error));
 
-    const interval_ms = this.configService.get('UPDATE_VALIDATORS_INTERVAL_MS');
-    const interval = setInterval(() => this.updateValidators().catch((error) => this.logger.error(error)), interval_ms);
-    this.schedulerRegistry.addInterval(this.UPDATE_VALIDATORS_JOB_NAME, interval);
+    // const interval_ms = this.configService.get('UPDATE_VALIDATORS_INTERVAL_MS');
+    // const interval = setInterval(() => this.updateValidators().catch((error) => this.logger.error(error)), interval_ms);
+    // this.schedulerRegistry.addInterval(this.UPDATE_VALIDATORS_JOB_NAME, interval);
 
     this.logger.log('Finished ValidatorsUpdateService initialization');
   }
@@ -87,15 +87,18 @@ export class ValidatorsUpdateService {
   @OneAtTime()
   private async updateValidators() {
     await this.jobService.wrapJob({ name: 'Update validators from ValidatorsRegistry' }, async () => {
-      const meta = await this.validatorsService.updateValidators('finalized');
+      // const meta = await this.validatorsService.updateValidators('finalized');
+
+      await this.validatorsService.updateValidatorsStream('finalized');
+
       // meta shouldn't be null
       // if update didnt happen, meta will be fetched from db
-      this.lastBlockTimestampSec = meta?.timestamp ?? this.lastBlockTimestampSec;
-      this.lastBlockNumber = meta?.blockNumber ?? this.lastBlockNumber;
-      this.lastSlot = meta?.slot ?? this.lastSlot;
-      this.updateMetrics();
+      // this.lastBlockTimestampSec = meta?.timestamp ?? this.lastBlockTimestampSec;
+      // this.lastBlockNumber = meta?.blockNumber ?? this.lastBlockNumber;
+      // this.lastSlot = meta?.slot ?? this.lastSlot;
+      // this.updateMetrics();
 
-      this.checkValidatorsUpdateTimeout();
+      // this.checkValidatorsUpdateTimeout();
     });
   }
 

@@ -2627,6 +2627,21 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.1.tgz#20f18294f797f2209b5f65c8e3b5c8e8261d127c"
   integrity sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==
 
+"@types/stream-chain@*":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@types/stream-chain/-/stream-chain-2.0.2.tgz#e809fce90191699acb63dd81030c2d2f68c30f21"
+  integrity sha512-d6402cbTM/WAMVTJ5PPaCtjnXoVRCXewt7vgsR0cyQ1M+17kiSs1gNg9yHgpMa84woFhaVCn+AvRdovzGOPsQw==
+  dependencies:
+    "@types/node" "*"
+
+"@types/stream-json@^1.7.4":
+  version "1.7.4"
+  resolved "https://registry.yarnpkg.com/@types/stream-json/-/stream-json-1.7.4.tgz#6b14579213bc89d382f76120dba329456be509ba"
+  integrity sha512-wf68w3uFNDX9d8QZHa7uYRaUBZ1tqjimQRMUOG0yT6LHKQMuUV1HBn/8tnGZItPdTfH1XtbVsUB8zq58k+WVXg==
+  dependencies:
+    "@types/node" "*"
+    "@types/stream-chain" "*"
+
 "@types/superagent@*":
   version "4.1.15"
   resolved "https://registry.yarnpkg.com/@types/superagent/-/superagent-4.1.15.tgz#63297de457eba5e2bc502a7609426c4cceab434a"
@@ -11322,6 +11337,18 @@ statuses@2.0.1:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
   integrity sha512-OpZ3zP+jT1PI7I8nemJX4AKmAX070ZkYPVWV/AaKTJl+tXCTGyVdC1a4SL8RUQYEwk/f34ZX8UTykN68FwrqAA==
+
+stream-chain@^2.2.5:
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/stream-chain/-/stream-chain-2.2.5.tgz#b30967e8f14ee033c5b9a19bbe8a2cba90ba0d09"
+  integrity sha512-1TJmBx6aSWqZ4tx7aTpBDXK0/e2hhcNSTV8+CbFJtDjbb+I1mZ8lHit0Grw9GRT+6JbIrrDd8esncgBi8aBXGA==
+
+stream-json@^1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/stream-json/-/stream-json-1.8.0.tgz#53f486b2e3b4496c506131f8d7260ba42def151c"
+  integrity sha512-HZfXngYHUAr1exT4fxlbc1IOce1RYxp2ldeaf97LYCOPSoOqY/1Psp7iGvpb+6JIOgkra9zDYnPX01hGAHzEPw==
+  dependencies:
+    stream-chain "^2.2.5"
 
 stream-to-it@^0.2.2:
   version "0.2.4"

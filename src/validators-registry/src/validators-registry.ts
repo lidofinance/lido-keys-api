@@ -1,11 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { ConsensusService } from '@lido-nestjs/consensus';
+import { ConsensusModule, ConsensusService } from '@lido-nestjs/consensus';
 import { ValidatorsRegistryInterface, BlockId } from './interfaces';
 import { BlockHeader, Validator, ConsensusMeta, ConsensusValidatorsAndMetadata, Slot } from './types';
 import { FindOptions, FilterQuery, StorageServiceInterface } from './storage';
 import { parseAsTypeOrFail, calcEpochBySlot } from './utils';
 import { ConsensusDataInvalidError } from './errors';
 import { ConsensusValidatorEntity } from './storage/consensus-validator.entity';
+import { EntityManager } from '@mikro-orm/knex';
+import { IsolationLevel } from '@mikro-orm/core';
+import * as Pick from 'stream-json/filters/Pick';
+import * as StreamValues from 'stream-json/streamers/StreamValues';
+import * as StreamArray from 'stream-json/streamers/StreamArray';
+
+async function* chunkStream(sourceStream, chunkSize) {
+  console.log('i amhere!!!');
+  let chunk: any[] = [];
+  for await (const item of sourceStream) {
+    chunk.push(item);
+    if (chunk.length === chunkSize) {
+      yield chunk;
+      chunk = [];
+    }
+  }
+  if (chunk.length > 0) {
+    console.log('next yield!');
+    yield chunk;
+  }
+}
 
 @Injectable()
 export class ValidatorsRegistry implements ValidatorsRegistryInterface {
@@ -56,12 +77,80 @@ export class ValidatorsRegistry implements ValidatorsRegistryInterface {
     return consensusMeta;
   }
 
-  protected async getValidatorsFromConsensus(slotRoot: string): Promise<Validator[]> {
-    // const validatorsData: NodeJS.ReadableStream =
-    //   await this.consensusService.getStateValidatorsStream({
-    //     stateId: slotRoot,
-    //   });
+  public async updateFromStream(blockId: BlockId): Promise<ConsensusMeta> {
+    const previousMeta = await this.storageService.getConsensusMeta();
+    const blockHeader = await this.getSlotHeaderFromConsensus(blockId);
 
+    if (previousMeta && !this.isNewDataInConsensus(previousMeta, blockHeader)) {
+      return previousMeta;
+    }
+
+    const consensusMeta = await this.getConsensusMetaFromConsensus(blockHeader.root);
+
+    const validators: NodeJS.ReadableStream = await this.getValidatorsFromConsensusStream(consensusMeta.slotStateRoot);
+
+    const em: EntityManager = this.storageService.getEntityManager();
+
+    em.transactional(
+      async () => {
+        await this.storageService.deleteValidators();
+        await this.storageService.updateMeta(consensusMeta);
+        let chunk: Validator[] = [];
+        // make
+        const chunkLimit = 20000;
+        // let count = 0;
+        let chunkNumber = 0;
+
+        // diff streamValues and streamArray
+        const validatorsData = validators.pipe(Pick.withParser({ filter: 'data' })).pipe(StreamArray.streamArray());
+
+        const chunks = chunkStream(validatorsData, chunkLimit);
+
+        for await (const chunkData of chunks) {
+          console.log('next chunk');
+          for (const validator of chunkData) {
+            // console.log(next)
+            const parsedValidator = parseAsTypeOrFail(
+              Validator,
+              {
+                pubkey: validator.value?.validator?.pubkey,
+                index: validator.value?.index,
+                status: validator.value?.status,
+              },
+              (error) => {
+                throw new ConsensusDataInvalidError(`Got invalid validators`, error);
+              },
+            );
+            chunk.push(parsedValidator);
+          }
+
+          console.log('chunk count', chunk.length);
+          await this.storageService.updateValidators(chunk);
+          chunk = [];
+          console.log('chunkNumber', chunkNumber);
+          chunkNumber++;
+        }
+
+        // if (chunk.length > 0) {
+        //   await this.storageService.updateValidators(chunk);
+        // }
+      },
+      { isolationLevel: IsolationLevel.READ_COMMITTED },
+    );
+
+    return consensusMeta;
+  }
+
+  protected async getValidatorsFromConsensusStream(slotRoot: string): Promise<NodeJS.ReadableStream> {
+    //: Promise<Validator[]> {
+    const validatorsData: NodeJS.ReadableStream = await this.consensusService.getStateValidatorsStream({
+      stateId: slotRoot,
+    });
+
+    return validatorsData;
+  }
+
+  protected async getValidatorsFromConsensus(slotRoot: string): Promise<Validator[]> {
     const validatorsData = await this.consensusService.getStateValidators({
       stateId: slotRoot,
     });
@@ -71,20 +160,6 @@ export class ValidatorsRegistry implements ValidatorsRegistryInterface {
     if (!Array.isArray(validators)) {
       throw new ConsensusDataInvalidError(`Validators must be array`);
     }
-
-    // validatorsData.on('readingValidators', (validator) => {
-    //   parseAsTypeOrFail(
-    //     Validator,
-    //     {
-    //       pubkey: validator.validator?.pubkey,
-    //       index: validator.index,
-    //       status: validator.status,
-    //     },
-    //     (error) => {
-    //       throw new ConsensusDataInvalidError(`Got invalid validators`, error);
-    //     },
-    //   );
-    // });
 
     return validators.map((validator) => {
       // runtime type check

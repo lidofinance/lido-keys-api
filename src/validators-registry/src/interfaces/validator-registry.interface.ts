@@ -17,6 +17,8 @@ export interface ValidatorsRegistryInterface {
    */
   update(blockId: BlockId): Promise<ConsensusMeta>;
 
+  updateFromStream(blockId: BlockId): Promise<ConsensusMeta>;
+
   /**
    * Get Metadata from registry internal state
    */

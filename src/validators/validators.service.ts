@@ -37,6 +37,15 @@ export class ValidatorsService {
     return await this.validatorsRegistry.update(blockId);
   }
 
+  public async updateValidatorsStream(blockId): Promise<ConsensusMeta | null> {
+    if (this.isDisabledRegistry()) {
+      this.logger.warn('ValidatorsRegistry is disabled in API');
+      return null;
+    }
+
+    return await this.validatorsRegistry.updateFromStream(blockId);
+  }
+
   /**
    *
    * @param filter Filters to get from validators database keys.

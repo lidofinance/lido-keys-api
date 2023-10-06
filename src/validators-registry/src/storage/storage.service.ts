@@ -19,9 +19,13 @@ export class StorageService implements StorageServiceInterface, OnModuleDestroy 
     await this.orm.close();
   }
 
-  public get entityManager(): EntityManager {
+  protected get entityManager(): EntityManager {
     // It will automatically pick the request specific context under the hood, or use global entity manager
     return <EntityManager>this.orm.em;
+  }
+
+  public getEntityManager(): EntityManager {
+    return this.entityManager;
   }
 
   /**
@@ -66,12 +70,16 @@ export class StorageService implements StorageServiceInterface, OnModuleDestroy 
     );
   }
 
-  protected async updateValidators(validators: Validator[]): Promise<void> {
+  public async deleteValidators() {
+    await this.orm.em.getRepository(ConsensusValidatorEntity).nativeDelete({});
+  }
+
+  public async updateValidators(validators: Validator[]): Promise<void> {
     const validatorsChecked = parseAsTypeOrFail(Validators, validators, (error) => {
       throw new ConsensusDataInvalidError('Got invalid Validators when writing to storage', error);
     });
 
-    const validatorsPartitions = chunk(validatorsChecked, NUM_VALIDATORS_MAX_CHUNK);
+    const validatorsPartitions = chunk(validatorsChecked, 150); //NUM_VALIDATORS_MAX_CHUNK);
 
     // remove all previous validators
     await this.orm.em.getRepository(ConsensusValidatorEntity).nativeDelete({});
@@ -86,7 +94,7 @@ export class StorageService implements StorageServiceInterface, OnModuleDestroy 
   /**
    * @inheritDoc
    */
-  protected async updateMeta(meta: ConsensusMeta): Promise<void> {
+  public async updateMeta(meta: ConsensusMeta): Promise<void> {
     const metaChecked = parseAsTypeOrFail(ConsensusMeta, meta, (error) => {
       throw new ConsensusDataInvalidError('Got invalid ConsensusMeta when writing to storage', error);
     });

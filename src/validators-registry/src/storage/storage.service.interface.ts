@@ -1,4 +1,5 @@
 import { createInterface } from '@lido-nestjs/di';
+import { EntityManager } from '@mikro-orm/knex';
 import { ConsensusMeta, ConsensusValidatorsAndMetadata, Validator } from '../types';
 import { ConsensusValidatorEntity } from './consensus-validator.entity';
 import { FindOptions, FilterQuery } from './interfaces';
@@ -16,6 +17,28 @@ export interface StorageServiceInterface {
    * (update existing validators in storage and insert not existing in storage)
    */
   updateValidatorsAndMeta(validators: Validator[], meta: ConsensusMeta): Promise<void>;
+
+  /**
+   *
+   * Update consensus validators
+   */
+  updateValidators(validators: Validator[]): Promise<void>;
+
+  /**
+   * Return EntityManager instance
+   */
+  getEntityManager(): EntityManager;
+
+  /**
+   * delete all validators
+   */
+  deleteValidators(): Promise<void>;
+
+  /**
+   *
+   * Update meta
+   */
+  updateMeta(meta: ConsensusMeta): Promise<void>;
 
   /**
    * Get consensus validators from storage
