@@ -4,7 +4,7 @@ import {
   ConsensusValidatorsAndMetadata,
   Validator,
   ConsensusMeta,
-} from '@lido-nestjs/validators-registry';
+} from 'validators-registry/src';
 import { LOGGER_PROVIDER, LoggerService } from '../common/logger';
 import { ConfigService } from '../common/config';
 import { QueryOrder } from '@mikro-orm/core';

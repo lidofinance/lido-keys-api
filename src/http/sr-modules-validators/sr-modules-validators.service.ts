@@ -9,7 +9,7 @@ import {
 } from './entities';
 import { CLBlockSnapshot, ELBlockSnapshot } from '../common/entities/';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { Validator } from '@lido-nestjs/validators-registry';
+import { Validator } from '../../validators-registry/src';
 import { ValidatorsService } from '../../validators';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 import { EntityManager } from '@mikro-orm/knex';

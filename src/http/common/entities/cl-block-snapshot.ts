@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ConsensusMeta } from '@lido-nestjs/validators-registry';
+import { ConsensusMeta } from '../../../validators-registry/src';
 
 export class CLBlockSnapshot {
   constructor(clMeta: ConsensusMeta) {
