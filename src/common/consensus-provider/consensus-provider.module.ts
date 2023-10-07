@@ -8,7 +8,7 @@ import { ConsensusFetchModule } from './consensus-fetch.module';
   imports: [
     ConsensusModule.forRoot({
       imports: [ConsensusFetchModule],
-      pollingInterval: CONSENSUS_POOL_INTERVAL_MS,
+      pollingInterval: 2000000, //CONSENSUS_POOL_INTERVAL_MS,
     }),
   ],
 })

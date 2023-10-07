@@ -18,9 +18,10 @@ export class ConsensusFetchService extends FetchService {
     const controller = new AbortController();
     const { signal } = controller;
 
-    setTimeout(() => {
-      controller.abort();
-    }, CONSENSUS_REQUEST_TIMEOUT);
+    // setTimeout(() => {
+    //   console.log('time to abort');
+    //   controller.abort();
+    // }, 5*CONSENSUS_REQUEST_TIMEOUT);
 
     return super.request(url, { ...init, signal }, attempt);
   }

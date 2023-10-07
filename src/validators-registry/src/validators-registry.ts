@@ -12,6 +12,12 @@ import * as Pick from 'stream-json/filters/Pick';
 import * as StreamValues from 'stream-json/streamers/StreamValues';
 import * as StreamArray from 'stream-json/streamers/StreamArray';
 
+import { chain } from 'stream-chain';
+import { parser } from 'stream-json';
+import { pick } from 'stream-json/filters/Pick';
+import { streamArray } from 'stream-json/streamers/StreamArray';
+import { batch } from 'stream-json/utils/Batch';
+
 async function* chunkStream(sourceStream, chunkSize) {
   console.log('i amhere!!!');
   let chunk: any[] = [];
@@ -87,49 +93,55 @@ export class ValidatorsRegistry implements ValidatorsRegistryInterface {
 
     const consensusMeta = await this.getConsensusMetaFromConsensus(blockHeader.root);
 
-    const validators: NodeJS.ReadableStream = await this.getValidatorsFromConsensusStream(consensusMeta.slotStateRoot);
-
     const em: EntityManager = this.storageService.getEntityManager();
 
-    em.transactional(
+    console.time('execution-time');
+
+    await em.transactional(
       async () => {
+        const validators: NodeJS.ReadableStream = await this.getValidatorsFromConsensusStream(
+          consensusMeta.slotStateRoot,
+        );
+
         await this.storageService.deleteValidators();
         await this.storageService.updateMeta(consensusMeta);
-        let chunk: Validator[] = [];
-        // make
-        const chunkLimit = 20000;
-        // let count = 0;
-        let chunkNumber = 0;
 
-        // diff streamValues and streamArray
-        const validatorsData = validators.pipe(Pick.withParser({ filter: 'data' })).pipe(StreamArray.streamArray());
+        await this.parseWriteValidators(validators);
+        // let chunk: Validator[] = [];
+        // // make
+        // const chunkLimit = 20000;
+        // // let count = 0;
+        // let chunkNumber = 0;
 
-        const chunks = chunkStream(validatorsData, chunkLimit);
+        // // diff streamValues and streamArray
+        // const validatorsData = validators.pipe(Pick.withParser({ filter: 'data' })).pipe(StreamArray.streamArray());
 
-        for await (const chunkData of chunks) {
-          console.log('next chunk');
-          for (const validator of chunkData) {
-            // console.log(next)
-            const parsedValidator = parseAsTypeOrFail(
-              Validator,
-              {
-                pubkey: validator.value?.validator?.pubkey,
-                index: validator.value?.index,
-                status: validator.value?.status,
-              },
-              (error) => {
-                throw new ConsensusDataInvalidError(`Got invalid validators`, error);
-              },
-            );
-            chunk.push(parsedValidator);
-          }
+        // const chunks = chunkStream(validatorsData, chunkLimit);
 
-          console.log('chunk count', chunk.length);
-          await this.storageService.updateValidators(chunk);
-          chunk = [];
-          console.log('chunkNumber', chunkNumber);
-          chunkNumber++;
-        }
+        // for await (const chunkData of chunks) {
+        //   console.log('next chunk');
+        //   for (const validator of chunkData) {
+        //     // console.log(next)
+        //     const parsedValidator = parseAsTypeOrFail(
+        //       Validator,
+        //       {
+        //         pubkey: validator.value?.validator?.pubkey,
+        //         index: validator.value?.index,
+        //         status: validator.value?.status,
+        //       },
+        //       (error) => {
+        //         throw new ConsensusDataInvalidError(`Got invalid validators`, error);
+        //       },
+        //     );
+        //     chunk.push(parsedValidator);
+        //   }
+
+        //   console.log('chunk count', chunk.length);
+        //   await this.storageService.updateValidators(chunk);
+        //   chunk = [];
+        //   console.log('chunkNumber', chunkNumber);
+        //   chunkNumber++;
+        // }
 
         // if (chunk.length > 0) {
         //   await this.storageService.updateValidators(chunk);
@@ -138,7 +150,65 @@ export class ValidatorsRegistry implements ValidatorsRegistryInterface {
       { isolationLevel: IsolationLevel.READ_COMMITTED },
     );
 
+    console.timeEnd('execution-time');
+
     return consensusMeta;
+  }
+
+  async unblock() {
+    // Unblock event loop in long loops
+    // Source: https://snyk.io/blog/nodejs-how-even-quick-async-functions-can-block-the-event-loop-starve-io/
+    return new Promise((resolve) => {
+      return setImmediate(() => resolve(true));
+    });
+  }
+
+  public async parseWriteValidators(validatorsReadStream) {
+    let count = 0;
+    const pipeline = chain([
+      validatorsReadStream,
+      parser(),
+      pick({ filter: 'data' }),
+      streamArray(),
+      batch({ batchSize: 100 }),
+      async (batch) => {
+        await this.unblock();
+        const chunk: Validator[] = [];
+        for (const validator of batch) {
+          const parsedValidator = parseAsTypeOrFail(
+            Validator,
+            {
+              pubkey: validator.value?.validator?.pubkey,
+              index: validator.value?.index,
+              status: validator.value?.status,
+            },
+            (error) => {
+              throw new ConsensusDataInvalidError(`Got invalid validators`, error);
+            },
+          );
+          chunk.push(parsedValidator);
+        }
+        count += chunk.length;
+        // console.log('batch finished', count);
+        await this.storageService.updateValidators(chunk);
+      },
+    ]);
+
+    pipeline.on('data', (data) => {
+      console.log('first on');
+      data;
+    });
+
+    await new Promise((resolve, reject) => {
+      pipeline.on('error', (error) => {
+        console.log('second on error');
+        reject(error);
+      });
+      pipeline.on('end', () => {
+        console.log('third end');
+        resolve(true);
+      });
+    }).finally(() => pipeline.destroy());
   }
 
   protected async getValidatorsFromConsensusStream(slotRoot: string): Promise<NodeJS.ReadableStream> {

@@ -79,10 +79,10 @@ export class StorageService implements StorageServiceInterface, OnModuleDestroy 
       throw new ConsensusDataInvalidError('Got invalid Validators when writing to storage', error);
     });
 
-    const validatorsPartitions = chunk(validatorsChecked, 150); //NUM_VALIDATORS_MAX_CHUNK);
+    const validatorsPartitions = chunk(validatorsChecked, NUM_VALIDATORS_MAX_CHUNK);
 
     // remove all previous validators
-    await this.orm.em.getRepository(ConsensusValidatorEntity).nativeDelete({});
+    // await this.orm.em.getRepository(ConsensusValidatorEntity).nativeDelete({});
 
     const promises = validatorsPartitions.map((x) =>
       this.orm.em.getRepository(ConsensusValidatorEntity).createQueryBuilder().insert(x).execute(),
