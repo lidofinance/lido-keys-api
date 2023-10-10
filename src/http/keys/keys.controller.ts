@@ -51,8 +51,8 @@ export class KeysController {
         // TODO: is it necessary to check the error? or 'finally' is ok?
         try {
           for (const keysGenerator of keysGenerators) {
-            for await (const keysBatch of keysGenerator) {
-              const keyReponse = new Key(keysBatch);
+            for await (const key of keysGenerator) {
+              const keyReponse = new Key(key);
               jsonStream.write(keyReponse);
             }
           }

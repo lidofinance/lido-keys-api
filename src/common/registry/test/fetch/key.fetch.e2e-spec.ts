@@ -3,6 +3,7 @@ import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryKeyFetchService } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
+import { isAddress } from 'ethers/lib/utils';
 
 dotenv.config();
 
@@ -31,18 +32,18 @@ describe('Keys', () => {
     expect(typeof key.index).toBe('number');
     expect(typeof key.key).toBe('string');
     expect(typeof key.depositSignature).toBe('string');
+    expect(isAddress(key.moduleAddress)).toBe(true);
   });
 
   test('fetch operator keys', async () => {
     const keys = await fetchService.fetch(address, 21, 0, -1, {
       blockTag: 6912872,
     });
-
     expect(keys).toBeInstanceOf(Array);
     expect(keys.length).toBe(3);
   }, 15_000);
 
-  test('fetch multiply operators', async () => {
+  test('fetch several keys', async () => {
     const keys = await fetchService.fetch(address, 21, 0, 2, {
       blockTag: 6912872,
     });

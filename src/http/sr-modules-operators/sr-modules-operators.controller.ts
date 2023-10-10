@@ -5,10 +5,10 @@ import {
   SRModuleOperatorListResponse,
   SRModuleOperatorResponse,
 } from './entities';
-import { ModuleId } from '../common/entities/';
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
 import { OperatorId } from '../common/entities/operator-id';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
+import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
 
 @Controller('/')
 @ApiTags('operators')
@@ -51,11 +51,12 @@ export class SRModulesOperatorsController {
   })
   @ApiParam({
     name: 'module_id',
+    type: String,
     description: 'Staking router module_id or contract address.',
   })
   @Get('modules/:module_id/operators')
-  getModuleOperators(@Param() module: ModuleId) {
-    return this.srModulesOperators.getByModule(module.module_id);
+  getModuleOperators(@Param('module_id', ModuleIdPipe) module_id: string | number) {
+    return this.srModulesOperators.getByModule(module_id);
   }
 
   @Version('1')
@@ -77,10 +78,12 @@ export class SRModulesOperatorsController {
   })
   @ApiParam({
     name: 'module_id',
+    type: String,
     description: 'Staking router module_id or contract address.',
   })
   @Get('modules/:module_id/operators/:operator_id')
-  getModuleOperator(@Param() module: ModuleId, @Param() operator: OperatorId) {
-    return this.srModulesOperators.getModuleOperator(module.module_id, operator.operator_id);
+  getModuleOperator(@Param('module_id', ModuleIdPipe) module_id: string | number, @Param() operator: OperatorId) {
+    console.log(module_id, typeof module_id);
+    return this.srModulesOperators.getModuleOperator(module_id, operator.operator_id);
   }
 }

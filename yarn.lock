@@ -85,7 +85,7 @@
     "@aragon/apps-vault" "^4.0.0"
     "@aragon/os" "4.2.0"
 
-"@aragon/apps-lido@lidofinance/aragon-apps#master":
+"@aragon/apps-lido@github:lidofinance/aragon-apps#master":
   version "1.0.0"
   resolved "https://codeload.github.com/lidofinance/aragon-apps/tar.gz/b09834d29c0db211ddd50f50905cbeff257fc8e0"
 
@@ -1266,19 +1266,19 @@
     node-abort-controller "^3.0.1"
     node-fetch "^2.6.7"
 
-"@lido-nestjs/constants@5.0.0", "@lido-nestjs/constants@^5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/constants/-/constants-5.0.0.tgz#9f14aa918bea4c1e414b99f92f5dd23b29b4c385"
-  integrity sha512-z8OtuqeuQXbzWzjtioH/xAqrSJILxe5o/bpmUpQzepf55TxwG6miGuG+5woBDlrmmKEC5oqkW70+WUBnsO7mNg==
+"@lido-nestjs/constants@5.2.0", "@lido-nestjs/constants@^5.2.0":
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/constants/-/constants-5.2.0.tgz#93b3c35ca8e194f12c0d8f2de60d43182fffaab3"
+  integrity sha512-TM0V2gStu2IdPa5ceGGaxmyKhuM7C1EzIF3sUnAfPxrB2yLgQj91voJ0Qf00NF+Fp94rCLRBoShDyUsLMcBl2g==
 
-"@lido-nestjs/contracts@^9.0.0":
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/contracts/-/contracts-9.0.0.tgz#05555ab4cbbe6e44f634cf1a7296dfb1419cca29"
-  integrity sha512-OAWu55VJJedOeUagQemCIqjpOTMJTUK39ikcs7/W6hoFInRCeTBn+EgGAt1d2C2VRAbsnPddcnPugr5v0q+TNg==
+"@lido-nestjs/contracts@^9.3.0":
+  version "9.3.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/contracts/-/contracts-9.3.0.tgz#25d3412c31993931abf8d90a9695c984841937bc"
+  integrity sha512-DWXbaML3UUV1JT+0yE1Yt28jcZdNRNgrT1CW21DZ62fwLaVPo6JnWWMBA78pvYBH2NqdIreC5x6Ww3A7C7FocQ==
   dependencies:
     "@ethersproject/abi" "^5.5.0"
     "@ethersproject/providers" "^5.5.3"
-    "@lido-nestjs/constants" "5.0.0"
+    "@lido-nestjs/constants" "5.2.0"
     ethers "^5.5.4"
 
 "@lido-nestjs/di@1.0.1":
@@ -4461,10 +4461,10 @@ chrome-trace-event@^1.0.2:
   resolved "https://registry.yarnpkg.com/chrome-trace-event/-/chrome-trace-event-1.0.3.tgz#1015eced4741e15d06664a957dbbf50d041e26ac"
   integrity sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==
 
-chronix@^0.0.2-beta-plugin-v9:
-  version "0.0.2-beta-plugin-v9"
-  resolved "https://registry.yarnpkg.com/chronix/-/chronix-0.0.2-beta-plugin-v9.tgz#5e08c4bd0bca1a6698bfe927402cc15e2e665a40"
-  integrity sha512-dOoGuUxidxfEV3hhqOAkmzhNryJCnQUvUJMROPsG4HxLAnn1uM+/HeKyudl0XWDgj1TQ7kXtJo90jnFQxni3Ww==
+chronix@0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/chronix/-/chronix-0.0.6.tgz#508eb0878fa22fb654bc0f1276bfe071b7506a55"
+  integrity sha512-1sq/+xiqdlWlMQCbBobsnUpZf4Dkru/UqHiv1MLXFhB63iRW8k6TsiWPO0Bg2oI+UhwOrbr71xJh+9WW+Qo/RA==
   dependencies:
     "@aragon/os" "^4.4.0"
     "@nomiclabs/hardhat-ethers" "^2.2.3"
@@ -11075,10 +11075,10 @@ simple-concat@^1.0.0:
   resolved "https://registry.yarnpkg.com/simple-concat/-/simple-concat-1.0.1.tgz#f46976082ba35c2263f1c8ab5edfe26c41c9552f"
   integrity sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==
 
-simple-dvt-v1@^0.0.7:
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/simple-dvt-v1/-/simple-dvt-v1-0.0.7.tgz#fb366f03a3b2aa90352c59361e0da9ef69ce0705"
-  integrity sha512-hEzxC7SUgJylLkUP+dtCvRGJ0N7BUULeOwR34GTdNM4HsYVHRBuonsyHgwhcQ5wof1mzTXO6l4jv3ZOSEVUbHQ==
+simple-dvt-v1@0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/simple-dvt-v1/-/simple-dvt-v1-0.0.9.tgz#53d220067f4d03cc8e848349c8a391af58dfd637"
+  integrity sha512-+F8W9rDruFAkeJoc88vY1mlXvGVb7Er3EX7x8my0mi0JAaRwN5w70fqlj2z/JSahBOYpy23OVXvKvq2d40rqlQ==
   dependencies:
     "@aragon/apps-agent" "^2.1.0"
     "@aragon/apps-finance" "^3.0.0"
