@@ -85,8 +85,9 @@
     "@aragon/apps-vault" "^4.0.0"
     "@aragon/os" "4.2.0"
 
-"@aragon/apps-lido@github:lidofinance/aragon-apps#master":
+"@aragon/apps-lido@lidofinance/aragon-apps#master":
   version "1.0.0"
+  uid b09834d29c0db211ddd50f50905cbeff257fc8e0
   resolved "https://codeload.github.com/lidofinance/aragon-apps/tar.gz/b09834d29c0db211ddd50f50905cbeff257fc8e0"
 
 "@aragon/apps-vault@4.1.0", "@aragon/apps-vault@^4.0.0", "@aragon/apps-vault@^4.1.0":
@@ -980,6 +981,11 @@
   integrity sha512-gvCOUNpXsWrIQ3A4aXCLIdblL0tDq42BG/2Xw7oxbil9h11uow10ztS2GuFazNBfjbrsZ5nl+nPl5jDSjj5TSg==
   dependencies:
     ajv "^6.12.6"
+
+"@fastify/busboy@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@fastify/busboy/-/busboy-2.0.0.tgz#f22824caff3ae506b18207bad4126dbc6ccdb6b8"
+  integrity sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==
 
 "@fastify/error@^2.0.0":
   version "2.0.0"
@@ -12187,11 +12193,11 @@ underscore@1.9.1:
   integrity sha512-5/4etnCkd9c8gwgowi5/om/mYO5ajCaOgdzj/oW+0eQV9WxKBDZw5+ycmKmeaTXjInS/W0BzpGLo2xR2aBwZdg==
 
 undici@^5.14.0:
-  version "5.23.0"
-  resolved "https://registry.yarnpkg.com/undici/-/undici-5.23.0.tgz#e7bdb0ed42cebe7b7aca87ced53e6eaafb8f8ca0"
-  integrity sha512-1D7w+fvRsqlQ9GscLBwcAJinqcZGHUKjbOmXdlE/v8BvEGXjeWAax+341q44EuTcHXXnfyKNbKRq4Lg7OzhMmg==
+  version "5.26.3"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-5.26.3.tgz#ab3527b3d5bb25b12f898dfd22165d472dd71b79"
+  integrity sha512-H7n2zmKEWgOllKkIUkLvFmsJQj062lSm3uA4EYApG8gLuiOM0/go9bIoC3HVaSnfg4xunowDE2i9p8drkXuvDw==
   dependencies:
-    busboy "^1.6.0"
+    "@fastify/busboy" "^2.0.0"
 
 unique-filename@^1.1.1:
   version "1.1.1"
