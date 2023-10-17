@@ -1,1 +1,1 @@
-export const HEAP_USED_THRESHOLD = 4 * 1024 * 1024 * 1024; // 4Gb
+export const HEAP_USED_THRESHOLD = 8 * 1024 * 1024 * 1024; // 8Gb
