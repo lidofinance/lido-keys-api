@@ -32,7 +32,7 @@ tests:
               app_team: tooling
             exp_annotations:
               summary: Validators are outdated
-              description: Validators were not updated for more than  1h 0m 0s minutes
+              description: Validators were not updated for more than 60 minutes
       - eval_time: 75m
         alertname: KeysApiOutdatedValidators
         exp_alerts:
@@ -42,7 +42,7 @@ tests:
               app_team: tooling
             exp_annotations:
               summary: Validators are outdated
-              description: Validators were not updated for more than  1h 0m 0s minutes
+              description: Validators were not updated for more than 60 minutes
 
   # Actual validators list
   - interval: 15m

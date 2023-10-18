@@ -9,4 +9,4 @@ groups:
           app_team: tooling
         annotations:
           summary: Validators are outdated
-          description: 'Validators were not updated for more than {{ with query "time() - lido_keys_api_validators_registry_last_update_block_timestamp{}" }}{{ . | first | value | humanizeDuration }}{{ end }}'
+          description: 'Validators were not updated for more than 60 minutes'
