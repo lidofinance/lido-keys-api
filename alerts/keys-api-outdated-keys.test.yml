@@ -5,52 +5,12 @@ evaluation_interval: 1m
 
 tests:
   # Outdated keys
-  - interval: 5m
-    input_series:
-      - series: lido_keys_api_last_update_timestamp{}
-        values: 0 0 0 400
-    alert_rule_test:
-      - eval_time: 10m
-        alertname: KeysApiOutdatedKeys
-        exp_alerts:
-          - exp_labels:
-              severity: critical
-              service: keys_api
-              app_team: tooling
-            exp_annotations:
-              summary: Keys are outdated
-              description: Keys were not updated for 10m 0s
-      - eval_time: 15m
-        alertname: KeysApiOutdatedKeys
-        exp_alerts:
-          - exp_labels:
-              severity: critical
-              service: keys_api
-              app_team: tooling
-            exp_annotations:
-              summary: Keys are outdated
-              description: Keys were not updated for 8m 20s
-
-  # Actual keys
-  - interval: 5m
-    input_series:
-      - series: lido_keys_api_last_update_timestamp{}
-        values: 0 0 600 601
-    alert_rule_test:
-      - eval_time: 10m
-        alertname: KeysApiOutdatedKeys
-        exp_alerts: []
-      - eval_time: 15m
-        alertname: KeysApiOutdatedKeys
-        exp_alerts: []
-
-  # fire alert only if it active 3 minutes
   - interval: 1m
     input_series:
       - series: lido_keys_api_last_update_timestamp{}
-        values: 0x9 200 0 0 481
+        values: '180x9 0 0 0'
     alert_rule_test:
-      - eval_time: 8m
+      - eval_time: 13m
         alertname: KeysApiOutdatedKeys
         exp_alerts:
           - exp_labels:
@@ -59,7 +19,31 @@ tests:
               app_team: tooling
             exp_annotations:
               summary: Keys are outdated
-              description: Keys were not updated for 8m 0s
+              description: Keys were not updated for 13m 0s
+      - eval_time: 15m
+        alertname: KeysApiOutdatedKeys
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: keys_api
+              app_team: tooling
+            exp_annotations:
+              summary: Keys are outdated
+              description: Keys were not updated for 15m 0s
+      # Actual keys
+      - eval_time: 10m
+        alertname: KeysApiOutdatedKeys
+        exp_alerts: []
+
+  # Actual keys
+  - interval: 1m
+    input_series:
+      - series: lido_keys_api_last_update_timestamp{}
+        values: '0x12 181'
+    alert_rule_test:
       - eval_time: 13m
+        alertname: KeysApiOutdatedKeys
+        exp_alerts: []
+      - eval_time: 15m
         alertname: KeysApiOutdatedKeys
         exp_alerts: []
