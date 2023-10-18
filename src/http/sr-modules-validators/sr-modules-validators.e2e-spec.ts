@@ -262,8 +262,6 @@ describe('SRModulesValidatorsController (e2e)', () => {
           .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
           .query({ percent: 200 });
 
-        console.log(resp.body);
-
         // sometime get 400
         expect(resp.status).toEqual(200);
         expect(resp.body.data.length).toEqual(10);
