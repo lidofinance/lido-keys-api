@@ -1,6 +1,5 @@
 import { RegistryKey, RegistryOperator } from 'common/registry';
 import { KeysFilter, OperatorsFilter } from './filters';
-import { STAKING_MODULE_TYPE } from '../constants';
 
 // interface of modules we get from SR contract
 export interface StakingModule {
