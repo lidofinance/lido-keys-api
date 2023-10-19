@@ -97,7 +97,7 @@ export class RegistryKeyBatchFetchService {
       toIndex = operator.totalSigningKeys;
     }
 
-    const [offset, limit] = this.convertIndicesToOffsetAndTotal(fromIndex, toIndex);
+    const [offset, limit] = this.convertIndicesToOffsetAndTotal(fromIndex, toIndex - 1);
     const unformattedKeys = await this.fetchSigningKeysInBatches(moduleAddress, operatorIndex, offset, limit);
 
     return unformattedKeys;
