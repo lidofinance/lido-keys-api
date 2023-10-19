@@ -123,15 +123,18 @@ export abstract class AbstractRegistryService {
 
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
-      // TODO: use feature flag
+
+      this.logger.log('Keys fetching', {
+        operatorIndex,
+        fromIndex,
+        toIndex,
+      });
+
       const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
 
       const operatorKeys = result.filter((key) => key);
 
       this.logger.log('Keys fetched', {
-        operatorIndex,
-        fromIndex,
-        toIndex,
         operatorKeys: operatorKeys.length,
         fetchedKeys: result.length,
       });
