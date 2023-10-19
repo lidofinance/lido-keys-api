@@ -1,5 +1,12 @@
 const axios = require('axios');
 
+const baseEndpoint1 = process.env.KAPI_HOST_NEW_VERSION.endsWith('/')
+  ? process.env.KAPI_HOST_NEW_VERSION.slice(0, -1)
+  : process.env.KAPI_HOST_NEW_VERSION;
+const baseEndpoint2 = process.env.KAPI_HOST_OLD_VERSION.endsWith('/')
+  ? process.env.KAPI_HOST_OLD_VERSION.slice(0, -1)
+  : process.env.KAPI_HOST_OLD_VERSION;
+
 async function fetchData(endpoint, method = 'get', data = null) {
   try {
     const response = await axios({
@@ -68,4 +75,11 @@ function compareOperatorObjects(obj1, obj2) {
   return true;
 }
 
-module.exports = { fetchData, compareKeys, compareStakingModules, compareOperatorObjects };
+module.exports = {
+  fetchData,
+  compareKeys,
+  compareStakingModules,
+  compareOperatorObjects,
+  baseEndpoint1,
+  baseEndpoint2,
+};

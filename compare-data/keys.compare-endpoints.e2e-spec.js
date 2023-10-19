@@ -1,22 +1,10 @@
-const axios = require('axios');
 const dotenv = require('dotenv');
-const { fetchData, compareKeys } = require('./utils');
+const { fetchData, compareKeys, baseEndpoint1, baseEndpoint2 } = require('./utils');
 
 dotenv.config();
 
-let baseEndpoint1 = process.env.KAPI_HOST_NEW_VERSION;
-let baseEndpoint2 = process.env.KAPI_HOST_OLD_VERSION;
-
-if (baseEndpoint1.endsWith('/')) {
-  baseEndpoint1 = baseEndpoint1.slice(0, -1);
-}
-
-if (baseEndpoint2.endsWith('/')) {
-  baseEndpoint2 = baseEndpoint2.slice(0, -1);
-}
-
 function checkResponseStructure(response) {
-  return response && response.hasOwnProperty('data') && response.hasOwnProperty('meta');
+  return response && response?.data && response?.meta;
 }
 
 const pubkey = process.env.PUBKEY_FOR_TEST;

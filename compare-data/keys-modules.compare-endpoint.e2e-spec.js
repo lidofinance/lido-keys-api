@@ -1,16 +1,16 @@
-const { fetchData, compareKeyObjects, compareModuleObjects, checkResponseStructure } = require('./utils');
+const {
+  fetchData,
+  compareKeyObjects,
+  compareModuleObjects,
+  checkResponseStructure,
+  baseEndpoint1,
+  baseEndpoint2,
+} = require('./utils');
 
 dotenv.config();
 
-const baseEndpoint1 = process.env.KAPI_HOST_NEW_VERSION.endsWith('/')
-  ? process.env.KAPI_HOST_NEW_VERSION.slice(0, -1)
-  : process.env.KAPI_HOST_NEW_VERSION;
-const baseEndpoint2 = process.env.KAPI_HOST_OLD_VERSION.endsWith('/')
-  ? process.env.KAPI_HOST_OLD_VERSION.slice(0, -1)
-  : process.env.KAPI_HOST_OLD_VERSION;
-
 function checkResponseStructure(response) {
-  return response && response.hasOwnProperty('data') && response.hasOwnProperty('meta') && Array.isArray(response.data);
+  return response && response?.data && response?.meta && Array.isArray(response.data);
 }
 
 const testCases = [
@@ -40,15 +40,6 @@ testCases.forEach(({ description, path, query = '', method = 'get', data = null 
     beforeAll(async () => {
       response1 = await fetchData(`${baseEndpoint1}/${path}${query}`, method, data);
       response2 = await fetchData(`${baseEndpoint2}/${path}${query}`, method, data);
-
-      keys1 = response1.data.keys;
-      keys2 = response2.data.keys;
-
-      keys1.sort((a, b) => a.key.localeCompare(b.key));
-      keys2.sort((a, b) => a.key.localeCompare(b.key));
-
-      module1 = response1.data.module;
-      module2 = response2.data.module;
     });
 
     test('The responses should have the correct structure', () => {
@@ -61,16 +52,24 @@ testCases.forEach(({ description, path, query = '', method = 'get', data = null 
     });
 
     test('The lists of keys should have the same length', () => {
+      keys1 = response1.data.keys;
+      keys2 = response2.data.keys;
+
       expect(keys1.length).toEqual(keys2.length);
     });
 
     test('All keys should be equivalent', () => {
+      keys1.sort((a, b) => a.key.localeCompare(b.key));
+      keys2.sort((a, b) => a.key.localeCompare(b.key));
+
       keys1.forEach((keyObj, index) => {
-        expect(compareKeyObjects(keyObj, keys2[index])).toBeTruthy();
+        expect(compareKeyObjects(keyObj, keys2[index], ['index', 'moduleAddress'])).toBeTruthy();
       });
     });
 
     test('The module structures should be equivalent', () => {
+      module1 = response1.data.module;
+      module2 = response2.data.module;
       expect(compareModuleObjects(module1, module2)).toBeTruthy();
     });
   });

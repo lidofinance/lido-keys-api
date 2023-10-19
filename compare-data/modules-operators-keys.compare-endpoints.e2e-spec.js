@@ -1,18 +1,7 @@
-const axios = require('axios');
 const dotenv = require('dotenv');
-const { fetchData, compareKeyObjects, compareModuleObjects } = require('./utils');
+const { fetchData, compareKeyObjects, compareModuleObjects, baseEndpoint1, baseEndpoint2 } = require('./utils');
 
 dotenv.config();
-
-let baseEndpoint1 = process.env.KAPI_HOST_NEW_VERSION;
-if (baseEndpoint1.endsWith('/')) {
-  baseEndpoint1 = baseEndpoint1.slice(0, -1);
-}
-
-let baseEndpoint2 = process.env.KAPI_HOST_OLD_VERSION;
-if (baseEndpoint2.endsWith('/')) {
-  baseEndpoint2 = baseEndpoint2.slice(0, -1);
-}
 
 function checkResponseStructure(response) {
   return response && response.meta && response.data;
@@ -27,17 +16,16 @@ describe('Comparing Endpoints', () => {
 
     response1 = await fetchData(endpoint1);
     response2 = await fetchData(endpoint2);
-
-    // Check the structure of the responses
-    if (!checkResponseStructure(response1) || !checkResponseStructure(response2)) {
-      console.log('The responses have an incorrect structure.');
-      return;
-    }
   });
 
   test('should have a 200 status code', () => {
     expect(response1.status).toBe(200);
     expect(response2.status).toBe(200);
+  });
+
+  test('should have correct response structure', () => {
+    expect(checkResponseStructure(data1)).toBe(true);
+    expect(checkResponseStructure(data2)).toBe(true);
   });
 
   test('should have the same "blockHash" property', () => {
