@@ -22,7 +22,7 @@
       "name": "Debug Jest e2e",
       "runtimeExecutable": "yarn",
       "runtimeArgs": [
-        "test:e2e",
+        "test:e2e:docker:debug",
       ],
       "cwd": "${workspaceFolder}/src",
       "autoAttachChildProcesses": true,

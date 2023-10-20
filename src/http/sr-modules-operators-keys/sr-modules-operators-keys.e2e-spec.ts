@@ -56,15 +56,6 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
     }
   }
 
-  class RegistryKeyStorageServiceMock extends RegistryKeyStorageService {
-    async *findStream(where, fields): AsyncIterable<any> {
-      const result = await this.find(where);
-      for (const key of result) {
-        yield key;
-      }
-    }
-  }
-
   beforeAll(async () => {
     const imports = [
       //  sqlite3 only supports serializable transactions, ignoring the isolation level param
@@ -85,8 +76,6 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
       .overrideProvider(KeyRegistryService)
       .useClass(KeysRegistryServiceMock)
-      .overrideProvider(RegistryKeyStorageService)
-      .useClass(RegistryKeyStorageServiceMock)
       .compile();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);
@@ -96,7 +85,8 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
     operatorsStorageService = moduleRef.get(RegistryOperatorStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
     app.enableVersioning({ type: VersioningType.URI });

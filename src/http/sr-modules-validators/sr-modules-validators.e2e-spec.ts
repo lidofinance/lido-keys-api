@@ -1,16 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test } from '@nestjs/testing';
 import { Global, INestApplication, Module, ValidationPipe, VersioningType } from '@nestjs/common';
 import {
   KeyRegistryService,
-  RegistryKey,
   RegistryKeyStorageService,
-  RegistryOperator,
   RegistryStorageModule,
   RegistryStorageService,
 } from '../../common/registry';
 import { MikroORM } from '@mikro-orm/core';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { SRModulesValidatorsController } from './sr-modules-validators.controller';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
 
@@ -25,17 +21,10 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { elMeta } from '../el-meta.fixture';
 import { keys, dvtModule, curatedModule } from '../db.fixtures';
 import { ConfigService } from '../../common/config';
-import {
-  ConsensusMetaEntity,
-  ConsensusValidatorEntity,
-  ValidatorsRegistryInterface,
-} from '@lido-nestjs/validators-registry';
+import { ValidatorsRegistryInterface } from '@lido-nestjs/validators-registry';
 import { ConsensusModule, ConsensusService } from '@lido-nestjs/consensus';
 import { FetchModule } from '@lido-nestjs/fetch';
-import { ConfigModule } from '../../common/config';
 import { ValidatorsModule } from '../../validators';
-import { SrModuleEntity } from '../../storage/sr-module.entity';
-import { ElMetaEntity } from '../../storage/el-meta.entity';
 import {
   block,
   header,
@@ -51,6 +40,7 @@ import {
   dvtOpOneRespExitMessages20percent,
   dvtOpOneRespExitMessages5maxAmount,
 } from '../consensus.fixtures';
+import { DatabaseTestingModule } from 'app';
 
 describe('SRModulesValidatorsController (e2e)', () => {
   let app: INestApplication;
@@ -60,6 +50,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
   let elMetaStorageService: ElMetaStorageService;
   let registryStorage: RegistryStorageService;
   let validatorsRegistry: ValidatorsRegistryInterface;
+  let configService: ConfigService;
 
   async function cleanDB() {
     await keysStorageService.removeAll();
@@ -81,15 +72,6 @@ describe('SRModulesValidatorsController (e2e)', () => {
     }
   }
 
-  class RegistryKeyStorageServiceMock extends RegistryKeyStorageService {
-    async *findStream(where, fields): AsyncIterable<any> {
-      const result = await this.find(where);
-      for (const key of result) {
-        yield key;
-      }
-    }
-  }
-
   const consensusServiceMock = {
     getBlockV2: (args: { blockId: string | number }) => {
       return block;
@@ -104,25 +86,10 @@ describe('SRModulesValidatorsController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      //  sqlite3 only supports serializable transactions, ignoring the isolation level param
-      // TODO: use postgres
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: [
-          RegistryKey,
-          RegistryOperator,
-          ConsensusValidatorEntity,
-          ConsensusMetaEntity,
-          SrModuleEntity,
-          ElMetaEntity,
-        ],
-      }),
+      DatabaseTestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,
-      ConfigModule,
       ConsensusModule.forRoot({
         imports: [FetchModule],
       }),
@@ -134,28 +101,29 @@ describe('SRModulesValidatorsController (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
       .overrideProvider(KeyRegistryService)
       .useClass(KeysRegistryServiceMock)
-      .overrideProvider(ConfigService)
-      .useValue({
-        get(path) {
-          const conf = { VALIDATOR_REGISTRY_ENABLE: true };
-          return conf[path];
-        },
-      })
       .overrideProvider(ConsensusService)
       .useValue(consensusServiceMock)
-      .overrideProvider(RegistryKeyStorageService)
-      .useClass(RegistryKeyStorageServiceMock)
       .compile();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);
+    configService = moduleRef.get(ConfigService);
     keysStorageService = moduleRef.get(RegistryKeyStorageService);
     moduleStorageService = moduleRef.get(SRModuleStorageService);
     registryStorage = moduleRef.get(RegistryStorageService);
     // validatorsStorage = moduleRef.get(StorageService);
     validatorsRegistry = moduleRef.get<ValidatorsRegistryInterface>(ValidatorsRegistryInterface);
 
+    jest.spyOn(configService, 'get').mockImplementation((path) => {
+      if (path === 'VALIDATOR_REGISTRY_ENABLE') {
+        return true;
+      }
+
+      return configService.get(path);
+    });
+
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
     app.enableVersioning({ type: VersioningType.URI });

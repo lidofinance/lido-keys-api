@@ -3,7 +3,6 @@ import { Test } from '@nestjs/testing';
 import { Global, INestApplication, Module, ValidationPipe, VersioningType } from '@nestjs/common';
 import {
   KeyRegistryService,
-  RegistryKeyStorageService,
   RegistryOperatorStorageService,
   RegistryStorageModule,
   RegistryStorageService,
@@ -24,6 +23,7 @@ import { elMeta } from '../el-meta.fixture';
 import { operators, dvtModule, curatedModule, srModules } from '../db.fixtures';
 import { dvtModuleResp, curatedModuleResp } from '../module.fixture';
 import { dvtOperatorsResp, curatedOperatorsResp } from '../operator.fixtures';
+import { DatabaseTestingModule } from 'app';
 
 describe('SRModuleOperatorsController (e2e)', () => {
   let app: INestApplication;
@@ -64,25 +64,9 @@ describe('SRModuleOperatorsController (e2e)', () => {
     }
   }
 
-  class RegistryKeyStorageServiceMock extends RegistryKeyStorageService {
-    async *findStream(where, fields): AsyncIterable<any> {
-      const result = await this.find(where);
-      for (const key of result) {
-        yield key;
-      }
-    }
-  }
-
   beforeAll(async () => {
     const imports = [
-      //  sqlite3 only supports serializable transactions, ignoring the isolation level param
-      // TODO: use postgres
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseTestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,
@@ -93,8 +77,6 @@ describe('SRModuleOperatorsController (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
       .overrideProvider(KeyRegistryService)
       .useClass(KeysRegistryServiceMock)
-      .overrideProvider(RegistryKeyStorageService)
-      .useClass(RegistryKeyStorageServiceMock)
       .compile();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);
@@ -103,7 +85,8 @@ describe('SRModuleOperatorsController (e2e)', () => {
     registryStorage = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
     app.enableVersioning({ type: VersioningType.URI });
