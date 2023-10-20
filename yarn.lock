@@ -1266,19 +1266,19 @@
     node-abort-controller "^3.0.1"
     node-fetch "^2.6.7"
 
-"@lido-nestjs/constants@5.0.0", "@lido-nestjs/constants@^5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/constants/-/constants-5.0.0.tgz#9f14aa918bea4c1e414b99f92f5dd23b29b4c385"
-  integrity sha512-z8OtuqeuQXbzWzjtioH/xAqrSJILxe5o/bpmUpQzepf55TxwG6miGuG+5woBDlrmmKEC5oqkW70+WUBnsO7mNg==
+"@lido-nestjs/constants@5.2.0", "@lido-nestjs/constants@^5.2.0":
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/constants/-/constants-5.2.0.tgz#93b3c35ca8e194f12c0d8f2de60d43182fffaab3"
+  integrity sha512-TM0V2gStu2IdPa5ceGGaxmyKhuM7C1EzIF3sUnAfPxrB2yLgQj91voJ0Qf00NF+Fp94rCLRBoShDyUsLMcBl2g==
 
-"@lido-nestjs/contracts@^9.0.0":
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/contracts/-/contracts-9.0.0.tgz#05555ab4cbbe6e44f634cf1a7296dfb1419cca29"
-  integrity sha512-OAWu55VJJedOeUagQemCIqjpOTMJTUK39ikcs7/W6hoFInRCeTBn+EgGAt1d2C2VRAbsnPddcnPugr5v0q+TNg==
+"@lido-nestjs/contracts@^9.3.0":
+  version "9.3.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/contracts/-/contracts-9.3.0.tgz#25d3412c31993931abf8d90a9695c984841937bc"
+  integrity sha512-DWXbaML3UUV1JT+0yE1Yt28jcZdNRNgrT1CW21DZ62fwLaVPo6JnWWMBA78pvYBH2NqdIreC5x6Ww3A7C7FocQ==
   dependencies:
     "@ethersproject/abi" "^5.5.0"
     "@ethersproject/providers" "^5.5.3"
-    "@lido-nestjs/constants" "5.0.0"
+    "@lido-nestjs/constants" "5.2.0"
     ethers "^5.5.4"
 
 "@lido-nestjs/di@1.0.1":
@@ -1329,14 +1329,17 @@
   resolved "https://registry.yarnpkg.com/@lido-nestjs/utils/-/utils-1.3.0.tgz#8bdc69c3fd18bc57752b1799516096d284f1112b"
   integrity sha512-/5I30Dos9TC18YfZq8O9ele28DpUQQCySB9X9GXPeSmY1AV4w2kIGQrws1wu2gtw7x5mZnW8PtWthJmH1f6vJQ==
 
-"@lido-nestjs/validators-registry@^1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/validators-registry/-/validators-registry-1.2.1.tgz#9c34bd31b04c86f891aa2d0a42b13803747b67c5"
-  integrity sha512-I36S+2n2oRVMoyg/UUVfgJNcukSZ4NY/m5YM4vJ4ZXhD0r/3yBSf3OAvf7hwjR7Yf4GLF1BUo2/sB+A54axgxg==
+"@lido-nestjs/validators-registry@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/validators-registry/-/validators-registry-1.3.0.tgz#d40ad9cee57dbccad4da45ad5635e05c68a77c5e"
+  integrity sha512-qULzEmKSVbYUP8q9oOyS5O8v64XOY37Fk+KZTGtzWql/dW+P+EEz6htaVXbtGhI72c3TBKEleb6hS2TsZBOeCw==
   dependencies:
     "@lido-nestjs/consensus" "1.5.0"
     "@lido-nestjs/di" "1.0.1"
     "@lido-nestjs/utils" "1.3.0"
+    "@types/stream-json" "^1.7.4"
+    stream-chain "^2.2.5"
+    stream-json "^1.8.0"
     zod "^3.20.2"
 
 "@mapbox/node-pre-gyp@^1.0.0":
@@ -2636,6 +2639,21 @@
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.1.tgz#20f18294f797f2209b5f65c8e3b5c8e8261d127c"
   integrity sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==
+
+"@types/stream-chain@*":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@types/stream-chain/-/stream-chain-2.0.2.tgz#e809fce90191699acb63dd81030c2d2f68c30f21"
+  integrity sha512-d6402cbTM/WAMVTJ5PPaCtjnXoVRCXewt7vgsR0cyQ1M+17kiSs1gNg9yHgpMa84woFhaVCn+AvRdovzGOPsQw==
+  dependencies:
+    "@types/node" "*"
+
+"@types/stream-json@^1.7.4":
+  version "1.7.4"
+  resolved "https://registry.yarnpkg.com/@types/stream-json/-/stream-json-1.7.4.tgz#6b14579213bc89d382f76120dba329456be509ba"
+  integrity sha512-wf68w3uFNDX9d8QZHa7uYRaUBZ1tqjimQRMUOG0yT6LHKQMuUV1HBn/8tnGZItPdTfH1XtbVsUB8zq58k+WVXg==
+  dependencies:
+    "@types/node" "*"
+    "@types/stream-chain" "*"
 
 "@types/superagent@*":
   version "4.1.15"
@@ -11332,6 +11350,18 @@ statuses@2.0.1:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
   integrity sha512-OpZ3zP+jT1PI7I8nemJX4AKmAX070ZkYPVWV/AaKTJl+tXCTGyVdC1a4SL8RUQYEwk/f34ZX8UTykN68FwrqAA==
+
+stream-chain@^2.2.5:
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/stream-chain/-/stream-chain-2.2.5.tgz#b30967e8f14ee033c5b9a19bbe8a2cba90ba0d09"
+  integrity sha512-1TJmBx6aSWqZ4tx7aTpBDXK0/e2hhcNSTV8+CbFJtDjbb+I1mZ8lHit0Grw9GRT+6JbIrrDd8esncgBi8aBXGA==
+
+stream-json@^1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/stream-json/-/stream-json-1.8.0.tgz#53f486b2e3b4496c506131f8d7260ba42def151c"
+  integrity sha512-HZfXngYHUAr1exT4fxlbc1IOce1RYxp2ldeaf97LYCOPSoOqY/1Psp7iGvpb+6JIOgkra9zDYnPX01hGAHzEPw==
+  dependencies:
+    stream-chain "^2.2.5"
 
 stream-to-it@^0.2.2:
   version "0.2.4"

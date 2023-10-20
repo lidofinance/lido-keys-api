@@ -97,8 +97,14 @@ export class RegistryKeyBatchFetchService {
       toIndex = operator.totalSigningKeys;
     }
 
-    const [offset, limit] = this.convertIndicesToOffsetAndTotal(fromIndex, toIndex - 1);
-    const unformattedKeys = await this.fetchSigningKeysInBatches(moduleAddress, operatorIndex, offset, limit);
+    const [offset, limit] = this.convertIndicesToOffsetAndTotal(fromIndex, toIndex);
+    const unformattedKeys = await this.fetchSigningKeysInBatches(
+      moduleAddress,
+      operatorIndex,
+      offset,
+      limit,
+      overrides,
+    );
 
     return unformattedKeys;
   }
@@ -106,8 +112,9 @@ export class RegistryKeyBatchFetchService {
   public async fetchSigningKeysInBatches(
     moduleAddress: string,
     operatorIndex: number,
-    fromIndex: number,
+    offset: number,
     totalAmount: number,
+    overrides: CallOverrides,
   ) {
     const batchSize = this.options.keysBatchSize || KEYS_BATCH_SIZE;
 
@@ -115,16 +122,16 @@ export class RegistryKeyBatchFetchService {
     const promises: Promise<RegistryKey[]>[] = [];
 
     for (let i = 0; i < numberOfBatches; i++) {
-      const currentFromIndex = fromIndex + i * batchSize;
+      const currentOffset = offset + i * batchSize;
       const currentBatchSize = Math.min(batchSize, totalAmount - i * batchSize);
-
       const promise = (async () => {
         const keys = await this.getContract(moduleAddress).getSigningKeys(
           operatorIndex,
-          currentFromIndex,
+          currentOffset,
           currentBatchSize,
+          overrides as any,
         );
-        return this.formatKeys(moduleAddress, operatorIndex, keys, currentFromIndex);
+        return this.formatKeys(moduleAddress, operatorIndex, keys, currentOffset);
       })();
 
       promises.push(promise);
@@ -143,7 +150,6 @@ export class RegistryKeyBatchFetchService {
   protected convertIndicesToOffsetAndTotal(fromIndex: number, toIndex: number) {
     const offset = fromIndex;
     const total = toIndex - fromIndex;
-
     return [offset, total];
   }
 }

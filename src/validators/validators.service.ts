@@ -34,7 +34,7 @@ export class ValidatorsService {
       return null;
     }
 
-    return await this.validatorsRegistry.update(blockId);
+    return await this.validatorsRegistry.updateStream(blockId);
   }
 
   /**
