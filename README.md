@@ -21,7 +21,8 @@ You can familiarize yourself with the REST API by accessing it [here](rest-api.m
 
 ## Installation
 
-`$ yarn install`
+1. `$ yarn install`
+2. `$ yarn typechain`
 
 ## Running
 

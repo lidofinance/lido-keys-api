@@ -150,6 +150,7 @@ export class KeysUpdateService {
           this.logger.log(`Nonce previous value: ${prevNonce}, nonce current value: ${currNonce}`);
 
           if (prevNonce === currNonce) {
+            this.logger.log("Nonce wasn't changed, no need to update keys");
             // case when prevELMeta is undefined but prevNonce === currNonce looks like invalid
             // use here prevElMeta.blockNumber + 1 because operators were updated in database for  prevElMeta.blockNumber block
             if (
@@ -165,7 +166,6 @@ export class KeysUpdateService {
               await moduleInstance.updateOperators(contractModule.stakingModuleAddress, currElMeta.hash);
             }
 
-            this.logger.log('No need to update operators');
             continue;
           }
 

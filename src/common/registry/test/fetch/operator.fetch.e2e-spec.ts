@@ -43,6 +43,7 @@ describe('Operators', () => {
 
     expect(typeof operator.name).toBe('string');
     expect(isAddress(operator.rewardAddress)).toBe(true);
+    expect(isAddress(operator.moduleAddress)).toBe(true);
   });
 
   test('fetch all operators', async () => {
