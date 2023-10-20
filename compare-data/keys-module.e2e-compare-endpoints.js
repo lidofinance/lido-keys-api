@@ -1,30 +1,23 @@
-const {
-  fetchData,
-  compareKeyObjects,
-  compareModuleObjects,
-  checkResponseStructure,
-  baseEndpoint1,
-  baseEndpoint2,
-} = require('./utils');
-
+const { fetchData, compareKeys, compareStakingModules, baseEndpoint1, baseEndpoint2 } = require('./utils');
+const dotenv = require('dotenv');
 dotenv.config();
 
 function checkResponseStructure(response) {
-  return response && response?.data && response?.meta && Array.isArray(response.data);
+  return response && response?.data && response?.meta && response.data?.keys && response.data?.module;
 }
 
 const testCases = [
   {
-    description: 'Comparing /modules/keys endpoints with used query parameter',
-    path: 'v1/modules/keys',
+    description: 'Comparing /modules/1/keys endpoints with used query parameter',
+    path: 'v1/modules/1/keys',
     query: '?used=true',
   },
   {
-    description: 'Comparing /modules/keys endpoints with unused query parameter',
-    path: 'v1/modules/keys',
+    description: 'Comparing /modules/1/keys endpoints with unused query parameter',
+    path: 'v1/modules/1/keys',
     query: '?used=false',
   },
-  { description: 'Comparing /modules/keys endpoints without query parameter', path: 'v1/modules/keys' },
+  { description: 'Comparing /modules/1/keys endpoints without query parameter', path: 'v1/modules/1/keys' },
   {
     description: 'Compare v1/modules/1/keys/find',
     path: 'v1/modules/1/keys/find',
@@ -35,11 +28,20 @@ const testCases = [
 
 testCases.forEach(({ description, path, query = '', method = 'get', data = null }) => {
   describe(description, () => {
-    let response1, response2, keys1, keys2, module1, module2;
+    let response1, response2, status1, status2, keys1, keys2, module1, module2;
 
     beforeAll(async () => {
-      response1 = await fetchData(`${baseEndpoint1}/${path}${query}`, method, data);
-      response2 = await fetchData(`${baseEndpoint2}/${path}${query}`, method, data);
+      const resp1 = await fetchData(`${baseEndpoint1}/${path}${query}`, method, data);
+      response1 = resp1.data;
+      status1 = resp1.status;
+      const resp2 = await fetchData(`${baseEndpoint2}/${path}${query}`, method, data);
+      response2 = resp2.data;
+      status2 = resp2.status;
+    });
+
+    test('Both endpoints should return status 200', () => {
+      expect(status1).toBe(200);
+      expect(status2).toBe(200);
     });
 
     test('The responses should have the correct structure', () => {
@@ -63,14 +65,16 @@ testCases.forEach(({ description, path, query = '', method = 'get', data = null 
       keys2.sort((a, b) => a.key.localeCompare(b.key));
 
       keys1.forEach((keyObj, index) => {
-        expect(compareKeyObjects(keyObj, keys2[index], ['index', 'moduleAddress'])).toBeTruthy();
+        // old version doesn't have a moduleAddress
+        expect(compareKeys(keyObj, keys2[index], ['moduleAddress'])).toBeTruthy();
       });
     });
 
     test('The module structures should be equivalent', () => {
       module1 = response1.data.module;
       module2 = response2.data.module;
-      expect(compareModuleObjects(module1, module2)).toBeTruthy();
+
+      expect(compareStakingModules(module1, module2)).toBeTruthy();
     });
   });
 });

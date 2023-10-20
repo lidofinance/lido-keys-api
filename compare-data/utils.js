@@ -1,4 +1,6 @@
 const axios = require('axios');
+const dotenv = require('dotenv');
+dotenv.config();
 
 const baseEndpoint1 = process.env.KAPI_HOST_NEW_VERSION.endsWith('/')
   ? process.env.KAPI_HOST_NEW_VERSION.slice(0, -1)
@@ -14,7 +16,7 @@ async function fetchData(endpoint, method = 'get', data = null) {
       url: endpoint,
       data,
     });
-    return response.data;
+    return { data: response.data, status: response.status };
   } catch (error) {
     console.error(`Error fetching data from ${endpoint}: ${error.message}`);
     return null;

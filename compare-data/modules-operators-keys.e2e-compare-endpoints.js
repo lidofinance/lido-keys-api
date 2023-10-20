@@ -1,5 +1,13 @@
 const dotenv = require('dotenv');
-const { fetchData, compareKeyObjects, compareModuleObjects, baseEndpoint1, baseEndpoint2 } = require('./utils');
+const {
+  fetchData,
+  compareKeys,
+  compareOperatorObjects,
+  compareModuleObjects,
+  baseEndpoint1,
+  baseEndpoint2,
+  compareStakingModules,
+} = require('./utils');
 
 dotenv.config();
 
@@ -8,24 +16,28 @@ function checkResponseStructure(response) {
 }
 
 describe('Comparing Endpoints', () => {
-  let response1, response2;
+  let response1, response2, status1, status2;
 
   beforeAll(async () => {
     const endpoint1 = `${baseEndpoint1}/v1/modules/1/operators/keys`;
     const endpoint2 = `${baseEndpoint2}/v1/modules/1/operators/keys`;
 
-    response1 = await fetchData(endpoint1);
-    response2 = await fetchData(endpoint2);
+    const resp1 = await fetchData(endpoint1);
+    response1 = resp1.data;
+    status1 = resp1.status;
+    const resp2 = await fetchData(endpoint2);
+    response2 = resp2.data;
+    status2 = resp2.status;
   });
 
-  test('should have a 200 status code', () => {
-    expect(response1.status).toBe(200);
-    expect(response2.status).toBe(200);
+  test('Both endpoints should return status 200', () => {
+    expect(status1).toBe(200);
+    expect(status2).toBe(200);
   });
 
-  test('should have correct response structure', () => {
-    expect(checkResponseStructure(data1)).toBe(true);
-    expect(checkResponseStructure(data2)).toBe(true);
+  test('The responses should have the correct structure', () => {
+    expect(checkResponseStructure(response1)).toBeTruthy();
+    expect(checkResponseStructure(response2)).toBeTruthy();
   });
 
   test('should have the same "blockHash" property', () => {
@@ -40,7 +52,7 @@ describe('Comparing Endpoints', () => {
     operators2.sort((a, b) => a.index - b.index);
 
     for (let j = 0; j < operators1.length; j++) {
-      expect(compareOperatorObjects(operators1[j], operators2[j])).toBe(true);
+      expect(compareOperatorObjects(operators1[j], operators2[j])).toBeTruthy();
     }
   });
 
@@ -52,7 +64,7 @@ describe('Comparing Endpoints', () => {
     keys2.sort((a, b) => a.key.localeCompare(b.key));
 
     for (let j = 0; j < keys1.length; j++) {
-      expect(compareKeyObjects(keys1[j], keys2[j], ['index', 'moduleAddress'])).toBe(true);
+      expect(compareKeys(keys1[j], keys2[j], ['index', 'moduleAddress'])).toBeTruthy();
     }
   });
 
@@ -60,6 +72,6 @@ describe('Comparing Endpoints', () => {
     const module1 = response1.data.module;
     const module2 = response2.data.module;
 
-    expect(compareModuleObjects(module1, module2)).toBe(true);
+    expect(compareStakingModules(module1, module2)).toBe(true);
   });
 });
