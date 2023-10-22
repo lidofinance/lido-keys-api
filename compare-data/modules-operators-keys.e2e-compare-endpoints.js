@@ -1,22 +1,18 @@
-const dotenv = require('dotenv');
 const {
   fetchData,
   compareKeys,
   compareOperatorObjects,
-  compareModuleObjects,
   baseEndpoint1,
   baseEndpoint2,
   compareStakingModules,
 } = require('./utils');
-
-dotenv.config();
 
 function checkResponseStructure(response) {
   return response && response.meta && response.data;
 }
 
 describe('Comparing Endpoints', () => {
-  let response1, response2, status1, status2;
+  let response1, response2, status1, status2, operators1, operators2;
 
   beforeAll(async () => {
     const endpoint1 = `${baseEndpoint1}/v1/modules/1/operators/keys`;
@@ -44,10 +40,14 @@ describe('Comparing Endpoints', () => {
     expect(response1.meta.elBlockSnapshot.blockHash).toEqual(response2.meta.elBlockSnapshot.blockHash);
   });
 
-  test('should have equivalent operators', () => {
-    const operators1 = response1.data.operators;
-    const operators2 = response2.data.operators;
+  test('should have equivalent length of data', () => {
+    operators1 = response1.data.operators;
+    operators2 = response2.data.operators;
 
+    expect(operators1.length).toEqual(operators2.length);
+  });
+
+  test('should have equivalent operators', () => {
     operators1.sort((a, b) => a.index - b.index);
     operators2.sort((a, b) => a.index - b.index);
 
