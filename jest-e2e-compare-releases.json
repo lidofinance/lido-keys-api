@@ -1,0 +1,7 @@
+{
+  "moduleFileExtensions": ["js", "json"],
+  "testRegex": ".e2e-compare-endpoints.js$",
+  "rootDir": "./compare-data",
+  "modulePaths": ["<rootDir>"],
+  "testEnvironment": "node"
+}
