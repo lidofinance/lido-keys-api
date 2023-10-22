@@ -38,7 +38,8 @@
     "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/staking-router-modules/contracts/abi/*.json",
     "chronix:compile": "chronix compile",
     "chronix:test": "chronix test",
-    "test:alerts": "promtool test rules alerts/*.test.yml"
+    "test:alerts": "promtool test rules alerts/*.test.yml",
+    "test:compare-releases": "jest --config jest-e2e-compare-releases.json"
   },
   "dependencies": {
     "@lido-nestjs/consensus": "^1.5.0",
