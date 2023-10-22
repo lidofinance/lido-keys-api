@@ -15,7 +15,7 @@ describe('v1/operators', () => {
     const resp2 = await fetchData(`${baseEndpoint2}/v1/operators`);
     response2 = resp2.data;
     status2 = resp2.status;
-  });
+  }, 20000);
 
   test('Both endpoints should return status 200', async () => {
     expect(status1).toBe(200);
@@ -70,7 +70,7 @@ describe('v1/modules/1/operators', () => {
     const resp2 = await fetchData(`${baseEndpoint2}/v1/modules/1/operators`);
     response2 = resp2.data;
     status2 = resp2.status;
-  });
+  }, 20000);
 
   test('Both endpoints should return status 200', async () => {
     expect(status1).toBe(200);
@@ -120,7 +120,7 @@ describe('v1/modules/1/operators/1', () => {
     const resp2 = await fetchData(`${baseEndpoint2}/v1/modules/1/operators/1`);
     response2 = resp2.data;
     status2 = resp2.status;
-  });
+  }, 30000);
 
   test('Both endpoints should return status 200', async () => {
     expect(status1).toBe(200);
@@ -146,7 +146,6 @@ describe('v1/modules/1/operators/1', () => {
   test('compare operators', () => {
     const operators1 = response1.data.operator;
     const operators2 = response2.data.operator;
-    console.log(operators1);
     expect(compareOperatorObjects(operators1, operators2)).toBeTruthy();
   });
 });

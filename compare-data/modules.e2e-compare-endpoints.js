@@ -24,7 +24,7 @@ testCases.forEach(({ description, path }) => {
       const resp2 = await fetchData(`${baseEndpoint2}/${path}`);
       response2 = resp2.data;
       status2 = resp2.status;
-    });
+    }, 5000);
 
     test('Both endpoints should return status 200', () => {
       expect(status1).toBe(200);

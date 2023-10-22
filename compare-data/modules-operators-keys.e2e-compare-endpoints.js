@@ -24,7 +24,7 @@ describe('Comparing Endpoints', () => {
     const resp2 = await fetchData(endpoint2);
     response2 = resp2.data;
     status2 = resp2.status;
-  });
+  }, 30000);
 
   test('Both endpoints should return status 200', () => {
     expect(status1).toBe(200);

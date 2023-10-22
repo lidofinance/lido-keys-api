@@ -15,7 +15,7 @@ describe('validator-exits-to-prepare', () => {
     const resp2 = await fetchData(`${baseEndpoint2}/v1/modules/1/validators/validator-exits-to-prepare/10`);
     response2 = resp2.data;
     status2 = resp2.status;
-  }, 20000);
+  }, 30000);
 
   test('Both endpoints should return status 200', async () => {
     expect(status1).toBe(200);
@@ -60,7 +60,7 @@ describe('generate-unsigned-exit-messages', () => {
     const resp2 = await fetchData(`${baseEndpoint2}/v1/modules/1/validators/generate-unsigned-exit-messages/10`);
     response2 = resp2.data;
     status2 = resp2.status;
-  }, 20000);
+  }, 30000);
 
   test('Both endpoints should return status 200', async () => {
     expect(status1).toBe(200);
