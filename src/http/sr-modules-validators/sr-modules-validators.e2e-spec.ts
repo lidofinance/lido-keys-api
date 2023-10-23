@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test } from '@nestjs/testing';
 import { Global, INestApplication, Module, ValidationPipe, VersioningType } from '@nestjs/common';
 import {

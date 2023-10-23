@@ -16,6 +16,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
       - name: Checkout repo
@@ -33,7 +35,7 @@ jobs:
         run: yarn lint
       - name: Run tests
         run: yarn test
-      - name: Run tests
+      - name: Run E2E tests
         run: yarn test:e2e:docker
         env:
           PROVIDERS_URLS: ${{ secrets.PROVIDERS_URLS }}
@@ -41,6 +43,6 @@ jobs:
           CHRONIX_PROVIDER_MAINNET_URL: ${{ secrets.CHRONIX_PROVIDER_MAINNET_URL }}
           DB_NAME: node_operator_keys_service_db
           DB_PORT: 5432
-          DB_HOST: postgres
+          DB_HOST: localhost
           DB_USER: postgres
           DB_PASSWORD: postgres

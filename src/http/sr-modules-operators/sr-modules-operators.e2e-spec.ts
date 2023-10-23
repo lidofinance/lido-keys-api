@@ -8,7 +8,6 @@ import {
   RegistryStorageService,
 } from '../../common/registry';
 import { MikroORM } from '@mikro-orm/core';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
 
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
