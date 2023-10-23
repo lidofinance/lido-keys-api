@@ -114,14 +114,6 @@ describe('SRModulesValidatorsController (e2e)', () => {
     // validatorsStorage = moduleRef.get(StorageService);
     validatorsRegistry = moduleRef.get<ValidatorsRegistryInterface>(ValidatorsRegistryInterface);
 
-    jest.spyOn(configService, 'get').mockImplementation((path) => {
-      if (path === 'VALIDATOR_REGISTRY_ENABLE') {
-        return true;
-      }
-
-      return configService.get(path);
-    });
-
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
     await generator.refreshDatabase();
     await generator.clearDatabase();

@@ -46,3 +46,4 @@ jobs:
           DB_HOST: localhost
           DB_USER: postgres
           DB_PASSWORD: postgres
+          VALIDATOR_REGISTRY_ENABLE: true

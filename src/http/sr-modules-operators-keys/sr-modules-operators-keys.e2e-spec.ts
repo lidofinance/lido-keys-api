@@ -26,6 +26,7 @@ import { elMeta } from '../el-meta.fixture';
 import { keys, operators, dvtModule, curatedModule } from '../db.fixtures';
 import { dvtModuleKeysResponse } from '../keys.fixtures';
 import { dvtOperatorsResp } from '../operator.fixtures';
+import { DatabaseTestingModule } from 'app';
 
 describe('SRModulesOperatorsKeysController (e2e)', () => {
   let app: INestApplication;
@@ -58,14 +59,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      //  sqlite3 only supports serializable transactions, ignoring the isolation level param
-      // TODO: use postgres
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseTestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,
