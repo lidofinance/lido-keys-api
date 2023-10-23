@@ -9,7 +9,6 @@ import {
   RegistryStorageService,
 } from '../../common/registry';
 import { MikroORM } from '@mikro-orm/core';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { SRModulesOperatorsKeysController } from './sr-modules-operators-keys.controller';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
 
