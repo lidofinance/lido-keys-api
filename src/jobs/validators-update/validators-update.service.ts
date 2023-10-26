@@ -52,7 +52,7 @@ export class ValidatorsUpdateService {
 
   public async initialize() {
     // at first start timer for checking update
-    // if timer isnt cleared in 80 minutes period, we will consider it as nodejs frizzing and exit
+    // if timer isnt cleared in 90 minutes period, we will consider it as nodejs frizzing and exit
     this.checkValidatorsUpdateTimeout();
     await this.updateValidators().catch((error) => this.logger.error(error));
 
