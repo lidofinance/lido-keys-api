@@ -51,9 +51,9 @@ export class ValidatorsUpdateService {
   }
 
   public async initialize() {
-    // at first start timer for checking update
-    // if timer isnt cleared in 90 minutes period, we will consider it as nodejs frizzing and exit
-    this.checkValidatorsUpdateTimeout();
+    // Initially, start a timer to check for updates.
+    // If the timer isn't cleared within a 90-minute period, consider it as Node.js freezing and exit.
+    this.resetValidatorsUpdateTimeout();
     await this.updateValidators().catch((error) => this.logger.error(error));
 
     const interval_ms = this.configService.get('UPDATE_VALIDATORS_INTERVAL_MS');
@@ -63,17 +63,9 @@ export class ValidatorsUpdateService {
     this.logger.log('Finished ValidatorsUpdateService initialization');
   }
 
-  private checkValidatorsUpdateTimeout() {
-    const currTimestampSec = new Date().getTime() / 1000;
-    // currTimestampSec - this.lastBlockTimestampSec - time since last update in seconds
-    // this.UPDATE_KEYS_TIMEOUT_MS / 1000 - timeout in seconds
-    // so if time since last update is less than timeout, this means keys are updated
+  private resetValidatorsUpdateTimeout() {
     // TODO: maybe in past the problem was in blocked event loop and instead of this we need to add unblocking function
-    const isUpdated =
-      this.lastBlockTimestampSec &&
-      currTimestampSec - this.lastBlockTimestampSec < this.UPDATE_VALIDATORS_TIMEOUT_MS / 1000;
-
-    if (this.updateDeadlineTimer && isUpdated) clearTimeout(this.updateDeadlineTimer);
+    if (this.updateDeadlineTimer) clearTimeout(this.updateDeadlineTimer);
 
     this.updateDeadlineTimer = setTimeout(async () => {
       const error = new ValidatorsOutdatedError(
@@ -96,9 +88,10 @@ export class ValidatorsUpdateService {
       this.lastSlot = meta?.slot ?? this.lastSlot;
       this.updateMetrics();
 
-      // Call this to check if validators have been updated within the expected time frame
-      // and to always set a new timer after a successful update.
-      this.checkValidatorsUpdateTimeout();
+      // Always set a new timer after a successful update.
+      // This timeout is needed to restart the node if it's frozen.
+      // The actual value of this.lastBlockTimestampSec is irrelevant; what matters is whether we reach this line or not.
+      this.resetValidatorsUpdateTimeout();
     });
   }
 
