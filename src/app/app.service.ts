@@ -33,6 +33,7 @@ export class AppService implements OnModuleInit {
    * Validates the CL and EL chains match
    */
   protected async validateNetwork(): Promise<void> {
+    this.logger.log('Checking execution and consensus chain ids');
     const chainId = this.configService.get('CHAIN_ID');
     const depositContract = await this.consensusProviderService.getDepositContract();
     const elChainId = await this.executionProviderService.getChainId();

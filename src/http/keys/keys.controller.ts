@@ -56,6 +56,14 @@ export class KeysController {
               jsonStream.write(keyReponse);
             }
           }
+
+          throw Error('some error');
+        } catch (streamError) {
+          // Handle the error during streaming.
+          console.error('Error during streaming:', streamError);
+          // Send an error message (or a marker) to notify the client about the error.
+          // This is a simplification, and you might want to design a more nuanced way to handle this.
+          jsonStream.write({ error: 'An error occurred while streaming data.' });
         } finally {
           jsonStream.end();
         }
