@@ -69,12 +69,14 @@ export class SRModulesOperatorsKeysController {
 
         reply.type('application/json').send(jsonStream);
 
-        for await (const key of keysGenerator) {
-          const keyResponse = new Key(key);
-          jsonStream.write(keyResponse);
+        try {
+          for await (const key of keysGenerator) {
+            const keyResponse = new Key(key);
+            jsonStream.write(keyResponse);
+          }
+        } finally {
+          jsonStream.end();
         }
-
-        jsonStream.end();
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );

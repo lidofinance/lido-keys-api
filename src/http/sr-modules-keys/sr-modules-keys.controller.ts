@@ -92,12 +92,15 @@ export class SRModulesKeysController {
 
         reply.type('application/json').send(jsonStream);
 
-        for await (const key of keysGenerator) {
-          const keyReponse = new Key(key);
-          jsonStream.write(keyReponse);
-        }
+        try {
+          for await (const key of keysGenerator) {
+            const keyReponse = new Key(key);
 
-        jsonStream.end();
+            jsonStream.write(keyReponse);
+          }
+        } finally {
+          jsonStream.end();
+        }
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );

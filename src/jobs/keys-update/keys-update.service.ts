@@ -234,8 +234,8 @@ export class KeysUpdateService {
   private modulesWereDeleted(contractModules: StakingModule[], storageModules: SrModuleEntity[]): boolean {
     // we want to check here that all modules from storageModules exist in list contractModules
     // will check moduleId
-    const ids = contractModules.map((contractModule) => contractModule.moduleId);
+    const contractModulesIds = contractModules.map((contractModule) => contractModule.moduleId);
 
-    return !storageModules.every((contractModule) => ids.includes(contractModule.moduleId));
+    return !storageModules.every((storageModule) => contractModulesIds.includes(storageModule.moduleId));
   }
 }
