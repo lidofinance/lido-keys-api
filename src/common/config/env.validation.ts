@@ -168,10 +168,6 @@ export class EnvironmentVariables {
   UPDATE_VALIDATORS_INTERVAL_MS = 10000;
 
   @IsOptional()
-  @IsString()
-  LIDO_LOCATOR_ADDRESS = '';
-
-  @IsOptional()
   @IsPositive()
   @Transform(({ value }) => parseInt(value, 10))
   KEYS_FETCH_BATCH_SIZE = 1100;
