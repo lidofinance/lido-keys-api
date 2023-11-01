@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+# need ALTER USER your_user_name WITH SUPERUSER;  to fix  permission denied to set parameter "session_replication_role"
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    CREATE USER "$DB_KAPI_USER" WITH PASSWORD '$DB_KAPI_USER_PASSWORD';
+    GRANT CONNECT ON DATABASE "$POSTGRES_DB" TO "$DB_KAPI_USER";
+    GRANT USAGE ON SCHEMA public TO "$DB_KAPI_USER";
+    GRANT CREATE ON SCHEMA public TO "$DB_KAPI_USER";
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "$DB_KAPI_USER";
+EOSQL
