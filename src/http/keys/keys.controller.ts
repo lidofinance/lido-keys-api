@@ -49,23 +49,26 @@ export class KeysController {
         const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
         reply.type('application/json').send(jsonStream);
         // TODO: is it necessary to check the error? or 'finally' is ok?
+        let errcnt = 0;
         try {
           for (const keysGenerator of keysGenerators) {
             for await (const key of keysGenerator) {
               const keyReponse = new Key(key);
               jsonStream.write(keyReponse);
+              errcnt += 1;
+              if (errcnt > 10) {
+                throw Error('some error');
+              }
             }
           }
 
-          throw Error('some error');
+          jsonStream.end();
         } catch (streamError) {
           // Handle the error during streaming.
           console.error('Error during streaming:', streamError);
-          // Send an error message (or a marker) to notify the client about the error.
-          // This is a simplification, and you might want to design a more nuanced way to handle this.
-          jsonStream.write({ error: 'An error occurred while streaming data.' });
-        } finally {
-          jsonStream.end();
+          // destroy method closes the stream without ']' and corrupt the result
+          // https://github.com/dominictarr/through/blob/master/index.js#L78
+          jsonStream.destroy();
         }
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
