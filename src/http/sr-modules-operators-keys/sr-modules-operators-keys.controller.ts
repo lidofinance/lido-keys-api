@@ -68,13 +68,26 @@ export class SRModulesOperatorsKeysController {
         );
 
         reply.type('application/json').send(jsonStream);
+        let errcnt = 0;
+        try {
+          for await (const key of keysGenerator) {
+            const keyResponse = new Key(key);
+            jsonStream.write(keyResponse);
+            errcnt += 1;
+            if (errcnt > 10) {
+              await new Promise((res) => setTimeout(res, 1000));
+              throw Error('some error');
+            }
+          }
 
-        for await (const key of keysGenerator) {
-          const keyResponse = new Key(key);
-          jsonStream.write(keyResponse);
+          jsonStream.end();
+        } catch (streamError) {
+          // Handle the error during streaming.
+          console.error('Error during streaming:', streamError);
+          // destroy method closes the stream without ']' and corrupt the result
+          // https://github.com/dominictarr/through/blob/master/index.js#L78
+          jsonStream.destroy();
         }
-
-        jsonStream.end();
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );

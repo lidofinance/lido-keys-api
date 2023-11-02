@@ -57,6 +57,7 @@ export class KeysController {
               jsonStream.write(keyReponse);
               errcnt += 1;
               if (errcnt > 10) {
+                await new Promise((res) => setTimeout(res, 1000));
                 throw Error('some error');
               }
             }
