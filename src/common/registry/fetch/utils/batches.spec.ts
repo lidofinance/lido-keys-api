@@ -8,10 +8,10 @@ describe('batch', () => {
   });
 
   test('total >>> batch, offset 800, total 800', () => {
-    const dataBatches = makeBatches(200, 800, 800);
+    const dataBatches = makeBatches(200, 799, 1);
 
     // strange
-    expect(dataBatches).toEqual([]);
+    expect(dataBatches).toEqual([{ batchSize: 1, offset: 799 }]);
   });
 
   test('total <<< batch, offset 0, total 1', () => {
@@ -29,22 +29,22 @@ describe('batch', () => {
   test('total === batch, offset 1, total 10', () => {
     const dataBatches = makeBatches(10, 1, 10);
 
-    // thought that batchSize is 9
-    expect(dataBatches).toEqual([{ batchSize: 9, offset: 1 }]);
+    // thought that batchSize is 10
+    expect(dataBatches).toEqual([{ batchSize: 10, offset: 1 }]);
   });
 
   test('total < batch, offset 1, total 3', () => {
     const dataBatches = makeBatches(10, 1, 3);
 
     // thought that batchSize here is 2
-    expect(dataBatches).toEqual([{ batchSize: 2, offset: 1 }]);
+    expect(dataBatches).toEqual([{ batchSize: 3, offset: 1 }]);
   });
 
   test('total === batch, offset 1, total 3', () => {
     const dataBatches = makeBatches(3, 1, 3);
 
     // thought that batchSize here is 2
-    expect(dataBatches).toEqual([{ batchSize: 2, offset: 1 }]);
+    expect(dataBatches).toEqual([{ batchSize: 3, offset: 1 }]);
   });
 
   test('total > batch, offset 0, total 199', () => {
@@ -60,6 +60,9 @@ describe('batch', () => {
     const dataBatches = makeBatches(100, 100, 199);
 
     // why?
-    expect(dataBatches).toEqual([{ batchSize: 99, offset: 100 }]);
+    expect(dataBatches).toEqual([
+      { batchSize: 100, offset: 100 },
+      { batchSize: 99, offset: 200 },
+    ]);
   });
 });
