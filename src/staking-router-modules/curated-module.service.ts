@@ -71,11 +71,16 @@ export class CuratedModuleService implements StakingModuleInterface {
 
     where['moduleAddress'] = moduleAddress;
 
-    const batchSize = 10000;
+    const batchSize = 10_000;
     let offset = 0;
 
     while (true) {
-      const chunk = await this.keyStorageService.find(where, { limit: batchSize, offset });
+      const chunk = await this.keyStorageService.find(where, {
+        limit: batchSize,
+        offset,
+        orderBy: [{ operatorIndex: QueryOrder.ASC }, { index: QueryOrder.ASC }],
+      });
+
       if (chunk.length === 0) {
         break;
       }
