@@ -6,7 +6,7 @@ import { RegistryKeyRepository } from './key.repository';
 
 @Injectable()
 export class RegistryKeyStorageService {
-  constructor(private readonly repository: RegistryKeyRepository) {}
+  constructor(public readonly repository: RegistryKeyRepository) {}
 
   /** find keys */
   async find<P extends string = never>(

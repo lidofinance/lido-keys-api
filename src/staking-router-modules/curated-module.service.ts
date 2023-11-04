@@ -62,34 +62,33 @@ export class CuratedModuleService implements StakingModuleInterface {
   public async *getKeysStream(moduleAddress: string, filters: KeysFilter): AsyncGenerator<RegistryKey> {
     const where = {};
     if (filters.operatorIndex != undefined) {
-      where['operatorIndex'] = filters.operatorIndex;
+      where['operator_index'] = filters.operatorIndex;
     }
 
     if (filters.used != undefined) {
       where['used'] = filters.used;
     }
 
-    where['moduleAddress'] = moduleAddress;
+    where['module_address'] = moduleAddress;
+    const knex = this.keyStorageService.repository.getKnex();
+    const stream = knex
+      .select([
+        'index',
+        'operator_index as operatorIndex',
+        'key',
+        'deposit_signature as depositSignature',
+        'used',
+        'module_address as moduleAddress',
+      ])
+      .from<RegistryKey>('registry_key')
+      .where(where)
+      // TODO: do we need this?
+      // .orderBy('operator_index', 'asc')
+      // .orderBy('index', 'asc')
+      .stream();
 
-    const batchSize = 10_000;
-    let offset = 0;
-
-    while (true) {
-      const chunk = await this.keyStorageService.find(where, {
-        limit: batchSize,
-        offset,
-        orderBy: [{ operatorIndex: QueryOrder.ASC }, { index: QueryOrder.ASC }],
-      });
-
-      if (chunk.length === 0) {
-        break;
-      }
-
-      offset += batchSize;
-
-      for (const record of chunk) {
-        yield record;
-      }
+    for await (const record of stream) {
+      yield record;
     }
   }
 

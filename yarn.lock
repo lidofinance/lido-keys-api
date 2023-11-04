@@ -85,7 +85,7 @@
     "@aragon/apps-vault" "^4.0.0"
     "@aragon/os" "4.2.0"
 
-"@aragon/apps-lido@github:lidofinance/aragon-apps#master":
+"@aragon/apps-lido@lidofinance/aragon-apps#master":
   version "1.0.0"
   resolved "https://codeload.github.com/lidofinance/aragon-apps/tar.gz/b09834d29c0db211ddd50f50905cbeff257fc8e0"
 
@@ -10033,6 +10033,11 @@ pg-connection-string@2.5.0, pg-connection-string@^2.5.0:
   resolved "https://registry.yarnpkg.com/pg-connection-string/-/pg-connection-string-2.5.0.tgz#538cadd0f7e603fc09a12590f3b8a452c2c0cf34"
   integrity sha512-r5o/V/ORTA6TmUnyWZR9nCj1klXCO2CEKNRlVuJptZe85QuhFayC7WeMic7ndayT5IRIR0S0xFxFi2ousartlQ==
 
+pg-cursor@^2.10.3:
+  version "2.10.3"
+  resolved "https://registry.yarnpkg.com/pg-cursor/-/pg-cursor-2.10.3.tgz#4b44fbaede168a4785def56b8ac195e7df354472"
+  integrity sha512-rDyBVoqPVnx/PTmnwQAYgusSeAKlTL++gmpf5klVK+mYMFEqsOc6VHHZnPKc/4lOvr4r6fiMuoxSFuBF1dx4FQ==
+
 pg-int8@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/pg-int8/-/pg-int8-1.0.1.tgz#943bd463bf5b71b4170115f80f8efc9a0c0eb78c"
@@ -10047,6 +10052,13 @@ pg-protocol@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/pg-protocol/-/pg-protocol-1.5.0.tgz#b5dd452257314565e2d54ab3c132adc46565a6a0"
   integrity sha512-muRttij7H8TqRNu/DxrAJQITO4Ac7RmX3Klyr/9mJEOBeIpgnF8f9jAfRz5d3XwQZl5qBjF9gLsUtMPJE0vezQ==
+
+pg-query-stream@^4.5.3:
+  version "4.5.3"
+  resolved "https://registry.yarnpkg.com/pg-query-stream/-/pg-query-stream-4.5.3.tgz#841ce414064d7b14bd2540d2267bdf40779d26f2"
+  integrity sha512-ufa94r/lHJdjAm3+zPZEO0gXAmCb4tZPaOt7O76mjcxdL/HxwTuryy76km+u0odBBgtfdKFYq/9XGfiYeQF0yA==
+  dependencies:
+    pg-cursor "^2.10.3"
 
 pg-types@^2.1.0:
   version "2.2.0"

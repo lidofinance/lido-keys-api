@@ -66,6 +66,7 @@
     "@nestjs/throttler": "^2.0.0",
     "@sentry/node": "^6.16.1",
     "@typechain/ethers-v5": "^9.0.0",
+    "@types/k6": "~0.44.2",
     "@willsoto/nestjs-prometheus": "^4.4.0",
     "cache-manager": "^3.6.1",
     "class-transformer": "^0.5.1",
@@ -73,12 +74,12 @@
     "ethers": "^5.5.4",
     "fastify-swagger": "^4.13.1",
     "jsonstream": "^1.0.3",
+    "pg-query-stream": "^4.5.3",
     "prom-client": "^14.0.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.2",
-    "typechain": "^7.0.0",
-    "@types/k6": "~0.44.2"
+    "typechain": "^7.0.0"
   },
   "devDependencies": {
     "@mikro-orm/sqlite": "5.5.3",
