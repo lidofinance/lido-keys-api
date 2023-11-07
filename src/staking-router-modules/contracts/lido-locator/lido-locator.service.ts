@@ -12,19 +12,9 @@ export class LidoLocatorService {
     protected readonly config: ConfigService,
   ) {}
 
-  getContract() {
-    const lidoLocatorAddress = this.config.get('LIDO_LOCATOR_ADDRESS');
-
-    if (lidoLocatorAddress) {
-      return this.contract.attach(lidoLocatorAddress);
-    }
-
-    return this.contract;
-  }
-
   async getStakingRouter(blockTag: BlockTag) {
     // if set address via attach this.contract.address will still have the same address
-    this.loggerService.log('Contract locator address', this.getContract().address);
-    return await this.getContract().stakingRouter({ blockTag } as any);
+    this.loggerService.log('Contract locator address', this.contract.address);
+    return await this.contract.stakingRouter({ blockTag } as any);
   }
 }

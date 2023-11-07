@@ -29,7 +29,7 @@ export const dvtModuleResp: StakingModuleResponse = {
   targetShare: 100,
   status: 0,
   name: 'simple-dvt-onchain-v1',
-  type: 'simple-dvt-onchain-v1' as STAKING_MODULE_TYPE,
+  type: 'curated-onchain-v1' as STAKING_MODULE_TYPE,
   lastDepositAt: 1691500733,
   lastDepositBlock: 10,
   nonce: 1,

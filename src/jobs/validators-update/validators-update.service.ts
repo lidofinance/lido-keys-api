@@ -43,7 +43,7 @@ export class ValidatorsUpdateService {
   public UPDATE_VALIDATORS_JOB_NAME = 'ValidatorsUpdate';
   // timeout for update validators
   // if during 60 minutes nothing happen we will exit
-  UPDATE_VALIDATORS_TIMEOUT_MS = 60 * 60 * 1000;
+  UPDATE_VALIDATORS_TIMEOUT_MS = 90 * 60 * 1000;
   updateDeadlineTimer: undefined | NodeJS.Timeout = undefined;
 
   public isDisabledRegistry() {
@@ -52,7 +52,7 @@ export class ValidatorsUpdateService {
 
   public async initialize() {
     // at first start timer for checking update
-    // if timer isnt cleared in 60 minutes period, we will consider it as nodejs frizzing and exit
+    // if timer isnt cleared in 90 minutes period, we will consider it as nodejs frizzing and exit
     this.checkValidatorsUpdateTimeout();
     await this.updateValidators().catch((error) => this.logger.error(error));
 
@@ -68,6 +68,7 @@ export class ValidatorsUpdateService {
     // currTimestampSec - this.lastBlockTimestampSec - time since last update in seconds
     // this.UPDATE_KEYS_TIMEOUT_MS / 1000 - timeout in seconds
     // so if time since last update is less than timeout, this means keys are updated
+    // TODO: maybe in past the problem was in blocked event loop and instead of this we need to add unblocking function
     const isUpdated =
       this.lastBlockTimestampSec &&
       currTimestampSec - this.lastBlockTimestampSec < this.UPDATE_VALIDATORS_TIMEOUT_MS / 1000;
@@ -95,6 +96,8 @@ export class ValidatorsUpdateService {
       this.lastSlot = meta?.slot ?? this.lastSlot;
       this.updateMetrics();
 
+      // Call this to check if validators have been updated within the expected time frame
+      // and to always set a new timer after a successful update.
       this.checkValidatorsUpdateTimeout();
     });
   }

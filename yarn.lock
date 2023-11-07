@@ -4479,10 +4479,10 @@ chrome-trace-event@^1.0.2:
   resolved "https://registry.yarnpkg.com/chrome-trace-event/-/chrome-trace-event-1.0.3.tgz#1015eced4741e15d06664a957dbbf50d041e26ac"
   integrity sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==
 
-chronix@0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/chronix/-/chronix-0.0.6.tgz#508eb0878fa22fb654bc0f1276bfe071b7506a55"
-  integrity sha512-1sq/+xiqdlWlMQCbBobsnUpZf4Dkru/UqHiv1MLXFhB63iRW8k6TsiWPO0Bg2oI+UhwOrbr71xJh+9WW+Qo/RA==
+chronix@0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/chronix/-/chronix-0.0.9.tgz#e3a2a4fdd9638d8be033cc6c84b6798f0041dada"
+  integrity sha512-qeZ905Sj4saeq+0TMOMa5IIMgWgUggkie1Ht6WJpv7GUVBRAnyH2pZrO3q8b2Ou7Vxh1WoTESz4+7nJh2mhNMw==
   dependencies:
     "@aragon/os" "^4.4.0"
     "@nomiclabs/hardhat-ethers" "^2.2.3"
@@ -11093,10 +11093,10 @@ simple-concat@^1.0.0:
   resolved "https://registry.yarnpkg.com/simple-concat/-/simple-concat-1.0.1.tgz#f46976082ba35c2263f1c8ab5edfe26c41c9552f"
   integrity sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==
 
-simple-dvt-v1@0.0.9:
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/simple-dvt-v1/-/simple-dvt-v1-0.0.9.tgz#53d220067f4d03cc8e848349c8a391af58dfd637"
-  integrity sha512-+F8W9rDruFAkeJoc88vY1mlXvGVb7Er3EX7x8my0mi0JAaRwN5w70fqlj2z/JSahBOYpy23OVXvKvq2d40rqlQ==
+simple-dvt-v1@0.0.14:
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/simple-dvt-v1/-/simple-dvt-v1-0.0.14.tgz#238e2e233a019bb4f1a3f231a834f7ec522604be"
+  integrity sha512-vbkMJiQsB5qU0drlh7/DqBaE8fOUz9MFS17+b9ph6VrPQaCQTzOmElc0OVV/4NBCLejg6laHADP280Gi7KPgOg==
   dependencies:
     "@aragon/apps-agent" "^2.1.0"
     "@aragon/apps-finance" "^3.0.0"
