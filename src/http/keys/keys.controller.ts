@@ -48,7 +48,7 @@ export class KeysController {
 
         const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
         reply.type('application/json').send(jsonStream);
-        // TODO: is it necessary to check the error? or 'finally' is ok?
+
         try {
           for (const keysGenerator of keysGenerators) {
             for await (const key of keysGenerator) {
@@ -56,8 +56,13 @@ export class KeysController {
               jsonStream.write(keyReponse);
             }
           }
-        } finally {
           jsonStream.end();
+        } catch (streamError) {
+          // Handle the error during streaming.
+          console.error('Error during streaming:', streamError);
+          // destroy method closes the stream without ']' and corrupt the result
+          // https://github.com/dominictarr/through/blob/master/index.js#L78
+          jsonStream.destroy();
         }
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
