@@ -38,7 +38,6 @@ import { StakingRouterModule } from '../staking-router-modules';
           autoLoadEntities: false,
           cache: { enabled: false },
           debug: false,
-          safe: true,
           registerRequestContext: true,
           allowGlobalContext: false,
         };
