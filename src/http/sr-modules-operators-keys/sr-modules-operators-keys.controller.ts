@@ -71,12 +71,19 @@ export class SRModulesOperatorsKeysController {
 
         reply.type('application/json').send(jsonStream);
 
-        for await (const key of keysGenerator) {
-          const keyResponse = new Key(key);
-          jsonStream.write(keyResponse);
+        try {
+          for await (const key of keysGenerator) {
+            const keyResponse = new Key(key);
+            jsonStream.write(keyResponse);
+          }
+          jsonStream.end();
+        } catch (streamError) {
+          // Handle the error during streaming.
+          console.error('Error during streaming:', streamError);
+          // destroy method closes the stream without ']' and corrupt the result
+          // https://github.com/dominictarr/through/blob/master/index.js#L78
+          jsonStream.destroy();
         }
-
-        jsonStream.end();
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );

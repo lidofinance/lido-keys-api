@@ -48,6 +48,23 @@ Check `sample.env` file.
 
 Pay attention that API by default running job for fetching and updating Validators. If you are not planning to use `validators` endpoints, you could disable this job by setting `VALIDATOR_REGISTRY_ENABLE=false`.
 
+## Run KAPI on fork
+
+For running KAPI on fork setup environment variables:
+
+```
+CHAIN_ID=1
+CHRONIX_PROVIDER_MAINNET_URL=YOUR-MAINNET-PROVIDER
+CHRONIX_SESSION_PORT=8002
+PROVIDERS_URLS = http://127.0.0.1:8002
+```
+
+1. Run chronix `yarn chronix:start`
+2. Init chronix: `yarn fork:init`
+3. Start kapi: yarn start:dev
+
+Keep in mind `PROVIDERS_URLS` should contain chronix session url.
+
 ## Benchmarks
 
 This part of document outlines running benchmarks and collecting Prometheus metrics using K6.

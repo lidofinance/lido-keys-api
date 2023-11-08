@@ -8,22 +8,22 @@ tests:
   - interval: 15m
     input_series:
       - series: validators_registry_enabled{}
-        values: 0 0 0
+        values: 0 0 0 0 0
       - series: lido_keys_api_validators_registry_last_update_block_timestamp{}
-        values: 0 0 0
+        values: 0 0 0 0 0
     alert_rule_test:
-      - eval_time: 30m
+      - eval_time: 60m
         alertname: KeysApiOutdatedValidators
         exp_alerts: []
   # Outdated validators list
   - interval: 15m
     input_series:
       - series: validators_registry_enabled{}
-        values: 1 1 1 1
+        values: 0 0 0 0 1 1
       - series: lido_keys_api_validators_registry_last_update_block_timestamp{}
-        values: 0 0 0 900
+        values: 0 0 0 0 0 900
     alert_rule_test:
-      - eval_time: 30m
+      - eval_time: 60m
         alertname: KeysApiOutdatedValidators
         exp_alerts:
           - exp_labels:
@@ -32,8 +32,8 @@ tests:
               app_team: tooling
             exp_annotations:
               summary: Validators are outdated
-              description: Validators were not updated for more than 30 minutes
-      - eval_time: 45m
+              description: Validators were not updated for more than 60 minutes
+      - eval_time: 75m
         alertname: KeysApiOutdatedValidators
         exp_alerts:
           - exp_labels:
@@ -42,7 +42,7 @@ tests:
               app_team: tooling
             exp_annotations:
               summary: Validators are outdated
-              description: Validators were not updated for more than 30 minutes
+              description: Validators were not updated for more than 60 minutes
 
   # Actual validators list
   - interval: 15m
@@ -52,9 +52,9 @@ tests:
       - series: lido_keys_api_validators_registry_last_update_block_timestamp{}
         values: 0 0 1 901
     alert_rule_test:
-      - eval_time: 30m
+      - eval_time: 60m
         alertname: KeysApiOutdatedValidators
         exp_alerts: []
-      - eval_time: 45m
+      - eval_time: 75m
         alertname: KeysApiOutdatedValidators
         exp_alerts: []

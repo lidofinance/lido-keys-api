@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { STAKING_MODULE_TYPE } from 'staking-router-modules/constants';
 import { SrModuleEntity } from 'storage/sr-module.entity';
 import { addressToChecksum } from '../utils';
 
