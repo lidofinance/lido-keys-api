@@ -39,7 +39,7 @@ jobs:
         run: yarn test:e2e:docker
         env:
           PROVIDERS_URLS: ${{ secrets.PROVIDERS_URLS }}
-          # CL_API_URLS: "https://e2e-test.lido.fi,"
+          VALIDATOR_REGISTRY_ENABLE: false
           CHAIN_ID: ${{ secrets.CHAIN_ID }}
           CHRONIX_PROVIDER_MAINNET_URL: ${{ secrets.CHRONIX_PROVIDER_MAINNET_URL }}
           DB_NAME: node_operator_keys_service_db
