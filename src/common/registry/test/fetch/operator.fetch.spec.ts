@@ -79,7 +79,6 @@ describe('Operators', () => {
         // operatorFields(operator);
         return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
       });
-    console.log('aaaaa', expected);
     const result = await fetchService.fetch(address);
 
     expect(result).toEqual([expected]);

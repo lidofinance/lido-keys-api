@@ -2,14 +2,8 @@
 import { Test } from '@nestjs/testing';
 import { Global, INestApplication, Module, ValidationPipe, VersioningType } from '@nestjs/common';
 import { MikroORM } from '@mikro-orm/core';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 
-import {
-  KeyRegistryService,
-  RegistryKeyStorageService,
-  RegistryStorageModule,
-  RegistryStorageService,
-} from '../../common/registry';
+import { KeyRegistryService, RegistryStorageModule, RegistryStorageService } from '../../common/registry';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
 import { dvtModuleResp, curatedModuleResp, dvtModuleAddressWithChecksum } from '../module.fixture';
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
@@ -24,6 +18,7 @@ import { SRModulesService } from './sr-modules.service';
 
 import { elMeta } from '../el-meta.fixture';
 import { curatedModule, dvtModule } from '../db.fixtures';
+import { DatabaseTestingModule } from 'app';
 
 describe('SRModulesController (e2e)', () => {
   let app: INestApplication;
@@ -51,25 +46,9 @@ describe('SRModulesController (e2e)', () => {
     }
   }
 
-  class RegistryKeyStorageServiceMock extends RegistryKeyStorageService {
-    async *findStream(where, fields): AsyncIterable<any> {
-      const result = await this.find(where);
-      for (const key of result) {
-        yield key;
-      }
-    }
-  }
-
   beforeAll(async () => {
     const imports = [
-      //  sqlite3 only supports serializable transactions, ignoring the isolation level param
-      // TODO: use postgres
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseTestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,
@@ -81,8 +60,6 @@ describe('SRModulesController (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
       .overrideProvider(KeyRegistryService)
       .useClass(KeysRegistryServiceMock)
-      .overrideProvider(RegistryKeyStorageService)
-      .useClass(RegistryKeyStorageServiceMock)
       .compile();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);
@@ -90,7 +67,8 @@ describe('SRModulesController (e2e)', () => {
     registryStorage = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
     app.enableVersioning({ type: VersioningType.URI });
