@@ -1,6 +1,7 @@
 import { QueryOrder } from '@mikro-orm/core';
 import { FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
+import { addTimeoutToStream } from '../utils/stream.utils';
 import { RegistryKey } from './key.entity';
 import { RegistryKeyRepository } from './key.repository';
 
@@ -18,11 +19,15 @@ export class RegistryKeyStorageService {
 
   findStream(where: FilterQuery<RegistryKey>, fields?: string[]): AsyncIterable<RegistryKey> {
     const knex = this.repository.getKnex();
-    return knex
+    const stream = knex
       .select(fields || '*')
       .from<RegistryKey>('registry_key')
       .where(where)
       .stream();
+
+    addTimeoutToStream(stream, 60_000);
+
+    return stream;
   }
 
   /** find all keys */
