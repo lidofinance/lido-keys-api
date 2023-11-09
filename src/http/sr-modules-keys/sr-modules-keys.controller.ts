@@ -101,10 +101,10 @@ export class SRModulesKeysController {
           jsonStream.end();
         } catch (streamError) {
           // Handle the error during streaming.
-          console.error('Error during streaming:', streamError);
           // destroy method closes the stream without ']' and corrupt the result
           // https://github.com/dominictarr/through/blob/master/index.js#L78
           jsonStream.destroy();
+          throw streamError;
         }
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
