@@ -1,10 +1,5 @@
-import { CallOverrides } from '../interfaces/overrides.interface';
-
-export const makeBatches = (
-  batchSize: number,
-  offset: number,
-  totalAmount: number,
-) => {
+export const makeBatches = (batchSize: number, offset: number, totalAmount: number) => {
+  if (batchSize < 1) throw new Error('batchSize must be greater than 0');
   const numberOfBatches = Math.ceil(totalAmount / batchSize);
   const batches: { offset: number; batchSize: number }[] = [];
 

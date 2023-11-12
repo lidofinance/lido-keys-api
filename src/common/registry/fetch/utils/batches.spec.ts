@@ -1,68 +1,61 @@
 import { makeBatches } from './batches';
 
-describe('batch', () => {
-  test('total <<< batch, offset 0, total 0', () => {
-    const dataBatches = makeBatches(200, 0, 0);
+describe('makeBatches util', () => {
+  test('should create batches with correct offset and batchSize', () => {
+    const batchSize = 3;
+    const offset = 0;
+    const totalAmount = 10;
 
-    expect(dataBatches).toEqual([]);
-  });
+    const result = makeBatches(batchSize, offset, totalAmount);
 
-  test('total >>> batch, offset 800, total 800', () => {
-    const dataBatches = makeBatches(200, 799, 1);
-
-    // strange
-    expect(dataBatches).toEqual([{ batchSize: 1, offset: 799 }]);
-  });
-
-  test('total <<< batch, offset 0, total 1', () => {
-    const dataBatches = makeBatches(200, 0, 1);
-
-    expect(dataBatches).toEqual([{ batchSize: 1, offset: 0 }]);
-  });
-
-  test('total <<< batch, offset 1, total 1', () => {
-    const dataBatches = makeBatches(200, 1, 1);
-
-    expect(dataBatches).toEqual([{ batchSize: 1, offset: 1 }]);
-  });
-
-  test('total === batch, offset 1, total 10', () => {
-    const dataBatches = makeBatches(10, 1, 10);
-
-    // thought that batchSize is 10
-    expect(dataBatches).toEqual([{ batchSize: 10, offset: 1 }]);
-  });
-
-  test('total < batch, offset 1, total 3', () => {
-    const dataBatches = makeBatches(10, 1, 3);
-
-    // thought that batchSize here is 2
-    expect(dataBatches).toEqual([{ batchSize: 3, offset: 1 }]);
-  });
-
-  test('total === batch, offset 1, total 3', () => {
-    const dataBatches = makeBatches(3, 1, 3);
-
-    // thought that batchSize here is 2
-    expect(dataBatches).toEqual([{ batchSize: 3, offset: 1 }]);
-  });
-
-  test('total > batch, offset 0, total 199', () => {
-    const dataBatches = makeBatches(100, 0, 199);
-
-    expect(dataBatches).toEqual([
-      { batchSize: 100, offset: 0 },
-      { batchSize: 99, offset: 100 },
+    expect(result).toEqual([
+      { offset: 0, batchSize: 3 },
+      { offset: 3, batchSize: 3 },
+      { offset: 6, batchSize: 3 },
+      { offset: 9, batchSize: 1 },
     ]);
   });
 
-  test('total > batch, offset 100, total 199', () => {
-    const dataBatches = makeBatches(100, 100, 199);
+  test('should create a single batch when totalAmount is less than batchSize', () => {
+    const batchSize = 10;
+    const offset = 2;
+    const totalAmount = 8;
 
-    // why?
-    expect(dataBatches).toEqual([
-      { batchSize: 100, offset: 100 },
-      { batchSize: 99, offset: 200 },
+    const result = makeBatches(batchSize, offset, totalAmount);
+
+    expect(result).toEqual([{ offset: 2, batchSize: 8 }]);
+  });
+
+  test('should handle cases when totalAmount is 0', () => {
+    const batchSize = 5;
+    const offset = 0;
+    const totalAmount = 0;
+
+    const result = makeBatches(batchSize, offset, totalAmount);
+
+    expect(result).toEqual([]);
+  });
+
+  test('should throw error when batchSize is 0', () => {
+    const batchSize = 0;
+    const offset = 2;
+    const totalAmount = 8;
+
+    expect(() => makeBatches(batchSize, offset, totalAmount)).toThrowError('batchSize must be greater than 0');
+  });
+
+  test('should create batches correct offset and batchSize when totalAmount is a multiple of batchSize', () => {
+    const batchSize = 4;
+    const offset = 2;
+    const totalAmount = 16;
+
+    const result = makeBatches(batchSize, offset, totalAmount);
+
+    expect(result).toEqual([
+      { offset: 2, batchSize: 4 },
+      { offset: 6, batchSize: 4 },
+      { offset: 10, batchSize: 4 },
+      { offset: 14, batchSize: 4 },
     ]);
   });
 });
