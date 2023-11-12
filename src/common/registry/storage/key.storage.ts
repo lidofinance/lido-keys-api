@@ -25,7 +25,7 @@ export class RegistryKeyStorageService {
       .where(where)
       .stream();
 
-    addTimeoutToStream(stream, 60_000);
+    addTimeoutToStream(stream, 60_000, 'A timeout occurred loading keys from the database');
 
     return stream;
   }

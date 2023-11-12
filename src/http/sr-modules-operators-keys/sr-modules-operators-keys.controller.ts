@@ -1,6 +1,17 @@
 import { pipeline } from 'node:stream/promises';
 import { IsolationLevel } from '@mikro-orm/core';
-import { Controller, Get, Version, Param, Query, NotFoundException, HttpStatus, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Version,
+  Param,
+  Query,
+  NotFoundException,
+  HttpStatus,
+  Res,
+  LoggerService,
+  Inject,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } from '@nestjs/swagger';
 import { SRModuleOperatorsKeysResponse, SRModulesOperatorsKeysStreamResponse } from './entities';
 import { KeyQuery, Key } from 'http/common/entities/';
@@ -11,11 +22,13 @@ import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
 import { streamify } from 'common/streams';
 import { ModuleIdPipe } from 'http/common/pipeline/module-id-pipe';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 
 @Controller('/modules')
 @ApiTags('operators-keys')
 export class SRModulesOperatorsKeysController {
   constructor(
+    @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
     protected readonly srModulesOperatorsKeys: SRModulesOperatorsKeysService,
     protected readonly entityManager: EntityManager,
   ) {}
@@ -76,13 +89,14 @@ export class SRModulesOperatorsKeysController {
             const keyResponse = new Key(key);
             jsonStream.write(keyResponse);
           }
+
           jsonStream.end();
         } catch (streamError) {
           // Handle the error during streaming.
+          this.logger.error('operators-keys streaming error', streamError);
           // destroy method closes the stream without ']' and corrupt the result
           // https://github.com/dominictarr/through/blob/master/index.js#L78
           jsonStream.destroy();
-          throw streamError;
         }
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },

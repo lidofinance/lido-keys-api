@@ -25,7 +25,7 @@ export class RegistryOperatorStorageService {
       .where(where)
       .stream();
 
-    addTimeoutToStream(stream, 60_000);
+    addTimeoutToStream(stream, 60_000, 'A timeout occurred loading operators from the database');
 
     return stream;
   }

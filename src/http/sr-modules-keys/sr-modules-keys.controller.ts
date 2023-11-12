@@ -10,7 +10,10 @@ import {
   HttpStatus,
   Res,
   HttpCode,
+  LoggerService,
+  Inject,
 } from '@nestjs/common';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
@@ -27,6 +30,7 @@ import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
 @ApiTags('sr-module-keys')
 export class SRModulesKeysController {
   constructor(
+    @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
     protected readonly srModulesKeysService: SRModulesKeysService,
     protected readonly entityManager: EntityManager,
   ) {}
@@ -95,16 +99,16 @@ export class SRModulesKeysController {
         try {
           for await (const key of keysGenerator) {
             const keyReponse = new Key(key);
-
             jsonStream.write(keyReponse);
           }
+
           jsonStream.end();
         } catch (streamError) {
           // Handle the error during streaming.
+          this.logger.error('module-keys streaming error', streamError);
           // destroy method closes the stream without ']' and corrupt the result
           // https://github.com/dominictarr/through/blob/master/index.js#L78
           jsonStream.destroy();
-          throw streamError;
         }
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
