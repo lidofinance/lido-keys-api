@@ -4,7 +4,7 @@ RUN apk add --no-cache git=2.36.6-r0
 
 WORKDIR /app
 
-COPY package.json yarn.lock chronix.config.ts ./
+COPY package.json yarn.lock ./
 COPY ./tsconfig*.json ./
 COPY ./src ./src
 

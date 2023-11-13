@@ -20,7 +20,7 @@
     "url": "https://github.com/lidofinance/lido-keys-api/issues"
   },
   "scripts": {
-    "postinstall": "rimraf ./node_modules/@ethersproject/abstract-provider/src.ts/*.ts && yarn chronix:compile",
+    "postinstall": "rimraf ./node_modules/@ethersproject/abstract-provider/src.ts/*.ts",
     "mikro-orm": "./node_modules/mikro-orm",
     "prebuild": "rimraf dist",
     "build": "nest build",
