@@ -10,7 +10,10 @@ import {
   HttpStatus,
   NotFoundException,
   Res,
+  LoggerService,
+  Inject,
 } from '@nestjs/common';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import type { FastifyReply } from 'fastify';
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
@@ -25,7 +28,11 @@ import { IsolationLevel } from '@mikro-orm/core';
 @Controller('keys')
 @ApiTags('keys')
 export class KeysController {
-  constructor(protected readonly keysService: KeysService, protected readonly entityManager: EntityManager) {}
+  constructor(
+    @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
+    protected readonly keysService: KeysService,
+    protected readonly entityManager: EntityManager,
+  ) {}
 
   @Version('1')
   @Get()
@@ -56,10 +63,11 @@ export class KeysController {
               jsonStream.write(keyReponse);
             }
           }
+
           jsonStream.end();
         } catch (streamError) {
           // Handle the error during streaming.
-          console.error('Error during streaming:', streamError);
+          this.logger.log('keys streaming error', streamError);
           // destroy method closes the stream without ']' and corrupt the result
           // https://github.com/dominictarr/through/blob/master/index.js#L78
           jsonStream.destroy();
