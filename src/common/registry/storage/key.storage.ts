@@ -23,6 +23,10 @@ export class RegistryKeyStorageService {
       .select(fields || '*')
       .from<RegistryKey>('registry_key')
       .where(where)
+      .orderBy([
+        { column: 'operatorIndex', order: 'asc' },
+        { column: 'index', order: 'asc' },
+      ])
       .stream();
 
     addTimeoutToStream(stream, 60_000, 'A timeout occurred loading keys from the database');
