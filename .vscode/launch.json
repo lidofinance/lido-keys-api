@@ -1,0 +1,55 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Nest Framework",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": [
+        "start:debug",
+      ],
+      "cwd": "${workspaceFolder}/src",
+      "autoAttachChildProcesses": true,
+      "restart": true,
+      "sourceMaps": true,
+      "stopOnEntry": false,
+      "console": "integratedTerminal",
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Jest e2e",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": [
+        "test:e2e:docker:debug",
+      ],
+      "cwd": "${workspaceFolder}/src",
+      "autoAttachChildProcesses": true,
+      "restart": true,
+      "sourceMaps": true,
+      "stopOnEntry": false,
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "Jest file",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/jest",
+      "args": [
+        "${fileBasenameNoExtension}",
+        "--runInBand",
+        "--watch",
+        "--coverage=false",
+        "--no-cache"
+      ],
+      "cwd": "${workspaceRoot}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "sourceMaps": true,
+      "windows": {
+          "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+      }
+    }
+  ]
+}

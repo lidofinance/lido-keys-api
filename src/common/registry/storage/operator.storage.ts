@@ -1,6 +1,7 @@
 import { QueryOrder } from '@mikro-orm/core';
 import { FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
+import { addTimeoutToStream } from '../utils/stream.utils';
 import { RegistryOperator } from './operator.entity';
 import { RegistryOperatorRepository } from './operator.repository';
 
@@ -14,6 +15,23 @@ export class RegistryOperatorStorageService {
     options?: FindOptions<RegistryOperator, P>,
   ): Promise<RegistryOperator[]> {
     return await this.repository.find(where, options);
+  }
+
+  findStream(where: FilterQuery<RegistryOperator>, fields?: string[]): AsyncIterable<RegistryOperator> {
+    const knex = this.repository.getKnex();
+    const stream = knex
+      .select(fields || '*')
+      .from<RegistryOperator>('registry_operator')
+      .where(where)
+      .orderBy([
+        { column: 'operatorIndex', order: 'asc' },
+        { column: 'index', order: 'asc' },
+      ])
+      .stream();
+
+    addTimeoutToStream(stream, 60_000, 'A timeout occurred loading operators from the database');
+
+    return stream;
   }
 
   /** find all operators */

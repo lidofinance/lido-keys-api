@@ -46,6 +46,8 @@ export interface StakingModuleInterface {
 
   getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<RegistryOperator[]>;
 
+  getOperatorsStream(moduleAddress: string, filters?: OperatorsFilter): AsyncGenerator<RegistryOperator>;
+
   getOperator(moduleAddress: string, index: number): Promise<RegistryOperator | null>;
 
   getCurrentNonce(moduleAddress: string, blockHash: string): Promise<number>;

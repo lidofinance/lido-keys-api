@@ -8,7 +8,6 @@ import {
   RegistryStorageService,
 } from '../../common/registry';
 import { MikroORM } from '@mikro-orm/core';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
 
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
@@ -22,6 +21,7 @@ import { curatedModule, dvtModule, keys } from '../db.fixtures';
 import { dvtModuleResp, curatedModuleResp } from '../module.fixture';
 import { curatedModuleKeysResponse, dvtModuleKeysResponse } from '../keys.fixtures';
 import { elMeta } from '../el-meta.fixture';
+import { DatabaseTestingModule } from 'app';
 
 describe('SRModulesKeysController (e2e)', () => {
   let app: INestApplication;
@@ -64,14 +64,7 @@ describe('SRModulesKeysController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      //  sqlite3 only supports serializable transactions, ignoring the isolation level param
-      // TODO: use postgres
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseTestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,
@@ -90,7 +83,8 @@ describe('SRModulesKeysController (e2e)', () => {
     registryStorage = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
     app.enableVersioning({ type: VersioningType.URI });

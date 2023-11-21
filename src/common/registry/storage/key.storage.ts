@@ -1,6 +1,7 @@
 import { QueryOrder } from '@mikro-orm/core';
 import { FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
+import { addTimeoutToStream } from '../utils/stream.utils';
 import { RegistryKey } from './key.entity';
 import { RegistryKeyRepository } from './key.repository';
 
@@ -14,6 +15,23 @@ export class RegistryKeyStorageService {
     options?: FindOptions<RegistryKey, P>,
   ): Promise<RegistryKey[]> {
     return await this.repository.find(where, options);
+  }
+
+  findStream(where: FilterQuery<RegistryKey>, fields?: string[]): AsyncIterable<RegistryKey> {
+    const knex = this.repository.getKnex();
+    const stream = knex
+      .select(fields || '*')
+      .from<RegistryKey>('registry_key')
+      .where(where)
+      .orderBy([
+        { column: 'operatorIndex', order: 'asc' },
+        { column: 'index', order: 'asc' },
+      ])
+      .stream();
+
+    addTimeoutToStream(stream, 60_000, 'A timeout occurred loading keys from the database');
+
+    return stream;
   }
 
   /** find all keys */

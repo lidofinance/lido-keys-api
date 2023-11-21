@@ -1,19 +1,34 @@
-import { Controller, Get, Version, Param, Query, NotFoundException, HttpStatus, Res } from '@nestjs/common';
+import { pipeline } from 'node:stream/promises';
+import { IsolationLevel } from '@mikro-orm/core';
+import {
+  Controller,
+  Get,
+  Version,
+  Param,
+  Query,
+  NotFoundException,
+  HttpStatus,
+  Res,
+  LoggerService,
+  Inject,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } from '@nestjs/swagger';
-import { SRModuleOperatorsKeysResponse } from './entities';
-import { KeyQuery, Key } from '../common/entities/';
+import { SRModuleOperatorsKeysResponse, SRModulesOperatorsKeysStreamResponse } from './entities';
+import { KeyQuery, Key } from 'http/common/entities/';
 import { SRModulesOperatorsKeysService } from './sr-modules-operators-keys.service';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
-import { IsolationLevel } from '@mikro-orm/core';
-import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
+import { streamify } from 'common/streams';
+import { ModuleIdPipe } from 'http/common/pipeline/module-id-pipe';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 
 @Controller('/modules')
 @ApiTags('operators-keys')
 export class SRModulesOperatorsKeysController {
   constructor(
+    @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
     protected readonly srModulesOperatorsKeys: SRModulesOperatorsKeysService,
     protected readonly entityManager: EntityManager,
   ) {}
@@ -74,10 +89,40 @@ export class SRModulesOperatorsKeysController {
             const keyResponse = new Key(key);
             jsonStream.write(keyResponse);
           }
-        } finally {
+
           jsonStream.end();
+        } catch (streamError) {
+          // Handle the error during streaming.
+          this.logger.error('operators-keys streaming error', streamError);
+          // destroy method closes the stream without ']' and corrupt the result
+          // https://github.com/dominictarr/through/blob/master/index.js#L78
+          jsonStream.destroy();
         }
       },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
+  }
+
+  @Version('2')
+  @ApiOperation({ summary: 'Comprehensive stream for staking router modules, operators and their keys' })
+  @ApiResponse({
+    status: 200,
+    description: 'Stream of all SR modules, operators and keys',
+    type: SRModulesOperatorsKeysStreamResponse,
+  })
+  @ApiResponse({
+    status: 425,
+    description: 'Meta has not exist yet, maybe data was not written in db yet',
+    type: TooEarlyResponse,
+  })
+  @Get('operators/keys')
+  async getModulesOperatorsKeysStream(@Res() reply: FastifyReply) {
+    const jsonStream = JSONStream.stringify();
+
+    reply.type('application/json').send(jsonStream);
+
+    await this.entityManager.transactional(
+      () => pipeline([streamify(this.srModulesOperatorsKeys.getModulesOperatorsKeysGenerator()), jsonStream]),
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
   }

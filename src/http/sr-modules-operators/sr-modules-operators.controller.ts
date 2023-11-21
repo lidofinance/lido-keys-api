@@ -83,7 +83,6 @@ export class SRModulesOperatorsController {
   })
   @Get('modules/:module_id/operators/:operator_id')
   getModuleOperator(@Param('module_id', ModuleIdPipe) module_id: string | number, @Param() operator: OperatorId) {
-    console.log(module_id, typeof module_id);
     return this.srModulesOperators.getModuleOperator(module_id, operator.operator_id);
   }
 }
