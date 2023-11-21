@@ -31,6 +31,22 @@ describe('makeBatches util', () => {
     ]);
   });
 
+  test('should create batches with limit not fully divisible by batch size', () => {
+    const batchSize = 501;
+    const offset = 297;
+    const limit = 2125;
+
+    const result = makeBatches(batchSize, offset, limit);
+
+    expect(result).toEqual([
+      { offset: 297, batchSize: 501 },
+      { offset: 798, batchSize: 501 },
+      { offset: 1299, batchSize: 501 },
+      { offset: 1800, batchSize: 501 },
+      { offset: 2301, batchSize: 121 },
+    ]);
+  });
+
   test('should create a single batch when limit is less than batchSize', () => {
     const batchSize = 10;
     const offset = 2;
