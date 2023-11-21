@@ -11,12 +11,12 @@
  * @returns array of hex-like strings
  */
 export const splitHex = (hexString: string, chunkLength: number) => {
-  if (chunkLength < 1) {
-    throw new RangeError('chunkLength should be positive');
+  if (!Number.isInteger(chunkLength) || chunkLength < 1) {
+    throw new RangeError('chunkLength should be positive integer');
   }
 
-  if (typeof hexString !== 'string' || hexString.substring(0, 2) !== '0x') {
-    throw new Error('not a hex-like string');
+  if (typeof hexString !== 'string' || !hexString.match(/^0x[0-9A-Fa-f]*$/)) {
+    throw new Error('hexString is not a hex-like string');
   }
 
   const parts: string[] = [];
