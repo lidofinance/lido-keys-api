@@ -17,3 +17,9 @@ export enum LogFormat {
   json = 'json',
   simple = 'simple',
 }
+
+export enum Network {
+  Mainnet = 1,
+  Goerli = 5,
+  Holesky = 17000,
+}

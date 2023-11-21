@@ -1,64 +1,72 @@
 import { plainToClass, Transform } from 'class-transformer';
 import {
-  IsEnum,
-  IsString,
-  IsOptional,
-  validateSync,
-  Min,
-  IsArray,
   ArrayMinSize,
-  IsInt,
+  IsArray,
   IsBoolean,
-  ValidateIf,
+  IsEnum,
+  IsInt,
   IsNotEmpty,
+  IsOptional,
   IsPositive,
+  IsString,
+  IsUrl,
+  Max,
+  Min,
+  ValidateIf,
+  validateSync,
 } from 'class-validator';
-import { Environment, LogLevel, LogFormat } from './interfaces';
+import { Environment, LogLevel, LogFormat, Network } from './interfaces';
 import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
 
 const toNumber =
   ({ defaultValue }) =>
   ({ value }) => {
-    if (value === '' || value == null || value == undefined) return defaultValue;
+    if (value === '' || value == null) return defaultValue;
     return Number(value);
   };
 
-export const toBoolean = (value: any): boolean => {
-  if (typeof value === 'boolean') {
+const toBoolean = ({ defaultValue }) => {
+  return function({ value }) {
+    if (value == null || value === '') {
+      return defaultValue;
+    }
+
+    if (typeof value === 'boolean') {
+      return value;
+    }
+
+    const str = value.toString().toLowerCase().trim();
+
+    if (str === 'true') {
+      return true;
+    }
+
+    if (str === 'false') {
+      return false;
+    }
+
     return value;
   }
+}
 
-  if (typeof value === 'number') {
-    return !!value;
+const toArrayOfUrls = (url: string | null): string[] => {
+  if (url == null || url === '') {
+    return [];
   }
 
-  if (!(typeof value === 'string')) {
-    return false;
-  }
-
-  switch (value.toLowerCase().trim()) {
-    case 'true':
-    case 'yes':
-    case '1':
-      return true;
-    case 'false':
-    case 'no':
-    case '0':
-    case null:
-      return false;
-    default:
-      return false;
-  }
+  return url.split(',').map((str) => str.trim().replace(/\/$/, ''));
 };
 
 export class EnvironmentVariables {
   @IsOptional()
   @IsEnum(Environment)
+  @Transform(({ value }) => value || Environment.development)
   NODE_ENV: Environment = Environment.development;
 
   @IsOptional()
   @IsInt()
-  @Min(1)
+  @Min(1025)
+  @Max(65535)
   @Transform(toNumber({ defaultValue: 3000 }))
   PORT = 3000;
 
@@ -68,19 +76,19 @@ export class EnvironmentVariables {
 
   @IsOptional()
   @IsInt()
-  @Min(1)
+  @IsPositive()
   @Transform(toNumber({ defaultValue: 5 }))
   GLOBAL_THROTTLE_TTL = 5;
 
   @IsOptional()
   @IsInt()
-  @Min(1)
+  @IsPositive()
   @Transform(toNumber({ defaultValue: 100 }))
   GLOBAL_THROTTLE_LIMIT = 100;
 
   @IsOptional()
   @IsInt()
-  @Min(1)
+  @IsPositive()
   @Transform(toNumber({ defaultValue: 1 }))
   GLOBAL_CACHE_TTL = 1;
 
@@ -98,78 +106,102 @@ export class EnvironmentVariables {
   @Transform(({ value }) => value || LogFormat.json)
   LOG_FORMAT: LogFormat = LogFormat.json;
 
+  @IsNotEmpty()
   @IsArray()
   @ArrayMinSize(1)
-  @Transform(({ value }) => value.split(',').map((url) => url.replace(/\/$/, '')))
+  @IsUrl({
+    require_protocol: true
+  }, {
+    each: true,
+  })
+  @Transform(({ value }) => toArrayOfUrls(value))
   PROVIDERS_URLS!: NonEmptyArray<string>;
 
-  @IsInt()
+  @IsNotEmpty()
+  @IsEnum(Network)
   @Transform(({ value }) => parseInt(value, 10))
-  CHAIN_ID!: number;
+  CHAIN_ID!: Network;
 
+  @IsNotEmpty()
   @IsString()
   DB_HOST!: string;
 
+  @IsNotEmpty()
   @IsString()
   DB_USER!: string;
 
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  DB_PASSWORD!: string;
+  DB_PASSWORD = '';
 
   @ValidateIf((e) => !e.DB_PASSWORD)
   @IsString()
   @IsNotEmpty()
   DB_PASSWORD_FILE!: string;
 
+  @IsNotEmpty()
   @IsString()
   DB_NAME!: string;
 
+  @IsNotEmpty()
   @IsInt()
+  @Min(1025)
+  @Max(65535)
   @Transform(({ value }) => parseInt(value, 10))
   DB_PORT!: number;
 
   @IsOptional()
   @IsInt()
-  @Transform(({ value }) => parseInt(value, 10))
+  @IsPositive()
+  @Transform(toNumber({ defaultValue: 100 }))
   PROVIDER_JSON_RPC_MAX_BATCH_SIZE = 100;
 
   @IsOptional()
   @IsInt()
-  @Transform(({ value }) => parseInt(value, 10))
+  @IsPositive()
+  @Transform(toNumber({ defaultValue: 5 }))
   PROVIDER_CONCURRENT_REQUESTS = 5;
 
   @IsOptional()
   @IsInt()
-  @Transform(({ value }) => parseInt(value, 10))
+  @IsPositive()
+  @Transform(toNumber({ defaultValue: 10 }))
   PROVIDER_BATCH_AGGREGATION_WAIT_MS = 10;
 
   // Enable endpoints that use CL API for ejector
   @IsOptional()
   @IsBoolean()
-  @Transform(({ value }) => toBoolean(value))
+  @Transform(toBoolean({ defaultValue: true }))
   VALIDATOR_REGISTRY_ENABLE = true;
 
-  @ValidateIf((e) => e.VALIDATOR_REGISTRY_ENABLE === true)
+  @ValidateIf((e) => e.VALIDATOR_REGISTRY_ENABLE)
+  @IsNotEmpty()
   @IsArray()
   @ArrayMinSize(1)
-  @Transform(({ value }) => value.split(',').map((url) => url.replace(/\/$/, '')))
+  @IsUrl({
+    require_protocol: true,
+  }, {
+    each: true,
+  })
+  @Transform(({ value }) => toArrayOfUrls(value))
   CL_API_URLS: string[] = [];
 
   @IsOptional()
   @IsInt()
-  @Transform(({ value }) => parseInt(value, 10))
+  @IsPositive()
+  @Transform(toNumber({ defaultValue: 5000 }))
   UPDATE_KEYS_INTERVAL_MS = 5000;
 
   @IsOptional()
   @IsInt()
-  @Transform(({ value }) => parseInt(value, 10))
+  @IsPositive()
+  @Transform(toNumber({ defaultValue: 10000 }))
   UPDATE_VALIDATORS_INTERVAL_MS = 10000;
 
   @IsOptional()
+  @IsInt()
   @IsPositive()
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(toNumber({ defaultValue: 1100 }))
   KEYS_FETCH_BATCH_SIZE = 1100;
 }
 
