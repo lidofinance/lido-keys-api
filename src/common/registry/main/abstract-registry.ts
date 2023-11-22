@@ -99,8 +99,6 @@ export abstract class AbstractRegistryService {
     currentOperators: RegistryOperator[],
     blockHash: string,
   ) {
-    // TODO: disable console time after testing
-    console.time('FETCH_OPERATORS');
     /**
      * TODO: optimize a number of queries
      * it's possible to update keys faster by using different strategies depending on the reason for the update
