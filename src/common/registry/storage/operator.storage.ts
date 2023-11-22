@@ -23,10 +23,6 @@ export class RegistryOperatorStorageService {
       .select(fields || '*')
       .from<RegistryOperator>('registry_operator')
       .where(where)
-      .orderBy([
-        { column: 'moduleAddress', order: 'asc' },
-        { column: 'index', order: 'asc' },
-      ])
       .stream();
 
     addTimeoutToStream(stream, 60_000, 'A timeout occurred loading operators from the database');
