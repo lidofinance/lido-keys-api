@@ -109,6 +109,7 @@ export class SRModulesOperatorsKeysController {
     status: 200,
     description: 'Stream of all SR modules, operators and keys',
     type: SRModulesOperatorsKeysStreamResponse,
+    isArray: true,
   })
   @ApiResponse({
     status: 425,
@@ -121,9 +122,14 @@ export class SRModulesOperatorsKeysController {
 
     reply.type('application/json').send(jsonStream);
 
-    await this.entityManager.transactional(
-      () => pipeline([streamify(this.srModulesOperatorsKeys.getModulesOperatorsKeysGenerator()), jsonStream]),
-      { isolationLevel: IsolationLevel.REPEATABLE_READ },
-    );
+    try {
+      await this.entityManager.transactional(
+        () => pipeline([streamify(this.srModulesOperatorsKeys.getModulesOperatorsKeysGenerator()), jsonStream]),
+        { isolationLevel: IsolationLevel.REPEATABLE_READ },
+      );
+    } catch (error) {
+      this.logger.error('modules-operators-keys error', error);
+      jsonStream.destroy();
+    }
   }
 }
