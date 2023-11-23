@@ -728,6 +728,51 @@ class NotFoundException implements HttpException {
 }
 ```
 
+#### List of modules, operators, keys and meta
+
+Path: /v2/modules/operators/keys
+
+Returns modules, operators, keys and meta.
+
+Request example:
+
+```bash
+curl 'http://localhost:3000/v2/modules/operators/keys
+```
+
+Response:
+
+```typescript
+type KApiModulesOperatorsKeysResponse = {
+  key: Key | null;
+  operator: Operator | null;
+  meta: { elBlockSnapshot: ELBlockSnapshot } | null;
+  module: StakingModule | null;
+}[];
+
+interface HttpException {
+  statusCode: number;
+  message: string;
+}
+
+class TooEarlyResponse implements HttpException {
+  statusCode: number = 425;
+  message: string = 'Too early response';
+}
+```
+
+For example:
+```json
+[
+  { "meta": { "elBlockSnapshot": {} }, "module": { "id": 1, "moduleAddress": "0x001" }, "operator": { "id": 1, "moduleAddress": "0x001" }, "key": { "id": 1, "moduleAddress": "0x001" } },
+  { "meta": null, "module": null, "operator": { "id": 2, "moduleAddress": "0x001" }, "key": { "id": 2, "moduleAddress": "0x001" } },
+  { "meta": null, "module": null, "operator": null, "key": { "id": 3, "moduleAddress": "0x001" } },
+  { "meta": null, "module": { "id": 2, "moduleAddress": "0x002" }, "operator": { "id": 1, "moduleAddress": "0x002" }, "key": { "id": 1, "moduleAddress": "0x002" } },
+  { "meta": null, "module": null, "operator": { "id": 2, "moduleAddress": "0x002" }, "key": { "id": 2, "moduleAddress": "0x002" } },
+  { "meta": null, "module": null, "operator": null, "key": { "id": 3, "moduleAddress": "0x002" } }
+]
+```
+
 ### KAPI status
 
 #### Return KAPI status
