@@ -15,7 +15,7 @@ import {
   ValidateIf,
   validateSync,
 } from 'class-validator';
-import { Environment, LogLevel, LogFormat, Network } from './interfaces';
+import { Environment, LogLevel, LogFormat, Chain } from './interfaces';
 import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
 
 const toNumber =
@@ -37,15 +37,20 @@ const toBoolean = ({ defaultValue }) => {
 
     const str = value.toString().toLowerCase().trim();
 
-    if (str === 'true') {
-      return true;
-    }
+    switch (str) {
+      case 'true':
+      case 'yes':
+      case '1':
+        return true;
 
-    if (str === 'false') {
-      return false;
-    }
+      case 'false':
+      case 'no':
+      case '0':
+        return false;
 
-    return value;
+      default:
+        return value;
+    }
   }
 }
 
@@ -118,9 +123,9 @@ export class EnvironmentVariables {
   PROVIDERS_URLS!: NonEmptyArray<string>;
 
   @IsNotEmpty()
-  @IsEnum(Network)
+  @IsEnum(Chain)
   @Transform(({ value }) => parseInt(value, 10))
-  CHAIN_ID!: Network;
+  CHAIN_ID!: Chain;
 
   @IsNotEmpty()
   @IsString()
@@ -130,9 +135,9 @@ export class EnvironmentVariables {
   @IsString()
   DB_USER!: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  DB_PASSWORD = '';
+  DB_PASSWORD!: string;
 
   @ValidateIf((e) => !e.DB_PASSWORD)
   @IsString()
