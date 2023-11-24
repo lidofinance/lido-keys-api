@@ -24,7 +24,7 @@ export class RegistryOperatorStorageService {
       .from<RegistryOperator>('registry_operator')
       .where(where)
       .orderBy([
-        { column: 'operatorIndex', order: 'asc' },
+        { column: 'moduleAddress', order: 'asc' },
         { column: 'index', order: 'asc' },
       ])
       .stream();

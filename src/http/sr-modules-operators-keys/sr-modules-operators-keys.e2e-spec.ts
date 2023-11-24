@@ -20,12 +20,13 @@ import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import * as request from 'supertest';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 
-import { dvtModuleResp } from '../module.fixture';
+import { curatedModuleResp, dvtModuleResp } from '../module.fixture';
 import { elMeta } from '../el-meta.fixture';
 import { keys, operators, dvtModule, curatedModule } from '../db.fixtures';
-import { dvtModuleKeysResponse } from '../keys.fixtures';
-import { dvtOperatorsResp } from '../operator.fixtures';
+import { curatedModuleKeysResponse, dvtModuleKeysResponse } from '../keys.fixtures';
+import { curatedOperatorsResp, dvtOperatorsResp } from '../operator.fixtures';
 import { DatabaseTestingModule } from 'app';
+import { ModulesOperatorsKeysRecord } from './sr-modules-operators-keys.types';
 
 describe('SRModulesOperatorsKeysController (e2e)', () => {
   let app: INestApplication;
@@ -111,6 +112,58 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
 
       afterAll(async () => {
         await cleanDB();
+      });
+
+      describe('The /keys request', () => {
+        it('should return all modules, operators and keys', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v2/modules/operators/keys`);
+
+          expect(resp.status).toEqual(200);
+
+          const expectedResponse: ModulesOperatorsKeysRecord[] = [
+            // dvt module
+            {
+              stakingModule: dvtModuleResp,
+              meta: {
+                elBlockSnapshot: {
+                  blockNumber: elMeta.number,
+                  blockHash: elMeta.hash,
+                  timestamp: elMeta.timestamp,
+                },
+              },
+              operator: dvtOperatorsResp[0],
+              key: dvtModuleKeysResponse[0],
+            },
+            ...dvtOperatorsResp.slice(1).map((operator, i) => ({
+              stakingModule: null,
+              meta: null,
+              operator,
+              key: dvtModuleKeysResponse[i + 1],
+            })),
+            ...dvtModuleKeysResponse
+              .slice(dvtOperatorsResp.length)
+              .map((key) => ({ stakingModule: null, meta: null, operator: null, key })),
+
+            // curated module
+            {
+              stakingModule: curatedModuleResp,
+              meta: null,
+              operator: curatedOperatorsResp[0],
+              key: curatedModuleKeysResponse[0],
+            },
+            ...curatedOperatorsResp.slice(1).map((operator, i) => ({
+              stakingModule: null,
+              meta: null,
+              operator,
+              key: curatedModuleKeysResponse[i + 1],
+            })),
+            ...curatedModuleKeysResponse
+              .slice(curatedOperatorsResp.length)
+              .map((key) => ({ stakingModule: null, meta: null, operator: null, key })),
+          ];
+
+          expect(resp.body).toEqual(expectedResponse);
+        });
       });
 
       it('should return all keys for request without filters', async () => {

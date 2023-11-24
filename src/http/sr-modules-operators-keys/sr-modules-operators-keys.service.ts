@@ -56,6 +56,7 @@ export class SRModulesOperatorsKeysService {
     const { stakingModules, elBlockSnapshot } = await this.stakingRouterService.getStakingModulesAndMeta();
 
     const meta: MetaStreamRecord = { elBlockSnapshot };
+    let metaHasSent = false;
     for (const stakingModule of stakingModules) {
       const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(stakingModule.type);
 
@@ -66,11 +67,13 @@ export class SRModulesOperatorsKeysService {
       let nextOperator = await operatorsGenerator.next();
 
       yield {
-        stakingModule,
-        meta,
-        key: nextKey.value || null,
-        operator: nextOperator.value || null,
+        stakingModule: new StakingModuleResponse(stakingModule),
+        meta: !metaHasSent ? meta : null,
+        key: !nextKey.value ? null : new Key(nextKey.value),
+        operator: !nextOperator.value ? null : new Operator(nextOperator.value),
       };
+
+      metaHasSent = true;
 
       do {
         if (!nextKey.done) {
@@ -81,11 +84,15 @@ export class SRModulesOperatorsKeysService {
           nextOperator = await operatorsGenerator.next();
         }
 
+        if (!nextKey.value && !nextOperator.value) {
+          break;
+        }
+
         yield {
           stakingModule: null,
           meta: null,
-          key: nextKey.value || null,
-          operator: nextOperator.value || null,
+          key: !nextKey.value ? null : new Key(nextKey.value),
+          operator: !nextOperator.value ? null : new Operator(nextOperator.value),
         };
       } while (!nextKey.done || !nextOperator.done);
     }

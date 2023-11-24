@@ -85,7 +85,10 @@ export class CuratedModuleService implements StakingModuleInterface {
     }
   }
 
-  public async *getOperatorsStream(moduleAddress: string, filters?: OperatorsFilter): AsyncGenerator<RegistryOperator> {
+  public async *getOperatorsStream(
+    moduleAddress: string,
+    filters?: OperatorsFilter,
+  ): AsyncGenerator<RegistryOperator, void, undefined> {
     const where = {};
     if (filters?.index != undefined) {
       where['index'] = filters.index;
@@ -93,7 +96,7 @@ export class CuratedModuleService implements StakingModuleInterface {
     // we store operators of modules with the same impl at the same table
     where['module_address'] = moduleAddress;
 
-    const operatorStream = this.operatorStorageService.findStream(where, [
+    yield* this.operatorStorageService.findStream(where, [
       'index',
       'active',
       'name',
@@ -104,10 +107,6 @@ export class CuratedModuleService implements StakingModuleInterface {
       'used_signing_keys as usedSigningKeys',
       'module_address as moduleAddress',
     ]);
-
-    for await (const record of operatorStream) {
-      yield record;
-    }
   }
 
   public async getKeysByPubKeys(moduleAddress: string, pubKeys: string[]): Promise<RegistryKey[]> {

@@ -38,26 +38,26 @@ export class SRModuleOperatorsKeysResponse {
 
 export class SRModulesOperatorsKeysStreamResponse {
   @ApiProperty({
-    type: () => [Operator],
-    description: 'Operators of staking router module',
+    type: () => Operator,
+    description: 'Operator of staking router module',
   })
-  operators?: Operator[];
+  operator!: Operator | null;
 
   @ApiProperty({
-    type: () => [Key],
-    description: 'Keys of staking router module',
+    type: () => Key,
+    description: 'Key of staking router module',
   })
-  keys?: Key[];
+  key!: Key | null;
 
   @ApiProperty({
     type: () => StakingModuleResponse,
-    description: 'List of Staking Router',
+    description: 'Staking Router module',
   })
-  modules?: StakingModuleResponse[];
+  stakingModule!: StakingModuleResponse | null;
 
   @ApiProperty({
     nullable: true,
     type: () => ELMeta,
   })
-  meta?: ELMeta;
+  meta!: ELMeta | null;
 }
