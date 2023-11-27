@@ -1,18 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
-import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
 import { JobService } from 'common/job';
-import { CuratedModuleService, STAKING_MODULE_TYPE } from '../../staking-router-modules/';
-import { RegistryOperator, RegistryMeta } from '@lido-nestjs/registry';
-import { StakingRouterFetchService, StakingModule } from 'common/contracts';
-import { ExecutionProviderService } from 'common/execution-provider';
-import { ModuleId } from 'http/common/entities';
-import { Trace } from 'common/decorators/trace';
 import { OneAtTime } from 'common/decorators/oneAtTime';
 import { SchedulerRegistry } from '@nestjs/schedule';
-
-const METRICS_TIMEOUT = 30 * 1000;
+import { StakingRouterService } from 'staking-router-modules/staking-router.service';
+import { StakingRouterFetchService } from 'staking-router-modules/contracts';
+import { ElMetaStorageService } from 'storage/el-meta.storage';
+import { EntityManager } from '@mikro-orm/knex';
+import { ExecutionProviderService } from 'common/execution-provider';
+import { SRModuleStorageService } from 'storage/sr-module.storage';
+import { IsolationLevel } from '@mikro-orm/core';
+import { PrometheusService } from 'common/prometheus';
+import { SrModuleEntity } from 'storage/sr-module.entity';
+import { StakingModule } from 'staking-router-modules/interfaces/staking-module.interface';
 
 class KeyOutdatedError extends Error {
   lastBlock: number;
@@ -27,25 +28,20 @@ class KeyOutdatedError extends Error {
 export class KeysUpdateService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected readonly prometheusService: PrometheusService,
     protected readonly configService: ConfigService,
     protected readonly jobService: JobService,
-    protected readonly curatedModuleService: CuratedModuleService,
-    protected readonly stakingRouterFetchService: StakingRouterFetchService,
-    protected readonly executionProvider: ExecutionProviderService,
     protected readonly schedulerRegistry: SchedulerRegistry,
+    protected readonly stakingRouterService: StakingRouterService,
+    protected readonly stakingRouterFetchService: StakingRouterFetchService,
+    protected readonly elMetaStorage: ElMetaStorageService,
+    protected readonly entityManager: EntityManager,
+    protected readonly executionProvider: ExecutionProviderService,
+    protected readonly srModulesStorage: SRModuleStorageService,
+    protected readonly prometheusService: PrometheusService,
   ) {}
 
-  // prometheus metrics
   protected lastTimestampSec: number | undefined = undefined;
   protected lastBlockNumber: number | undefined = undefined;
-  protected curatedNonce: number | undefined = undefined;
-  protected curatedOperators: RegistryOperator[] = [];
-
-  // list of staking modules
-  // modules list is used in endpoints
-  // TODO: move this list in staking-router-modules folder
-  protected stakingModules: StakingModule[] = [];
 
   // name of interval for updating keys
   public UPDATE_KEYS_JOB_NAME = 'SRModulesKeysUpdate';
@@ -59,7 +55,7 @@ export class KeysUpdateService {
    */
   public async initialize(): Promise<void> {
     // at first start timer for checking update
-    // if timer isnt cleared in 30 minutes period, we will consider it as nodejs frizzing and exit
+    // if timer isn't cleared in 30 minutes period, we will consider it as nodejs frizzing and exit
     this.checkKeysUpdateTimeout();
     await this.updateKeys().catch((error) => this.logger.error(error));
 
@@ -90,119 +86,156 @@ export class KeysUpdateService {
     }, this.UPDATE_KEYS_TIMEOUT_MS);
   }
 
-  public getStakingModules() {
-    return this.stakingModules;
-  }
-
-  public getStakingModule(moduleId: ModuleId): StakingModule | undefined {
-    // here should be == , moduleId can be string and number
-    return this.stakingModules.find((module) => module.stakingModuleAddress == moduleId || module.id == moduleId);
-  }
-
   /**
    * Collects updates from the registry contract and saves the changes to the database
    */
   @OneAtTime()
   private async updateKeys(): Promise<void> {
     await this.jobService.wrapJob({ name: 'Update Staking Router Modules keys' }, async () => {
-      // get blockHash for 'latest' block
-      const blockHash = await this.executionProvider.getBlockHash('latest');
+      const meta = await this.update();
+      await this.updateMetrics();
 
-      // get staking router modules
-      const modules = await this.stakingRouterFetchService.getStakingModules({ blockHash: blockHash });
-      this.stakingModules = modules;
+      if (meta) {
+        this.lastBlockNumber = meta.number;
+        this.lastTimestampSec = meta.timestamp;
+      }
 
-      // Here should be a transaction in future that will wrap updateKeys calls of all modules
-      // or other way to call updateKeys method consistently
-
-      await Promise.all(
-        this.stakingModules.map(async (stakingModule) => {
-          if (stakingModule.type === STAKING_MODULE_TYPE.CURATED_ONCHAIN_V1_TYPE) {
-            this.logger.log('Start updating curated keys');
-            await this.curatedModuleService.updateKeys(blockHash);
-          }
-        }),
-      );
-
-      // Update cached data to quick access
-      await this.updateMetricsCache();
-
-      this.setMetrics();
-
-      // update finished
       // clear timeout
       this.checkKeysUpdateTimeout();
     });
   }
 
   /**
-   * Update cache data above
+   * Update keys of staking modules
+   * @returns Number, hash and timestamp of execution layer block
    */
-  @Trace(METRICS_TIMEOUT)
-  private async updateMetricsCache() {
-    const meta = await this.updateCuratedMetricsCache();
-    // update meta
-    // timestamp and block number is common for all modules
-    this.lastTimestampSec = meta?.timestamp ?? this.lastTimestampSec;
-    this.lastBlockNumber = meta?.blockNumber ?? this.lastBlockNumber;
-  }
+  public async update(): Promise<{ number: number; hash: string; timestamp: number } | undefined> {
+    // reading latest block from blockchain
+    const currElMeta = await this.executionProvider.getBlock('latest');
+    // read from database last execution layer data
+    const prevElMeta = await this.elMetaStorage.get();
 
-  private async updateCuratedMetricsCache(): Promise<RegistryMeta | null> {
-    const { operators, meta } = await this.curatedModuleService.getOperatorsWithMeta();
-    // should set for each module
-    this.curatedNonce = meta?.keysOpIndex ?? this.curatedNonce;
-    // update curated module operators map
-    this.curatedOperators = operators;
+    if (prevElMeta && prevElMeta?.blockNumber > currElMeta.number) {
+      this.logger.warn('Previous data is newer than current data', prevElMeta);
+      return;
+    }
+    // Get modules from storage
+    const storageModules = await this.srModulesStorage.findAll();
+    // Get staking modules from SR contract
+    const contractModules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
 
-    return meta;
+    //Is this scenario impossible ?
+    if (this.modulesWereDeleted(contractModules, storageModules)) {
+      const error = new Error('Modules list is wrong');
+      this.logger.error(error);
+      process.exit(1);
+    }
+
+    await this.entityManager.transactional(
+      async () => {
+        // Update EL meta in db
+        await this.elMetaStorage.update(currElMeta);
+
+        for (const contractModule of contractModules) {
+          // Find implementation for staking module
+          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(contractModule.type);
+          // Read current nonce from contract
+          const currNonce = await moduleInstance.getCurrentNonce(contractModule.stakingModuleAddress, currElMeta.hash);
+          // Read module in storage
+          const moduleInStorage = await this.srModulesStorage.findOneById(contractModule.moduleId);
+          const prevNonce = moduleInStorage?.nonce;
+          // update staking module information
+          await this.srModulesStorage.upsert(contractModule, currNonce);
+
+          this.logger.log(`Nonce previous value: ${prevNonce}, nonce current value: ${currNonce}`);
+
+          if (prevNonce === currNonce) {
+            this.logger.log("Nonce wasn't changed, no need to update keys");
+            // case when prevELMeta is undefined but prevNonce === currNonce looks like invalid
+            // use here prevElMeta.blockNumber + 1 because operators were updated in database for  prevElMeta.blockNumber block
+            if (
+              prevElMeta &&
+              prevElMeta.blockNumber < currElMeta.number &&
+              (await moduleInstance.operatorsWereChanged(
+                contractModule.stakingModuleAddress,
+                prevElMeta.blockNumber + 1,
+                currElMeta.number,
+              ))
+            ) {
+              this.logger.log('Update events happened, need to update operators');
+              await moduleInstance.updateOperators(contractModule.stakingModuleAddress, currElMeta.hash);
+            }
+
+            continue;
+          }
+
+          await moduleInstance.update(contractModule.stakingModuleAddress, currElMeta.hash);
+        }
+      },
+      { isolationLevel: IsolationLevel.READ_COMMITTED },
+    );
+
+    return currElMeta;
   }
 
   /**
-   * Updates prometheus metrics
+   * Update prometheus metrics of staking modules
    */
-  private setMetrics() {
-    // common metrics
-    if (this.lastTimestampSec) {
-      this.prometheusService.registryLastUpdate.set(this.lastTimestampSec);
-    }
-    if (this.lastBlockNumber) {
-      this.prometheusService.registryBlockNumber.set(this.lastBlockNumber);
-    }
+  public async updateMetrics() {
+    await this.entityManager.transactional(
+      async () => {
+        const stakingModules = await this.stakingRouterService.getStakingModules();
+        const elMeta = await this.stakingRouterService.getElBlockSnapshot();
 
-    // curated metrics
-    this.setCuratedMetrics();
+        if (!elMeta) {
+          this.logger.warn("Meta is null, maybe data hasn't been written in db yet");
+          return;
+        }
+
+        // update timestamp and block number metrics
+        this.prometheusService.registryLastUpdate.set(elMeta.timestamp);
+        this.prometheusService.registryBlockNumber.set(elMeta.blockNumber);
+
+        for (const module of stakingModules) {
+          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
+
+          // update nonce metric
+          this.prometheusService.registryNonce.set({ srModuleId: module.id }, module.nonce);
+
+          // get operators
+          const operators = await moduleInstance.getOperators(module.stakingModuleAddress);
+          this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.reset();
+
+          operators.forEach((operator) => {
+            this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
+              {
+                operator: operator.index,
+                srModuleId: module.id,
+                used: 'true',
+              },
+              operator.usedSigningKeys,
+            );
+
+            this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
+              {
+                operator: operator.index,
+                srModuleId: module.id,
+                used: 'false',
+              },
+              operator.totalSigningKeys - operator.usedSigningKeys,
+            );
+          });
+        }
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
   }
 
-  private setCuratedMetrics() {
-    if (this.curatedNonce) {
-      this.prometheusService.registryNonce.set({ srModuleId: 1 }, this.curatedNonce);
-    }
-    this.setCuratedOperatorsMetric();
+  private modulesWereDeleted(contractModules: StakingModule[], storageModules: SrModuleEntity[]): boolean {
+    // we want to check here that all modules from storageModules exist in list contractModules
+    // will check moduleId
+    const contractModulesIds = contractModules.map((contractModule) => contractModule.moduleId);
 
-    this.logger.log('Curated Module metrics updated');
-  }
-
-  private setCuratedOperatorsMetric() {
-    this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.reset();
-
-    this.curatedOperators.forEach((operator) => {
-      this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
-        {
-          operator: operator.index,
-          srModuleId: 1,
-          used: 'true',
-        },
-        operator.usedSigningKeys,
-      );
-
-      this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
-        {
-          operator: operator.index,
-          srModuleId: 1,
-          used: 'false',
-        },
-        operator.totalSigningKeys - operator.usedSigningKeys,
-      );
-    });
+    return !storageModules.every((storageModule) => contractModulesIds.includes(storageModule.moduleId));
   }
 }

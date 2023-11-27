@@ -1,34 +1,24 @@
-import { ApiProperty, getSchemaPath, ApiExtraModels } from '@nestjs/swagger';
-import { SRModule } from 'http/common/entities/';
-import { CuratedKey } from 'http/common/entities/';
-import { CuratedOperator } from 'http/common/entities/';
-import { ELMeta } from 'http/common/entities/';
+import { ApiProperty } from '@nestjs/swagger';
+import { Key, Operator, StakingModuleResponse, ELMeta } from '../../common/entities/';
 
-type SRModuleOperator = CuratedOperator;
-type SRModuleKey = CuratedKey;
-
-@ApiExtraModels(CuratedOperator)
-@ApiExtraModels(CuratedKey)
 export class SROperatorsKeysModule {
   @ApiProperty({
-    type: 'array',
-    items: { oneOf: [{ $ref: getSchemaPath(CuratedOperator) }] },
+    type: () => [Operator],
     description: 'Operators of staking router module',
   })
-  operators!: SRModuleOperator[];
+  operators!: Operator[];
 
   @ApiProperty({
-    type: 'array',
-    items: { oneOf: [{ $ref: getSchemaPath(CuratedKey) }] },
+    type: () => [Key],
     description: 'Keys of staking router module',
   })
-  keys!: SRModuleKey[];
+  keys!: Key[];
 
   @ApiProperty({
     description: 'Detailed Staking Router information',
-    type: () => SRModule,
+    type: () => StakingModuleResponse,
   })
-  module!: SRModule;
+  module!: StakingModuleResponse;
 }
 
 export class SRModuleOperatorsKeysResponse {
@@ -44,4 +34,30 @@ export class SRModuleOperatorsKeysResponse {
     type: () => ELMeta,
   })
   meta!: ELMeta;
+}
+
+export class SRModulesOperatorsKeysStreamResponse {
+  @ApiProperty({
+    type: () => Operator,
+    description: 'Operator of staking router module',
+  })
+  operator!: Operator | null;
+
+  @ApiProperty({
+    type: () => Key,
+    description: 'Key of staking router module',
+  })
+  key!: Key | null;
+
+  @ApiProperty({
+    type: () => StakingModuleResponse,
+    description: 'Staking Router module',
+  })
+  stakingModule!: StakingModuleResponse | null;
+
+  @ApiProperty({
+    nullable: true,
+    type: () => ELMeta,
+  })
+  meta!: ELMeta | null;
 }

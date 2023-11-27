@@ -5,8 +5,8 @@ import {
   Validator,
   ConsensusMeta,
 } from '@lido-nestjs/validators-registry';
-import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
-import { ConfigService } from 'common/config';
+import { LOGGER_PROVIDER, LoggerService } from '../common/logger';
+import { ConfigService } from '../common/config';
 import { QueryOrder } from '@mikro-orm/core';
 
 export interface ValidatorsFilter {
@@ -23,6 +23,7 @@ export class ValidatorsService {
     protected readonly validatorsRegistry: ValidatorsRegistryInterface,
     protected readonly configService: ConfigService,
   ) {}
+
   public isDisabledRegistry() {
     return !this.configService.get('VALIDATOR_REGISTRY_ENABLE');
   }
@@ -33,7 +34,7 @@ export class ValidatorsService {
       return null;
     }
 
-    return await this.validatorsRegistry.update(blockId);
+    return await this.validatorsRegistry.updateStream(blockId);
   }
 
   /**
@@ -70,7 +71,6 @@ export class ValidatorsService {
       return { validators: nextValidatorsToExit, meta };
     }
 
-    // TODO: if provided percent is 0 what should we do ?
     // return default value in this case is unpredictable. so lets return []
     if (filter.percent == 0) {
       return { validators: [], meta };
@@ -89,7 +89,6 @@ export class ValidatorsService {
   }
 
   private getPercentOfValidators(validators: Validator[], percent: number): Validator[] {
-    // TODO: Does this ceil method suit to our purposes?
     const amount = (validators.length * percent) / 100;
     // or const roundedAmount = amount < 1 ? 1 : Math.round(amount);
     const ceilAmount = Math.ceil(amount);

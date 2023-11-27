@@ -4,10 +4,14 @@ import * as Sentry from '@sentry/node';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { SWAGGER_URL } from 'http/common/swagger';
-import { ConfigService } from 'common/config';
+import { SWAGGER_URL } from './http/common/swagger';
+import { ConfigService } from './common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
 import { MikroORM } from '@mikro-orm/core';
+
+// need also filter query params
+// forbidUnknownValues: true
+export const validationOpt = { transform: true };
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -84,7 +88,7 @@ async function bootstrap() {
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup(SWAGGER_URL, app, swaggerDocument);
 
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalPipes(new ValidationPipe(validationOpt));
 
   // app
   await app.listen(appPort, '0.0.0.0', () => logger.log(`Listening on ${appPort}`));

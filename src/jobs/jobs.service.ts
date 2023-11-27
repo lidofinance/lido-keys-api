@@ -21,7 +21,7 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
   }
 
   public async onModuleDestroy() {
-    console.log('Jobs Service on module destroy');
+    this.logger.log('Jobs Service on module destroy');
     try {
       const intervalUpdateKeys = this.schedulerRegistry.getInterval(this.keysUpdateService.UPDATE_KEYS_JOB_NAME);
       clearInterval(intervalUpdateKeys);
@@ -37,14 +37,12 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
    */
   protected async initialize(): Promise<void> {
     await this.keysUpdateService.initialize();
-
     if (this.validatorUpdateService.isDisabledRegistry()) {
       this.prometheusService.validatorsEnabled.set(0);
       this.logger.log('Job for updating validators is disabled');
       return;
     }
     this.prometheusService.validatorsEnabled.set(1);
-
     await this.validatorUpdateService.initialize();
   }
 }

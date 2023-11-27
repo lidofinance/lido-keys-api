@@ -2,14 +2,13 @@ version: '3.7'
 
 services:
   keys_api_prometheus:
-    image: prom/prometheus:v2.17.2
+    image: prom/prometheus:v2.44.0
     container_name: keys_api_prometheus
     ports:
       - 9090:9090
     volumes:
       - ./prometheus/:/etc/prometheus/
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
+    command: --config.file=/etc/prometheus/prometheus.yml --enable-feature=remote-write-receiver
 
   keys_api_grafana:
     image: grafana/grafana-oss:9.1.5

@@ -2,8 +2,8 @@ import { Controller, Get, Version, Param, HttpStatus, NotFoundException } from '
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleListResponse, SRModuleResponse } from './entities';
 import { SRModulesService } from './sr-modules.service';
-import { ModuleId } from 'http/common/entities/';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
+import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
 
 @Controller('modules')
 @ApiTags('modules')
@@ -47,10 +47,10 @@ export class SRModulesController {
   @Get(':module_id')
   @ApiParam({
     name: 'module_id',
+    type: String,
     description: 'Staking router module_id or contract address.',
   })
-  // add pattern check Module Id
-  getModule(@Param('module_id') moduleId: ModuleId) {
-    return this.srModulesService.getModule(moduleId);
+  getModule(@Param('module_id', ModuleIdPipe) module_id: string | number) {
+    return this.srModulesService.getModule(module_id);
   }
 }

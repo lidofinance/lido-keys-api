@@ -1,7 +1,7 @@
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { Inject } from '@nestjs/common';
-import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
-import { PrometheusService } from 'common/prometheus';
+import { LOGGER_PROVIDER, LoggerService } from '../logger';
+import { PrometheusService } from '../prometheus';
 
 export class JobService {
   constructor(

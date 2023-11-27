@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, ArrayNotEmpty, ArrayMinSize, IsString } from 'class-validator';
+import { IsArray, ArrayMinSize, IsString } from 'class-validator';
 
 export class KeysFindBody {
   @ApiProperty({
@@ -7,7 +7,6 @@ export class KeysFindBody {
     description: 'Public keys list',
   })
   @IsArray()
-  @ArrayNotEmpty()
   @ArrayMinSize(1)
   @IsString({ each: true })
   pubkeys!: string[];

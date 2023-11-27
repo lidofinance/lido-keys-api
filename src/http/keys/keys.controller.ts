@@ -9,21 +9,33 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
+  Res,
+  LoggerService,
+  Inject,
 } from '@nestjs/common';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import type { FastifyReply } from 'fastify';
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
 import { KeyListResponse } from './entities';
-import { KeyQuery } from 'http/common/entities';
-import { KeysFindBody } from 'http/common/entities/pubkeys';
-import { TooEarlyResponse } from 'http/common/entities/http-exceptions';
+import { Key, KeyQuery } from '../common/entities';
+import { KeysFindBody } from '../common/entities/pubkeys';
+import { TooEarlyResponse } from '../common/entities/http-exceptions';
+import * as JSONStream from 'jsonstream';
+import { EntityManager } from '@mikro-orm/knex';
+import { IsolationLevel } from '@mikro-orm/core';
 
 @Controller('keys')
 @ApiTags('keys')
 export class KeysController {
-  constructor(protected readonly keysService: KeysService) {}
+  constructor(
+    @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
+    protected readonly keysService: KeysService,
+    protected readonly entityManager: EntityManager,
+  ) {}
 
   @Version('1')
-  @Get('/')
+  @Get()
   @ApiResponse({
     status: 425,
     description: "Meta is null, maybe data hasn't been written in db yet",
@@ -34,9 +46,35 @@ export class KeysController {
     description: 'List of all keys',
     type: KeyListResponse,
   })
-  @ApiOperation({ summary: 'Get list of all keys' })
-  get(@Query() filters: KeyQuery) {
-    return this.keysService.get(filters);
+  @ApiOperation({ summary: 'Get list of all keys in stream' })
+  async get(@Query() filters: KeyQuery, @Res() reply: FastifyReply) {
+    // Because the real execution of generators occurs in the controller's method, that's why we moved the transaction here
+    await this.entityManager.transactional(
+      async () => {
+        const { keysGenerators, meta } = await this.keysService.get(filters);
+
+        const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
+        reply.type('application/json').send(jsonStream);
+
+        try {
+          for (const keysGenerator of keysGenerators) {
+            for await (const key of keysGenerator) {
+              const keyReponse = new Key(key);
+              jsonStream.write(keyReponse);
+            }
+          }
+
+          jsonStream.end();
+        } catch (streamError) {
+          // Handle the error during streaming.
+          this.logger.log('keys streaming error', streamError);
+          // destroy method closes the stream without ']' and corrupt the result
+          // https://github.com/dominictarr/through/blob/master/index.js#L78
+          jsonStream.destroy();
+        }
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
   }
 
   @Version('1')
