@@ -2,11 +2,28 @@ import { Test } from '@nestjs/testing';
 import { key } from '../fixtures/key.fixture';
 import { RegistryKeyStorageService, RegistryKey, RegistryKeyRepository } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import * as streamUtils from '../../utils/stream.utils';
+import { STREAM_KEYS_TIMEOUT_MESSAGE, STREAM_TIMEOUT } from '../../../registry/storage/constants';
 
 describe('Keys', () => {
   const CHAIN_ID = process.env.CHAIN_ID || 1;
   const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
   const registryKey = { index: 1, operatorIndex: 1, moduleAddress: address, ...key };
+
+  async function* findKeysAsStream() {
+    yield registryKey;
+  }
+
+  const mockedKnex = {
+    select: jest.fn().mockReturnThis(),
+    from: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    stream: jest.fn().mockReturnValue(findKeysAsStream()),
+  };
+
+  const addTimeoutToStream = jest.spyOn(streamUtils, 'addTimeoutToStream').mockReturnValue();
+
   const mockRegistryKeyRepository = {
     findAll: jest.fn().mockImplementation(() => {
       return Promise.resolve([]);
@@ -29,6 +46,7 @@ describe('Keys', () => {
     nativeDelete: jest.fn().mockImplementation(() => {
       return 1;
     }),
+    getKnex: jest.fn().mockReturnValue(mockedKnex),
   };
 
   let storageService: RegistryKeyStorageService;
@@ -51,6 +69,25 @@ describe('Keys', () => {
     await expect(storageService.find({ used: true }, { limit: 1 })).resolves.toEqual([]);
     expect(mockRegistryKeyRepository.find).toBeCalledTimes(1);
     expect(mockRegistryKeyRepository.find).toBeCalledWith({ used: true }, { limit: 1 });
+  });
+
+  test('findAsStream', async () => {
+    const stream = storageService.findAsStream({ used: true });
+    const actualResult: RegistryKey[] = [];
+    for await (const item of stream) {
+      actualResult.push(item);
+    }
+    expect(actualResult).toEqual([registryKey]);
+    expect(mockRegistryKeyRepository.getKnex).toBeCalledTimes(1);
+    expect(mockedKnex.select).toBeCalledWith('*');
+    expect(mockedKnex.from).toBeCalledWith('registry_key');
+    expect(mockedKnex.where).toBeCalledWith({ used: true });
+    expect(mockedKnex.orderBy).toBeCalledWith([
+      { column: 'operatorIndex', order: 'asc' },
+      { column: 'index', order: 'asc' },
+    ]);
+    expect(mockedKnex.stream).toBeCalledTimes(1);
+    expect(addTimeoutToStream).toBeCalledWith(stream, STREAM_TIMEOUT, STREAM_KEYS_TIMEOUT_MESSAGE);
   });
 
   test('findAll', async () => {
