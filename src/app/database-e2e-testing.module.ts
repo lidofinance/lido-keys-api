@@ -26,4 +26,4 @@ import { ConfigModule, ConfigService } from 'common/config';
     }),
   ],
 })
-export class DatabaseTestingModule {}
+export class DatabaseE2ETestingModule {}

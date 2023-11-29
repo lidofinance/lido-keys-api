@@ -1,11 +1,10 @@
 import { Test } from '@nestjs/testing';
 import { MikroORM, QueryOrder } from '@mikro-orm/core';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { operator } from '../fixtures/operator.fixture';
 import { RegistryStorageModule, RegistryStorageService, RegistryOperatorStorageService } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
-import { mikroORMConfig } from '../testing.utils';
 import * as dotenv from 'dotenv';
+import { DatabaseE2ETestingModule } from 'app';
 
 dotenv.config();
 
@@ -19,14 +18,15 @@ describe('Operators', () => {
   const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
 
   beforeEach(async () => {
-    const imports = [MikroOrmModule.forRoot(mikroORMConfig), RegistryStorageModule.forFeature()];
+    const imports = [DatabaseE2ETestingModule, RegistryStorageModule.forFeature()];
 
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     storageService = moduleRef.get(RegistryOperatorStorageService);
     registryService = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
   });
 
   afterEach(async () => {

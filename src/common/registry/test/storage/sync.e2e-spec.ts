@@ -1,9 +1,8 @@
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ModuleMetadata } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { RegistryStorageModule, RegistryStorageService } from '../../';
+import { RegistryStorageModule, RegistryStorageService } from '../..';
 import { MikroORM } from '@mikro-orm/core';
-import { mikroORMConfig } from '../testing.utils';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('Sync module initializing', () => {
   const testModules = async (imports: ModuleMetadata['imports']) => {
@@ -11,17 +10,18 @@ describe('Sync module initializing', () => {
     const storageService: RegistryStorageService = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     expect(storageService).toBeDefined();
     await storageService.onModuleDestroy();
   };
 
   test('forRoot', async () => {
-    await testModules([MikroOrmModule.forRoot(mikroORMConfig), RegistryStorageModule.forRoot({})]);
+    await testModules([DatabaseE2ETestingModule, RegistryStorageModule.forRoot({})]);
   });
 
   test('forFeature', async () => {
-    await testModules([MikroOrmModule.forRoot(mikroORMConfig), RegistryStorageModule.forFeature()]);
+    await testModules([DatabaseE2ETestingModule, RegistryStorageModule.forFeature()]);
   });
 });

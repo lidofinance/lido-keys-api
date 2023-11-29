@@ -1,12 +1,11 @@
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ModuleMetadata } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import { getNetwork } from '@ethersproject/networks';
 import { getDefaultProvider } from '@ethersproject/providers';
-import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../../';
+import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../..';
 import { MikroORM } from '@mikro-orm/core';
-import { mikroORMConfig } from '../testing.utils';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('Async module initializing', () => {
   const provider = getDefaultProvider('mainnet');
@@ -19,7 +18,8 @@ describe('Async module initializing', () => {
     const storageService = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     expect(registryService).toBeDefined();
     await storageService.onModuleDestroy();
@@ -27,7 +27,7 @@ describe('Async module initializing', () => {
 
   test('forRootAsync', async () => {
     await testModules([
-      MikroOrmModule.forRoot(mikroORMConfig),
+      DatabaseE2ETestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forRootAsync({
         async useFactory() {
@@ -39,12 +39,7 @@ describe('Async module initializing', () => {
 
   test('forFeatureAsync', async () => {
     await testModules([
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseE2ETestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeatureAsync({
         async useFactory() {
