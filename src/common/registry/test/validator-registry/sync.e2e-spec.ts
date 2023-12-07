@@ -1,12 +1,11 @@
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import { ModuleMetadata } from '@nestjs/common';
 import { getNetwork } from '@ethersproject/networks';
 import { getDefaultProvider, Provider } from '@ethersproject/providers';
 import { Test } from '@nestjs/testing';
-import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../../index';
+import { ValidatorRegistryModule, ValidatorRegistryService, RegistryStorageService } from '../..';
 import { MikroORM } from '@mikro-orm/core';
-import { mikroORMConfig } from '../testing.utils';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('Sync module initializing', () => {
   const provider = getDefaultProvider('mainnet');
@@ -15,11 +14,12 @@ describe('Sync module initializing', () => {
 
   const testModules = async (metadata: ModuleMetadata) => {
     const moduleRef = await Test.createTestingModule(metadata).compile();
-    const registryService: KeyRegistryService = moduleRef.get(KeyRegistryService);
+    const registryService: ValidatorRegistryService = moduleRef.get(ValidatorRegistryService);
     const storageService = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     expect(registryService).toBeDefined();
     await storageService.onModuleDestroy();
@@ -27,11 +27,10 @@ describe('Sync module initializing', () => {
 
   test('forRoot', async () => {
     const imports = [
-      MikroOrmModule.forRoot(mikroORMConfig),
+      DatabaseE2ETestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
-      KeyRegistryModule.forRoot({
+      ValidatorRegistryModule.forRoot({
         provider,
-        subscribeInterval: '*/12 * * * * *',
       }),
     ];
     await testModules({ imports });
@@ -39,16 +38,10 @@ describe('Sync module initializing', () => {
 
   test('forFeature', async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseE2ETestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
-      KeyRegistryModule.forFeature({
+      ValidatorRegistryModule.forFeature({
         provider,
-        subscribeInterval: '*/12 * * * * *',
       }),
     ];
     await testModules({ imports });
@@ -56,14 +49,9 @@ describe('Sync module initializing', () => {
 
   test('forFeature + global provider', async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseE2ETestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
-      KeyRegistryModule.forFeature(),
+      ValidatorRegistryModule.forFeature(),
     ];
 
     const metadata = {

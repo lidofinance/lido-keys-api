@@ -96,7 +96,8 @@ describe('Simple DVT deploy', () => {
       .compile();
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);
     keysStorageService = moduleRef.get(RegistryKeyStorageService);

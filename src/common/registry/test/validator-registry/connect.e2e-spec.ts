@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/execution';
+import { DatabaseE2ETestingModule } from 'app';
 
 import { ValidatorRegistryModule, ValidatorRegistryService, RegistryStorageService } from '../../';
 
@@ -31,12 +31,7 @@ describe('Registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseE2ETestingModule,
       BatchProviderModule.forRoot({
         url: process.env.PROVIDERS_URLS as string,
         requestPolicy: {
@@ -59,7 +54,8 @@ describe('Registry', () => {
 
     mikroOrm = moduleRef.get(MikroORM);
     const generator = mikroOrm.getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
   });
 
   afterEach(async () => {

@@ -1,13 +1,13 @@
 import { Test } from '@nestjs/testing';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/execution';
 import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../../';
-import { clearDb, compareTestOperators, mikroORMConfig } from '../testing.utils';
+import { clearDb, compareTestOperators } from '../testing.utils';
 import { operators } from '../fixtures/connect.fixture';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
+import { DatabaseE2ETestingModule } from 'app';
 
 dotenv.config();
 
@@ -26,7 +26,7 @@ describe('Registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot(mikroORMConfig),
+      DatabaseE2ETestingModule,
       BatchProviderModule.forRoot({
         url: process.env.PROVIDERS_URLS as string,
         requestPolicy: {
@@ -48,7 +48,8 @@ describe('Registry', () => {
     storageService = moduleRef.get(RegistryStorageService);
     mikroOrm = moduleRef.get(MikroORM);
     const generator = mikroOrm.getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
   });
 
   afterEach(async () => {

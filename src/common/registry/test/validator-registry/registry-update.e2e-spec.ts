@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { nullTransport, LoggerModule, LOGGER_PROVIDER, MockLoggerModule } from '@lido-nestjs/logger';
 import { getNetwork } from '@ethersproject/networks';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
@@ -9,19 +8,13 @@ import {
   RegistryStorageService,
   RegistryKeyStorageService,
   RegistryOperatorStorageService,
-} from '../../';
+} from '../..';
 import { keys, newKey, newOperator, operators, operatorWithDefaultsRecords } from '../fixtures/db.fixture';
-import {
-  clone,
-  compareTestKeysAndOperators,
-  compareTestKeys,
-  compareTestOperators,
-  clearDb,
-  mikroORMConfig,
-} from '../testing.utils';
+import { clone, compareTestKeysAndOperators, compareTestKeys, compareTestOperators, clearDb } from '../testing.utils';
 import { registryServiceMock } from '../mock-utils';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('Validator registry', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
@@ -51,7 +44,7 @@ describe('Validator registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot(mikroORMConfig),
+      DatabaseE2ETestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature({ provider }),
     ];
@@ -65,7 +58,8 @@ describe('Validator registry', () => {
 
     mikroOrm = moduleRef.get(MikroORM);
     const generator = mikroOrm.getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     await keyStorageService.save(keysWithModuleAddress);
     await operatorStorageService.save(operatorsWithModuleAddress);
@@ -295,7 +289,7 @@ describe('Empty registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot(mikroORMConfig),
+      DatabaseE2ETestingModule,
       MockLoggerModule.forRoot({
         log: jest.fn(),
         error: jest.fn(),
@@ -311,7 +305,8 @@ describe('Empty registry', () => {
     registryStorageService = moduleRef.get(RegistryStorageService);
     mikroOrm = moduleRef.get(MikroORM);
     const generator = mikroOrm.getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
   });
 
   afterEach(async () => {
