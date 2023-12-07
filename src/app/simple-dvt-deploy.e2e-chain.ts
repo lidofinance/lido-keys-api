@@ -40,7 +40,7 @@ describe('Simple DVT deploy', () => {
   let dvtNodeOperator2WithoutKeys: chronix.StoryResult<'simple-dvt/set-node-operator-name'>;
 
   let moduleRef: TestingModule;
-
+  let configService: ConfigService;
   let keysStorageService: RegistryKeyStorageService;
   let moduleStorageService: SRModuleStorageService;
   let elMetaStorageService: ElMetaStorageService;
@@ -86,25 +86,27 @@ describe('Simple DVT deploy', () => {
         validatorsRegistryLastSlot: jest.fn(),
         validatorsEnabled: jest.fn(),
       })
-      .overrideProvider(ConfigService)
-      .useValue({
-        get(path) {
-          const conf = { LIDO_LOCATOR_ADDRESS: '0xC1d0b3DE6792Bf6b4b37EccdcC24e45978Cfd2Eb' };
-          return conf[path];
-        },
-      })
       .compile();
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
     await generator.refreshDatabase();
     await generator.clearDatabase();
 
+    configService = moduleRef.get(ConfigService);
     elMetaStorageService = moduleRef.get(ElMetaStorageService);
     keysStorageService = moduleRef.get(RegistryKeyStorageService);
     moduleStorageService = moduleRef.get(SRModuleStorageService);
 
     keysUpdateService = moduleRef.get(KeysUpdateService);
     stakingRouterService = moduleRef.get(StakingRouterService);
+
+    jest.spyOn(configService, 'get').mockImplementation((path: any) => {
+      if (path === 'LIDO_LOCATOR_ADDRESS') {
+        return '0xC1d0b3DE6792Bf6b4b37EccdcC24e45978Cfd2Eb';
+      }
+
+      return configService.get(path);
+    });
   });
 
   afterAll(async () => {
