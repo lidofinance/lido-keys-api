@@ -138,8 +138,6 @@ export abstract class AbstractRegistryService {
 
       this.logger.log('Keys saved', { operatorIndex });
     }
-
-    console.timeEnd('FETCH_OPERATORS');
   }
 
   /** storage */
