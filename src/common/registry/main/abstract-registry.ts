@@ -14,7 +14,7 @@ import { RegistryOperator } from '../storage/operator.entity';
 
 import { compareOperators } from '../utils/operator.utils';
 
-import { REGISTRY_GLOBAL_OPTIONS_TOKEN } from './constants';
+import { BLOCKS_OVERLAP, REGISTRY_GLOBAL_OPTIONS_TOKEN } from './constants';
 import { RegistryOptions } from './interfaces/module.interface';
 import { chunk } from '@lido-nestjs/utils';
 import { RegistryKeyBatchFetchService } from '../fetch/key-batch.fetch';
@@ -72,9 +72,41 @@ export abstract class AbstractRegistryService {
    */
   public async operatorsWereChanged(
     moduleAddress: string,
+    {
+      fromBlockNumber,
+      toBlockNumber,
+    }: {
+      fromBlockNumber?: number;
+      toBlockNumber: number;
+    },
+  ): Promise<boolean> {
+    if (fromBlockNumber === undefined) return true;
+
+    if (fromBlockNumber > toBlockNumber) {
+      throw new Error(`invalid blocks range: ${fromBlockNumber} (fromBlockNumber) > ${toBlockNumber} (toBlockNumber)`);
+    }
+    // check how big the difference between the blocks is, if it exceeds, we should update the state anyway
+    if (toBlockNumber - fromBlockNumber > BLOCKS_OVERLAP) return true;
+
+    return await this.operatorFetch.operatorsWereChanged(moduleAddress, fromBlockNumber, toBlockNumber);
+  }
+
+  /**
+   *
+   * @param moduleAddress contract address
+   * @returns Check if operators have been changed
+   */
+  public async keysWereChanged(
+    moduleAddress: string,
     fromBlockNumber: number,
     toBlockNumber: number,
   ): Promise<boolean> {
+    if (fromBlockNumber > toBlockNumber) {
+      throw new Error(`invalid blocks range: ${fromBlockNumber} (fromBlockNumber) > ${toBlockNumber} (toBlockNumber)`);
+    }
+    // check how big the difference between the blocks is, if it exceeds, we should update the state anyway
+    if (toBlockNumber - fromBlockNumber > BLOCKS_OVERLAP) return true;
+
     return await this.operatorFetch.operatorsWereChanged(moduleAddress, fromBlockNumber, toBlockNumber);
   }
 
@@ -110,7 +142,8 @@ export abstract class AbstractRegistryService {
 
       // skip updating keys from 0 to `usedSigningKeys` of previous collected data
       // since the contract guarantees that these keys cannot be changed
-      const unchangedKeysMaxIndex = isSameOperator ? prevOperator.usedSigningKeys : 0;
+      const unchangedKeysMaxIndex =
+        isSameOperator && prevOperator.finalizedUsedSigningKeys ? prevOperator.finalizedUsedSigningKeys : 0;
       // get the right border up to which the keys should be updated
       // it's different for different scenarios
       const toIndex = this.getToIndex(currOperator);
@@ -121,7 +154,7 @@ export abstract class AbstractRegistryService {
 
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
-      // TODO: use feature flag
+
       const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
 
       const operatorKeys = result.filter((key) => key);

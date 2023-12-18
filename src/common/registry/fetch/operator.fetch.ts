@@ -73,6 +73,9 @@ export class RegistryOperatorFetchService {
   ): Promise<RegistryOperator> {
     const fullInfo = true;
     const operator = await this.getContract(moduleAddress).getNodeOperator(operatorIndex, fullInfo, overrides as any);
+    const finalizedOperator = await this.getContract(moduleAddress).getNodeOperator(operatorIndex, fullInfo, {
+      blockTag: 'finalized',
+    });
 
     const {
       name,
@@ -84,6 +87,8 @@ export class RegistryOperatorFetchService {
       totalDepositedValidators,
     } = operator;
 
+    const { totalDepositedValidators: finalizedUsedSigningKeys } = finalizedOperator;
+
     return {
       index: operatorIndex,
       active,
@@ -94,6 +99,7 @@ export class RegistryOperatorFetchService {
       totalSigningKeys: totalAddedValidators.toNumber(),
       usedSigningKeys: totalDepositedValidators.toNumber(),
       moduleAddress,
+      finalizedUsedSigningKeys: finalizedUsedSigningKeys.toNumber(),
     };
   }
 
