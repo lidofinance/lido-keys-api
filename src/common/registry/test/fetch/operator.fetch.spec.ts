@@ -48,7 +48,7 @@ describe('Operators', () => {
     const result = await fetchService.fetchOne(address, expected.index);
 
     expect(result).toEqual(expected);
-    expect(mockCall).toBeCalledTimes(1);
+    expect(mockCall).toBeCalledTimes(2);
   });
 
   test('fetch', async () => {
@@ -62,7 +62,7 @@ describe('Operators', () => {
     const result = await fetchService.fetch(address, expectedFirst.index, expectedSecond.index + 1);
 
     expect(result).toEqual([expectedFirst, expectedSecond]);
-    expect(mockCall).toBeCalledTimes(2);
+    expect(mockCall).toBeCalledTimes(4);
   });
 
   test('fetch all', async () => {

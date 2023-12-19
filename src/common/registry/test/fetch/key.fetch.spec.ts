@@ -76,7 +76,34 @@ describe('Keys', () => {
     const result = await fetchService.fetch(address, expected.operatorIndex);
 
     expect(result).toEqual([expected]);
-    expect(mockCall).toBeCalledTimes(2);
+    expect(mockCall).toBeCalledTimes(3);
+  });
+
+  test('fetch all operator keys with reorg', async () => {
+    const expected = { operatorIndex: 1, index: 0, moduleAddress: address, ...key };
+
+    mockCall
+      .mockImplementationOnce(async () => {
+        const iface = new Interface(Registry__factory.abi);
+        return iface.encodeFunctionResult(
+          'getNodeOperator',
+          operatorFields({
+            ...operator,
+            moduleAddress: address,
+            totalSigningKeys: 1,
+            usedSigningKeys: 2,
+            finalizedUsedSigningKeys: 1,
+          }),
+        );
+      })
+      .mockImplementation(async () => {
+        const iface = new Interface(Registry__factory.abi);
+        return iface.encodeFunctionResult('getSigningKey', keyFields);
+      });
+    const result = await fetchService.fetch(address, expected.operatorIndex);
+    console.log(result);
+    expect(result).toEqual([expected]);
+    expect(mockCall).toBeCalledTimes(3);
   });
 
   test('fetch. fromIndex > toIndex', async () => {
