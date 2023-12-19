@@ -87,26 +87,7 @@ export abstract class AbstractRegistryService {
     }
     // check how big the difference between the blocks is, if it exceeds, we should update the state anyway
     if (toBlockNumber - fromBlockNumber > BLOCKS_OVERLAP) return true;
-
-    return await this.operatorFetch.operatorsWereChanged(moduleAddress, fromBlockNumber, toBlockNumber);
-  }
-
-  /**
-   *
-   * @param moduleAddress contract address
-   * @returns Check if operators have been changed
-   */
-  public async keysWereChanged(
-    moduleAddress: string,
-    fromBlockNumber: number,
-    toBlockNumber: number,
-  ): Promise<boolean> {
-    if (fromBlockNumber > toBlockNumber) {
-      throw new Error(`invalid blocks range: ${fromBlockNumber} (fromBlockNumber) > ${toBlockNumber} (toBlockNumber)`);
-    }
-    // check how big the difference between the blocks is, if it exceeds, we should update the state anyway
-    if (toBlockNumber - fromBlockNumber > BLOCKS_OVERLAP) return true;
-
+    // rename
     return await this.operatorFetch.operatorsWereChanged(moduleAddress, fromBlockNumber, toBlockNumber);
   }
 

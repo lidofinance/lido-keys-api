@@ -21,7 +21,7 @@ export class SRModuleStorageService {
     return await this.repository.findAll();
   }
 
-  async upsert(srModule: StakingModule, nonce: number): Promise<void> {
+  async upsert(srModule: StakingModule, nonce: number, lastChangedBlockHash: string): Promise<void> {
     // Try to find an existing entity by moduleId or stakingModuleAddress
     let existingModule = await this.repository.findOne({
       moduleId: srModule.moduleId,
@@ -32,6 +32,7 @@ export class SRModuleStorageService {
       existingModule = new SrModuleEntity(
         { ...srModule, stakingModuleAddress: srModule.stakingModuleAddress.toLowerCase() },
         nonce,
+        lastChangedBlockHash,
       );
     } else {
       // If the entity exists, update its properties
@@ -45,6 +46,7 @@ export class SRModuleStorageService {
       existingModule.exitedValidatorsCount = srModule.exitedValidatorsCount;
       existingModule.active = srModule.active;
       existingModule.nonce = nonce;
+      existingModule.lastChangedBlockHash = lastChangedBlockHash;
     }
 
     // Save the entity (either a new one or an updated one)

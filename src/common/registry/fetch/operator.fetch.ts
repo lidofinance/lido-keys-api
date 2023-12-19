@@ -72,8 +72,10 @@ export class RegistryOperatorFetchService {
     overrides: CallOverrides = {},
   ): Promise<RegistryOperator> {
     const fullInfo = true;
-    const operator = await this.getContract(moduleAddress).getNodeOperator(operatorIndex, fullInfo, overrides as any);
-    const finalizedOperator = await this.getContract(moduleAddress).getNodeOperator(operatorIndex, fullInfo, {
+    const contract = this.getContract(moduleAddress);
+
+    const operator = await contract.getNodeOperator(operatorIndex, fullInfo, overrides as any);
+    const finalizedOperator = await contract.getNodeOperator(operatorIndex, fullInfo, {
       blockTag: 'finalized',
     });
 

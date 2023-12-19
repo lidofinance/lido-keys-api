@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { range } from '@lido-nestjs/utils';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { ConfigService } from 'common/config';
 import { JobService } from 'common/job';
@@ -14,6 +15,8 @@ import { IsolationLevel } from '@mikro-orm/core';
 import { PrometheusService } from 'common/prometheus';
 import { SrModuleEntity } from 'storage/sr-module.entity';
 import { StakingModule } from 'staking-router-modules/interfaces/staking-module.interface';
+
+const MAX_BLOCKS_OVERLAP = 30;
 
 class KeyOutdatedError extends Error {
   lastBlock: number;
@@ -115,10 +118,17 @@ export class KeysUpdateService {
     // read from database last execution layer data
     const prevElMeta = await this.elMetaStorage.get();
 
+    // handle the situation when the node has fallen behind the service state
     if (prevElMeta && prevElMeta?.blockNumber > currElMeta.number) {
       this.logger.warn('Previous data is newer than current data', prevElMeta);
       return;
     }
+
+    if (prevElMeta?.blockHash && prevElMeta.blockHash === currElMeta.hash) {
+      this.logger.debug?.('same state, skip', { prevElMeta, currElMeta });
+      return;
+    }
+
     // Get modules from storage
     const storageModules = await this.srModulesStorage.findAll();
     // Get staking modules from SR contract
@@ -133,49 +143,136 @@ export class KeysUpdateService {
 
     await this.entityManager.transactional(
       async () => {
-        // Update EL meta in db
-        await this.elMetaStorage.update(currElMeta);
+        const prevBlockHash = prevElMeta?.blockHash;
+        const currentBlockHash = currElMeta.hash;
+
+        let lastChangedBlockHash = prevBlockHash || currentBlockHash;
+
+        let isReorgDetected = false;
 
         for (const contractModule of contractModules) {
+          const { stakingModuleAddress } = contractModule;
+
           // Find implementation for staking module
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(contractModule.type);
           // Read current nonce from contract
-          const currNonce = await moduleInstance.getCurrentNonce(contractModule.stakingModuleAddress, currElMeta.hash);
+          const currNonce = await moduleInstance.getCurrentNonce(stakingModuleAddress, currentBlockHash);
           // Read module in storage
           const moduleInStorage = await this.srModulesStorage.findOneById(contractModule.moduleId);
           const prevNonce = moduleInStorage?.nonce;
-          // update staking module information
-          await this.srModulesStorage.upsert(contractModule, currNonce);
 
           this.logger.log(`Nonce previous value: ${prevNonce}, nonce current value: ${currNonce}`);
 
-          if (prevNonce === currNonce) {
-            this.logger.log("Nonce wasn't changed, no need to update keys");
-            // case when prevELMeta is undefined but prevNonce === currNonce looks like invalid
-            // use here prevElMeta.blockNumber + 1 because operators were updated in database for  prevElMeta.blockNumber block
-            if (
-              prevElMeta &&
-              prevElMeta.blockNumber < currElMeta.number &&
-              (await moduleInstance.operatorsWereChanged(
-                contractModule.stakingModuleAddress,
-                prevElMeta.blockNumber + 1,
-                currElMeta.number,
-              ))
-            ) {
-              this.logger.log('Update events happened, need to update operators');
-              await moduleInstance.updateOperators(contractModule.stakingModuleAddress, currElMeta.hash);
-            }
+          if (!prevElMeta) {
+            this.logger.log('No past state found, start indexing', { stakingModuleAddress, currentBlockHash });
 
+            await moduleInstance.update(stakingModuleAddress, currentBlockHash);
+            await this.srModulesStorage.upsert(contractModule, currNonce, currentBlockHash);
+            lastChangedBlockHash = currentBlockHash;
             continue;
           }
 
-          await moduleInstance.update(contractModule.stakingModuleAddress, currElMeta.hash);
+          if (prevNonce !== currNonce) {
+            this.logger.log('Nonce has been changed, start indexing', {
+              stakingModuleAddress,
+              currentBlockHash,
+              prevNonce,
+              currNonce,
+            });
+
+            await moduleInstance.update(stakingModuleAddress, currentBlockHash);
+            await this.srModulesStorage.upsert(contractModule, currNonce, currentBlockHash);
+            lastChangedBlockHash = currentBlockHash;
+            continue;
+          }
+
+          if (this.isTooMuchDiffBetweenBlocks(prevElMeta.blockNumber, currElMeta.number)) {
+            this.logger.log('Too much difference between the blocks, start indexing', {
+              stakingModuleAddress,
+              currentBlockHash,
+            });
+
+            await moduleInstance.update(stakingModuleAddress, currentBlockHash);
+            await this.srModulesStorage.upsert(contractModule, currNonce, currentBlockHash);
+            lastChangedBlockHash = currentBlockHash;
+            continue;
+          }
+
+          // calculate once per iteration
+          // no need to recheck each module separately
+          isReorgDetected = isReorgDetected ? true : await this.isReorgDetected(prevElMeta.blockHash, currentBlockHash);
+
+          if (isReorgDetected) {
+            this.logger.log('Reorg detected, start indexing', { stakingModuleAddress, currentBlockHash });
+
+            await moduleInstance.update(stakingModuleAddress, currentBlockHash);
+            await this.srModulesStorage.upsert(contractModule, currNonce, currentBlockHash);
+            lastChangedBlockHash = currentBlockHash;
+            continue;
+          }
+
+          if (
+            prevElMeta.blockNumber < currElMeta.number &&
+            (await moduleInstance.operatorsWereChanged(
+              contractModule.stakingModuleAddress,
+              prevElMeta.blockNumber + 1,
+              currElMeta.number,
+            ))
+          ) {
+            this.logger.log('Update operator events happened, need to update operators', {
+              stakingModuleAddress,
+              currentBlockHash,
+            });
+
+            await moduleInstance.updateOperators(stakingModuleAddress, currentBlockHash);
+            await this.srModulesStorage.upsert(contractModule, currNonce, currentBlockHash);
+            lastChangedBlockHash = currentBlockHash;
+            continue;
+          }
+
+          this.logger.log('No changes have been detected in the module, indexing is not required', {
+            stakingModuleAddress,
+            currentBlockHash,
+          });
         }
+
+        // Update EL meta in db
+        await this.elMetaStorage.update({ ...currElMeta, lastChangedBlockHash });
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
     );
 
     return currElMeta;
+  }
+
+  public async isReorgDetected(prevBlockHash: string, currentBlockHash: string) {
+    const currentBlock = await this.executionProvider.getFullBlock(currentBlockHash);
+    const prevBlock = await this.executionProvider.getFullBlock(prevBlockHash);
+
+    if (currentBlock.parentHash === prevBlock.hash) return false;
+    // TODO: different hash but same number
+    if (currentBlock.number === prevBlock.number) return true;
+
+    const blocks = await Promise.all(
+      range(prevBlock.number, currentBlock.number).map(async (bNumber) => {
+        return await this.executionProvider.getFullBlock(bNumber);
+      }),
+    );
+
+    for (let i = 1; i < blocks.length; i++) {
+      const previousBlock = blocks[i - 1];
+      const currentBlock = blocks[i];
+
+      if (currentBlock.parentHash !== previousBlock.hash) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  public isTooMuchDiffBetweenBlocks(prevBlockNumber: number, currentBlockNumber: number) {
+    return currentBlockNumber - prevBlockNumber >= MAX_BLOCKS_OVERLAP;
   }
 
   /**
