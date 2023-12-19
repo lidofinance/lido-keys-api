@@ -14,7 +14,7 @@ import { RegistryOperator } from '../storage/operator.entity';
 
 import { compareOperators } from '../utils/operator.utils';
 
-import { BLOCKS_OVERLAP, REGISTRY_GLOBAL_OPTIONS_TOKEN } from './constants';
+import { REGISTRY_GLOBAL_OPTIONS_TOKEN } from './constants';
 import { RegistryOptions } from './interfaces/module.interface';
 import { chunk } from '@lido-nestjs/utils';
 import { RegistryKeyBatchFetchService } from '../fetch/key-batch.fetch';
@@ -72,22 +72,9 @@ export abstract class AbstractRegistryService {
    */
   public async operatorsWereChanged(
     moduleAddress: string,
-    {
-      fromBlockNumber,
-      toBlockNumber,
-    }: {
-      fromBlockNumber?: number;
-      toBlockNumber: number;
-    },
+    fromBlockNumber: number,
+    toBlockNumber: number,
   ): Promise<boolean> {
-    if (fromBlockNumber === undefined) return true;
-
-    if (fromBlockNumber > toBlockNumber) {
-      throw new Error(`invalid blocks range: ${fromBlockNumber} (fromBlockNumber) > ${toBlockNumber} (toBlockNumber)`);
-    }
-    // check how big the difference between the blocks is, if it exceeds, we should update the state anyway
-    if (toBlockNumber - fromBlockNumber > BLOCKS_OVERLAP) return true;
-    // rename
     return await this.operatorFetch.operatorsWereChanged(moduleAddress, fromBlockNumber, toBlockNumber);
   }
 
