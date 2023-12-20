@@ -170,7 +170,7 @@ export class StakingModuleUpdaterService {
     }
 
     const blocks = await Promise.all(
-      range(prevBlock.number, currentBlock.number).map(async (bNumber) => {
+      range(prevBlock.number, currentBlock.number + 1).map(async (bNumber) => {
         return await this.executionProvider.getFullBlock(bNumber);
       }),
     );
