@@ -10,7 +10,7 @@ import { UpdaterPayload, UpdaterState } from './keys-update.interfaces';
 import { MAX_BLOCKS_OVERLAP } from './keys-update.constants';
 
 @Injectable()
-export class KeysUpdaterService {
+export class StakingModuleUpdaterService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly stakingRouterService: StakingRouterService,

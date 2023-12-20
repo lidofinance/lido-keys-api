@@ -5,10 +5,10 @@ import { StakingRouterService } from 'staking-router-modules/staking-router.serv
 import { ElMetaStorageService } from 'storage/el-meta.storage';
 import { SRModuleStorageService } from 'storage/sr-module.storage';
 import { stakingModuleFixture, stakingModuleFixtures } from '../keys-update.fixtures';
-import { KeysUpdaterService } from '../updater.service';
+import { StakingModuleUpdaterService } from '../staking-module-updater.service';
 
 describe('YourService', () => {
-  let updaterService: KeysUpdaterService;
+  let updaterService: StakingModuleUpdaterService;
   let stakingRouterService: StakingRouterService;
   let sRModuleStorageService: SRModuleStorageService;
   let loggerService: { log: jest.Mock<any, any> };
@@ -52,11 +52,11 @@ describe('YourService', () => {
             upsert: jest.fn(),
           },
         },
-        KeysUpdaterService,
+        StakingModuleUpdaterService,
       ],
     }).compile();
 
-    updaterService = module.get<KeysUpdaterService>(KeysUpdaterService);
+    updaterService = module.get<StakingModuleUpdaterService>(StakingModuleUpdaterService);
     stakingRouterService = module.get<StakingRouterService>(StakingRouterService);
     sRModuleStorageService = module.get<SRModuleStorageService>(SRModuleStorageService);
     executionProviderService = module.get<ExecutionProviderService>(ExecutionProviderService);
