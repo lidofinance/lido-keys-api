@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { RegistryOperator } from '../../../common/registry';
 import { addressToChecksum } from '../utils';
 
-export class Operator implements RegistryOperator {
+export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKeys'> {
   constructor(operator: RegistryOperator) {
     this.name = operator.name;
     this.rewardAddress = operator.rewardAddress;
