@@ -7,7 +7,7 @@ import { SRModuleStorageService } from 'storage/sr-module.storage';
 import { stakingModuleFixture, stakingModuleFixtures } from '../keys-update.fixtures';
 import { StakingModuleUpdaterService } from '../staking-module-updater.service';
 
-describe('YourService', () => {
+describe('update cases', () => {
   let updaterService: StakingModuleUpdaterService;
   let stakingRouterService: StakingRouterService;
   let sRModuleStorageService: SRModuleStorageService;

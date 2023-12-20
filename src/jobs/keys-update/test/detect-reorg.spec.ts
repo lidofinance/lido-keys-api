@@ -7,7 +7,7 @@ import { SRModuleStorageService } from 'storage/sr-module.storage';
 import { UpdaterState } from '../keys-update.interfaces';
 import { StakingModuleUpdaterService } from '../staking-module-updater.service';
 
-describe('YourService', () => {
+describe('detect reorg', () => {
   let updaterService: StakingModuleUpdaterService;
   let executionProviderService: ExecutionProviderService;
 
@@ -76,6 +76,7 @@ describe('YourService', () => {
       .mockImplementationOnce(async () => ({ number: 1, hash: '0x1', timestamp: 1, parentHash: '0x0' } as any));
 
     expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x1')).toBeFalsy();
+    expect(updaterState.isReorgDetected).toBeFalsy();
   });
 
   it('parent hash of the currentBlock matches the hash of the prevBlock', async () => {
@@ -93,6 +94,7 @@ describe('YourService', () => {
       .mockImplementationOnce(async () => ({ number: 1, hash: '0x1', timestamp: 1, parentHash: '0x0' } as any));
 
     expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x1')).toBeFalsy();
+    expect(updaterState.isReorgDetected).toBeFalsy();
   });
 
   it('same block number but different hashes', async () => {
@@ -110,5 +112,62 @@ describe('YourService', () => {
       .mockImplementationOnce(async () => ({ number: 2, hash: '0x1', timestamp: 1, parentHash: '0x0' } as any));
 
     expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x1')).toBeTruthy();
+    expect(updaterState.isReorgDetected).toBeTruthy();
+  });
+
+  it('check blockchain (happy pass)', async () => {
+    const updaterState: UpdaterState = {
+      lastChangedBlockHash: '0x1',
+      isReorgDetected: false,
+    };
+
+    jest
+      .spyOn(executionProviderService, 'getFullBlock')
+      .mockImplementationOnce(async () => ({ number: 100, hash: '0x100', timestamp: 1, parentHash: '0x99' } as any));
+
+    jest
+      .spyOn(executionProviderService, 'getFullBlock')
+      .mockImplementationOnce(async () => ({ number: 1, hash: '0x1', timestamp: 1, parentHash: '0x0' } as any));
+
+    jest.spyOn(executionProviderService, 'getFullBlock').mockImplementation(
+      async (blockHashOrBlockTag: string | number) =>
+        ({
+          number: Number(blockHashOrBlockTag),
+          hash: `0x${blockHashOrBlockTag}`,
+          timestamp: 1,
+          parentHash: `0x${Number(blockHashOrBlockTag) - 1}`,
+        } as any),
+    );
+
+    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x1')).toBeFalsy();
+    expect(updaterState.isReorgDetected).toBeFalsy();
+  });
+
+  it('check blockchain (parent hash does not match)', async () => {
+    const updaterState: UpdaterState = {
+      lastChangedBlockHash: '0x1',
+      isReorgDetected: false,
+    };
+
+    jest
+      .spyOn(executionProviderService, 'getFullBlock')
+      .mockImplementationOnce(async () => ({ number: 100, hash: '0x100', timestamp: 1, parentHash: '0x99' } as any));
+
+    jest
+      .spyOn(executionProviderService, 'getFullBlock')
+      .mockImplementationOnce(async () => ({ number: 1, hash: '0x1', timestamp: 1, parentHash: '0x0' } as any));
+
+    jest.spyOn(executionProviderService, 'getFullBlock').mockImplementation(
+      async (blockHashOrBlockTag: string | number) =>
+        ({
+          number: Number(blockHashOrBlockTag),
+          hash: `0x${blockHashOrBlockTag}`,
+          timestamp: 1,
+          parentHash: `0xSORRY`,
+        } as any),
+    );
+
+    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x1')).toBeTruthy();
+    expect(updaterState.isReorgDetected).toBeTruthy();
   });
 });
