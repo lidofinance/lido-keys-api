@@ -6,6 +6,7 @@ export class ELBlockSnapshot implements ElMetaEntity {
     this.blockNumber = meta.blockNumber;
     this.blockHash = meta.blockHash;
     this.timestamp = meta.timestamp;
+    this.lastChangedBlockHash = meta.lastChangedBlockHash;
   }
 
   @ApiProperty({
@@ -25,4 +26,10 @@ export class ELBlockSnapshot implements ElMetaEntity {
     description: 'Block timestamp',
   })
   timestamp: number;
+
+  @ApiProperty({
+    required: true,
+    description: 'Last changed block hash — used to determine that a change has been made to this block',
+  })
+  lastChangedBlockHash: string;
 }
