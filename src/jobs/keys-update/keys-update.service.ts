@@ -15,7 +15,7 @@ import { IsolationLevel } from '@mikro-orm/core';
 import { PrometheusService } from 'common/prometheus';
 import { SrModuleEntity } from 'storage/sr-module.entity';
 import { StakingModule, StakingModuleInterface } from 'staking-router-modules/interfaces/staking-module.interface';
-import { ElMetaEntity } from 'storage/el-meta.entity';
+import { UpdaterPayload, UpdaterState } from './keys-update.interfaces';
 
 const MAX_BLOCKS_OVERLAP = 30;
 
@@ -26,21 +26,6 @@ class KeyOutdatedError extends Error {
     super(message);
     this.lastBlock = lastBlock;
   }
-}
-
-interface UpdaterPayload {
-  currElMeta: {
-    number: number;
-    hash: string;
-    timestamp: number;
-  };
-  prevElMeta: ElMetaEntity | null;
-  contractModules: StakingModule[];
-}
-
-interface UpdaterState {
-  lastChangedBlockHash: string;
-  isReorgDetected: boolean;
 }
 
 @Injectable()
