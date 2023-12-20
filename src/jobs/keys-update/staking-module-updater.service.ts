@@ -164,7 +164,7 @@ export class StakingModuleUpdaterService {
 
     if (currentBlock.parentHash === prevBlock.hash) return false;
     // different hash but same number
-    if (currentBlock.number === prevBlock.number) {
+    if (currentBlock.hash !== prevBlock.hash && currentBlock.number === prevBlock.number) {
       updaterState.isReorgDetected = true;
       return true;
     }
