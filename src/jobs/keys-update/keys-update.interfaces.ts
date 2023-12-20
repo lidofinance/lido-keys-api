@@ -1,5 +1,4 @@
 import { StakingModule } from 'staking-router-modules/interfaces/staking-module.interface';
-import { ElMetaEntity } from 'storage/el-meta.entity';
 
 export interface UpdaterPayload {
   currElMeta: {
@@ -7,7 +6,11 @@ export interface UpdaterPayload {
     hash: string;
     timestamp: number;
   };
-  prevElMeta: ElMetaEntity | null;
+  prevElMeta: {
+    blockNumber: number;
+    blockHash: string;
+    timestamp: number;
+  } | null;
   contractModules: StakingModule[];
 }
 
