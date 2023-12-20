@@ -18,7 +18,9 @@ export class KeysService {
   async get(
     filters: KeyQuery,
   ): Promise<{ keysGenerators: AsyncGenerator<Key>[]; meta: { elBlockSnapshot: ELBlockSnapshot } }> {
-    const { stakingModules, elBlockSnapshot } = await this.stakingRouterService.getStakingModulesAndMeta();
+    const { stakingModules, elBlockSnapshot } = await this.stakingRouterService.getStakingModulesAndMeta(
+      filters.moduleAddresses,
+    );
     const keysGenerators: AsyncGenerator<Key>[] = [];
 
     for (const module of stakingModules) {

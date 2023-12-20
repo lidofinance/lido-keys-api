@@ -21,6 +21,11 @@ export class SRModuleStorageService {
     return await this.repository.findAll();
   }
 
+  /** find all keys */
+  async findByAddresses(stakingModuleAddresses: string[]): Promise<SrModuleEntity[]> {
+    return await this.repository.find({ stakingModuleAddress: { $in: stakingModuleAddresses } });
+  }
+
   async upsert(srModule: StakingModule, nonce: number, lastChangedBlockHash: string): Promise<void> {
     // Try to find an existing entity by moduleId or stakingModuleAddress
     let existingModule = await this.repository.findOne({
