@@ -5,8 +5,7 @@ import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/
 
 import { ValidatorRegistryModule, ValidatorRegistryService, RegistryStorageService } from '../../';
 
-import { clearDb, compareTestOperators } from '../testing.utils';
-
+import { clearDb, compareTestOperators, mikroORMConfig } from '../testing.utils';
 import { operators } from '../fixtures/connect.fixture';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
@@ -31,12 +30,7 @@ describe('Registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      MikroOrmModule.forRoot(mikroORMConfig),
       BatchProviderModule.forRoot({
         url: process.env.PROVIDERS_URLS as string,
         requestPolicy: {
