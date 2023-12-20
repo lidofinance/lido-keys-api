@@ -106,8 +106,8 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
         // lets save operators
         await operatorsStorageService.save(operators);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -129,6 +129,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
                   blockNumber: elMeta.number,
                   blockHash: elMeta.hash,
                   timestamp: elMeta.timestamp,
+                  lastChangedBlockHash: elMeta.lastChangedBlockHash,
                 },
               },
               operator: dvtOperatorsResp[0],
@@ -184,6 +185,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -225,6 +227,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -246,6 +249,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -264,6 +268,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -298,7 +303,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
       });
 
       it('should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/keys`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
