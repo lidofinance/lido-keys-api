@@ -101,7 +101,6 @@ describe('Keys', () => {
         return iface.encodeFunctionResult('getSigningKey', keyFields);
       });
     const result = await fetchService.fetch(address, expected.operatorIndex);
-    console.log(result);
     expect(result).toEqual([expected]);
     expect(mockCall).toBeCalledTimes(3);
   });

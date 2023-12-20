@@ -73,16 +73,15 @@ describe('Operators', () => {
         const iface = new Interface(Registry__factory.abi);
         return iface.encodeFunctionResult('getNodeOperatorsCount', [1]);
       })
-      .mockImplementationOnce(async () => {
+      .mockImplementation(async () => {
         const iface = new Interface(Registry__factory.abi);
         operator['moduleAddress'] = address;
-        // operatorFields(operator);
         return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
       });
     const result = await fetchService.fetch(address);
 
     expect(result).toEqual([expected]);
-    expect(mockCall).toBeCalledTimes(2);
+    expect(mockCall).toBeCalledTimes(3);
   });
 
   test('fetch. fromIndex > toIndex', async () => {
