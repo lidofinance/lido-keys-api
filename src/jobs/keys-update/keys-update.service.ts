@@ -251,7 +251,7 @@ export class KeysUpdateService {
 
     if (currentBlock.parentHash === prevBlock.hash) return false;
     // TODO: different hash but same number
-    if (currentBlock.number === prevBlock.number) return true;
+    // if (currentBlock.number === prevBlock.number) return true;
 
     const blocks = await Promise.all(
       range(prevBlock.number, currentBlock.number).map(async (bNumber) => {
@@ -264,11 +264,11 @@ export class KeysUpdateService {
       const currentBlock = blocks[i];
 
       if (currentBlock.parentHash !== previousBlock.hash) {
-        return false;
+        return true;
       }
     }
 
-    return true;
+    return false;
   }
 
   public isTooMuchDiffBetweenBlocks(prevBlockNumber: number, currentBlockNumber: number) {
