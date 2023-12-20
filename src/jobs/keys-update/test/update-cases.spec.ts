@@ -151,8 +151,11 @@ describe('update cases', () => {
 
     jest
       .spyOn(executionProviderService, 'getFullBlock')
-      .mockImplementation(async () => ({ number: 2, hash: '0x2', timestamp: 1, parentHash: '0x1' } as any));
+      .mockImplementationOnce(async () => ({ number: 2, hash: '0x2', timestamp: 1, parentHash: '0x111' } as any));
 
+    jest
+      .spyOn(executionProviderService, 'getFullBlock')
+      .mockImplementationOnce(async () => ({ number: 2, hash: '0x1', timestamp: 1, parentHash: '0x111' } as any));
     await updaterService.updateStakingModules({
       currElMeta: { number: 2, hash: '0x2', timestamp: 1 },
       prevElMeta: { blockNumber: 2, blockHash: '0x1', timestamp: 1 },
