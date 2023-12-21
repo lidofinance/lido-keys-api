@@ -64,6 +64,7 @@ export class StakingRouterFetchService {
           lastDepositBlock: stakingModule.lastDepositBlock.toNumber(),
           exitedValidatorsCount: stakingModule.exitedValidatorsCount.toNumber(),
           active: isActive,
+          lastChangedBlockHash: '',
         };
       }),
     );
