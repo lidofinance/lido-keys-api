@@ -59,10 +59,25 @@ export class RegistryOperatorFetchService {
     return false;
   }
 
+  /** return blockTag for finalized block, it need for testing purposes */
+  public getFinalizedBlockTag() {
+    return 'finalized';
+  }
+
   /** fetches number of operators */
   public async count(moduleAddress: string, overrides: CallOverrides = {}): Promise<number> {
     const bigNumber = await this.getContract(moduleAddress).getNodeOperatorsCount(overrides as any);
     return bigNumber.toNumber();
+  }
+
+  /** fetches finalized operator */
+  public async getFinalizedNodeOperator(moduleAddress: string, operatorIndex: number) {
+    const fullInfo = true;
+    const contract = this.getContract(moduleAddress);
+    const finalizedOperator = await contract.getNodeOperator(operatorIndex, fullInfo, {
+      blockTag: this.getFinalizedBlockTag(),
+    });
+    return finalizedOperator;
   }
 
   /** fetches one operator */
@@ -75,9 +90,6 @@ export class RegistryOperatorFetchService {
     const contract = this.getContract(moduleAddress);
 
     const operator = await contract.getNodeOperator(operatorIndex, fullInfo, overrides as any);
-    const finalizedOperator = await contract.getNodeOperator(operatorIndex, fullInfo, {
-      blockTag: 'finalized',
-    });
 
     const {
       name,
@@ -89,7 +101,10 @@ export class RegistryOperatorFetchService {
       totalDepositedValidators,
     } = operator;
 
-    const { totalDepositedValidators: finalizedUsedSigningKeys } = finalizedOperator;
+    const { totalDepositedValidators: finalizedUsedSigningKeys } = await this.getFinalizedNodeOperator(
+      moduleAddress,
+      operatorIndex,
+    );
 
     return {
       index: operatorIndex,
