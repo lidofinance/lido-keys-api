@@ -117,7 +117,7 @@ describe('detect reorg', () => {
 
   it('check blockchain (happy pass)', async () => {
     const updaterState: UpdaterState = {
-      lastChangedBlockHash: '0x1',
+      lastChangedBlockHash: '0x0',
       isReorgDetected: false,
     };
 
@@ -139,7 +139,7 @@ describe('detect reorg', () => {
         } as any),
     );
 
-    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x1')).toBeFalsy();
+    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x100')).toBeFalsy();
     expect(updaterState.isReorgDetected).toBeFalsy();
   });
 
@@ -167,7 +167,7 @@ describe('detect reorg', () => {
         } as any),
     );
 
-    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x1')).toBeTruthy();
+    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x100')).toBeTruthy();
     expect(updaterState.isReorgDetected).toBeTruthy();
   });
 });

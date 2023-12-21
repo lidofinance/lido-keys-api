@@ -175,6 +175,9 @@ export class StakingModuleUpdaterService {
       }),
     );
 
+    if (blocks[0].hash !== prevBlockHash) return true;
+    if (blocks[blocks.length - 1].hash !== currentBlockHash) return true;
+
     for (let i = 1; i < blocks.length; i++) {
       const previousBlock = blocks[i - 1];
       const currentBlock = blocks[i];
