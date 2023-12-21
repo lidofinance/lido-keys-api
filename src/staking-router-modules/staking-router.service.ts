@@ -70,12 +70,12 @@ export class StakingRouterService {
     const { stakingModules, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
         const stakingModules = await this.getStakingModules(stakingModuleAddresses);
-        // TODO: Can I just delete this check?
-        // TODO: approve from Anna
-        // if (stakingModules.length === 0) {
-        //   this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-        //   throw httpExceptionTooEarlyResp();
-        // }
+
+        // If the target query involves retrieving module-specific data, we do not throw the 425 exception
+        if (stakingModules.length === 0 && !stakingModuleAddresses) {
+          this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
+          throw httpExceptionTooEarlyResp();
+        }
 
         const elBlockSnapshot = await this.getElBlockSnapshot();
 
