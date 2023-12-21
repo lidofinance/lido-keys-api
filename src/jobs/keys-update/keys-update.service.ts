@@ -124,7 +124,7 @@ export class KeysUpdateService {
     }
 
     if (prevElMeta?.blockHash && prevElMeta.blockHash === currElMeta.hash) {
-      this.logger.debug?.('same state, skip', { prevElMeta, currElMeta });
+      this.logger.log('Same blockHash, indexing is not required', { prevElMeta, currElMeta });
       return;
     }
 
