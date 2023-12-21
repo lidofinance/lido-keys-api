@@ -70,11 +70,12 @@ export class StakingRouterService {
     const { stakingModules, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
         const stakingModules = await this.getStakingModules(stakingModuleAddresses);
-
-        if (stakingModules.length === 0) {
-          this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-          throw httpExceptionTooEarlyResp();
-        }
+        // TODO: Can I just delete this check?
+        // TODO: approve from Anna
+        // if (stakingModules.length === 0) {
+        //   this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
+        //   throw httpExceptionTooEarlyResp();
+        // }
 
         const elBlockSnapshot = await this.getElBlockSnapshot();
 
