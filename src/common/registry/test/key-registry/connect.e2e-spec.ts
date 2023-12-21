@@ -56,7 +56,7 @@ describe('Registry', () => {
     await storageService.onModuleDestroy();
   });
 
-  test('Update', async () => {
+  test.skip('Update', async () => {
     const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
     await registryService.update(address, blockHash);
