@@ -26,8 +26,10 @@ export class StakingRouterService {
    * Method for reading staking modules from database
    * @returns Staking module list from database
    */
-  public async getStakingModules(): Promise<SrModuleEntity[]> {
-    const srModules = await this.srModulesStorage.findAll();
+  public async getStakingModules(stakingModuleAddresses?: string[]): Promise<SrModuleEntity[]> {
+    const srModules = stakingModuleAddresses
+      ? await this.srModulesStorage.findByAddresses(stakingModuleAddresses)
+      : await this.srModulesStorage.findAll();
     return srModules;
   }
 
@@ -61,15 +63,16 @@ export class StakingRouterService {
    * Helper method for getting staking module list and execution layer meta
    * @returns Staking modules list and execution layer meta
    */
-  public async getStakingModulesAndMeta(): Promise<{
+  public async getStakingModulesAndMeta(stakingModuleAddresses?: string[]): Promise<{
     stakingModules: SrModuleEntity[];
     elBlockSnapshot: ELBlockSnapshot;
   }> {
     const { stakingModules, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
-        const stakingModules = await this.getStakingModules();
+        const stakingModules = await this.getStakingModules(stakingModuleAddresses);
 
-        if (stakingModules.length === 0) {
+        // If the target query involves retrieving module-specific data, we do not throw the 425 exception
+        if (stakingModules.length === 0 && !stakingModuleAddresses) {
           this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
           throw httpExceptionTooEarlyResp();
         }
