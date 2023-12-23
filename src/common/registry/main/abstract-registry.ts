@@ -108,10 +108,10 @@ export abstract class AbstractRegistryService {
       const prevOperator = previousOperators[currentIndex] ?? null;
       const isSameOperator = compareOperators(prevOperator, currOperator);
 
+      const finalizedUsedSigningKeys = prevOperator ? prevOperator.finalizedUsedSigningKeys : null;
       // skip updating keys from 0 to `usedSigningKeys` of previous collected data
       // since the contract guarantees that these keys cannot be changed
-      const unchangedKeysMaxIndex =
-        isSameOperator && prevOperator.finalizedUsedSigningKeys ? prevOperator.finalizedUsedSigningKeys : 0;
+      const unchangedKeysMaxIndex = isSameOperator && finalizedUsedSigningKeys ? finalizedUsedSigningKeys : 0;
       // get the right border up to which the keys should be updated
       // it's different for different scenarios
       const toIndex = this.getToIndex(currOperator);
