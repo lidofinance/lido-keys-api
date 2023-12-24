@@ -158,26 +158,30 @@ export class StakingModuleUpdaterService {
     if (updaterState.isReorgDetected) {
       return true;
     }
-
+    // get full block data by hashes
     const currentBlock = await this.executionProvider.getFullBlock(currentBlockHash);
     const prevBlock = await this.executionProvider.getFullBlock(prevBlockHash);
-
+    // prevBlock is a direct child of currentBlock
+    // there's no need to check deeper as we get the currentBlock by tag
     if (currentBlock.parentHash === prevBlock.hash) return false;
     // different hash but same number
+    // is a direct indication of reorganization, there's no need to look any deeper.
     if (currentBlock.hash !== prevBlock.hash && currentBlock.number === prevBlock.number) {
       updaterState.isReorgDetected = true;
       return true;
     }
-
+    // get all blocks by block number
+    // block numbers are the interval between the current and previous blocks
     const blocks = await Promise.all(
       range(prevBlock.number, currentBlock.number + 1).map(async (bNumber) => {
         return await this.executionProvider.getFullBlock(bNumber);
       }),
     );
-
+    // compare hash from the first block
     if (blocks[0].hash !== prevBlockHash) return true;
+    // compare hash from the last block
     if (blocks[blocks.length - 1].hash !== currentBlockHash) return true;
-
+    // check the integrity of the blockchain
     for (let i = 1; i < blocks.length; i++) {
       const previousBlock = blocks[i - 1];
       const currentBlock = blocks[i];
