@@ -76,7 +76,7 @@ describe('update cases', () => {
     });
 
     expect(mockUpdate).toBeCalledTimes(1);
-    expect(loggerService.log.mock.calls[1][0]).toBe('No past state found, start indexing');
+    expect(loggerService.log.mock.calls[1][0]).toBe('No past state found, start updating');
   });
 
   it('More than 1 module processed', async () => {
@@ -116,7 +116,7 @@ describe('update cases', () => {
     });
 
     expect(mockUpdate).toBeCalledTimes(2);
-    expect(loggerService.log.mock.calls[1][0]).toBe('Nonce has been changed, start indexing');
+    expect(loggerService.log.mock.calls[1][0]).toBe('Nonce has been changed, start updating');
   });
 
   it('Too much difference between the blocks', async () => {
@@ -136,7 +136,7 @@ describe('update cases', () => {
     });
 
     expect(mockUpdate).toBeCalledTimes(2);
-    expect(loggerService.log.mock.calls[1][0]).toBe('Too much difference between the blocks, start indexing');
+    expect(loggerService.log.mock.calls[1][0]).toBe('Too much difference between the blocks, start updating');
   });
 
   it('Reorg detected', async () => {
@@ -163,6 +163,6 @@ describe('update cases', () => {
     });
 
     expect(mockUpdate).toBeCalledTimes(2);
-    expect(loggerService.log.mock.calls[1][0]).toBe('Reorg detected, start indexing');
+    expect(loggerService.log.mock.calls[1][0]).toBe('Reorg detected, start updating');
   });
 });

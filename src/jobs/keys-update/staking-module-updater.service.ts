@@ -42,7 +42,7 @@ export class StakingModuleUpdaterService {
       this.logger.log(`Nonce previous value: ${prevNonce}, nonce current value: ${currNonce}`);
 
       if (!prevBlockHash) {
-        this.logger.log('No past state found, start indexing', { stakingModuleAddress, currentBlockHash });
+        this.logger.log('No past state found, start updating', { stakingModuleAddress, currentBlockHash });
 
         await this.updateStakingModule(
           updaterState,
@@ -56,7 +56,7 @@ export class StakingModuleUpdaterService {
       }
 
       if (prevNonce !== currNonce) {
-        this.logger.log('Nonce has been changed, start indexing', {
+        this.logger.log('Nonce has been changed, start updating', {
           stakingModuleAddress,
           currentBlockHash,
           prevNonce,
@@ -75,7 +75,7 @@ export class StakingModuleUpdaterService {
       }
 
       if (this.isTooMuchDiffBetweenBlocks(prevElMeta.blockNumber, currElMeta.number)) {
-        this.logger.log('Too much difference between the blocks, start indexing', {
+        this.logger.log('Too much difference between the blocks, start updating', {
           stakingModuleAddress,
           currentBlockHash,
         });
@@ -92,7 +92,7 @@ export class StakingModuleUpdaterService {
       }
 
       if (await this.isReorgDetected(updaterState, prevBlockHash, currentBlockHash)) {
-        this.logger.log('Reorg detected, start indexing', { stakingModuleAddress, currentBlockHash });
+        this.logger.log('Reorg detected, start updating', { stakingModuleAddress, currentBlockHash });
 
         await this.updateStakingModule(
           updaterState,
@@ -129,7 +129,7 @@ export class StakingModuleUpdaterService {
         continue;
       }
 
-      this.logger.log('No changes have been detected in the module, indexing is not required', {
+      this.logger.log('No changes have been detected in the module, updating is not required', {
         stakingModuleAddress,
         currentBlockHash,
       });
