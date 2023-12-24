@@ -4,7 +4,7 @@ import { ExecutionProviderService } from 'common/execution-provider';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 import { ElMetaStorageService } from 'storage/el-meta.storage';
 import { SRModuleStorageService } from 'storage/sr-module.storage';
-import { stakingModuleFixture, stakingModuleFixtures } from '../keys-update.fixtures';
+import { stakingModuleFixture, stakingModuleFixtures } from './keys-update.fixtures';
 import { StakingModuleUpdaterService } from '../staking-module-updater.service';
 
 describe('update cases', () => {

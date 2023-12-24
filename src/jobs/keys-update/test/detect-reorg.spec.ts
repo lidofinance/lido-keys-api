@@ -75,25 +75,7 @@ describe('detect reorg', () => {
       .spyOn(executionProviderService, 'getFullBlock')
       .mockImplementationOnce(async () => ({ number: 1, hash: '0x1', timestamp: 1, parentHash: '0x0' } as any));
 
-    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x1')).toBeFalsy();
-    expect(updaterState.isReorgDetected).toBeFalsy();
-  });
-
-  it('parent hash of the currentBlock matches the hash of the prevBlock', async () => {
-    const updaterState: UpdaterState = {
-      lastChangedBlockHash: '0x1',
-      isReorgDetected: false,
-    };
-
-    jest
-      .spyOn(executionProviderService, 'getFullBlock')
-      .mockImplementationOnce(async () => ({ number: 2, hash: '0x2', timestamp: 1, parentHash: '0x1' } as any));
-
-    jest
-      .spyOn(executionProviderService, 'getFullBlock')
-      .mockImplementationOnce(async () => ({ number: 1, hash: '0x1', timestamp: 1, parentHash: '0x0' } as any));
-
-    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x1')).toBeFalsy();
+    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x2')).toBeFalsy();
     expect(updaterState.isReorgDetected).toBeFalsy();
   });
 
