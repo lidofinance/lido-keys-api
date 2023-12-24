@@ -385,7 +385,7 @@ describe('Reorg detection', () => {
     await registryService.update(address, blockHash);
 
     expect(saveRegistryMock).toBeCalledTimes(1);
-    expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
+    expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(2);
 
     await compareTestKeysAndOperators(address, registryService, {
       keys: keysWithModuleAddress,
@@ -394,6 +394,8 @@ describe('Reorg detection', () => {
 
     unrefMock();
 
+    // Let's corrupt the data below to make sure that
+    // the update method handles the left boundary correctly
     const keysWithSpoiledLeftEdge = clone(keysWithModuleAddress).map((key) =>
       key.index >= finalizedUsedSigningKeys ? { ...key } : { ...key, key: '', depositSignature: '' },
     );

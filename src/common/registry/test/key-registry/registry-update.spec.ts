@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
+import { nullTransport, LoggerModule, MockLoggerModule, LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { getNetwork } from '@ethersproject/networks';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import {
@@ -26,12 +26,12 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
 describe('Registry', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
   const CHAIN_ID = process.env.CHAIN_ID || 1;
   const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
-
-  const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
   const keysWithModuleAddress = keys.map((key) => {
     return { ...key, moduleAddress: address };
@@ -282,6 +282,95 @@ describe('Registry', () => {
       await compareTestOperators(address, registryService, {
         operators: newOperators,
       });
+    });
+  });
+});
+
+describe('Reorg detection', () => {
+  const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
+  let registryService: KeyRegistryService;
+  let registryStorageService: RegistryStorageService;
+  let moduleRef: TestingModule;
+  const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');
+  const CHAIN_ID = process.env.CHAIN_ID || 1;
+  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
+  let mikroOrm: MikroORM;
+
+  jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
+
+  beforeEach(async () => {
+    const imports = [
+      MikroOrmModule.forRoot(mikroORMConfig),
+      MockLoggerModule.forRoot({
+        log: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+      }),
+      KeyRegistryModule.forFeature({ provider }),
+    ];
+    moduleRef = await Test.createTestingModule({
+      imports,
+      providers: [{ provide: LOGGER_PROVIDER, useValue: {} }],
+    }).compile();
+    registryService = moduleRef.get(KeyRegistryService);
+    registryStorageService = moduleRef.get(RegistryStorageService);
+    mikroOrm = moduleRef.get(MikroORM);
+    const generator = mikroOrm.getSchemaGenerator();
+    await generator.updateSchema();
+  });
+
+  afterEach(async () => {
+    mockCall.mockReset();
+    await clearDb(mikroOrm);
+    await registryStorageService.onModuleDestroy();
+  });
+
+  test('init on update', async () => {
+    const saveRegistryMock = jest.spyOn(registryService, 'saveOperators');
+    const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
+    const finalizedUsedSigningKeys = 1;
+
+    const keysWithModuleAddress = keys.map((key) => {
+      return { ...key, moduleAddress: address };
+    });
+
+    const operatorsWithModuleAddress = operators.map((key) => {
+      return { ...key, moduleAddress: address, finalizedUsedSigningKeys };
+    });
+
+    const unrefMock = registryServiceMock(moduleRef, provider, {
+      keys: keysWithModuleAddress,
+      operators: operatorsWithModuleAddress,
+    });
+
+    await registryService.update(address, blockHash);
+
+    expect(saveRegistryMock).toBeCalledTimes(1);
+    expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(2);
+
+    await compareTestKeysAndOperators(address, registryService, {
+      keys: keysWithModuleAddress,
+      operators: operatorsWithModuleAddress,
+    });
+
+    unrefMock();
+
+    // Let's corrupt the data below to make sure that
+    // the update method handles the left boundary correctly
+    const keysWithSpoiledLeftEdge = clone(keysWithModuleAddress).map((key) =>
+      key.index >= finalizedUsedSigningKeys ? { ...key } : { ...key, key: '', depositSignature: '' },
+    );
+
+    registryServiceMock(moduleRef, provider, {
+      keys: keysWithSpoiledLeftEdge,
+      operators: operatorsWithModuleAddress,
+    });
+
+    await registryService.update(address, blockHash);
+
+    await compareTestKeysAndOperators(address, registryService, {
+      keys: keysWithModuleAddress,
+      operators: operatorsWithModuleAddress,
     });
   });
 });
