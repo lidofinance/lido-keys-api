@@ -93,7 +93,7 @@ describe('detect reorg', () => {
       .spyOn(executionProviderService, 'getFullBlock')
       .mockImplementationOnce(async () => ({ number: 2, hash: '0x1', timestamp: 1, parentHash: '0x0' } as any));
 
-    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x1')).toBeTruthy();
+    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x2')).toBeTruthy();
     expect(updaterState.isReorgDetected).toBeTruthy();
   });
 
