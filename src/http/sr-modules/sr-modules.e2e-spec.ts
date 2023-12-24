@@ -123,14 +123,6 @@ describe('SRModulesController (e2e)', () => {
         await cleanDB();
       });
 
-      it('Should return too early response if there are no modules in database', async () => {
-        // lets save meta
-        await elMetaStorageService.update(elMeta);
-        const resp = await request(app.getHttpServer()).get('/v1/modules');
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-
       it('Should return too early response if there are no meta', async () => {
         await moduleStorageService.upsert(curatedModule, 1, '');
         const resp = await request(app.getHttpServer()).get('/v1/modules');

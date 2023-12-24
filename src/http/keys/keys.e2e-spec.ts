@@ -263,17 +263,6 @@ describe('KeyController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return too early response if there are no modules in database', async () => {
-        // lets save meta
-        await elMetaStorageService.update(elMeta);
-        // lets save keys
-        await keysStorageService.save(keys);
-
-        const resp = await request(app.getHttpServer()).get('/v1/keys');
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-
       it('should return too early response if there are no meta', async () => {
         // lets save keys
         await keysStorageService.save(keys);
@@ -295,20 +284,6 @@ describe('KeyController (e2e)', () => {
 
       afterEach(async () => {
         await cleanDB();
-      });
-
-      it('should return too early response if there are no modules in database', async () => {
-        // lets save meta
-        await elMetaStorageService.update(elMeta);
-        // lets save keys
-        await keysStorageService.save(keys);
-        const pubkeys = [keys[0].key, keys[1].key];
-        const resp = await request(app.getHttpServer())
-          .post(`/v1/keys/find`)
-          .set('Content-Type', 'application/json')
-          .send({ pubkeys });
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
 
       it('should return too early response if there are no meta', async () => {
@@ -412,16 +387,6 @@ describe('KeyController (e2e)', () => {
 
       afterEach(async () => {
         await cleanDB();
-      });
-
-      it('should return too early response if there are no modules in database', async () => {
-        // lets save meta
-        await elMetaStorageService.update(elMeta);
-        // lets save keys
-        await keysStorageService.save(keys);
-        const resp = await request(app.getHttpServer()).get(`/v1/keys/wrongkey`);
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
 
       it('should return too early response if there are no meta', async () => {

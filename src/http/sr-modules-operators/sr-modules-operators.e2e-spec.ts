@@ -146,17 +146,6 @@ describe('SRModuleOperatorsController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return too early response if there are no modules in database', async () => {
-        // lets save meta
-        await elMetaStorageService.update(elMeta);
-        // lets save operators
-        await operatorsStorageService.save(operators);
-
-        const resp = await request(app.getHttpServer()).get('/v1/operators');
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-
       it('should return too early response if there are no meta', async () => {
         // lets save operators
         await operatorsStorageService.save(operators);

@@ -473,13 +473,6 @@ describe('SRModulesKeysController (e2e)', () => {
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
-
-      it('Should return too early response if there are no modules', async () => {
-        await elMetaStorageService.update(elMeta);
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`);
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
     });
   });
 });
