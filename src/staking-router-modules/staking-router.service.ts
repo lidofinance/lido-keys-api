@@ -71,12 +71,6 @@ export class StakingRouterService {
       async () => {
         const stakingModules = await this.getStakingModules(stakingModuleAddresses);
 
-        // If the target query involves retrieving module-specific data, we do not throw the 425 exception
-        if (stakingModules.length === 0 && !stakingModuleAddresses) {
-          this.logger.warn("No staking modules in list. Maybe didn't fetched from SR yet");
-          throw httpExceptionTooEarlyResp();
-        }
-
         const elBlockSnapshot = await this.getElBlockSnapshot();
 
         if (!elBlockSnapshot) {
