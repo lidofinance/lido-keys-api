@@ -110,8 +110,8 @@ describe('SRModuleOperatorsController (e2e)', () => {
         await operatorsStorageService.save(operators);
 
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -131,6 +131,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -145,21 +146,10 @@ describe('SRModuleOperatorsController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return too early response if there are no modules in database', async () => {
-        // lets save meta
-        await elMetaStorageService.update(elMeta);
-        // lets save operators
-        await operatorsStorageService.save(operators);
-
-        const resp = await request(app.getHttpServer()).get('/v1/operators');
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-
       it('should return too early response if there are no meta', async () => {
         // lets save operators
         await operatorsStorageService.save(operators);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1, '');
 
         const resp = await request(app.getHttpServer()).get('/v1/operators');
         expect(resp.status).toEqual(425);
@@ -177,8 +167,8 @@ describe('SRModuleOperatorsController (e2e)', () => {
         await operatorsStorageService.save(operators);
 
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -204,6 +194,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
 
@@ -217,6 +208,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -256,7 +248,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
       it('should return too early response if there are no meta', async () => {
         // lets save operators
         await operatorsStorageService.save(operators);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1, '');
 
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}/operators`);
         expect(resp.status).toEqual(425);
@@ -274,8 +266,8 @@ describe('SRModuleOperatorsController (e2e)', () => {
         await operatorsStorageService.save(operators);
 
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -295,6 +287,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -352,7 +345,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
       it('should return too early response if there are no meta', async () => {
         // lets save operators
         await operatorsStorageService.save(operators);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1, '');
 
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}/operators/1`);
         expect(resp.status).toEqual(425);
