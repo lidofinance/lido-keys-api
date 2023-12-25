@@ -35,3 +35,29 @@ export class SRModuleOperatorsKeysResponse {
   })
   meta!: ELMeta;
 }
+
+export class SRModulesOperatorsKeysStreamResponse {
+  @ApiProperty({
+    type: () => Operator,
+    description: 'Operator of staking router module',
+  })
+  operator!: Operator | null;
+
+  @ApiProperty({
+    type: () => Key,
+    description: 'Key of staking router module',
+  })
+  key!: Key | null;
+
+  @ApiProperty({
+    type: () => StakingModuleResponse,
+    description: 'Staking Router module',
+  })
+  stakingModule!: StakingModuleResponse | null;
+
+  @ApiProperty({
+    nullable: true,
+    type: () => ELMeta,
+  })
+  meta!: ELMeta | null;
+}

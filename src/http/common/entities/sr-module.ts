@@ -17,6 +17,7 @@ export class StakingModuleResponse implements Omit<SrModuleEntity, 'id' | 'modul
     this.lastDepositBlock = stakingModule.lastDepositBlock;
     this.exitedValidatorsCount = stakingModule.exitedValidatorsCount;
     this.active = stakingModule.active;
+    this.lastChangedBlockHash = stakingModule.lastChangedBlockHash;
   }
 
   @ApiProperty({
@@ -86,4 +87,10 @@ export class StakingModuleResponse implements Omit<SrModuleEntity, 'id' | 'modul
     description: 'Module activation status',
   })
   active: boolean;
+
+  @ApiProperty({
+    required: true,
+    description: 'Last changed block hash — used to determine that a change has been made to this staking module',
+  })
+  lastChangedBlockHash: string;
 }

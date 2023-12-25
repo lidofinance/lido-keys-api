@@ -5,6 +5,8 @@ import { KeyBatchRecord, RegistryKey } from './interfaces/key.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';
 import { KEYS_BATCH_SIZE, KEYS_LENGTH, SIGNATURE_LENGTH } from './key-batch.constants';
 import { RegistryFetchOptions, REGISTRY_FETCH_OPTIONS_TOKEN } from './interfaces/module.interface';
+import { splitHex } from './utils/split-hex';
+import { makeBatches } from './utils/batches';
 
 @Injectable()
 export class RegistryKeyBatchFetchService {
@@ -18,38 +20,12 @@ export class RegistryKeyBatchFetchService {
     return this.contract.attach(moduleAddress);
   }
 
-  /**
-   * Split one big string into array of strings
-   * `0x${key1}{key2}...` -> `[`0x${key1}`, `0x${key2}`]`
-   *
-   * example record:
-   * 0x81b4ae61a898396903897f94bea0e062c3a6925ee93d30f4d4aee93b533b49551ac337da78ff2ab0cfbb0adb380cad94953805708367b0b5f6710d41608ccdd0d5a67938e10e68dd010890d4bfefdcde874370423b0af0d0a053b7b98ae2d6ed
-   *
-   * 0x81b4ae61a898396903897f94bea0e062c3a6925ee93d30f4d4aee93b533b49551ac337da78ff2ab0cfbb0adb380cad94
-   * @param record pubkey or signature merged string
-   * @param capacity 96 or 192
-   * @returns array of keys or signatures
-   */
-  protected splitMergedRecord(record: string, capacity: number) {
-    const parts: string[] = [];
-    let part = '';
-    // start from index 2 because each record beginning from 0x
-    for (let i = 2; i < record.length; i++) {
-      part += record[i];
-      if (part.length === capacity) {
-        parts.push(`0x${part}`);
-        part = '';
-      }
-    }
-    return parts;
-  }
-
   protected unformattedSignaturesToArray(unformattedSignatures: string) {
-    return this.splitMergedRecord(unformattedSignatures, SIGNATURE_LENGTH);
+    return splitHex(unformattedSignatures, SIGNATURE_LENGTH);
   }
 
   protected unformattedKeysToArray(unformattedKeys: string) {
-    return this.splitMergedRecord(unformattedKeys, KEYS_LENGTH);
+    return splitHex(unformattedKeys, KEYS_LENGTH);
   }
 
   public formatKeys(
@@ -61,7 +37,7 @@ export class RegistryKeyBatchFetchService {
     const keys = this.unformattedKeysToArray(unformattedRecords[0]);
     const signatures = this.unformattedSignaturesToArray(unformattedRecords[1]);
     const usedStatuses = unformattedRecords[2];
-    // TODO: do we need this?
+
     if (keys.length !== signatures.length || keys.length !== usedStatuses.length) {
       throw new Error('format keys error');
     }
@@ -112,30 +88,23 @@ export class RegistryKeyBatchFetchService {
   public async fetchSigningKeysInBatches(
     moduleAddress: string,
     operatorIndex: number,
-    offset: number,
+    defaultOffset: number,
     totalAmount: number,
     overrides: CallOverrides,
   ) {
-    const batchSize = this.options.keysBatchSize || KEYS_BATCH_SIZE;
+    const defaultBatchSize = this.options.keysBatchSize || KEYS_BATCH_SIZE;
+    const batches = makeBatches(defaultBatchSize, defaultOffset, totalAmount);
 
-    const numberOfBatches = Math.ceil(totalAmount / batchSize);
-    const promises: Promise<RegistryKey[]>[] = [];
+    const promises = batches.map(async ({ offset, batchSize }) => {
+      const keys = await this.getContract(moduleAddress).getSigningKeys(
+        operatorIndex,
+        offset,
+        batchSize,
+        overrides as any,
+      );
 
-    for (let i = 0; i < numberOfBatches; i++) {
-      const currentOffset = offset + i * batchSize;
-      const currentBatchSize = Math.min(batchSize, totalAmount - i * batchSize);
-      const promise = (async () => {
-        const keys = await this.getContract(moduleAddress).getSigningKeys(
-          operatorIndex,
-          currentOffset,
-          currentBatchSize,
-          overrides as any,
-        );
-        return this.formatKeys(moduleAddress, operatorIndex, keys, currentOffset);
-      })();
-
-      promises.push(promise);
-    }
+      return this.formatKeys(moduleAddress, operatorIndex, keys, offset);
+    });
 
     const results = await Promise.all(promises);
     return results.flat();

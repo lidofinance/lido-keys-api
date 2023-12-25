@@ -27,6 +27,8 @@ export interface StakingModule {
   type: string; //STAKING_MODULE_TYPE;
   // is module active
   active: boolean;
+  // last changed block hash
+  lastChangedBlockHash: string;
 }
 
 export interface StakingModuleInterface {
@@ -45,6 +47,8 @@ export interface StakingModuleInterface {
   getKeysByPubkey(moduleAddress: string, pubkey: string): Promise<RegistryKey[]>;
 
   getOperators(moduleAddress: string, filters?: OperatorsFilter): Promise<RegistryOperator[]>;
+
+  getOperatorsStream(moduleAddress: string, filters?: OperatorsFilter): AsyncGenerator<RegistryOperator>;
 
   getOperator(moduleAddress: string, index: number): Promise<RegistryOperator | null>;
 

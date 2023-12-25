@@ -99,8 +99,6 @@ export abstract class AbstractRegistryService {
     currentOperators: RegistryOperator[],
     blockHash: string,
   ) {
-    // TODO: disable console time after testing
-    console.time('FETCH_OPERATORS');
     /**
      * TODO: optimize a number of queries
      * it's possible to update keys faster by using different strategies depending on the reason for the update
@@ -110,9 +108,10 @@ export abstract class AbstractRegistryService {
       const prevOperator = previousOperators[currentIndex] ?? null;
       const isSameOperator = compareOperators(prevOperator, currOperator);
 
+      const finalizedUsedSigningKeys = prevOperator ? prevOperator.finalizedUsedSigningKeys : null;
       // skip updating keys from 0 to `usedSigningKeys` of previous collected data
       // since the contract guarantees that these keys cannot be changed
-      const unchangedKeysMaxIndex = isSameOperator ? prevOperator.usedSigningKeys : 0;
+      const unchangedKeysMaxIndex = isSameOperator && finalizedUsedSigningKeys ? finalizedUsedSigningKeys : 0;
       // get the right border up to which the keys should be updated
       // it's different for different scenarios
       const toIndex = this.getToIndex(currOperator);
@@ -123,7 +122,7 @@ export abstract class AbstractRegistryService {
 
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
-      // TODO: use feature flag
+
       const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
 
       const operatorKeys = result.filter((key) => key);
@@ -140,8 +139,6 @@ export abstract class AbstractRegistryService {
 
       this.logger.log('Keys saved', { operatorIndex });
     }
-
-    console.timeEnd('FETCH_OPERATORS');
   }
 
   /** storage */

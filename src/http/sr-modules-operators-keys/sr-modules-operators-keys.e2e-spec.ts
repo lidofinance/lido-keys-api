@@ -9,7 +9,6 @@ import {
   RegistryStorageService,
 } from '../../common/registry';
 import { MikroORM } from '@mikro-orm/core';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { SRModulesOperatorsKeysController } from './sr-modules-operators-keys.controller';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
 
@@ -21,11 +20,13 @@ import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import * as request from 'supertest';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 
-import { dvtModuleResp } from '../module.fixture';
+import { curatedModuleResp, dvtModuleResp } from '../module.fixture';
 import { elMeta } from '../el-meta.fixture';
 import { keys, operators, dvtModule, curatedModule } from '../db.fixtures';
-import { dvtModuleKeysResponse } from '../keys.fixtures';
-import { dvtOperatorsResp } from '../operator.fixtures';
+import { curatedModuleKeysResponse, dvtModuleKeysResponse } from '../keys.fixtures';
+import { curatedOperatorsResp, dvtOperatorsResp } from '../operator.fixtures';
+import { DatabaseTestingModule } from 'app';
+import { ModulesOperatorsKeysRecord } from './sr-modules-operators-keys.types';
 
 describe('SRModulesOperatorsKeysController (e2e)', () => {
   let app: INestApplication;
@@ -58,14 +59,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      //  sqlite3 only supports serializable transactions, ignoring the isolation level param
-      // TODO: use postgres
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseTestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,
@@ -85,7 +79,8 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
     operatorsStorageService = moduleRef.get(RegistryOperatorStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
     app.enableVersioning({ type: VersioningType.URI });
@@ -111,12 +106,65 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
         // lets save operators
         await operatorsStorageService.save(operators);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
         await cleanDB();
+      });
+
+      describe('The /keys request', () => {
+        it('should return all modules, operators and keys', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v2/modules/operators/keys`);
+
+          expect(resp.status).toEqual(200);
+
+          const expectedResponse: ModulesOperatorsKeysRecord[] = [
+            // dvt module
+            {
+              stakingModule: dvtModuleResp,
+              meta: {
+                elBlockSnapshot: {
+                  blockNumber: elMeta.number,
+                  blockHash: elMeta.hash,
+                  timestamp: elMeta.timestamp,
+                  lastChangedBlockHash: elMeta.lastChangedBlockHash,
+                },
+              },
+              operator: dvtOperatorsResp[0],
+              key: dvtModuleKeysResponse[0],
+            },
+            ...dvtOperatorsResp.slice(1).map((operator, i) => ({
+              stakingModule: null,
+              meta: null,
+              operator,
+              key: dvtModuleKeysResponse[i + 1],
+            })),
+            ...dvtModuleKeysResponse
+              .slice(dvtOperatorsResp.length)
+              .map((key) => ({ stakingModule: null, meta: null, operator: null, key })),
+
+            // curated module
+            {
+              stakingModule: curatedModuleResp,
+              meta: null,
+              operator: curatedOperatorsResp[0],
+              key: curatedModuleKeysResponse[0],
+            },
+            ...curatedOperatorsResp.slice(1).map((operator, i) => ({
+              stakingModule: null,
+              meta: null,
+              operator,
+              key: curatedModuleKeysResponse[i + 1],
+            })),
+            ...curatedModuleKeysResponse
+              .slice(curatedOperatorsResp.length)
+              .map((key) => ({ stakingModule: null, meta: null, operator: null, key })),
+          ];
+
+          expect(resp.body).toEqual(expectedResponse);
+        });
       });
 
       it('should return all keys for request without filters', async () => {
@@ -137,6 +185,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -178,6 +227,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -199,6 +249,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -217,6 +268,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -251,7 +303,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
       });
 
       it('should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/keys`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });

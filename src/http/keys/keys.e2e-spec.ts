@@ -8,7 +8,6 @@ import {
   RegistryStorageService,
 } from '../../common/registry';
 import { MikroORM } from '@mikro-orm/core';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { KeysController } from './keys.controller';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
 
@@ -21,6 +20,7 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { elMeta } from '../el-meta.fixture';
 import { curatedKeyWithDuplicate, curatedModule, curatedModuleKeys, dvtModule, keys } from '../db.fixtures';
 import { curatedModuleKeysResponse, dvtModuleKeysResponse } from 'http/keys.fixtures';
+import { DatabaseTestingModule } from 'app';
 
 describe('KeyController (e2e)', () => {
   let app: INestApplication;
@@ -52,14 +52,7 @@ describe('KeyController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      //  sqlite3 only supports serializable transactions, ignoring the isolation level param
-      // TODO: use postgres
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseTestingModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,
@@ -78,7 +71,8 @@ describe('KeyController (e2e)', () => {
     registryStorage = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
     app.enableVersioning({ type: VersioningType.URI });
@@ -103,8 +97,8 @@ describe('KeyController (e2e)', () => {
         await keysStorageService.save(keys);
 
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -125,6 +119,7 @@ describe('KeyController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -142,6 +137,7 @@ describe('KeyController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -158,6 +154,7 @@ describe('KeyController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -176,6 +173,7 @@ describe('KeyController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -194,6 +192,7 @@ describe('KeyController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -208,6 +207,7 @@ describe('KeyController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -248,6 +248,7 @@ describe('KeyController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -262,22 +263,11 @@ describe('KeyController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return too early response if there are no modules in database', async () => {
-        // lets save meta
-        await elMetaStorageService.update(elMeta);
-        // lets save keys
-        await keysStorageService.save(keys);
-
-        const resp = await request(app.getHttpServer()).get('/v1/keys');
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-
       it('should return too early response if there are no meta', async () => {
         // lets save keys
         await keysStorageService.save(keys);
 
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1, '');
 
         const resp = await request(app.getHttpServer()).get('/v1/keys');
         expect(resp.status).toEqual(425);
@@ -296,24 +286,10 @@ describe('KeyController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return too early response if there are no modules in database', async () => {
-        // lets save meta
-        await elMetaStorageService.update(elMeta);
-        // lets save keys
-        await keysStorageService.save(keys);
-        const pubkeys = [keys[0].key, keys[1].key];
-        const resp = await request(app.getHttpServer())
-          .post(`/v1/keys/find`)
-          .set('Content-Type', 'application/json')
-          .send({ pubkeys });
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-
       it('should return too early response if there are no meta', async () => {
         // lets save keys
         await keysStorageService.save(keys);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1, '');
         const pubkeys = [keys[0].key, keys[1].key];
         const resp = await request(app.getHttpServer())
           .post(`/v1/keys/find`)
@@ -333,8 +309,8 @@ describe('KeyController (e2e)', () => {
         await keysStorageService.save(keys);
 
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -361,6 +337,7 @@ describe('KeyController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -381,6 +358,7 @@ describe('KeyController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -411,20 +389,10 @@ describe('KeyController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return too early response if there are no modules in database', async () => {
-        // lets save meta
-        await elMetaStorageService.update(elMeta);
-        // lets save keys
-        await keysStorageService.save(keys);
-        const resp = await request(app.getHttpServer()).get(`/v1/keys/wrongkey`);
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-
       it('should return too early response if there are no meta', async () => {
         // lets save keys
         await keysStorageService.save(keys);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1, '');
         const resp = await request(app.getHttpServer()).get(`/v1/keys/wrongkey`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
@@ -438,8 +406,8 @@ describe('KeyController (e2e)', () => {
         // lets save keys
         await keysStorageService.save(keys);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -461,6 +429,7 @@ describe('KeyController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });

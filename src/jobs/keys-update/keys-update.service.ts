@@ -14,6 +14,7 @@ import { IsolationLevel } from '@mikro-orm/core';
 import { PrometheusService } from 'common/prometheus';
 import { SrModuleEntity } from 'storage/sr-module.entity';
 import { StakingModule } from 'staking-router-modules/interfaces/staking-module.interface';
+import { StakingModuleUpdaterService } from './staking-module-updater.service';
 
 class KeyOutdatedError extends Error {
   lastBlock: number;
@@ -38,6 +39,7 @@ export class KeysUpdateService {
     protected readonly executionProvider: ExecutionProviderService,
     protected readonly srModulesStorage: SRModuleStorageService,
     protected readonly prometheusService: PrometheusService,
+    protected readonly stakingModuleUpdaterService: StakingModuleUpdaterService,
   ) {}
 
   protected lastTimestampSec: number | undefined = undefined;
@@ -115,10 +117,17 @@ export class KeysUpdateService {
     // read from database last execution layer data
     const prevElMeta = await this.elMetaStorage.get();
 
+    // handle the situation when the node has fallen behind the service state
     if (prevElMeta && prevElMeta?.blockNumber > currElMeta.number) {
       this.logger.warn('Previous data is newer than current data', prevElMeta);
       return;
     }
+
+    if (prevElMeta?.blockHash && prevElMeta.blockHash === currElMeta.hash) {
+      this.logger.log('Same blockHash, updating is not required', { prevElMeta, currElMeta });
+      return;
+    }
+
     // Get modules from storage
     const storageModules = await this.srModulesStorage.findAll();
     // Get staking modules from SR contract
@@ -133,44 +142,7 @@ export class KeysUpdateService {
 
     await this.entityManager.transactional(
       async () => {
-        // Update EL meta in db
-        await this.elMetaStorage.update(currElMeta);
-
-        for (const contractModule of contractModules) {
-          // Find implementation for staking module
-          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(contractModule.type);
-          // Read current nonce from contract
-          const currNonce = await moduleInstance.getCurrentNonce(contractModule.stakingModuleAddress, currElMeta.hash);
-          // Read module in storage
-          const moduleInStorage = await this.srModulesStorage.findOneById(contractModule.moduleId);
-          const prevNonce = moduleInStorage?.nonce;
-          // update staking module information
-          await this.srModulesStorage.upsert(contractModule, currNonce);
-
-          this.logger.log(`Nonce previous value: ${prevNonce}, nonce current value: ${currNonce}`);
-
-          if (prevNonce === currNonce) {
-            this.logger.log("Nonce wasn't changed, no need to update keys");
-            // case when prevELMeta is undefined but prevNonce === currNonce looks like invalid
-            // use here prevElMeta.blockNumber + 1 because operators were updated in database for  prevElMeta.blockNumber block
-            if (
-              prevElMeta &&
-              prevElMeta.blockNumber < currElMeta.number &&
-              (await moduleInstance.operatorsWereChanged(
-                contractModule.stakingModuleAddress,
-                prevElMeta.blockNumber + 1,
-                currElMeta.number,
-              ))
-            ) {
-              this.logger.log('Update events happened, need to update operators');
-              await moduleInstance.updateOperators(contractModule.stakingModuleAddress, currElMeta.hash);
-            }
-
-            continue;
-          }
-
-          await moduleInstance.update(contractModule.stakingModuleAddress, currElMeta.hash);
-        }
+        await this.stakingModuleUpdaterService.updateStakingModules({ currElMeta, prevElMeta, contractModules });
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
     );

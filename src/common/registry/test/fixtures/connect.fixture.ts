@@ -16,6 +16,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 1,
@@ -27,6 +28,7 @@ export const operators = [
     stoppedValidators: 1,
     totalSigningKeys: 123,
     usedSigningKeys: 51,
+    finalizedUsedSigningKeys: 51,
   },
   {
     index: 2,
@@ -38,6 +40,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 3,
@@ -49,6 +52,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 4,
@@ -60,6 +64,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 5,
@@ -71,6 +76,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 6,
@@ -82,6 +88,7 @@ export const operators = [
     stoppedValidators: 338,
     totalSigningKeys: 2511,
     usedSigningKeys: 2109,
+    finalizedUsedSigningKeys: 2109,
   },
   {
     index: 7,
@@ -93,6 +100,7 @@ export const operators = [
     stoppedValidators: 1,
     totalSigningKeys: 20,
     usedSigningKeys: 20,
+    finalizedUsedSigningKeys: 20,
   },
   {
     index: 8,
@@ -104,6 +112,7 @@ export const operators = [
     stoppedValidators: 6,
     totalSigningKeys: 109,
     usedSigningKeys: 109,
+    finalizedUsedSigningKeys: 109,
   },
   {
     index: 9,
@@ -115,6 +124,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 10,
@@ -126,6 +136,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 310,
     usedSigningKeys: 17,
+    finalizedUsedSigningKeys: 17,
   },
   {
     index: 11,
@@ -137,6 +148,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 110,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 12,
@@ -148,6 +160,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 41,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 13,
@@ -159,6 +172,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 14,
@@ -170,6 +184,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 15,
@@ -181,6 +196,7 @@ export const operators = [
     stoppedValidators: 4,
     totalSigningKeys: 20,
     usedSigningKeys: 20,
+    finalizedUsedSigningKeys: 20,
   },
   {
     index: 16,
@@ -192,6 +208,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 17,
@@ -203,6 +220,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 18,
@@ -214,6 +232,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 19,
@@ -225,6 +244,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 20,
@@ -236,6 +256,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 21,
@@ -247,6 +268,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 22,
@@ -258,6 +280,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 23,
@@ -269,6 +292,7 @@ export const operators = [
     stoppedValidators: 22,
     totalSigningKeys: 62,
     usedSigningKeys: 48,
+    finalizedUsedSigningKeys: 48,
   },
   {
     index: 24,
@@ -280,6 +304,7 @@ export const operators = [
     stoppedValidators: 1,
     totalSigningKeys: 20,
     usedSigningKeys: 20,
+    finalizedUsedSigningKeys: 20,
   },
   {
     index: 25,
@@ -291,6 +316,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 26,
@@ -302,6 +328,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 27,
@@ -313,6 +340,7 @@ export const operators = [
     stoppedValidators: 7,
     totalSigningKeys: 22,
     usedSigningKeys: 22,
+    finalizedUsedSigningKeys: 22,
   },
   {
     index: 28,
@@ -324,6 +352,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 20,
     usedSigningKeys: 12,
+    finalizedUsedSigningKeys: 12,
   },
   {
     index: 29,
@@ -335,6 +364,7 @@ export const operators = [
     stoppedValidators: 1,
     totalSigningKeys: 20,
     usedSigningKeys: 20,
+    finalizedUsedSigningKeys: 20,
   },
   {
     index: 30,
@@ -346,6 +376,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 31,
@@ -357,6 +388,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 32,
@@ -368,6 +400,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 2,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 33,
@@ -379,6 +412,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 34,
@@ -390,6 +424,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 10,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 35,
@@ -401,6 +436,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 250,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 36,
@@ -412,6 +448,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 37,
@@ -423,6 +460,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 38,
@@ -434,6 +472,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 39,
@@ -445,6 +484,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 40,
@@ -456,6 +496,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 12,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 41,
@@ -467,6 +508,7 @@ export const operators = [
     stoppedValidators: 930,
     totalSigningKeys: 2000,
     usedSigningKeys: 2000,
+    finalizedUsedSigningKeys: 2000,
   },
   {
     index: 42,
@@ -478,6 +520,7 @@ export const operators = [
     stoppedValidators: 18,
     totalSigningKeys: 1010,
     usedSigningKeys: 1010,
+    finalizedUsedSigningKeys: 1010,
   },
   {
     index: 43,
@@ -489,6 +532,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 44,
@@ -500,6 +544,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 20,
     usedSigningKeys: 20,
+    finalizedUsedSigningKeys: 20,
   },
   {
     index: 45,
@@ -511,6 +556,7 @@ export const operators = [
     stoppedValidators: 4,
     totalSigningKeys: 10,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 46,
@@ -522,6 +568,7 @@ export const operators = [
     stoppedValidators: 3,
     totalSigningKeys: 500,
     usedSigningKeys: 10,
+    finalizedUsedSigningKeys: 10,
   },
   {
     index: 47,
@@ -533,6 +580,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 1,
     usedSigningKeys: 1,
+    finalizedUsedSigningKeys: 1,
   },
   {
     index: 48,
@@ -544,6 +592,7 @@ export const operators = [
     stoppedValidators: 1,
     totalSigningKeys: 1,
     usedSigningKeys: 1,
+    finalizedUsedSigningKeys: 1,
   },
   {
     index: 49,
@@ -555,6 +604,7 @@ export const operators = [
     stoppedValidators: 1,
     totalSigningKeys: 1,
     usedSigningKeys: 1,
+    finalizedUsedSigningKeys: 1,
   },
   {
     index: 50,
@@ -566,6 +616,7 @@ export const operators = [
     stoppedValidators: 1,
     totalSigningKeys: 1,
     usedSigningKeys: 1,
+    finalizedUsedSigningKeys: 1,
   },
   {
     index: 51,
@@ -577,6 +628,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 470,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 52,
@@ -588,6 +640,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 53,
@@ -599,6 +652,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 54,
@@ -610,6 +664,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 55,
@@ -621,6 +676,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 56,
@@ -632,6 +688,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 57,
@@ -643,6 +700,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 58,
@@ -654,6 +712,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 59,
@@ -665,6 +724,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 60,
@@ -676,6 +736,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 61,
@@ -687,6 +748,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 62,
@@ -698,6 +760,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 63,
@@ -709,6 +772,7 @@ export const operators = [
     stoppedValidators: 14,
     totalSigningKeys: 2000,
     usedSigningKeys: 1786,
+    finalizedUsedSigningKeys: 1786,
   },
   {
     index: 64,
@@ -720,6 +784,7 @@ export const operators = [
     stoppedValidators: 13,
     totalSigningKeys: 3000,
     usedSigningKeys: 1785,
+    finalizedUsedSigningKeys: 1785,
   },
   {
     index: 65,
@@ -731,6 +796,7 @@ export const operators = [
     stoppedValidators: 12,
     totalSigningKeys: 3000,
     usedSigningKeys: 1783,
+    finalizedUsedSigningKeys: 1783,
   },
   {
     index: 66,
@@ -742,6 +808,7 @@ export const operators = [
     stoppedValidators: 10,
     totalSigningKeys: 2000,
     usedSigningKeys: 1781,
+    finalizedUsedSigningKeys: 1781,
   },
   {
     index: 67,
@@ -753,6 +820,7 @@ export const operators = [
     stoppedValidators: 10,
     totalSigningKeys: 2000,
     usedSigningKeys: 1781,
+    finalizedUsedSigningKeys: 1781,
   },
   {
     index: 68,
@@ -764,6 +832,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 1,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 69,
@@ -775,6 +844,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 70,
@@ -786,6 +856,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 71,
@@ -797,6 +868,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 10,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 72,
@@ -808,6 +880,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 73,
@@ -819,6 +892,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 74,
@@ -830,6 +904,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 75,
@@ -841,6 +916,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 76,
@@ -852,6 +928,7 @@ export const operators = [
     stoppedValidators: 0,
     totalSigningKeys: 0,
     usedSigningKeys: 0,
+    finalizedUsedSigningKeys: 0,
   },
   {
     index: 77,
@@ -863,6 +940,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 5,
     usedSigningKeys: 5,
+    finalizedUsedSigningKeys: 5,
   },
   {
     index: 78,
@@ -874,6 +952,7 @@ export const operators = [
     stoppedValidators: 5,
     totalSigningKeys: 125,
     usedSigningKeys: 125,
+    finalizedUsedSigningKeys: 125,
   },
   {
     index: 79,
@@ -885,6 +964,7 @@ export const operators = [
     stoppedValidators: 2,
     totalSigningKeys: 500,
     usedSigningKeys: 500,
+    finalizedUsedSigningKeys: 500,
   },
 ];
 

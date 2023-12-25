@@ -11,6 +11,7 @@ import { ConsensusValidatorEntity } from '@lido-nestjs/validators-registry';
 import { readFileSync } from 'fs';
 import { SrModuleEntity } from './storage/sr-module.entity';
 import { ElMetaEntity } from './storage/el-meta.entity';
+import { Logger } from '@nestjs/common';
 
 dotenv.config();
 
@@ -60,8 +61,9 @@ const findMigrations = (mainFolder: string, npmPackageNames: string[]): Migratio
     process.exit(1);
   }
 
-  // TODO think about Nest.js logger
-  console.log(`Found [${migrations.length}] DB migration files.`);
+  const logger = new Logger();
+  logger.log(`Found [${migrations.length}] DB migration files.`);
+
   return migrations;
 };
 

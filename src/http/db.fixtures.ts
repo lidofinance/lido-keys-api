@@ -17,6 +17,7 @@ export const curatedModule: StakingModule = {
   lastDepositBlock: 9,
   exitedValidatorsCount: 0,
   active: true,
+  lastChangedBlockHash: '',
 };
 
 export const dvtModule: StakingModule = {
@@ -32,6 +33,7 @@ export const dvtModule: StakingModule = {
   lastDepositBlock: 10,
   exitedValidatorsCount: 0,
   active: true,
+  lastChangedBlockHash: '',
 };
 
 export const updatedCuratedModule: StakingModule = {
@@ -47,6 +49,7 @@ export const updatedCuratedModule: StakingModule = {
   lastDepositBlock: 10,
   exitedValidatorsCount: 1,
   active: false,
+  lastChangedBlockHash: '',
 };
 export const srModules = [curatedModule, dvtModule];
 
@@ -228,6 +231,7 @@ export const operatorOneCurated: RegistryOperator = {
   usedSigningKeys: 2,
   totalSigningKeys: 3,
   moduleAddress: curatedModule.stakingModuleAddress,
+  finalizedUsedSigningKeys: 2,
 };
 
 export const operatorTwoCurated: RegistryOperator = {
@@ -240,6 +244,7 @@ export const operatorTwoCurated: RegistryOperator = {
   usedSigningKeys: 2,
   totalSigningKeys: 3,
   moduleAddress: curatedModule.stakingModuleAddress,
+  finalizedUsedSigningKeys: 2,
 };
 
 export const operatorOneDvt: RegistryOperator = {
@@ -252,6 +257,7 @@ export const operatorOneDvt: RegistryOperator = {
   usedSigningKeys: 2,
   totalSigningKeys: 3,
   moduleAddress: dvtModule.stakingModuleAddress,
+  finalizedUsedSigningKeys: 2,
 };
 
 export const operatorTwoDvt: RegistryOperator = {
@@ -264,6 +270,7 @@ export const operatorTwoDvt: RegistryOperator = {
   usedSigningKeys: 2,
   totalSigningKeys: 3,
   moduleAddress: dvtModule.stakingModuleAddress,
+  finalizedUsedSigningKeys: 2,
 };
 
 export const operators = [operatorOneCurated, operatorTwoCurated, operatorOneDvt, operatorTwoDvt];

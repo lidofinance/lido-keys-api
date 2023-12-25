@@ -23,6 +23,8 @@ import { registryServiceMock } from '../mock-utils';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 
+const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+
 describe('Validator registry', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
   const CHAIN_ID = process.env.CHAIN_ID || 1;
@@ -87,8 +89,6 @@ describe('Validator registry', () => {
         operators: operatorsWithModuleAddress,
       });
 
-      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
-
       await registryService.update(address, blockHash);
       // update function doesn't make a decision about update no more
       // so here would happen update if list of keys was changed
@@ -110,8 +110,6 @@ describe('Validator registry', () => {
         operators: operatorsWithModuleAddress,
       });
 
-      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
-
       await registryService.update(address, blockHash);
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock).toBeCalledTimes(2);
@@ -128,8 +126,6 @@ describe('Validator registry', () => {
         keys: newKeys,
         operators: operatorsWithModuleAddress,
       });
-
-      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
       await registryService.update(address, blockHash);
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
@@ -151,8 +147,6 @@ describe('Validator registry', () => {
         operators: newOperators,
       });
 
-      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
-
       await registryService.update(address, blockHash);
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
@@ -171,8 +165,6 @@ describe('Validator registry', () => {
         keys: keysWithModuleAddress,
         operators: newOperators,
       });
-
-      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
       await registryService.update(address, blockHash);
       expect(saveRegistryMock).toBeCalledTimes(1);
@@ -196,8 +188,6 @@ describe('Validator registry', () => {
         keys: keysWithModuleAddress,
         operators: newOperators,
       });
-
-      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
       await registryService.update(address, blockHash);
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
@@ -224,8 +214,6 @@ describe('Validator registry', () => {
         operators: newOperators,
       });
 
-      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
-
       await registryService.update(address, blockHash);
       expect(saveRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
@@ -245,8 +233,6 @@ describe('Validator registry', () => {
         keys: keysWithModuleAddress,
         operators: newOperators,
       });
-
-      const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
       await registryService.update(address, blockHash);
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
@@ -327,7 +313,6 @@ describe('Empty registry', () => {
       keys: keysWithModuleAddress,
       operators: operatorsWithModuleAddress,
     });
-    const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
     await registryService.update(address, blockHash);
     expect(saveRegistryMock).toBeCalledTimes(1);
@@ -337,5 +322,94 @@ describe('Empty registry', () => {
       operators: operatorsWithModuleAddress,
     });
     await registryService.update(address, blockHash);
+  });
+});
+
+describe('Reorg detection', () => {
+  const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
+  let registryService: ValidatorRegistryService;
+  let registryStorageService: RegistryStorageService;
+  let moduleRef: TestingModule;
+  const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');
+  const CHAIN_ID = process.env.CHAIN_ID || 1;
+  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
+  let mikroOrm: MikroORM;
+
+  jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
+
+  beforeEach(async () => {
+    const imports = [
+      MikroOrmModule.forRoot(mikroORMConfig),
+      MockLoggerModule.forRoot({
+        log: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+      }),
+      ValidatorRegistryModule.forFeature({ provider }),
+    ];
+    moduleRef = await Test.createTestingModule({
+      imports,
+      providers: [{ provide: LOGGER_PROVIDER, useValue: {} }],
+    }).compile();
+    registryService = moduleRef.get(ValidatorRegistryService);
+    registryStorageService = moduleRef.get(RegistryStorageService);
+    mikroOrm = moduleRef.get(MikroORM);
+    const generator = mikroOrm.getSchemaGenerator();
+    await generator.updateSchema();
+  });
+
+  afterEach(async () => {
+    mockCall.mockReset();
+    await clearDb(mikroOrm);
+    await registryStorageService.onModuleDestroy();
+  });
+
+  test('init on update', async () => {
+    const saveRegistryMock = jest.spyOn(registryService, 'saveOperators');
+    const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
+    const finalizedUsedSigningKeys = 1;
+
+    const keysWithModuleAddress = keys.map((key) => {
+      return { ...key, moduleAddress: address };
+    });
+
+    const operatorsWithModuleAddress = operators.map((key) => {
+      return { ...key, moduleAddress: address, finalizedUsedSigningKeys };
+    });
+
+    const unrefMock = registryServiceMock(moduleRef, provider, {
+      keys: keysWithModuleAddress,
+      operators: operatorsWithModuleAddress,
+    });
+
+    await registryService.update(address, blockHash);
+
+    expect(saveRegistryMock).toBeCalledTimes(1);
+    expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(2);
+
+    await compareTestKeysAndOperators(address, registryService, {
+      keys: keysWithModuleAddress,
+      operators: operatorsWithModuleAddress,
+    });
+
+    unrefMock();
+
+    // Let's corrupt the data below to make sure that
+    // the update method handles the left boundary correctly
+    const keysWithSpoiledLeftEdge = clone(keysWithModuleAddress).map((key) =>
+      key.index >= finalizedUsedSigningKeys ? { ...key } : { ...key, key: '', depositSignature: '' },
+    );
+
+    registryServiceMock(moduleRef, provider, {
+      keys: keysWithSpoiledLeftEdge,
+      operators: operatorsWithModuleAddress,
+    });
+
+    await registryService.update(address, blockHash);
+
+    await compareTestKeysAndOperators(address, registryService, {
+      keys: keysWithModuleAddress,
+      operators: operatorsWithModuleAddress,
+    });
   });
 });

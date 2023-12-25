@@ -12,13 +12,19 @@ export class ElMetaStorageService {
     return result[0] ?? null;
   }
 
-  async update(currElMeta: { number: number; hash: string; timestamp: number }): Promise<void> {
+  async update(currElMeta: {
+    number: number;
+    hash: string;
+    timestamp: number;
+    lastChangedBlockHash: string;
+  }): Promise<void> {
     await this.repository.nativeDelete({});
     await this.repository.persist(
       new ElMetaEntity({
         blockHash: currElMeta.hash,
         blockNumber: currElMeta.number,
         timestamp: currElMeta.timestamp,
+        lastChangedBlockHash: currElMeta.lastChangedBlockHash,
       }),
     );
     await this.repository.flush();
