@@ -8,6 +8,8 @@ import { SWAGGER_URL } from './http/common/swagger';
 import { ConfigService } from './common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
 import { MikroORM } from '@mikro-orm/core';
+import { Worker } from 'worker_threads';
+import { error } from 'console';
 
 // need also filter query params
 // forbidUnknownValues: true
@@ -89,8 +91,8 @@ async function bootstrap() {
   SwaggerModule.setup(SWAGGER_URL, app, swaggerDocument);
 
   app.useGlobalPipes(new ValidationPipe(validationOpt));
-
   // app
-  await app.listen(appPort, '0.0.0.0', () => logger.log(`Listening on ${appPort}`));
+  app.listen(appPort, '0.0.0.0', () => logger.log(`Listening on ${appPort}`));
 }
+
 bootstrap();

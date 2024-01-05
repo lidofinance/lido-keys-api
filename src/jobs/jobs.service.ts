@@ -4,13 +4,14 @@ import { ValidatorsUpdateService } from './validators-update/validators-update.s
 import { KeysUpdateService } from './keys-update';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { PrometheusService } from 'common/prometheus';
+import { isMainThread } from 'worker_threads';
 
 @Injectable()
 export class JobsService implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly keysUpdateService: KeysUpdateService,
-    protected readonly validatorUpdateService: ValidatorsUpdateService,
+    // protected readonly validatorUpdateService: ValidatorsUpdateService,
     protected readonly schedulerRegistry: SchedulerRegistry,
     protected readonly prometheusService: PrometheusService,
   ) {}
@@ -25,10 +26,10 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
     try {
       const intervalUpdateKeys = this.schedulerRegistry.getInterval(this.keysUpdateService.UPDATE_KEYS_JOB_NAME);
       clearInterval(intervalUpdateKeys);
-      const intervalUpdateValidators = this.schedulerRegistry.getInterval(
-        this.validatorUpdateService.UPDATE_VALIDATORS_JOB_NAME,
-      );
-      clearInterval(intervalUpdateValidators);
+      // const intervalUpdateValidators = this.schedulerRegistry.getInterval(
+      //   this.validatorUpdateService.UPDATE_VALIDATORS_JOB_NAME,
+      // );
+      // clearInterval(intervalUpdateValidators);
     } catch {}
   }
 
@@ -36,13 +37,22 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
    * Initializes jobs
    */
   protected async initialize(): Promise<void> {
-    await this.keysUpdateService.initialize();
-    if (this.validatorUpdateService.isDisabledRegistry()) {
-      this.prometheusService.validatorsEnabled.set(0);
-      this.logger.log('Job for updating validators is disabled');
+    if (isMainThread) {
+      this.logger.log('Run keys update service');
+      this.keysUpdateService.initialize();
       return;
     }
-    this.prometheusService.validatorsEnabled.set(1);
-    await this.validatorUpdateService.initialize();
+
+    // this.logger.log('Run Validators');
+
+    // // run in a worker thread
+    // if (this.validatorUpdateService.isDisabledRegistry()) {
+    //   this.prometheusService.validatorsEnabled.set(0);
+    //   this.logger.log('Job for updating validators is disabled');
+    //   return;
+    // }
+
+    // this.prometheusService.validatorsEnabled.set(1);
+    // this.validatorUpdateService.initialize();
   }
 }
