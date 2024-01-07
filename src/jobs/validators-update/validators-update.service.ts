@@ -1,12 +1,12 @@
 import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
-import { ConfigService } from 'common/config';
-import { JobService } from 'common/job';
+import { LOGGER_PROVIDER, LoggerService } from '../../common/logger';
+import { ConfigService } from '../../common/config';
+import { JobService } from '../../common/job';
 import { ValidatorsService } from 'validators';
-import { OneAtTime } from 'common/decorators/oneAtTime';
+import { OneAtTime } from '../../common/decorators/oneAtTime';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { parentPort } from 'worker_threads';
-import { ValidatorsUpdateMetrics } from 'app/validators-update-worker.service';
+import { ValidatorsUpdateMetrics } from './interfaces';
 
 export interface ValidatorsFilter {
   pubkeys: string[];
@@ -37,7 +37,6 @@ export class ValidatorsUpdateService implements OnModuleInit, OnModuleDestroy {
   // prometheus metrics
   protected lastBlockTimestampSec: number | undefined = undefined;
   protected lastBlockNumber: number | undefined = undefined;
-  protected lastSlot: number | undefined = undefined;
 
   // name of interval for updating validators
   public UPDATE_VALIDATORS_JOB_NAME = 'ValidatorsUpdate';
@@ -105,11 +104,15 @@ export class ValidatorsUpdateService implements OnModuleInit, OnModuleDestroy {
       const meta = await this.validatorsService.updateValidators('finalized');
       // meta shouldn't be null
       // if update didn't happen, meta will be fetched from db
-      this.lastBlockTimestampSec = meta?.timestamp ?? this.lastBlockTimestampSec;
-      this.lastBlockNumber = meta?.blockNumber ?? this.lastBlockNumber;
-      this.lastSlot = meta?.slot ?? this.lastSlot;
-
-      this.sendMetricsToMainThread();
+      if (meta) {
+        this.sendMetricsToMainThread({
+          lastBlockTimestampSec: meta.timestamp,
+          lastBlockNumber: meta.blockNumber,
+          lastSlot: meta.slot,
+        });
+        this.lastBlockTimestampSec = meta.timestamp;
+        this.lastBlockNumber = meta.blockNumber;
+      }
 
       // Call this to check if validators have been updated within the expected time frame
       // and to always set a new timer after a successful update.
@@ -117,13 +120,34 @@ export class ValidatorsUpdateService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  private sendMetricsToMainThread() {
-    const validatorsUpdateMetrics: ValidatorsUpdateMetrics = {
-      lastBlockTimestampSec: this.lastBlockTimestampSec,
-      lastBlockNumber: this.lastBlockNumber,
-      lastSlot: this.lastSlot,
-    };
+  // labels - optional
+  //{
+  //   type: 'metric',
+  //   data: { name: 'jobDuration', labels: { job: meta.name, result: 'success' }, value },
+  // }
+  private sendMetricsToMainThread(values: ValidatorsUpdateMetrics) {
+    parentPort?.postMessage({
+      type: 'metric',
+      data: {
+        name: 'validators_registry_last_block_number',
+        value: values.lastBlockNumber,
+      },
+    });
 
-    parentPort?.postMessage(validatorsUpdateMetrics);
+    parentPort?.postMessage({
+      type: 'metric',
+      data: {
+        name: 'validators_registry_last_update_block_timestamp',
+        value: values.lastBlockTimestampSec,
+      },
+    });
+
+    parentPort?.postMessage({
+      type: 'metric',
+      data: {
+        name: 'validators_registry_last_slot',
+        value: values.lastSlot,
+      },
+    });
   }
 }

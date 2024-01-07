@@ -4,12 +4,6 @@ import { PrometheusService } from '../common/prometheus';
 import { isMainThread, Worker } from 'worker_threads';
 import { LOGGER_PROVIDER, LoggerService } from '../common/logger';
 
-export type ValidatorsUpdateMetrics = {
-  lastBlockTimestampSec: number | undefined;
-  lastBlockNumber: number | undefined;
-  lastSlot: number | undefined;
-};
-
 @Injectable()
 export class ValidatorsUpdateWorkerService implements OnModuleInit, OnModuleDestroy {
   constructor(
@@ -32,10 +26,14 @@ export class ValidatorsUpdateWorkerService implements OnModuleInit, OnModuleDest
     this.prometheusService.validatorsEnabled.set(1);
 
     if (isMainThread) {
-      console.log('run worker');
       this.worker = new Worker(__dirname + '/../validators-update-worker.js', { workerData: {} });
 
-      this.worker.on('message', this.handleValidatorsUpdateMetrics.bind(this));
+      this.worker.on('message', this.handleMetrics.bind(this));
+
+      this.worker.on('error', (err) => {
+        // how to restart worker?? or shutdown app
+        this.logger.error(err);
+      });
     }
   }
 
@@ -45,19 +43,62 @@ export class ValidatorsUpdateWorkerService implements OnModuleInit, OnModuleDest
     }
   }
 
-  private handleValidatorsUpdateMetrics({ lastBlockTimestampSec, lastBlockNumber, lastSlot }: ValidatorsUpdateMetrics) {
-    if (lastBlockTimestampSec) {
-      this.prometheusService.validatorsRegistryLastTimestampUpdate.set(lastBlockTimestampSec);
+  // move to separate file
+  // define metric type
+  private handleMetrics(message) {
+    // {
+    //   type: 'metric',
+    //   data: { name: 'jobDuration', labels: { job: meta.name, result: 'success' }, value },
+    // }
+    // парсинг
+    // определяем тип для метрики полученной из worker thread
+    // делаем централизованную функцию для отправки метрик из воркера
+    //
+    if (message.type !== 'metric') {
+      this.logger.error('Got unexpected type of message from worker thread.');
+      process.exit(0);
     }
 
-    if (lastBlockNumber) {
-      this.prometheusService.validatorsRegistryLastBlockNumber.set(lastBlockNumber);
+    // check type of message
+    if (message.data.name === 'job_duration_seconds') {
+      this.prometheusService.jobDuration.observe(
+        { job: message.data.labels.job, result: message.data.labels.result },
+        message.data.value,
+      );
+
+      return;
     }
 
-    if (lastSlot) {
-      this.prometheusService.validatorsRegistryLastSlot.set(lastSlot);
+    if (message.data.name === 'cl_api_requests_duration_seconds') {
+      this.prometheusService.clApiRequestDuration.observe(
+        { result: message.data.labels.result, status: message.data.labels.status },
+        message.data.value,
+      );
+
+      return;
     }
 
-    this.logger.log('ValidatorsRegistry metrics updated');
+    if (message.data.name === 'validators_registry_last_block_number') {
+      this.prometheusService.validatorsRegistryLastBlockNumber.set(message.data.value);
+      this.logger.log('ValidatorsRegistry metrics updated');
+      return;
+    }
+
+    if (message.data.name === 'validators_registry_last_update_block_timestamp') {
+      this.prometheusService.validatorsRegistryLastTimestampUpdate.set(message.data.value);
+      this.logger.log('ValidatorsRegistry metrics updated');
+      return;
+    }
+
+    if (message.data.name === 'validators_registry_last_slot') {
+      this.prometheusService.validatorsRegistryLastSlot.set(message.data.value);
+      this.logger.log('ValidatorsRegistry metrics updated');
+      return;
+    }
+
+    // other metrics should not be provided by worker thread
+    this.logger.error('Got unexpected metric from worker thread.');
+    this.logger.log(message);
+    process.exit(0);
   }
 }

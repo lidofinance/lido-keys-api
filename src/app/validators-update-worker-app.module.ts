@@ -7,9 +7,11 @@ import config from '../mikro-orm.config';
 import { LoggerModule } from '@lido-nestjs/logger';
 import { ValidatorsUpdateModule } from '../jobs/validators-update';
 import { ValidatorsModule } from 'validators';
+import { PrometheusModule } from '../common/prometheus';
 
 @Module({
   imports: [
+    PrometheusModule,
     LoggerModule,
     ConfigModule,
     ConsensusProviderModule,

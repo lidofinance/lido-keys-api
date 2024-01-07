@@ -1,5 +1,6 @@
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { Inject } from '@nestjs/common';
+import { isMainThread, parentPort } from 'worker_threads';
 import { LOGGER_PROVIDER, LoggerService } from '../logger';
 import { PrometheusService } from '../prometheus';
 
@@ -24,11 +25,28 @@ export class JobService {
 
     try {
       const result = await jobFn();
-      endTimer({ result: 'success' });
+      const value = endTimer({ result: 'success' });
+
+      if (!isMainThread) {
+        parentPort?.postMessage({
+          type: 'metric',
+          data: { name: 'job_duration_seconds', labels: { job: meta.name, result: 'success' }, value },
+        });
+      }
+
+      console.log('job duration', value);
 
       return result;
     } catch (error) {
-      endTimer({ result: 'error' });
+      const value = endTimer({ result: 'error' });
+
+      if (!isMainThread) {
+        parentPort?.postMessage({
+          type: 'metric',
+          data: { name: 'job_duration_seconds', labels: { job: meta.name, result: 'success' }, value },
+        });
+      }
+
       this.logger.warn('Job terminated with an error', meta);
       this.logger.error(error);
     } finally {

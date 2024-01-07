@@ -5,6 +5,7 @@ import { ConfigService } from '../config';
 import { PrometheusService } from '../prometheus';
 import { CONSENSUS_RETRY_ATTEMPTS, CONSENSUS_RETRY_DELAY } from './consensus-provider.constants';
 import { ConsensusFetchService } from './consensus-fetch.service';
+import { isMainThread, parentPort } from 'worker_threads';
 
 @Module({
   imports: [MiddlewareModule],
@@ -24,12 +25,31 @@ import { ConsensusFetchService } from './consensus-fetch.service';
 
               try {
                 const result = await next();
-                endTimer({ result: 'success', status: 200 });
+                const value = endTimer({ result: 'success', status: 200 });
+
+                if (!isMainThread) {
+                  parentPort?.postMessage({
+                    type: 'metric',
+                    data: {
+                      name: 'cl_api_requests_duration_seconds',
+                      labels: { result: 'success', status: 200 },
+                      value,
+                    },
+                  });
+                }
+
                 return result;
               } catch (error) {
                 const status = error instanceof HttpException ? error.getStatus() : 'unknown';
+                const value = endTimer({ result: 'error', status });
 
-                endTimer({ result: 'error', status });
+                if (!isMainThread) {
+                  parentPort?.postMessage({
+                    type: 'metric',
+                    data: { name: 'cl_api_requests_duration_seconds', labels: { result: 'error', status }, value },
+                  });
+                }
+
                 throw error;
               }
             },

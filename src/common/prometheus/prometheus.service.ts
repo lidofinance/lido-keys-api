@@ -58,12 +58,6 @@ export class PrometheusService {
     help: 'Block timestamp for which the last update was made.',
   });
 
-  public validatorsRegistryLastTimestampUpdate = this.getOrCreateMetric('Gauge', {
-    prefix: true,
-    name: 'validators_registry_last_update_block_timestamp',
-    help: 'Block timestamp for which the last ValidatorsRegistry update was made.',
-  });
-
   public registryNumberOfKeysBySRModuleAndOperator = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'keys_by_sr_module_and_operator',
@@ -82,6 +76,12 @@ export class PrometheusService {
     prefix: true,
     name: 'last_block_number',
     help: 'Block number for which the last update was made.',
+  });
+
+  public validatorsRegistryLastTimestampUpdate = this.getOrCreateMetric('Gauge', {
+    prefix: true,
+    name: 'validators_registry_last_update_block_timestamp',
+    help: 'Block timestamp for which the last ValidatorsRegistry update was made.',
   });
 
   public validatorsRegistryLastBlockNumber = this.getOrCreateMetric('Gauge', {
