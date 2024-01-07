@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { ConfigService } from 'common/config';
 import { JobService } from 'common/job';
@@ -26,7 +26,7 @@ class KeyOutdatedError extends Error {
 }
 
 @Injectable()
-export class KeysUpdateService {
+export class KeysUpdateService implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly configService: ConfigService,
@@ -51,6 +51,24 @@ export class KeysUpdateService {
   // if during 30 minutes nothing happen we will exit
   UPDATE_KEYS_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
   updateDeadlineTimer: undefined | NodeJS.Timeout = undefined;
+
+  public async onModuleInit(): Promise<void> {
+    // Do not wait for initialization to avoid blocking the main process
+    this.initialize().catch((err) => this.logger.error(err));
+  }
+
+  public async onModuleDestroy() {
+    this.logger.log('Jobs Service on module destroy', { job_name: this.UPDATE_KEYS_JOB_NAME });
+    try {
+      const intervalUpdateKeys = this.schedulerRegistry.getInterval(this.UPDATE_KEYS_JOB_NAME);
+      if (!intervalUpdateKeys) return;
+
+      this.logger.log('Clean job interval');
+      clearInterval(intervalUpdateKeys);
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
 
   /**
    * Initializes the job

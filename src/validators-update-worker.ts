@@ -2,14 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { Logger } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { MikroORM } from '@mikro-orm/core';
-import { WorkerAppModule } from 'app/worker-app.module';
-import { isMainThread, workerData } from 'worker_threads';
+import { ValidatorsUpdateWorkerAppModule } from 'app/validators-update-worker-app.module';
+import { isMainThread } from 'worker_threads';
 
 async function bootstrap() {
-  console.log(workerData);
   if (!isMainThread) {
-    console.log('wow, i am here');
-    const app = await NestFactory.createApplicationContext(WorkerAppModule, {
+    const app = await NestFactory.createApplicationContext(ValidatorsUpdateWorkerAppModule, {
       bufferLogs: true,
     });
 
@@ -23,7 +21,7 @@ async function bootstrap() {
 
     // handling uncaught exceptions when application exits abnormally
     process.on('uncaughtException', async (error) => {
-      logger.log('uncaught exception');
+      logger.log('uncaught exception in worker thread');
       const orm = app.get(MikroORM);
       if (orm) {
         if (orm.em.isInTransaction()) {

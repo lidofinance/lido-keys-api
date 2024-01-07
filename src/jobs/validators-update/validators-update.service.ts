@@ -1,12 +1,12 @@
 import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
-import { PrometheusService } from 'common/prometheus';
 import { ConfigService } from 'common/config';
 import { JobService } from 'common/job';
 import { ValidatorsService } from 'validators';
 import { OneAtTime } from 'common/decorators/oneAtTime';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { isMainThread, parentPort, workerData } from 'worker_threads';
+import { parentPort } from 'worker_threads';
+import { ValidatorsUpdateMetrics } from 'app/validators-update-worker.service';
 
 export interface ValidatorsFilter {
   pubkeys: string[];
@@ -28,7 +28,6 @@ class ValidatorsOutdatedError extends Error {
 export class ValidatorsUpdateService implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-    protected readonly prometheusService: PrometheusService,
     protected readonly configService: ConfigService,
     protected readonly jobService: JobService,
     protected readonly validatorsService: ValidatorsService,
@@ -43,26 +42,26 @@ export class ValidatorsUpdateService implements OnModuleInit, OnModuleDestroy {
   // name of interval for updating validators
   public UPDATE_VALIDATORS_JOB_NAME = 'ValidatorsUpdate';
   // timeout for update validators
-  // if during 60 minutes nothing happen we will exit
+  // if during 90 minutes nothing happen we will exit
   UPDATE_VALIDATORS_TIMEOUT_MS = 90 * 60 * 1000;
   updateDeadlineTimer: undefined | NodeJS.Timeout = undefined;
 
-  public isDisabledRegistry() {
-    return !this.configService.get('VALIDATOR_REGISTRY_ENABLE');
-  }
-
   public async onModuleInit(): Promise<void> {
-    this.logger.log('module init validators!!!');
     // Do not wait for initialization to avoid blocking the main process
     this.initialize().catch((err) => this.logger.error(err));
   }
 
   public async onModuleDestroy() {
-    this.logger.log('Jobs Service on module destroy');
+    this.logger.log('Jobs Service on module destroy', { job_name: this.UPDATE_VALIDATORS_JOB_NAME });
     try {
       const intervalUpdateValidators = this.schedulerRegistry.getInterval(this.UPDATE_VALIDATORS_JOB_NAME);
+      if (!intervalUpdateValidators) return;
+
+      this.logger.log('Clean job interval');
       clearInterval(intervalUpdateValidators);
-    } catch {}
+    } catch (e) {
+      this.logger.error(e);
+    }
   }
 
   public async initialize() {
@@ -102,17 +101,6 @@ export class ValidatorsUpdateService implements OnModuleInit, OnModuleDestroy {
 
   @OneAtTime()
   private async updateValidators() {
-    if (isMainThread) {
-      this.logger.log('validators in main thread!!!! ohhh my goood');
-    }
-
-    if (workerData !== undefined || parentPort !== undefined) {
-      console.log(workerData);
-      console.log(parentPort);
-      console.log(isMainThread);
-      this.logger.log('validators is in a worker thread, that is a good job!!!!! ');
-    }
-
     await this.jobService.wrapJob({ name: 'Update validators from ValidatorsRegistry' }, async () => {
       const meta = await this.validatorsService.updateValidators('finalized');
       // meta shouldn't be null
@@ -121,8 +109,7 @@ export class ValidatorsUpdateService implements OnModuleInit, OnModuleDestroy {
       this.lastBlockNumber = meta?.blockNumber ?? this.lastBlockNumber;
       this.lastSlot = meta?.slot ?? this.lastSlot;
 
-      // TODO: send to main process
-      this.updateMetrics();
+      this.sendMetricsToMainThread();
 
       // Call this to check if validators have been updated within the expected time frame
       // and to always set a new timer after a successful update.
@@ -130,23 +117,13 @@ export class ValidatorsUpdateService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  private updateMetrics() {
-    parentPort?.postMessage({
+  private sendMetricsToMainThread() {
+    const validatorsUpdateMetrics: ValidatorsUpdateMetrics = {
       lastBlockTimestampSec: this.lastBlockTimestampSec,
       lastBlockNumber: this.lastBlockNumber,
       lastSlot: this.lastSlot,
-    });
-    // if (this.lastBlockTimestampSec) {
-    //   this.prometheusService.validatorsRegistryLastTimestampUpdate.set(this.lastBlockTimestampSec);
-    // }
+    };
 
-    // if (this.lastBlockNumber) {
-    //   this.prometheusService.validatorsRegistryLastBlockNumber.set(this.lastBlockNumber);
-    // }
-    // if (this.lastSlot) {
-    //   this.prometheusService.validatorsRegistryLastSlot.set(this.lastSlot);
-    // }
-
-    this.logger.log('ValidatorsRegistry metrics updated');
+    parentPort?.postMessage(validatorsUpdateMetrics);
   }
 }

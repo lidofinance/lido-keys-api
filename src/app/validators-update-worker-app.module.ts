@@ -1,17 +1,15 @@
 import { Module } from '@nestjs/common';
-import { PrometheusModule } from '../common/prometheus';
 import { ConfigModule, ConfigService } from '../common/config';
 import { ConsensusProviderModule } from '../common/consensus-provider';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ScheduleModule } from '@nestjs/schedule';
 import config from '../mikro-orm.config';
 import { LoggerModule } from '@lido-nestjs/logger';
-import { ValidatorsUpdateModule } from 'jobs/validators-update';
+import { ValidatorsUpdateModule } from '../jobs/validators-update';
 import { ValidatorsModule } from 'validators';
 
 @Module({
   imports: [
-    PrometheusModule,
     LoggerModule,
     ConfigModule,
     ConsensusProviderModule,
@@ -39,4 +37,4 @@ import { ValidatorsModule } from 'validators';
   ],
   providers: [],
 })
-export class WorkerAppModule {}
+export class ValidatorsUpdateWorkerAppModule {}

@@ -9,7 +9,6 @@ import { HTTPModule } from '../http/';
 import { ExecutionProviderModule } from '../common/execution-provider';
 import { ConsensusProviderModule } from '../common/consensus-provider';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { JobsModule } from '../jobs';
 import { ScheduleModule } from '@nestjs/schedule';
 import config from '../mikro-orm.config';
 import { ValidatorsModule } from '../validators';
@@ -17,7 +16,8 @@ import { LoggerModule } from '@lido-nestjs/logger';
 import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
 import { KeyRegistryModule } from '../common/registry';
 import { StakingRouterModule } from '../staking-router-modules';
-import { WorkerService } from './worker.service';
+import { ValidatorsUpdateWorkerService } from './validators-update-worker.service';
+import { KeysUpdateModule } from '../jobs/keys-update';
 
 @Module({
   imports: [
@@ -54,9 +54,9 @@ import { WorkerService } from './worker.service';
     }),
     StakingRouterModule,
     ValidatorsModule,
-    JobsModule,
+    KeysUpdateModule,
     HTTPModule,
   ],
-  providers: [{ provide: APP_INTERCEPTOR, useClass: SentryInterceptor }, AppService, WorkerService],
+  providers: [{ provide: APP_INTERCEPTOR, useClass: SentryInterceptor }, AppService, ValidatorsUpdateWorkerService],
 })
 export class AppModule {}

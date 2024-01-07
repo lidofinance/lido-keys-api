@@ -8,8 +8,6 @@ import { SWAGGER_URL } from './http/common/swagger';
 import { ConfigService } from './common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
 import { MikroORM } from '@mikro-orm/core';
-import { Worker } from 'worker_threads';
-import { error } from 'console';
 
 // need also filter query params
 // forbidUnknownValues: true
@@ -64,6 +62,11 @@ async function bootstrap() {
     logger.log('application will exit in 5 seconds');
     setTimeout(() => process.exit(1), 5000);
     logger.error(error);
+  });
+
+  process.on('SIGINT', async () => {
+    logger.log('Received SIGINT. Graceful shutdown');
+    process.exit(0);
   });
 
   // sentry
