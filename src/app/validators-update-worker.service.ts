@@ -28,7 +28,7 @@ export class ValidatorsUpdateWorkerService implements OnModuleInit, OnModuleDest
     if (isMainThread) {
       this.worker = new Worker(__dirname + '/../validators-update-worker.js', { workerData: {} });
 
-      this.worker.on('message', this.handleMetrics.bind(this));
+      this.worker.on('message', (message) => this.handleMetrics(message));
 
       this.worker.on('error', (err) => {
         // how to restart worker?? or shutdown app
@@ -43,17 +43,7 @@ export class ValidatorsUpdateWorkerService implements OnModuleInit, OnModuleDest
     }
   }
 
-  // move to separate file
-  // define metric type
   private handleMetrics(message) {
-    // {
-    //   type: 'metric',
-    //   data: { name: 'jobDuration', labels: { job: meta.name, result: 'success' }, value },
-    // }
-    // парсинг
-    // определяем тип для метрики полученной из worker thread
-    // делаем централизованную функцию для отправки метрик из воркера
-    //
     if (message.type !== 'metric') {
       this.logger.error('Got unexpected type of message from worker thread.');
       process.exit(0);

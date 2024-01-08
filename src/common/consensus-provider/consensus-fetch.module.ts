@@ -5,14 +5,19 @@ import { ConfigService } from '../config';
 import { PrometheusService } from '../prometheus';
 import { CONSENSUS_RETRY_ATTEMPTS, CONSENSUS_RETRY_DELAY } from './consensus-provider.constants';
 import { ConsensusFetchService } from './consensus-fetch.service';
-import { isMainThread, parentPort } from 'worker_threads';
+import { isMainThread } from 'worker_threads';
+import { WorkerMetricsHandler } from '../prometheus/worker-metrics-handler';
 
 @Module({
   imports: [MiddlewareModule],
   providers: [
     {
       provide: FETCH_GLOBAL_OPTIONS_TOKEN,
-      async useFactory(configService: ConfigService, prometheusService: PrometheusService) {
+      async useFactory(
+        configService: ConfigService,
+        prometheusService: PrometheusService,
+        workerMetricsHandler: WorkerMetricsHandler,
+      ) {
         return {
           baseUrls: configService.get('CL_API_URLS'),
           retryPolicy: {
@@ -28,7 +33,7 @@ import { isMainThread, parentPort } from 'worker_threads';
                 const value = endTimer({ result: 'success', status: 200 });
 
                 if (!isMainThread) {
-                  parentPort?.postMessage({
+                  workerMetricsHandler.postMetric({
                     type: 'metric',
                     data: {
                       name: 'cl_api_requests_duration_seconds',
@@ -44,7 +49,7 @@ import { isMainThread, parentPort } from 'worker_threads';
                 const value = endTimer({ result: 'error', status });
 
                 if (!isMainThread) {
-                  parentPort?.postMessage({
+                  workerMetricsHandler.postMetric({
                     type: 'metric',
                     data: { name: 'cl_api_requests_duration_seconds', labels: { result: 'error', status }, value },
                   });
@@ -56,7 +61,7 @@ import { isMainThread, parentPort } from 'worker_threads';
           ],
         };
       },
-      inject: [ConfigService, PrometheusService],
+      inject: [ConfigService, PrometheusService, WorkerMetricsHandler],
     },
     {
       provide: FetchService,

@@ -5,8 +5,8 @@ import { JobService } from '../../common/job';
 import { ValidatorsService } from 'validators';
 import { OneAtTime } from '../../common/decorators/oneAtTime';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { parentPort } from 'worker_threads';
 import { ValidatorsUpdateMetrics } from './interfaces';
+import { WorkerMetricsHandler } from '../../common/prometheus/worker-metrics-handler';
 
 export interface ValidatorsFilter {
   pubkeys: string[];
@@ -32,6 +32,7 @@ export class ValidatorsUpdateService implements OnModuleInit, OnModuleDestroy {
     protected readonly jobService: JobService,
     protected readonly validatorsService: ValidatorsService,
     protected readonly schedulerRegistry: SchedulerRegistry,
+    protected readonly workerMetricsHandler: WorkerMetricsHandler,
   ) {}
 
   // prometheus metrics
@@ -120,13 +121,8 @@ export class ValidatorsUpdateService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  // labels - optional
-  //{
-  //   type: 'metric',
-  //   data: { name: 'jobDuration', labels: { job: meta.name, result: 'success' }, value },
-  // }
   private sendMetricsToMainThread(values: ValidatorsUpdateMetrics) {
-    parentPort?.postMessage({
+    this.workerMetricsHandler.postMetric({
       type: 'metric',
       data: {
         name: 'validators_registry_last_block_number',
@@ -134,7 +130,7 @@ export class ValidatorsUpdateService implements OnModuleInit, OnModuleDestroy {
       },
     });
 
-    parentPort?.postMessage({
+    this.workerMetricsHandler.postMetric({
       type: 'metric',
       data: {
         name: 'validators_registry_last_update_block_timestamp',
@@ -142,7 +138,7 @@ export class ValidatorsUpdateService implements OnModuleInit, OnModuleDestroy {
       },
     });
 
-    parentPort?.postMessage({
+    this.workerMetricsHandler.postMetric({
       type: 'metric',
       data: {
         name: 'validators_registry_last_slot',

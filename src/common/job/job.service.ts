@@ -1,6 +1,7 @@
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { Inject } from '@nestjs/common';
-import { isMainThread, parentPort } from 'worker_threads';
+import { WorkerMetricsHandler } from 'common/prometheus/worker-metrics-handler';
+import { isMainThread } from 'worker_threads';
 import { LOGGER_PROVIDER, LoggerService } from '../logger';
 import { PrometheusService } from '../prometheus';
 
@@ -10,6 +11,7 @@ export class JobService {
 
     protected readonly prometheusService: PrometheusService,
     protected readonly orm: MikroORM,
+    protected readonly workerMetricsHandler: WorkerMetricsHandler,
   ) {}
 
   /**
@@ -28,7 +30,7 @@ export class JobService {
       const value = endTimer({ result: 'success' });
 
       if (!isMainThread) {
-        parentPort?.postMessage({
+        this.workerMetricsHandler.postMetric({
           type: 'metric',
           data: { name: 'job_duration_seconds', labels: { job: meta.name, result: 'success' }, value },
         });
@@ -41,9 +43,9 @@ export class JobService {
       const value = endTimer({ result: 'error' });
 
       if (!isMainThread) {
-        parentPort?.postMessage({
+        this.workerMetricsHandler.postMetric({
           type: 'metric',
-          data: { name: 'job_duration_seconds', labels: { job: meta.name, result: 'success' }, value },
+          data: { name: 'job_duration_seconds', labels: { job: meta.name, result: 'error' }, value },
         });
       }
 

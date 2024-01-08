@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { PrometheusModule as PrometheusModuleSource } from '@willsoto/nestjs-prometheus';
+import { WorkerMetricsHandler } from './worker-metrics-handler';
 import { METRICS_URL } from './prometheus.constants';
 import { PrometheusController } from './prometheus.controller';
 import { PrometheusService } from './prometheus.service';
@@ -13,7 +14,7 @@ import { PrometheusService } from './prometheus.service';
       defaultMetrics: { enabled: true },
     }),
   ],
-  providers: [PrometheusService],
-  exports: [PrometheusService],
+  providers: [PrometheusService, WorkerMetricsHandler],
+  exports: [PrometheusService, WorkerMetricsHandler],
 })
 export class PrometheusModule {}
