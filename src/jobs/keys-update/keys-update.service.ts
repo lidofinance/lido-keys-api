@@ -172,7 +172,7 @@ export class KeysUpdateService {
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
           // update nonce metric
-          this.prometheusService.registryNonce.set({ srModuleId: module.id }, module.nonce);
+          this.prometheusService.registryNonce.set({ srModuleId: module.moduleId }, module.nonce);
 
           // get operators
           const operators = await moduleInstance.getOperators(module.stakingModuleAddress);
