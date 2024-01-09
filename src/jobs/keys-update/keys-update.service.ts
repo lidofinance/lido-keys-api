@@ -182,7 +182,7 @@ export class KeysUpdateService {
             this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
               {
                 operator: operator.index,
-                srModuleId: module.id,
+                srModuleId: module.moduleId,
                 used: 'true',
               },
               operator.usedSigningKeys,
@@ -191,7 +191,7 @@ export class KeysUpdateService {
             this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
               {
                 operator: operator.index,
-                srModuleId: module.id,
+                srModuleId: module.moduleId,
                 used: 'false',
               },
               operator.totalSigningKeys - operator.usedSigningKeys,
