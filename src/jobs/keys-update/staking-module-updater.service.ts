@@ -161,7 +161,7 @@ export class StakingModuleUpdaterService {
     // get full block data by hashes
     const currentBlock = await this.executionProvider.getFullBlock(currentBlockHash);
     const prevBlock = await this.executionProvider.getFullBlock(prevBlockHash);
-    // prevBlock is a direct child of currentBlock
+    // prevBlock is a direct parent of currentBlock
     // there's no need to check deeper as we get the currentBlock by tag
     if (currentBlock.parentHash === prevBlock.hash) return false;
     // different hash but same number
@@ -178,9 +178,15 @@ export class StakingModuleUpdaterService {
       }),
     );
     // compare hash from the first block
-    if (blocks[0].hash !== prevBlockHash) return true;
+    if (blocks[0].hash !== prevBlockHash) {
+      updaterState.isReorgDetected = true;
+      return true;
+    }
     // compare hash from the last block
-    if (blocks[blocks.length - 1].hash !== currentBlockHash) return true;
+    if (blocks[blocks.length - 1].hash !== currentBlockHash) {
+      updaterState.isReorgDetected = true;
+      return true;
+    }
     // check the integrity of the blockchain
     for (let i = 1; i < blocks.length; i++) {
       const previousBlock = blocks[i - 1];
