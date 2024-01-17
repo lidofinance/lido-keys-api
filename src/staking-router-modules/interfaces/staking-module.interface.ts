@@ -27,8 +27,6 @@ export interface StakingModule {
   type: string; //STAKING_MODULE_TYPE;
   // is module active
   active: boolean;
-  // last changed block hash
-  lastChangedBlockHash: string;
 }
 
 export interface StakingModuleInterface {

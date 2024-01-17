@@ -17,7 +17,6 @@ export const curatedModule: StakingModule = {
   lastDepositBlock: 9,
   exitedValidatorsCount: 0,
   active: true,
-  lastChangedBlockHash: '',
 };
 
 export const dvtModule: StakingModule = {
@@ -33,7 +32,6 @@ export const dvtModule: StakingModule = {
   lastDepositBlock: 10,
   exitedValidatorsCount: 0,
   active: true,
-  lastChangedBlockHash: '',
 };
 
 export const updatedCuratedModule: StakingModule = {
@@ -49,7 +47,6 @@ export const updatedCuratedModule: StakingModule = {
   lastDepositBlock: 10,
   exitedValidatorsCount: 1,
   active: false,
-  lastChangedBlockHash: '',
 };
 export const srModules = [curatedModule, dvtModule];
 
