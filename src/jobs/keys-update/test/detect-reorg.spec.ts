@@ -145,7 +145,63 @@ describe('detect reorg', () => {
           number: Number(blockHashOrBlockTag),
           hash: `0x${blockHashOrBlockTag}`,
           timestamp: 1,
-          parentHash: `0xSORRY`,
+          parentHash: blockHashOrBlockTag === 100 ? `0xSORRY` : `0x${Number(blockHashOrBlockTag) - 1}`,
+        } as any),
+    );
+
+    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x100')).toBeTruthy();
+    expect(updaterState.isReorgDetected).toBeTruthy();
+  });
+
+  it("first block from range response doesn't match with first block", async () => {
+    const updaterState: UpdaterState = {
+      lastChangedBlockHash: '0x1',
+      isReorgDetected: false,
+    };
+
+    jest
+      .spyOn(executionProviderService, 'getFullBlock')
+      .mockImplementationOnce(async () => ({ number: 100, hash: '0x100', timestamp: 1, parentHash: '0x99' } as any));
+
+    jest
+      .spyOn(executionProviderService, 'getFullBlock')
+      .mockImplementationOnce(async () => ({ number: 1, hash: '0x1', timestamp: 1, parentHash: '0x0' } as any));
+
+    jest.spyOn(executionProviderService, 'getFullBlock').mockImplementation(
+      async (blockHashOrBlockTag: string | number) =>
+        ({
+          number: Number(blockHashOrBlockTag),
+          hash: blockHashOrBlockTag === 1 ? `0xSORRY` : `0x${Number(blockHashOrBlockTag) - 1}`,
+          timestamp: 1,
+          parentHash: `0x${Number(blockHashOrBlockTag) - 1}`,
+        } as any),
+    );
+
+    expect(await updaterService.isReorgDetected(updaterState, '0x1', '0x100')).toBeTruthy();
+    expect(updaterState.isReorgDetected).toBeTruthy();
+  });
+
+  it("last block from range response doesn't match with last block", async () => {
+    const updaterState: UpdaterState = {
+      lastChangedBlockHash: '0x1',
+      isReorgDetected: false,
+    };
+
+    jest
+      .spyOn(executionProviderService, 'getFullBlock')
+      .mockImplementationOnce(async () => ({ number: 100, hash: '0x100', timestamp: 1, parentHash: '0x99' } as any));
+
+    jest
+      .spyOn(executionProviderService, 'getFullBlock')
+      .mockImplementationOnce(async () => ({ number: 1, hash: '0x1', timestamp: 1, parentHash: '0x0' } as any));
+
+    jest.spyOn(executionProviderService, 'getFullBlock').mockImplementation(
+      async (blockHashOrBlockTag: string | number) =>
+        ({
+          number: Number(blockHashOrBlockTag),
+          hash: blockHashOrBlockTag === 100 ? `0xSORRY` : `0x${Number(blockHashOrBlockTag) - 1}`,
+          timestamp: 1,
+          parentHash: `0x${Number(blockHashOrBlockTag) - 1}`,
         } as any),
     );
 
