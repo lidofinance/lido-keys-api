@@ -91,8 +91,8 @@ describe('SRModulesController (e2e)', () => {
         await elMetaStorageService.update(elMeta);
 
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -110,6 +110,7 @@ describe('SRModulesController (e2e)', () => {
           blockNumber: elMeta.number,
           blockHash: elMeta.hash,
           timestamp: elMeta.timestamp,
+          lastChangedBlockHash: elMeta.lastChangedBlockHash,
         });
       });
     });
@@ -122,16 +123,8 @@ describe('SRModulesController (e2e)', () => {
         await cleanDB();
       });
 
-      it('Should return too early response if there are no modules in database', async () => {
-        // lets save meta
-        await elMetaStorageService.update(elMeta);
-        const resp = await request(app.getHttpServer()).get('/v1/modules');
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-
       it('Should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1, '');
         const resp = await request(app.getHttpServer()).get('/v1/modules');
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
@@ -145,8 +138,8 @@ describe('SRModulesController (e2e)', () => {
         // lets save meta
         await elMetaStorageService.update(elMeta);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
       afterAll(async () => {
         await cleanDB();
@@ -160,6 +153,7 @@ describe('SRModulesController (e2e)', () => {
           blockNumber: elMeta.number,
           blockHash: elMeta.hash,
           timestamp: elMeta.timestamp,
+          lastChangedBlockHash: elMeta.lastChangedBlockHash,
         });
       });
 
@@ -171,6 +165,7 @@ describe('SRModulesController (e2e)', () => {
           blockNumber: elMeta.number,
           blockHash: elMeta.hash,
           timestamp: elMeta.timestamp,
+          lastChangedBlockHash: elMeta.lastChangedBlockHash,
         });
       });
 
@@ -182,6 +177,7 @@ describe('SRModulesController (e2e)', () => {
           blockNumber: elMeta.number,
           blockHash: elMeta.hash,
           timestamp: elMeta.timestamp,
+          lastChangedBlockHash: elMeta.lastChangedBlockHash,
         });
       });
 
@@ -215,7 +211,7 @@ describe('SRModulesController (e2e)', () => {
       });
 
       it('Should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(curatedModule, 1, '');
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });

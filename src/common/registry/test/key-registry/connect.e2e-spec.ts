@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/execution';
-import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../../';
+import { KeyRegistryModule, KeyRegistryService, RegistryOperatorFetchService, RegistryStorageService } from '../../';
 import { clearDb, compareTestOperators, mikroORMConfig } from '../testing.utils';
 import { operators } from '../fixtures/connect.fixture';
 import { MikroORM } from '@mikro-orm/core';
@@ -14,6 +14,7 @@ dotenv.config();
 describe('Registry', () => {
   let registryService: KeyRegistryService;
   let storageService: RegistryStorageService;
+  let registryOperatorFetchService: RegistryOperatorFetchService;
   let mikroOrm: MikroORM;
   if (!process.env.CHAIN_ID) {
     console.error("CHAIN_ID wasn't provides");
@@ -23,6 +24,8 @@ describe('Registry', () => {
   const operatorsWithModuleAddress = operators.map((key) => {
     return { ...key, moduleAddress: address };
   });
+
+  const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
   beforeEach(async () => {
     const imports = [
@@ -46,7 +49,11 @@ describe('Registry', () => {
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     registryService = moduleRef.get(KeyRegistryService);
     storageService = moduleRef.get(RegistryStorageService);
+    registryOperatorFetchService = moduleRef.get(RegistryOperatorFetchService);
     mikroOrm = moduleRef.get(MikroORM);
+
+    jest.spyOn(registryOperatorFetchService, 'getFinalizedBlockTag').mockImplementation(() => ({ blockHash } as any));
+
     const generator = mikroOrm.getSchemaGenerator();
     await generator.updateSchema();
   });
@@ -57,8 +64,6 @@ describe('Registry', () => {
   });
 
   test('Update', async () => {
-    const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
-
     await registryService.update(address, blockHash);
 
     await compareTestOperators(address, registryService, {
