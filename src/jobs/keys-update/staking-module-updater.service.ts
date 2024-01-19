@@ -21,10 +21,13 @@ export class StakingModuleUpdaterService {
   public async updateStakingModules(updaterPayload: UpdaterPayload): Promise<void> {
     const { prevElMeta, currElMeta, contractModules } = updaterPayload;
     const prevBlockHash = prevElMeta?.blockHash;
+    const prevLastChangedBlockHash = prevElMeta?.lastChangedBlockHash;
     const currentBlockHash = currElMeta.hash;
 
     const updaterState: UpdaterState = {
-      lastChangedBlockHash: prevBlockHash || currentBlockHash,
+      // set prevLastChangedBlockHash as lastChangedBlockHash by default
+      // further by code redefine this current variable if necessary
+      lastChangedBlockHash: prevLastChangedBlockHash || currentBlockHash,
       isReorgDetected: false,
     };
 
@@ -132,10 +135,18 @@ export class StakingModuleUpdaterService {
       this.logger.log('No changes have been detected in the module, updating is not required', {
         stakingModuleAddress,
         currentBlockHash,
+        prevLastChangedBlockHash,
+        lastChangedBlockHash: updaterState.lastChangedBlockHash,
       });
     }
 
     // Update EL meta in db
+    this.logger.log('Update EL meta', {
+      currentBlockHash,
+      prevLastChangedBlockHash,
+      lastChangedBlockHash: updaterState.lastChangedBlockHash,
+    });
+
     await this.elMetaStorage.update({ ...currElMeta, lastChangedBlockHash: updaterState.lastChangedBlockHash });
   }
 
@@ -161,7 +172,7 @@ export class StakingModuleUpdaterService {
     // get full block data by hashes
     const currentBlock = await this.executionProvider.getFullBlock(currentBlockHash);
     const prevBlock = await this.executionProvider.getFullBlock(prevBlockHash);
-    // prevBlock is a direct child of currentBlock
+    // prevBlock is a direct parent of currentBlock
     // there's no need to check deeper as we get the currentBlock by tag
     if (currentBlock.parentHash === prevBlock.hash) return false;
     // different hash but same number
@@ -178,9 +189,15 @@ export class StakingModuleUpdaterService {
       }),
     );
     // compare hash from the first block
-    if (blocks[0].hash !== prevBlockHash) return true;
+    if (blocks[0].hash !== prevBlockHash) {
+      updaterState.isReorgDetected = true;
+      return true;
+    }
     // compare hash from the last block
-    if (blocks[blocks.length - 1].hash !== currentBlockHash) return true;
+    if (blocks[blocks.length - 1].hash !== currentBlockHash) {
+      updaterState.isReorgDetected = true;
+      return true;
+    }
     // check the integrity of the blockchain
     for (let i = 1; i < blocks.length; i++) {
       const previousBlock = blocks[i - 1];

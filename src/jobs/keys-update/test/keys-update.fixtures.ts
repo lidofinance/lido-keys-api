@@ -13,7 +13,6 @@ export const stakingModuleFixture: StakingModule = {
   exitedValidatorsCount: 10,
   type: 'curated',
   active: true,
-  lastChangedBlockHash: '',
 };
 
 export const stakingModuleFixtures: StakingModule[] = [
@@ -31,6 +30,5 @@ export const stakingModuleFixtures: StakingModule[] = [
     exitedValidatorsCount: 5,
     type: 'dvt',
     active: false,
-    lastChangedBlockHash: '',
   },
 ];

@@ -168,21 +168,22 @@ export class KeysUpdateService {
         this.prometheusService.registryLastUpdate.set(elMeta.timestamp);
         this.prometheusService.registryBlockNumber.set(elMeta.blockNumber);
 
+        this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.reset();
+
         for (const module of stakingModules) {
           const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
           // update nonce metric
-          this.prometheusService.registryNonce.set({ srModuleId: module.id }, module.nonce);
+          this.prometheusService.registryNonce.set({ srModuleId: module.moduleId }, module.nonce);
 
           // get operators
           const operators = await moduleInstance.getOperators(module.stakingModuleAddress);
-          this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.reset();
 
           operators.forEach((operator) => {
             this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
               {
                 operator: operator.index,
-                srModuleId: module.id,
+                srModuleId: module.moduleId,
                 used: 'true',
               },
               operator.usedSigningKeys,
@@ -191,7 +192,7 @@ export class KeysUpdateService {
             this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
               {
                 operator: operator.index,
-                srModuleId: module.id,
+                srModuleId: module.moduleId,
                 used: 'false',
               },
               operator.totalSigningKeys - operator.usedSigningKeys,

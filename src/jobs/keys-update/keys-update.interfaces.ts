@@ -10,6 +10,7 @@ export interface UpdaterPayload {
     blockNumber: number;
     blockHash: string;
     timestamp: number;
+    lastChangedBlockHash: string;
   } | null;
   contractModules: StakingModule[];
 }
