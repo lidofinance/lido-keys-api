@@ -20,7 +20,7 @@ export class StakingModuleUpdaterService {
   ) {}
   public async updateStakingModules(updaterPayload: UpdaterPayload): Promise<void> {
     const { prevElMeta, currElMeta, contractModules } = updaterPayload;
-    const prevBlockHash = prevElMeta?.blockHash;
+    const prevBlockHash = prevElMeta?.lastChangedBlockHash;
     const currentBlockHash = currElMeta.hash;
 
     const updaterState: UpdaterState = {

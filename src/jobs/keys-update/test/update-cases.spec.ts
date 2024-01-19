@@ -111,7 +111,7 @@ describe('update cases', () => {
 
     await updaterService.updateStakingModules({
       currElMeta: { number: 2, hash: '0x1', timestamp: 1 },
-      prevElMeta: { blockNumber: 1, blockHash: '0x2', timestamp: 1 },
+      prevElMeta: { blockNumber: 1, blockHash: '0x2', timestamp: 1, lastChangedBlockHash: '' },
       contractModules: stakingModuleFixtures,
     });
 
@@ -131,7 +131,7 @@ describe('update cases', () => {
 
     await updaterService.updateStakingModules({
       currElMeta: { number: 100, hash: '0x1', timestamp: 1 },
-      prevElMeta: { blockNumber: 2, blockHash: '0x2', timestamp: 1 },
+      prevElMeta: { blockNumber: 2, blockHash: '0x2', timestamp: 1, lastChangedBlockHash: '' },
       contractModules: stakingModuleFixtures,
     });
 
@@ -158,7 +158,7 @@ describe('update cases', () => {
       .mockImplementationOnce(async () => ({ number: 2, hash: '0x1', timestamp: 1, parentHash: '0x111' } as any));
     await updaterService.updateStakingModules({
       currElMeta: { number: 2, hash: '0x2', timestamp: 1 },
-      prevElMeta: { blockNumber: 2, blockHash: '0x1', timestamp: 1 },
+      prevElMeta: { blockNumber: 2, blockHash: '0x1', timestamp: 1, lastChangedBlockHash: '' },
       contractModules: stakingModuleFixtures,
     });
 
