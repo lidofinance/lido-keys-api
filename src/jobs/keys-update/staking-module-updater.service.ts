@@ -20,11 +20,14 @@ export class StakingModuleUpdaterService {
   ) {}
   public async updateStakingModules(updaterPayload: UpdaterPayload): Promise<void> {
     const { prevElMeta, currElMeta, contractModules } = updaterPayload;
-    const prevBlockHash = prevElMeta?.lastChangedBlockHash;
+    const prevBlockHash = prevElMeta?.blockHash;
+    const prevLastChangedBlockHash = prevElMeta?.lastChangedBlockHash;
     const currentBlockHash = currElMeta.hash;
 
     const updaterState: UpdaterState = {
-      lastChangedBlockHash: prevBlockHash || currentBlockHash,
+      // set prevLastChangedBlockHash as lastChangedBlockHash by default
+      // further by code redefine this current variable if necessary
+      lastChangedBlockHash: prevLastChangedBlockHash || currentBlockHash,
       isReorgDetected: false,
     };
 
@@ -132,10 +135,18 @@ export class StakingModuleUpdaterService {
       this.logger.log('No changes have been detected in the module, updating is not required', {
         stakingModuleAddress,
         currentBlockHash,
+        prevLastChangedBlockHash,
+        lastChangedBlockHash: updaterState.lastChangedBlockHash,
       });
     }
 
     // Update EL meta in db
+    this.logger.log('Update EL meta', {
+      currentBlockHash,
+      prevLastChangedBlockHash,
+      lastChangedBlockHash: updaterState.lastChangedBlockHash,
+    });
+
     await this.elMetaStorage.update({ ...currElMeta, lastChangedBlockHash: updaterState.lastChangedBlockHash });
   }
 
