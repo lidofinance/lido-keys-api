@@ -1,0 +1,36 @@
+rule_files:
+  - 'keys-api-outdated-keys.empty-db.rule.yml'
+
+evaluation_interval: 1m
+
+tests:
+  # Test Case 1: Keys API not updated since process start
+  - interval: 1m
+    input_series:
+      - series: 'process_start_time_seconds{}'
+        values: '0x15'
+      - series: 'lido_keys_api_last_update_timestamp{}'
+        values: '0x15'
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: KeysApiOutdatedKeysEmptyDB
+        exp_alerts:
+          - exp_labels:
+              severity: 'critical'
+              service: 'keys_api'
+              app_team: 'tooling'
+            exp_annotations:
+              summary: 'Keys are outdated'
+              description: 'Initial update took more than 15m 0s'
+
+  #Test Case 2: Keys API updated after process start
+  - interval: 1m
+    input_series:
+      - series: 'process_start_time_seconds{}'
+        values: '0x15'
+      - series: 'lido_keys_api_last_update_timestamp{}'
+        values: '0x12 0 0 1'
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: KeysApiOutdatedKeysEmptyDB
+        exp_alerts: []
