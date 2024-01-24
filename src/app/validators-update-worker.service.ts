@@ -31,7 +31,7 @@ export class ValidatorsUpdateWorkerService implements OnModuleInit, OnModuleDest
       this.worker.on('message', (message) => this.handleMetrics(message));
 
       this.worker.on('error', (err) => {
-        // how to restart worker?? or shutdown app
+        // TODO: how to restart worker?? or shutdown app
         this.logger.error(err);
       });
     }
