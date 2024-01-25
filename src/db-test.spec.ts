@@ -64,26 +64,26 @@ describe('KeyController (e2e)', () => {
     await generator.updateSchema();
   });
 
-  it('how transaction was created in kapi', async () => {
-    await entityManager.transactional(async () => {
-      const where = {};
-      where['index'] = 1;
-      where['operator_index'] = 1;
+  // it('how transaction was created in kapi', async () => {
+  //   await entityManager.transactional(async () => {
+  //     const where = {};
+  //     where['index'] = 1;
+  //     where['operator_index'] = 1;
 
-      const keysGenerator = await storageService.findStream(where, [
-        'index',
-        'operator_index as operatorIndex',
-        'key',
-        'deposit_signature as depositSignature',
-        'used',
-        'module_address as moduleAddress',
-      ]);
+  //     const keysGenerator = await storageService.findStream(where, [
+  //       'index',
+  //       'operator_index as operatorIndex',
+  //       'key',
+  //       'deposit_signature as depositSignature',
+  //       'used',
+  //       'module_address as moduleAddress',
+  //     ]);
 
-      for await (const key of keysGenerator) {
-        console.log(key);
-      }
-    });
-  }, 30000);
+  //     for await (const key of keysGenerator) {
+  //       console.log(key);
+  //     }
+  //   });
+  // }, 30000);
 
   it('get knex from conn', async () => {
     const where = {};
