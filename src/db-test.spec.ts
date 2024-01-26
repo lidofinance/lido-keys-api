@@ -150,4 +150,12 @@ describe('KeyController (e2e)', () => {
       }
     });
   }, 30000);
+
+  it('find check', async () => {
+    await entityManager.transactional(async (em) => {
+      const keys = await storageService.find({ index: 1 });
+
+      console.log(keys);
+    });
+  }, 30000);
 });
