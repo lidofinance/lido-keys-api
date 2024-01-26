@@ -19,6 +19,7 @@ export class RegistryKeyStorageService {
 
   findStream(where: FilterQuery<RegistryKey>, fields?: string[]): AsyncIterable<RegistryKey> {
     const knex = this.repository.getKnex();
+
     const stream = knex
       .select(fields || '*')
       .from<RegistryKey>('registry_key')
@@ -28,6 +29,20 @@ export class RegistryKeyStorageService {
         { column: 'index', order: 'asc' },
       ])
       .stream();
+
+    addTimeoutToStream(stream, 60_000, 'A timeout occurred loading keys from the database');
+
+    return stream;
+  }
+
+  findStreamV2(where: FilterQuery<RegistryKey>, fields?: string[]): AsyncIterable<RegistryKey> {
+    const qb = this.repository.createQueryBuilder();
+    qb.select(fields || '*')
+      .where(where)
+      .orderBy({ operator_index: 'asc', index: 'asc' });
+
+    const knex = qb.getKnexQuery();
+    const stream = knex.stream();
 
     addTimeoutToStream(stream, 60_000, 'A timeout occurred loading keys from the database');
 
