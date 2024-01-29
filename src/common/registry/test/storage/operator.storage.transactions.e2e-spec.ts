@@ -74,5 +74,5 @@ describe('check that findAsStream method dont create a new connection', () => {
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
-  }, 30000);
+  }, 10000);
 });
