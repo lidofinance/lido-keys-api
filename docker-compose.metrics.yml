@@ -8,6 +8,7 @@ services:
       - 9090:9090
     volumes:
       - ./prometheus/:/etc/prometheus/
+      - ./alerts/:/etc/prometheus/alerts/
     command: --config.file=/etc/prometheus/prometheus.yml --enable-feature=remote-write-receiver
 
   keys_api_grafana:
@@ -18,5 +19,15 @@ services:
       - 8000:3000
     volumes:
       - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    depends_on:
+      - keys_api_prometheus
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    ports:
+      - 9093:9093
+    restart: always
+    volumes:
+      - ./prometheus/:/etc/alertmanager/
     depends_on:
       - keys_api_prometheus
