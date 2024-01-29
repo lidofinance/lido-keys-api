@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { addTimeoutToStream } from '../utils/stream.utils';
 import { RegistryOperator } from './operator.entity';
 import { RegistryOperatorRepository } from './operator.repository';
+import { STREAM_OPERATORS_TIMEOUT_MESSAGE, STREAM_TIMEOUT } from './constants';
 
 @Injectable()
 export class RegistryOperatorStorageService {
@@ -17,7 +18,7 @@ export class RegistryOperatorStorageService {
     return await this.repository.find(where, options);
   }
 
-  findStream(where: FilterQuery<RegistryOperator>, fields?: string[]): AsyncIterable<RegistryOperator> {
+  findAsStream(where: FilterQuery<RegistryOperator>, fields?: string[]): AsyncIterable<RegistryOperator> {
     const knex = this.repository.getKnex();
     const stream = knex
       .select(fields || '*')
@@ -29,7 +30,7 @@ export class RegistryOperatorStorageService {
       ])
       .stream();
 
-    addTimeoutToStream(stream, 60_000, 'A timeout occurred loading operators from the database');
+    addTimeoutToStream(stream, STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE);
 
     return stream;
   }
