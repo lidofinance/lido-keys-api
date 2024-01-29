@@ -34,6 +34,21 @@ export class RegistryOperatorStorageService {
     return stream;
   }
 
+  findStream2(where: FilterQuery<RegistryOperator>, fields?: string[]): AsyncIterable<RegistryOperator> {
+    const qb = this.repository.createQueryBuilder();
+
+    qb.select(fields || '*')
+      .where(where)
+      .orderBy({ module_address: 'asc', index: 'asc' });
+
+    const knex = qb.getKnexQuery();
+    const stream = knex.stream();
+
+    addTimeoutToStream(stream, 60_000, 'A timeout occurred loading keys from the database');
+
+    return stream;
+  }
+
   /** find all operators */
   async findAll(moduleAddress: string): Promise<RegistryOperator[]> {
     return await this.repository.find(
