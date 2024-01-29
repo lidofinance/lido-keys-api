@@ -40,7 +40,7 @@ describe('check that findAsStream method dont create a new connection', () => {
   it('should return list of keys', async () => {
     const keys = [
       { operatorIndex: 1, index: 1, moduleAddress: address, ...key },
-      { operatorIndex: 1, index: 2, moduleAddress: address, ...key },
+      { operatorIndex: 2, index: 2, moduleAddress: address, ...key },
     ];
     await keyStorageService.save(keys);
 
