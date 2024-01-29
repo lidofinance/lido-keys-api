@@ -3,7 +3,7 @@ import { operator } from '../fixtures/operator.fixture';
 import { RegistryOperatorStorageService, RegistryOperator, RegistryOperatorRepository } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as streamUtils from '../../utils/stream.utils';
-import { STREAM_OPERATORS_TIMEOUT_MESSAGE, STREAM_TIMEOUT } from '../../../registry/storage/constants';
+// import { STREAM_OPERATORS_TIMEOUT_MESSAGE, STREAM_TIMEOUT } from '../../../registry/storage/constants';
 
 describe('Operators', () => {
   const CHAIN_ID = process.env.CHAIN_ID || 1;

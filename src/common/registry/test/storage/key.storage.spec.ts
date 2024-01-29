@@ -3,7 +3,7 @@ import { key } from '../fixtures/key.fixture';
 import { RegistryKeyStorageService, RegistryKey, RegistryKeyRepository } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as streamUtils from '../../utils/stream.utils';
-import { STREAM_KEYS_TIMEOUT_MESSAGE, STREAM_TIMEOUT } from '../../../registry/storage/constants';
+// import { STREAM_KEYS_TIMEOUT_MESSAGE, STREAM_TIMEOUT } from '../../../registry/storage/constants';
 
 describe('Keys', () => {
   const CHAIN_ID = process.env.CHAIN_ID || 1;
