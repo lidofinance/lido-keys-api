@@ -42,7 +42,7 @@ function sleep(ms: number): Promise<void> {
           allowGlobalContext: true,
           pool: {
             min: 1,
-            max: 1,
+            max: 2,
             acquireTimeoutMillis: 20000,
           },
         };
@@ -75,10 +75,14 @@ describe('KeyController (e2e)', () => {
 
   it('how transaction was created in kapi', async () => {
     try {
-      await entityManager.transactional(async () => {
+      await entityManager.transactional(async (em) => {
         const where = {};
         where['index'] = 1;
         where['operator_index'] = 1;
+
+        const result = await em.execute('select txid_current()');
+
+        console.log('explicit transaction id: ', result);
 
         const keysGenerator = await storageService.findStream(where, [
           'index',
@@ -198,14 +202,41 @@ describe('KeyController (e2e)', () => {
     ];
 
     await entityManager.transactional(
-      async () => {
+      async (em) => {
+        const result = await em.execute('select txid_current()');
+
+        console.log('explicit transaction id: ', result);
+
         const stream = storageService.findStreamV2(where, fields);
 
         for await (const key of stream) {
-          console.log(key);
+          console.log('key:', key);
         }
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
     );
   }, 30_000);
+
+  it('getKnex', async () => {
+    try {
+      await entityManager.transactional(async (em) => {
+        const where = {};
+        where['index'] = 1;
+        where['operator_index'] = 1;
+
+        const result = await em.execute('select txid_current()');
+
+        console.log('explicit transaction id: ', result);
+
+        const knexData = await em.getKnex().raw('select txid_current()');
+
+        console.log('getKnex result:', knexData);
+      });
+    } catch (error) {
+      // Handle the error here. You can log it or make assertions if this is for a test.
+      console.error('Transaction failed:', error);
+      // Optionally, you might want to fail the test explicitly if an error occurs.
+      throw error;
+    }
+  }, 30000);
 });

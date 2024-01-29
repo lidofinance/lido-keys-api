@@ -1,6 +1,7 @@
 import { QueryOrder } from '@mikro-orm/core';
 import { FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
+import { first } from 'rxjs';
 import { addTimeoutToStream } from '../utils/stream.utils';
 import { RegistryKey } from './key.entity';
 import { RegistryKeyRepository } from './key.repository';
@@ -37,12 +38,18 @@ export class RegistryKeyStorageService {
 
   findStreamV2(where: FilterQuery<RegistryKey>, fields?: string[]): AsyncIterable<RegistryKey> {
     const qb = this.repository.createQueryBuilder();
-    qb.select(fields || '*')
-      .where(where)
-      .orderBy({ operator_index: 'asc', index: 'asc' });
 
-    const knex = qb.getKnexQuery();
+    // qb.select(fields || '*')
+    //   .where(where)
+    //   .orderBy({ operator_index: 'asc', index: 'asc' });
+
+    qb.select('txid_current()');
+
+    const knex = qb.getKnexQuery().first();
     const stream = knex.stream();
+
+    // const result = knex.fromRaw('select txid_current()').first();
+    // console.log('inside transaction:', result);
 
     addTimeoutToStream(stream, 60_000, 'A timeout occurred loading keys from the database');
 
