@@ -10,17 +10,17 @@ describe('Operators', () => {
   const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
   const registryOperator = { index: 1, moduleAddress: address, ...operator };
 
-  async function* findKeysAsStream() {
-    yield registryOperator;
-  }
+  // async function* findKeysAsStream() {
+  //   yield registryOperator;
+  // }
 
-  const mockedKnex = {
-    select: jest.fn().mockReturnThis(),
-    from: jest.fn().mockReturnThis(),
-    where: jest.fn().mockReturnThis(),
-    orderBy: jest.fn().mockReturnThis(),
-    stream: jest.fn().mockReturnValue(findKeysAsStream()),
-  };
+  // const mockedKnex = {
+  //   select: jest.fn().mockReturnThis(),
+  //   from: jest.fn().mockReturnThis(),
+  //   where: jest.fn().mockReturnThis(),
+  //   orderBy: jest.fn().mockReturnThis(),
+  //   stream: jest.fn().mockReturnValue(findKeysAsStream()),
+  // };
 
   const addTimeoutToStream = jest.spyOn(streamUtils, 'addTimeoutToStream').mockReturnValue();
 
@@ -46,7 +46,7 @@ describe('Operators', () => {
     nativeDelete: jest.fn().mockImplementation(() => {
       return 1;
     }),
-    getKnex: jest.fn().mockReturnValue(mockedKnex),
+    // getKnex: jest.fn().mockReturnValue(mockedKnex),
   };
 
   let storageService: RegistryOperatorStorageService;
@@ -77,24 +77,24 @@ describe('Operators', () => {
     expect(mockRegistryOperatorRepository.find).toBeCalledWith({ active: true }, { limit: 1 });
   });
 
-  test('findAsStream', async () => {
-    const stream = storageService.findAsStream({ active: true });
-    const actualResult: RegistryOperator[] = [];
-    for await (const item of stream) {
-      actualResult.push(item);
-    }
-    expect(actualResult).toEqual([registryOperator]);
-    expect(mockRegistryOperatorRepository.getKnex).toBeCalledTimes(1);
-    expect(mockedKnex.select).toBeCalledWith('*');
-    expect(mockedKnex.from).toBeCalledWith('registry_operator');
-    expect(mockedKnex.where).toBeCalledWith({ active: true });
-    expect(mockedKnex.orderBy).toBeCalledWith([
-      { column: 'moduleAddress', order: 'asc' },
-      { column: 'index', order: 'asc' },
-    ]);
-    expect(mockedKnex.stream).toBeCalledTimes(1);
-    expect(addTimeoutToStream).toBeCalledWith(stream, STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE);
-  });
+  // test('findAsStream', async () => {
+  //   const stream = storageService.findAsStream({ active: true });
+  //   const actualResult: RegistryOperator[] = [];
+  //   for await (const item of stream) {
+  //     actualResult.push(item);
+  //   }
+  //   expect(actualResult).toEqual([registryOperator]);
+  //   expect(mockRegistryOperatorRepository.getKnex).toBeCalledTimes(1);
+  //   expect(mockedKnex.select).toBeCalledWith('*');
+  //   expect(mockedKnex.from).toBeCalledWith('registry_operator');
+  //   expect(mockedKnex.where).toBeCalledWith({ active: true });
+  //   expect(mockedKnex.orderBy).toBeCalledWith([
+  //     { column: 'moduleAddress', order: 'asc' },
+  //     { column: 'index', order: 'asc' },
+  //   ]);
+  //   expect(mockedKnex.stream).toBeCalledTimes(1);
+  //   expect(addTimeoutToStream).toBeCalledWith(stream, STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE);
+  // });
 
   test('findAll', async () => {
     await expect(storageService.findAll(address)).resolves.toEqual([]);

@@ -19,16 +19,14 @@ export class RegistryOperatorStorageService {
   }
 
   findAsStream(where: FilterQuery<RegistryOperator>, fields?: string[]): AsyncIterable<RegistryOperator> {
-    const knex = this.repository.getKnex();
-    const stream = knex
-      .select(fields || '*')
-      .from<RegistryOperator>('registry_operator')
+    const qb = this.repository.createQueryBuilder();
+
+    qb.select(fields || '*')
       .where(where)
-      .orderBy([
-        { column: 'moduleAddress', order: 'asc' },
-        { column: 'index', order: 'asc' },
-      ])
-      .stream();
+      .orderBy({ module_address: 'asc', index: 'asc' });
+
+    const knex = qb.getKnexQuery();
+    const stream = knex.stream();
 
     addTimeoutToStream(stream, STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE);
 
