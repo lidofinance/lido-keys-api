@@ -1,6 +1,6 @@
 {
   "name": "lido-keys-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Lido Node Operators keys service",
   "author": "Lido team",
   "private": true,
