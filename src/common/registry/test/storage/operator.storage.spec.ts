@@ -10,16 +10,19 @@ describe('Operators', () => {
   const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
   const registryOperator = { index: 1, moduleAddress: address, ...operator };
 
-  async function* findKeysAsStream() {
+  async function* findOperatorsAsStream() {
     yield registryOperator;
   }
 
-  const mockedKnex = {
+  const streamValue = jest.fn().mockReturnValue(findOperatorsAsStream());
+
+  const mockedCreateQueryBuilder = {
     select: jest.fn().mockReturnThis(),
-    from: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
-    stream: jest.fn().mockReturnValue(findKeysAsStream()),
+    getKnexQuery: jest.fn().mockReturnValue({
+      stream: streamValue,
+    }),
   };
 
   const addTimeoutToStream = jest.spyOn(streamUtils, 'addTimeoutToStream').mockReturnValue();
@@ -46,7 +49,7 @@ describe('Operators', () => {
     nativeDelete: jest.fn().mockImplementation(() => {
       return 1;
     }),
-    getKnex: jest.fn().mockReturnValue(mockedKnex),
+    createQueryBuilder: jest.fn().mockReturnValue(mockedCreateQueryBuilder),
   };
 
   let storageService: RegistryOperatorStorageService;
@@ -84,15 +87,12 @@ describe('Operators', () => {
       actualResult.push(item);
     }
     expect(actualResult).toEqual([registryOperator]);
-    expect(mockRegistryOperatorRepository.getKnex).toBeCalledTimes(1);
-    expect(mockedKnex.select).toBeCalledWith('*');
-    expect(mockedKnex.from).toBeCalledWith('registry_operator');
-    expect(mockedKnex.where).toBeCalledWith({ active: true });
-    expect(mockedKnex.orderBy).toBeCalledWith([
-      { column: 'moduleAddress', order: 'asc' },
-      { column: 'index', order: 'asc' },
-    ]);
-    expect(mockedKnex.stream).toBeCalledTimes(1);
+    expect(mockRegistryOperatorRepository.createQueryBuilder).toBeCalledTimes(1);
+    expect(mockedCreateQueryBuilder.select).toBeCalledWith('*');
+    expect(mockedCreateQueryBuilder.where).toBeCalledWith({ active: true });
+    expect(mockedCreateQueryBuilder.orderBy).toBeCalledWith({ index: 'asc', module_address: 'asc' });
+    expect(mockedCreateQueryBuilder.getKnexQuery).toBeCalledTimes(1);
+    expect(streamValue).toBeCalledTimes(1);
     expect(addTimeoutToStream).toBeCalledWith(stream, STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE);
   });
 

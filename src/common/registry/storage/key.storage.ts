@@ -19,16 +19,13 @@ export class RegistryKeyStorageService {
   }
 
   findAsStream(where: FilterQuery<RegistryKey>, fields?: string[]): AsyncIterable<RegistryKey> {
-    const knex = this.repository.getKnex();
-    const stream = knex
-      .select(fields || '*')
-      .from<RegistryKey>('registry_key')
+    const qb = this.repository.createQueryBuilder();
+    qb.select(fields || '*')
       .where(where)
-      .orderBy([
-        { column: 'operatorIndex', order: 'asc' },
-        { column: 'index', order: 'asc' },
-      ])
-      .stream();
+      .orderBy({ operator_index: 'asc', index: 'asc' });
+
+    const knex = qb.getKnexQuery();
+    const stream = knex.stream();
 
     addTimeoutToStream(stream, STREAM_TIMEOUT, STREAM_KEYS_TIMEOUT_MESSAGE);
 

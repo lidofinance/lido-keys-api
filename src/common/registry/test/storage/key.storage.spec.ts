@@ -14,12 +14,15 @@ describe('Keys', () => {
     yield registryKey;
   }
 
-  const mockedKnex = {
+  const streamValue = jest.fn().mockReturnValue(findKeysAsStream());
+
+  const mockedCreateQueryBuilder = {
     select: jest.fn().mockReturnThis(),
-    from: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
-    stream: jest.fn().mockReturnValue(findKeysAsStream()),
+    getKnexQuery: jest.fn().mockReturnValue({
+      stream: streamValue,
+    }),
   };
 
   const addTimeoutToStream = jest.spyOn(streamUtils, 'addTimeoutToStream').mockReturnValue();
@@ -46,7 +49,7 @@ describe('Keys', () => {
     nativeDelete: jest.fn().mockImplementation(() => {
       return 1;
     }),
-    getKnex: jest.fn().mockReturnValue(mockedKnex),
+    createQueryBuilder: jest.fn().mockReturnValue(mockedCreateQueryBuilder),
   };
 
   let storageService: RegistryKeyStorageService;
@@ -78,15 +81,12 @@ describe('Keys', () => {
       actualResult.push(item);
     }
     expect(actualResult).toEqual([registryKey]);
-    expect(mockRegistryKeyRepository.getKnex).toBeCalledTimes(1);
-    expect(mockedKnex.select).toBeCalledWith('*');
-    expect(mockedKnex.from).toBeCalledWith('registry_key');
-    expect(mockedKnex.where).toBeCalledWith({ used: true });
-    expect(mockedKnex.orderBy).toBeCalledWith([
-      { column: 'operatorIndex', order: 'asc' },
-      { column: 'index', order: 'asc' },
-    ]);
-    expect(mockedKnex.stream).toBeCalledTimes(1);
+    expect(mockRegistryKeyRepository.createQueryBuilder).toBeCalledTimes(1);
+    expect(mockedCreateQueryBuilder.select).toBeCalledWith('*');
+    expect(mockedCreateQueryBuilder.where).toBeCalledWith({ used: true });
+    expect(mockedCreateQueryBuilder.orderBy).toBeCalledWith({ index: 'asc', operator_index: 'asc' });
+    expect(mockedCreateQueryBuilder.getKnexQuery).toBeCalledTimes(1);
+    expect(streamValue).toBeCalledTimes(1);
     expect(addTimeoutToStream).toBeCalledWith(stream, STREAM_TIMEOUT, STREAM_KEYS_TIMEOUT_MESSAGE);
   });
 
