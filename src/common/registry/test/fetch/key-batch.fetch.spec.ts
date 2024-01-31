@@ -5,6 +5,7 @@ import { Interface } from '@ethersproject/abi';
 import { getDefaultProvider } from '@ethersproject/providers';
 import { keysResponse, usedStatuses, mergedKeys, mergedSignatures } from '../fixtures/key-batch.fixture';
 import { RegistryFetchModule, RegistryKeyBatchFetchService } from '../../';
+import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 describe('Keys', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
@@ -17,7 +18,10 @@ describe('Keys', () => {
   jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
 
   beforeEach(async () => {
-    const imports = [RegistryFetchModule.forFeature({ provider })];
+    const imports = [
+      RegistryFetchModule.forFeature({ provider }),
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
+    ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     fetchService = moduleRef.get(RegistryKeyBatchFetchService);
   });

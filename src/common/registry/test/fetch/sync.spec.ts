@@ -6,6 +6,7 @@ import { getDefaultProvider, Provider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryFetchService } from '../../';
 import { LIDO_CONTRACT_TOKEN, Lido } from '@lido-nestjs/contracts';
 import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
+import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 describe('Sync module initializing', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
@@ -21,17 +22,23 @@ describe('Sync module initializing', () => {
   };
 
   test('forRoot', async () => {
-    const imports = [RegistryFetchModule.forRoot({ provider })];
+    const imports = [
+      RegistryFetchModule.forRoot({ provider }),
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
+    ];
     await testModules({ imports });
   });
 
   test('forFeature', async () => {
-    const imports = [RegistryFetchModule.forFeature({ provider })];
+    const imports = [
+      RegistryFetchModule.forFeature({ provider }),
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
+    ];
     await testModules({ imports });
   });
 
   test('forFeature global provider', async () => {
-    const imports = [RegistryFetchModule.forFeature()];
+    const imports = [RegistryFetchModule.forFeature(), LoggerModule.forRoot({ transports: [nullTransport()] })];
     const metadata = {
       imports,
       providers: [{ provide: Provider, useValue: provider }],
@@ -49,6 +56,7 @@ describe('Sync module initializing', () => {
         lidoAddress,
         registryAddress,
       }),
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
     ];
 
     const moduleRef = await testModules({ imports });
