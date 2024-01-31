@@ -84,7 +84,7 @@ export class RegistryOperatorFetchService {
     const fullInfo = true;
     const contract = this.getContract(moduleAddress);
     try {
-      const { totalDepositedValidators } = await contract.getNodeOperator(3333, fullInfo, {
+      const { totalDepositedValidators } = await contract.getNodeOperator(operatorIndex, fullInfo, {
         blockTag: this.getFinalizedBlockTag(),
       });
 
