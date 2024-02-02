@@ -115,7 +115,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
       });
 
       describe('The /keys request', () => {
-        it('should return all modules, operators and keys!!', async () => {
+        it('should return all modules, operators and keys', async () => {
           const resp = await request(app.getHttpServer()).get(`/v2/modules/operators/keys`);
 
           expect(resp.status).toEqual(200);
