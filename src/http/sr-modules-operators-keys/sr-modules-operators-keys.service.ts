@@ -60,17 +60,11 @@ export class SRModulesOperatorsKeysService {
     for (const stakingModule of stakingModules) {
       const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(stakingModule.type);
 
-      // const keysGenerator = moduleInstance.getKeysStream(stakingModule.stakingModuleAddress, {});
-      // const operatorsGenerator = moduleInstance.getOperatorsStream(stakingModule.stakingModuleAddress, {});
-
-      // let nextKey = await keysGenerator.next();
-      // let nextOperator = await operatorsGenerator.next();
-
       yield {
         stakingModule: new StakingModuleResponse(stakingModule),
         meta: !metaHasSent ? meta : null,
-        key: null, //!nextKey.value ? null : new Key(nextKey.value),
-        operator: null, //!nextOperator.value ? null : new Operator(nextOperator.value),
+        key: null,
+        operator: null,
       };
 
       metaHasSent = true;
@@ -100,27 +94,6 @@ export class SRModulesOperatorsKeysService {
         };
         nextOperator = await operatorsGenerator.next();
       }
-
-      // do {
-      //   if (!nextKey.done) {
-      //     nextKey = await keysGenerator.next();
-      //   }
-
-      //   if (!nextOperator.done) {
-      //     nextOperator = await operatorsGenerator.next();
-      //   }
-
-      //   if (!nextKey.value && !nextOperator.value) {
-      //     break;
-      //   }
-
-      //   yield {
-      //     stakingModule: null,
-      //     meta: null,
-      //     key: !nextKey.value ? null : new Key(nextKey.value),
-      //     operator: !nextOperator.value ? null : new Operator(nextOperator.value),
-      //   };
-      // } while (!nextKey.done || !nextOperator.done);
     }
   }
 }
