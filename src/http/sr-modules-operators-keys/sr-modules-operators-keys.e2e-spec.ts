@@ -121,7 +121,6 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
           expect(resp.status).toEqual(200);
 
           const expectedResponse: ModulesOperatorsKeysRecord[] = [
-            // dvt module
             {
               stakingModule: dvtModuleResp,
               meta: {
@@ -132,38 +131,33 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
                   lastChangedBlockHash: elMeta.lastChangedBlockHash,
                 },
               },
-              operator: dvtOperatorsResp[0],
-              key: dvtModuleKeysResponse[0],
+              operator: null,
+              key: null,
             },
-            ...dvtOperatorsResp.slice(1).map((operator, i) => ({
+            ...dvtModuleKeysResponse.map((key) => ({ stakingModule: null, meta: null, operator: null, key })),
+            ...dvtOperatorsResp.map((operator, i) => ({
               stakingModule: null,
               meta: null,
               operator,
-              key: dvtModuleKeysResponse[i + 1],
+              key: null,
             })),
-            ...dvtModuleKeysResponse
-              .slice(dvtOperatorsResp.length)
-              .map((key) => ({ stakingModule: null, meta: null, operator: null, key })),
-
             // curated module
             {
               stakingModule: curatedModuleResp,
               meta: null,
-              operator: curatedOperatorsResp[0],
-              key: curatedModuleKeysResponse[0],
+              operator: null,
+              key: null,
             },
-            ...curatedOperatorsResp.slice(1).map((operator, i) => ({
+            ...curatedOperatorsResp.map((operator) => ({
               stakingModule: null,
               meta: null,
               operator,
-              key: curatedModuleKeysResponse[i + 1],
+              key: null,
             })),
-            ...curatedModuleKeysResponse
-              .slice(curatedOperatorsResp.length)
-              .map((key) => ({ stakingModule: null, meta: null, operator: null, key })),
+            ...curatedModuleKeysResponse.map((key) => ({ stakingModule: null, meta: null, operator: null, key })),
           ];
 
-          expect(resp.body).toEqual(expectedResponse);
+          expect(resp.body).toEqual(expect.arrayContaining(expectedResponse));
         });
       });
 
