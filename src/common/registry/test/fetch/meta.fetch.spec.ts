@@ -4,6 +4,7 @@ import { getNetwork } from '@ethersproject/networks';
 import { Interface } from '@ethersproject/abi';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryMetaFetchService } from '../../';
+import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 describe('Meta', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
@@ -18,7 +19,10 @@ describe('Meta', () => {
   jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
 
   beforeEach(async () => {
-    const imports = [RegistryFetchModule.forFeature({ provider })];
+    const imports = [
+      RegistryFetchModule.forFeature({ provider }),
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
+    ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     fetchService = moduleRef.get(RegistryMetaFetchService);
   });

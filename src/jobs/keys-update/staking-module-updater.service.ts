@@ -132,7 +132,7 @@ export class StakingModuleUpdaterService {
         continue;
       }
 
-      this.logger.log('No changes have been detected in the module, updating is not required', {
+      this.logger.log('No changes have been detected in the module, update is not required', {
         stakingModuleAddress,
         currentBlockHash,
         prevLastChangedBlockHash,

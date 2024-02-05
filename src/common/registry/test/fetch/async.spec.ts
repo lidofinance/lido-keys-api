@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import { getNetwork } from '@ethersproject/networks';
 import { getDefaultProvider, BaseProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryFetchService } from '../../';
+import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 @Injectable()
 class TestService {
@@ -37,6 +38,7 @@ describe('Async module initializing', () => {
 
   test('forRootAsync', async () => {
     await testModules([
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
       TestModule.forRoot(),
       RegistryFetchModule.forRootAsync({
         async useFactory(testService: TestService) {
@@ -49,6 +51,7 @@ describe('Async module initializing', () => {
 
   test('forFeatureAsync', async () => {
     await testModules([
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
       TestModule.forRoot(),
       RegistryFetchModule.forFeatureAsync({
         async useFactory(testService: TestService) {

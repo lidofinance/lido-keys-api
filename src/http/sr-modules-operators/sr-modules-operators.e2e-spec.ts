@@ -65,7 +65,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      DatabaseTestingModule,
+      DatabaseTestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,

@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { addTimeoutToStream } from '../utils/stream.utils';
 import { RegistryKey } from './key.entity';
 import { RegistryKeyRepository } from './key.repository';
+import { STREAM_KEYS_TIMEOUT_MESSAGE, STREAM_TIMEOUT } from './constants';
 
 @Injectable()
 export class RegistryKeyStorageService {
@@ -17,19 +18,16 @@ export class RegistryKeyStorageService {
     return await this.repository.find(where, options);
   }
 
-  findStream(where: FilterQuery<RegistryKey>, fields?: string[]): AsyncIterable<RegistryKey> {
-    const knex = this.repository.getKnex();
-    const stream = knex
-      .select(fields || '*')
-      .from<RegistryKey>('registry_key')
+  findAsStream(where: FilterQuery<RegistryKey>, fields?: string[]): AsyncIterable<RegistryKey> {
+    const qb = this.repository.createQueryBuilder();
+    qb.select(fields || '*')
       .where(where)
-      .orderBy([
-        { column: 'operatorIndex', order: 'asc' },
-        { column: 'index', order: 'asc' },
-      ])
-      .stream();
+      .orderBy({ operator_index: 'asc', index: 'asc' });
 
-    addTimeoutToStream(stream, 60_000, 'A timeout occurred loading keys from the database');
+    const knex = qb.getKnexQuery();
+    const stream = knex.stream();
+
+    addTimeoutToStream(stream, STREAM_TIMEOUT, STREAM_KEYS_TIMEOUT_MESSAGE);
 
     return stream;
   }
