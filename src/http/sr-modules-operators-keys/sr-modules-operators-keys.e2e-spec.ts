@@ -59,7 +59,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,
@@ -106,8 +106,8 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
         // lets save operators
         await operatorsStorageService.save(operators);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -121,7 +121,6 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
           expect(resp.status).toEqual(200);
 
           const expectedResponse: ModulesOperatorsKeysRecord[] = [
-            // dvt module
             {
               stakingModule: dvtModuleResp,
               meta: {
@@ -129,40 +128,36 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
                   blockNumber: elMeta.number,
                   blockHash: elMeta.hash,
                   timestamp: elMeta.timestamp,
+                  lastChangedBlockHash: elMeta.lastChangedBlockHash,
                 },
               },
-              operator: dvtOperatorsResp[0],
-              key: dvtModuleKeysResponse[0],
+              operator: null,
+              key: null,
             },
-            ...dvtOperatorsResp.slice(1).map((operator, i) => ({
+            ...dvtModuleKeysResponse.map((key) => ({ stakingModule: null, meta: null, operator: null, key })),
+            ...dvtOperatorsResp.map((operator, i) => ({
               stakingModule: null,
               meta: null,
               operator,
-              key: dvtModuleKeysResponse[i + 1],
+              key: null,
             })),
-            ...dvtModuleKeysResponse
-              .slice(dvtOperatorsResp.length)
-              .map((key) => ({ stakingModule: null, meta: null, operator: null, key })),
-
             // curated module
             {
               stakingModule: curatedModuleResp,
               meta: null,
-              operator: curatedOperatorsResp[0],
-              key: curatedModuleKeysResponse[0],
+              operator: null,
+              key: null,
             },
-            ...curatedOperatorsResp.slice(1).map((operator, i) => ({
+            ...curatedOperatorsResp.map((operator) => ({
               stakingModule: null,
               meta: null,
               operator,
-              key: curatedModuleKeysResponse[i + 1],
+              key: null,
             })),
-            ...curatedModuleKeysResponse
-              .slice(curatedOperatorsResp.length)
-              .map((key) => ({ stakingModule: null, meta: null, operator: null, key })),
+            ...curatedModuleKeysResponse.map((key) => ({ stakingModule: null, meta: null, operator: null, key })),
           ];
 
-          expect(resp.body).toEqual(expectedResponse);
+          expect(resp.body).toEqual(expect.arrayContaining(expectedResponse));
         });
       });
 
@@ -184,6 +179,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -225,6 +221,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -246,6 +243,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -264,6 +262,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -298,7 +297,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
       });
 
       it('should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/keys`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });

@@ -1,0 +1,32 @@
+rule_files:
+  - 'keys-api-outdated-keys.non-empty-db.rule.yml'
+
+evaluation_interval: 1m
+
+tests:
+  # Test Case 1: Keys API not updated for more than 10 minutes
+  - interval: 1m
+    input_series:
+      - series: 'lido_keys_api_last_update_timestamp{}'
+        values: '0x10 60'
+    alert_rule_test:
+      - eval_time: 11m
+        alertname: KeysApiOutdatedKeysNonEmptyDB
+        exp_alerts:
+          - exp_labels:
+              severity: 'critical'
+              service: 'keys_api'
+              app_team: 'tooling'
+            exp_annotations:
+              summary: 'Keys are outdated'
+              description: 'Keys were not updated for more than  10m 0s'
+
+  # Test Case 2: Keys API updated during 10 minutes
+  - interval: 1m
+    input_series:
+      - series: 'lido_keys_api_last_update_timestamp{}'
+        values: '60x10 61'
+    alert_rule_test:
+      - eval_time: 11m
+        alertname: KeysApiOutdatedKeysNonEmptyDB
+        exp_alerts: []

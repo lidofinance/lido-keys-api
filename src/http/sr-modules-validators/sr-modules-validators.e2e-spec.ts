@@ -87,7 +87,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,
@@ -146,8 +146,8 @@ describe('SRModulesValidatorsController (e2e)', () => {
         // lets save keys
         await keysStorageService.save(keys);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
         await validatorsRegistry.update(slot);
       });
 
@@ -347,7 +347,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
       });
 
       it('Should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
         const resp = await request(app.getHttpServer()).get(
           `/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`,
         );
@@ -363,8 +363,8 @@ describe('SRModulesValidatorsController (e2e)', () => {
         // lets save keys
         await keysStorageService.save(keys);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
         await validatorsRegistry.update(slot);
       });
 
@@ -565,7 +565,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
       });
 
       it('Should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
         const resp = await request(app.getHttpServer()).get(
           `/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`,
         );

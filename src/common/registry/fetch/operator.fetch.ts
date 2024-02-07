@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { rangePromise } from '@lido-nestjs/utils';
 import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
@@ -8,7 +9,10 @@ import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
 
 @Injectable()
 export class RegistryOperatorFetchService {
-  constructor(@Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry) {}
+  constructor(
+    @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
+    @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
+  ) {}
 
   private getContract(moduleAddress: string) {
     return this.contract.attach(moduleAddress);
@@ -59,10 +63,39 @@ export class RegistryOperatorFetchService {
     return false;
   }
 
+  /** return blockTag for finalized block, it need for testing purposes */
+  public getFinalizedBlockTag() {
+    return 'finalized';
+  }
+
   /** fetches number of operators */
   public async count(moduleAddress: string, overrides: CallOverrides = {}): Promise<number> {
     const bigNumber = await this.getContract(moduleAddress).getNodeOperatorsCount(overrides as any);
     return bigNumber.toNumber();
+  }
+
+  /**
+   * fetches finalized operator
+   * @param moduleAddress address of sr module
+   * @param operatorIndex index of sr module operator
+   * @returns used signing keys count, if error happened returns 0 (because of range error)
+   */
+  public async getFinalizedNodeOperatorUsedSigningKeys(moduleAddress: string, operatorIndex: number): Promise<number> {
+    const fullInfo = true;
+    const contract = this.getContract(moduleAddress);
+    try {
+      const { totalDepositedValidators } = await contract.getNodeOperator(operatorIndex, fullInfo, {
+        blockTag: this.getFinalizedBlockTag(),
+      });
+
+      return totalDepositedValidators.toNumber();
+    } catch (error) {
+      this.logger.warn(
+        `an error occurred while trying to load the finalized state for operator ${operatorIndex} from module ${moduleAddress}`,
+        error,
+      );
+      return 0;
+    }
   }
 
   /** fetches one operator */
@@ -72,7 +105,9 @@ export class RegistryOperatorFetchService {
     overrides: CallOverrides = {},
   ): Promise<RegistryOperator> {
     const fullInfo = true;
-    const operator = await this.getContract(moduleAddress).getNodeOperator(operatorIndex, fullInfo, overrides as any);
+    const contract = this.getContract(moduleAddress);
+
+    const operator = await contract.getNodeOperator(operatorIndex, fullInfo, overrides as any);
 
     const {
       name,
@@ -84,6 +119,8 @@ export class RegistryOperatorFetchService {
       totalDepositedValidators,
     } = operator;
 
+    const finalizedUsedSigningKeys = await this.getFinalizedNodeOperatorUsedSigningKeys(moduleAddress, operatorIndex);
+
     return {
       index: operatorIndex,
       active,
@@ -94,6 +131,7 @@ export class RegistryOperatorFetchService {
       totalSigningKeys: totalAddedValidators.toNumber(),
       usedSigningKeys: totalDepositedValidators.toNumber(),
       moduleAddress,
+      finalizedUsedSigningKeys,
     };
   }
 

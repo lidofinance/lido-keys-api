@@ -9,6 +9,7 @@ export const operator = {
   stakingLimit: 1,
   usedSigningKeys: 2,
   totalSigningKeys: 3,
+  finalizedUsedSigningKeys: 2,
 };
 
 export const operatorFields = (operator: Partial<RegistryOperator>) => [

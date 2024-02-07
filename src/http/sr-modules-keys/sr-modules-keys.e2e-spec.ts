@@ -64,7 +64,7 @@ describe('SRModulesKeysController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,
@@ -108,8 +108,8 @@ describe('SRModulesKeysController (e2e)', () => {
         // lets save keys
         await keysStorageService.save(keys);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -127,6 +127,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -166,6 +167,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -185,6 +187,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -202,6 +205,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -236,7 +240,7 @@ describe('SRModulesKeysController (e2e)', () => {
       });
 
       it('Should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/keys`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
@@ -252,8 +256,8 @@ describe('SRModulesKeysController (e2e)', () => {
         // lets save keys
         await keysStorageService.save(keys);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -278,6 +282,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -298,6 +303,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -326,7 +332,7 @@ describe('SRModulesKeysController (e2e)', () => {
       });
 
       it('Should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
         const resp = await request(app.getHttpServer())
           .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
           .set('Content-Type', 'application/json')
@@ -345,8 +351,8 @@ describe('SRModulesKeysController (e2e)', () => {
         // lets save keys
         await keysStorageService.save(keys);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -363,6 +369,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -403,6 +410,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -427,6 +435,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -444,6 +453,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -458,14 +468,7 @@ describe('SRModulesKeysController (e2e)', () => {
       });
 
       it('Should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(dvtModule, 1);
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`);
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-
-      it('Should return too early response if there are no modules', async () => {
-        await elMetaStorageService.update(elMeta);
+        await moduleStorageService.upsert(dvtModule, 1, '');
         const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });

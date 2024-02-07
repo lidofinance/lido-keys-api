@@ -17,6 +17,7 @@ export class RegistryOperator {
     this.totalSigningKeys = operator.totalSigningKeys;
     this.usedSigningKeys = operator.usedSigningKeys;
     this.moduleAddress = operator.moduleAddress;
+    this.finalizedUsedSigningKeys = operator.finalizedUsedSigningKeys;
   }
 
   @PrimaryKey()
@@ -46,4 +47,7 @@ export class RegistryOperator {
   @PrimaryKey()
   @Property({ length: ADDRESS_LEN })
   moduleAddress!: string;
+
+  @Property()
+  finalizedUsedSigningKeys!: number;
 }

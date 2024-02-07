@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { addTimeoutToStream } from '../utils/stream.utils';
 import { RegistryOperator } from './operator.entity';
 import { RegistryOperatorRepository } from './operator.repository';
+import { STREAM_OPERATORS_TIMEOUT_MESSAGE, STREAM_TIMEOUT } from './constants';
 
 @Injectable()
 export class RegistryOperatorStorageService {
@@ -17,19 +18,17 @@ export class RegistryOperatorStorageService {
     return await this.repository.find(where, options);
   }
 
-  findStream(where: FilterQuery<RegistryOperator>, fields?: string[]): AsyncIterable<RegistryOperator> {
-    const knex = this.repository.getKnex();
-    const stream = knex
-      .select(fields || '*')
-      .from<RegistryOperator>('registry_operator')
-      .where(where)
-      .orderBy([
-        { column: 'moduleAddress', order: 'asc' },
-        { column: 'index', order: 'asc' },
-      ])
-      .stream();
+  findAsStream(where: FilterQuery<RegistryOperator>, fields?: string[]): AsyncIterable<RegistryOperator> {
+    const qb = this.repository.createQueryBuilder();
 
-    addTimeoutToStream(stream, 60_000, 'A timeout occurred loading operators from the database');
+    qb.select(fields || '*')
+      .where(where)
+      .orderBy({ module_address: 'asc', index: 'asc' });
+
+    const knex = qb.getKnexQuery();
+    const stream = knex.stream();
+
+    addTimeoutToStream(stream, STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE);
 
     return stream;
   }

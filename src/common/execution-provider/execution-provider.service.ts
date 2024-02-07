@@ -46,4 +46,13 @@ export class ExecutionProviderService {
     const block = await this.provider.getBlock(blockHashOrBlockTag);
     return { number: block.number, hash: block.hash, timestamp: block.timestamp };
   }
+
+  /**
+   *
+   * Returns full block info
+   */
+  public async getFullBlock(blockHashOrBlockTag: number | string) {
+    const block = await this.provider.getBlock(blockHashOrBlockTag);
+    return block;
+  }
 }

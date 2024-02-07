@@ -1314,7 +1314,7 @@
     traverse "^0.6.7"
     winston "^3.4.0"
 
-"@lido-nestjs/middleware@1.2.0":
+"@lido-nestjs/middleware@1.2.0", "@lido-nestjs/middleware@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@lido-nestjs/middleware/-/middleware-1.2.0.tgz#0e64b69149ef1f7e4594896fd08d6e0bd9ef5382"
   integrity sha512-0rkXWKXEKJPRbq1W6cN+yelhc+CruqhUqmdkNKwl4vTk631fpG9yfSfxxQFDAs3LhsTORqqgKUBpdK+epRYjIQ==

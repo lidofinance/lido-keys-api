@@ -60,41 +60,40 @@ export class SRModulesOperatorsKeysService {
     for (const stakingModule of stakingModules) {
       const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(stakingModule.type);
 
-      const keysGenerator = moduleInstance.getKeysStream(stakingModule.stakingModuleAddress, {});
-      const operatorsGenerator = moduleInstance.getOperatorsStream(stakingModule.stakingModuleAddress, {});
-
-      let nextKey = await keysGenerator.next();
-      let nextOperator = await operatorsGenerator.next();
-
       yield {
         stakingModule: new StakingModuleResponse(stakingModule),
         meta: !metaHasSent ? meta : null,
-        key: !nextKey.value ? null : new Key(nextKey.value),
-        operator: !nextOperator.value ? null : new Operator(nextOperator.value),
+        key: null,
+        operator: null,
       };
 
       metaHasSent = true;
 
-      do {
-        if (!nextKey.done) {
-          nextKey = await keysGenerator.next();
-        }
-
-        if (!nextOperator.done) {
-          nextOperator = await operatorsGenerator.next();
-        }
-
-        if (!nextKey.value && !nextOperator.value) {
-          break;
-        }
-
+      const keysGenerator = moduleInstance.getKeysStream(stakingModule.stakingModuleAddress, {});
+      let nextKey = await keysGenerator.next();
+      while (!nextKey.done) {
+        // Yield all keys first
         yield {
-          stakingModule: null,
-          meta: null,
-          key: !nextKey.value ? null : new Key(nextKey.value),
-          operator: !nextOperator.value ? null : new Operator(nextOperator.value),
+          stakingModule: null, // Already yielded above
+          meta: null, // Already yielded above
+          key: nextKey.value ? new Key(nextKey.value) : null,
+          operator: null,
         };
-      } while (!nextKey.done || !nextOperator.done);
+        nextKey = await keysGenerator.next();
+      }
+
+      const operatorsGenerator = moduleInstance.getOperatorsStream(stakingModule.stakingModuleAddress, {});
+      let nextOperator = await operatorsGenerator.next();
+      while (!nextOperator.done) {
+        // After all keys, yield all operators
+        yield {
+          stakingModule: null, // Already yielded above
+          meta: null, // Already yielded above
+          key: null,
+          operator: nextOperator.value ? new Operator(nextOperator.value) : null,
+        };
+        nextOperator = await operatorsGenerator.next();
+      }
     }
   }
 }

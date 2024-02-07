@@ -7,7 +7,7 @@ import { SRModuleRepository } from './sr-module.repository';
 export class SrModuleEntity implements StakingModule {
   [EntityRepositoryType]?: SRModuleRepository;
 
-  constructor(srModule: StakingModule, nonce: number) {
+  constructor(srModule: StakingModule, nonce: number, lastChangedBlockHash: string) {
     this.moduleId = srModule.moduleId;
     this.stakingModuleAddress = srModule.stakingModuleAddress;
     this.moduleFee = srModule.moduleFee;
@@ -21,6 +21,7 @@ export class SrModuleEntity implements StakingModule {
     this.type = srModule.type;
     this.active = srModule.active;
     this.nonce = nonce;
+    this.lastChangedBlockHash = lastChangedBlockHash;
   }
 
   @PrimaryKey()
@@ -81,4 +82,8 @@ export class SrModuleEntity implements StakingModule {
   // nonce value
   @Property()
   nonce: number;
+
+  // last changed block hash
+  @Property()
+  lastChangedBlockHash: string;
 }

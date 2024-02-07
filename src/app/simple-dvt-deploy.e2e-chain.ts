@@ -9,7 +9,7 @@ import { RegistryKeyStorageService } from '../common/registry';
 import { ElMetaStorageService } from '../storage/el-meta.storage';
 import { SRModuleStorageService } from '../storage/sr-module.storage';
 import { KeysUpdateService } from '../jobs/keys-update';
-import { ExecutionProvider, ExecutionProviderService } from '../common/execution-provider';
+import { ExecutionProvider } from '../common/execution-provider';
 import { ConfigService } from '../common/config';
 import { PrometheusService } from '../common/prometheus';
 import { StakingRouterService } from '../staking-router-modules/staking-router.service';
@@ -64,8 +64,6 @@ describe('Simple DVT deploy', () => {
     });
 
     moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(ExecutionProviderService)
-      .useValue(session.provider)
       .overrideProvider(SimpleFallbackJsonRpcBatchProvider)
       .useValue(session.provider)
       .overrideProvider(ExecutionProvider)
@@ -85,6 +83,15 @@ describe('Simple DVT deploy', () => {
         validatorsRegistryLastBlockNumber: jest.fn(),
         validatorsRegistryLastSlot: jest.fn(),
         validatorsEnabled: jest.fn(),
+      })
+      .overrideProvider(ConfigService)
+      .useValue({
+        get(path) {
+          const conf = {
+            LIDO_LOCATOR_ADDRESS: '0xC1d0b3DE6792Bf6b4b37EccdcC24e45978Cfd2Eb',
+          };
+          return conf[path];
+        },
       })
       .compile();
 

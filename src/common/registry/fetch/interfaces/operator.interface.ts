@@ -8,4 +8,5 @@ export interface RegistryOperator {
   totalSigningKeys: number;
   usedSigningKeys: number;
   moduleAddress: string;
+  finalizedUsedSigningKeys: number;
 }

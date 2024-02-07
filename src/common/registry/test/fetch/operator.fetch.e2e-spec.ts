@@ -4,6 +4,7 @@ import { isAddress } from '@ethersproject/address';
 import { RegistryFetchModule, RegistryOperatorFetchService } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
+import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 dotenv.config();
 
@@ -18,7 +19,10 @@ describe('Operators', () => {
   let fetchService: RegistryOperatorFetchService;
 
   beforeEach(async () => {
-    const imports = [RegistryFetchModule.forFeature({ provider })];
+    const imports = [
+      RegistryFetchModule.forFeature({ provider }),
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
+    ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     fetchService = moduleRef.get(RegistryOperatorFetchService);
   });
