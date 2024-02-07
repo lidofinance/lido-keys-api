@@ -41,7 +41,7 @@ describe('Registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature({ provider }),
     ];

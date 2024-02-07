@@ -27,7 +27,7 @@ describe('Async module initializing', () => {
 
   test('forRootAsync', async () => {
     await testModules([
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forRootAsync({
         async useFactory() {
@@ -39,7 +39,7 @@ describe('Async module initializing', () => {
 
   test('forFeatureAsync', async () => {
     await testModules([
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeatureAsync({
         async useFactory() {

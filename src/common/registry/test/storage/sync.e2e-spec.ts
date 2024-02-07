@@ -18,10 +18,10 @@ describe('Sync module initializing', () => {
   };
 
   test('forRoot', async () => {
-    await testModules([DatabaseE2ETestingModule, RegistryStorageModule.forRoot({})]);
+    await testModules([DatabaseE2ETestingModule.forRoot(), RegistryStorageModule.forRoot({})]);
   });
 
   test('forFeature', async () => {
-    await testModules([DatabaseE2ETestingModule, RegistryStorageModule.forFeature()]);
+    await testModules([DatabaseE2ETestingModule.forRoot(), RegistryStorageModule.forFeature()]);
   });
 });

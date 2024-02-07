@@ -22,7 +22,7 @@ describe('Key', () => {
 
   beforeEach(async () => {
     const imports = [
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),
     ];

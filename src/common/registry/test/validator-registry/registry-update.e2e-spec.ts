@@ -46,7 +46,7 @@ describe('Validator registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature({ provider }),
     ];
@@ -275,7 +275,7 @@ describe('Empty registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       MockLoggerModule.forRoot({
         log: jest.fn(),
         error: jest.fn(),
@@ -334,7 +334,7 @@ describe('Reorg detection', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot(mikroORMConfig),
+      DatabaseE2ETestingModule.forRoot(),
       MockLoggerModule.forRoot({
         log: jest.fn(),
         error: jest.fn(),
@@ -350,7 +350,8 @@ describe('Reorg detection', () => {
     registryStorageService = moduleRef.get(RegistryStorageService);
     mikroOrm = moduleRef.get(MikroORM);
     const generator = mikroOrm.getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
   });
 
   afterEach(async () => {

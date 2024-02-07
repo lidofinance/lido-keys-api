@@ -18,7 +18,7 @@ describe('Keys', () => {
   const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
 
   beforeEach(async () => {
-    const imports = [DatabaseE2ETestingModule, RegistryStorageModule.forFeature()];
+    const imports = [DatabaseE2ETestingModule.forRoot(), RegistryStorageModule.forFeature()];
 
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     storageService = moduleRef.get(RegistryKeyStorageService);

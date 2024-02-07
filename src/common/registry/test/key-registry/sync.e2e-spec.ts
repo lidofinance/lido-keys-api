@@ -27,7 +27,7 @@ describe('Sync module initializing', () => {
 
   test('forRoot', async () => {
     const imports = [
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forRoot({
         provider,
@@ -39,7 +39,7 @@ describe('Sync module initializing', () => {
 
   test('forFeature', async () => {
     const imports = [
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({
         provider,
@@ -51,7 +51,7 @@ describe('Sync module initializing', () => {
 
   test('forFeature + global provider', async () => {
     const imports = [
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature(),
     ];

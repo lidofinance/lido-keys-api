@@ -36,7 +36,7 @@ describe('Async module initializing', () => {
   test('forRootAsync', async () => {
     await testModules([
       TestModule.forRoot(),
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       RegistryStorageModule.forRootAsync({
         async useFactory() {
           return {};
@@ -49,7 +49,7 @@ describe('Async module initializing', () => {
   test('forFeatureAsync', async () => {
     await testModules([
       TestModule.forRoot(),
-      DatabaseE2ETestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       RegistryStorageModule.forFeatureAsync({
         async useFactory() {
           return {};

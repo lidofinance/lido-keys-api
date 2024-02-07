@@ -22,7 +22,7 @@ import { DatabaseE2ETestingModule } from './database-e2e-testing.module';
     ConfigModule,
     ExecutionProviderModule,
     ConsensusProviderModule,
-    DatabaseE2ETestingModule,
+    DatabaseE2ETestingModule.forRoot(),
     LoggerModule.forRoot({ transports: [nullTransport()] }),
     ScheduleModule.forRoot(),
     KeyRegistryModule.forRootAsync({

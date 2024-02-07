@@ -10,7 +10,7 @@ describe('Staking Module Storage', () => {
   let mikroOrm: MikroORM;
 
   beforeEach(async () => {
-    const imports = [DatabaseE2ETestingModule, StorageModule];
+    const imports = [DatabaseE2ETestingModule.forRoot(), StorageModule];
 
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     srModuleStorageService = moduleRef.get(SRModuleStorageService);
