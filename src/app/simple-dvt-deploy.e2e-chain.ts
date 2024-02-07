@@ -84,15 +84,6 @@ describe('Simple DVT deploy', () => {
         validatorsRegistryLastSlot: jest.fn(),
         validatorsEnabled: jest.fn(),
       })
-      .overrideProvider(ConfigService)
-      .useValue({
-        get(path) {
-          const conf = {
-            LIDO_LOCATOR_ADDRESS: '0xC1d0b3DE6792Bf6b4b37EccdcC24e45978Cfd2Eb',
-          };
-          return conf[path];
-        },
-      })
       .compile();
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
