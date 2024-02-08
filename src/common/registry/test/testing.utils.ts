@@ -53,10 +53,3 @@ export const clearDb = async (orm) => {
     await operatorRepository.nativeDelete({});
   });
 };
-
-export const mikroORMConfig = {
-  dbName: ':memory:',
-  type: 'sqlite' as const,
-  allowGlobalContext: true,
-  entities: ['./**/*.entity.ts'],
-};

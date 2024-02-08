@@ -41,7 +41,7 @@ import {
   dvtOpOneRespExitMessages20percent,
   dvtOpOneRespExitMessages5maxAmount,
 } from '../consensus.fixtures';
-import { DatabaseTestingModule } from 'app';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('SRModulesValidatorsController (e2e)', () => {
   let app: INestApplication;
@@ -87,7 +87,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      DatabaseTestingModule.forRoot(),
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,

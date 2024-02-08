@@ -1,5 +1,4 @@
 import { Test } from '@nestjs/testing';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import { getNetwork } from '@ethersproject/networks';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
@@ -11,9 +10,10 @@ import {
   RegistryOperatorStorageService,
 } from '../..';
 import { keys, operators } from '../fixtures/db.fixture';
-import { clearDb, compareTestKeysAndOperators, mikroORMConfig } from '../testing.utils';
+import { clearDb, compareTestKeysAndOperators } from '../testing.utils';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('Registry', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
@@ -41,7 +41,7 @@ describe('Registry', () => {
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot(mikroORMConfig),
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),
     ];
@@ -54,7 +54,8 @@ describe('Registry', () => {
 
     mikroOrm = moduleRef.get(MikroORM);
     const generator = mikroOrm.getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     await keyStorageService.save(keysWithModuleAddress);
 
