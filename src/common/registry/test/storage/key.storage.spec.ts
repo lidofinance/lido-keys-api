@@ -3,7 +3,8 @@ import { key } from '../fixtures/key.fixture';
 import { RegistryKeyStorageService, RegistryKey, RegistryKeyRepository } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as streamUtils from '../../utils/stream.utils';
-import { STREAM_KEYS_TIMEOUT_MESSAGE, STREAM_TIMEOUT } from '../../../registry/storage/constants';
+import { STREAM_KEYS_TIMEOUT_MESSAGE, DEFAULT_STREAM_TIMEOUT } from '../../../registry/storage/constants';
+import { ConfigModule, ConfigService } from 'common/config';
 
 describe('Keys', () => {
   const CHAIN_ID = process.env.CHAIN_ID || 1;
@@ -53,13 +54,24 @@ describe('Keys', () => {
   };
 
   let storageService: RegistryKeyStorageService;
+  let configService: ConfigService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
+      imports: [ConfigModule],
       providers: [RegistryKeyStorageService, { provide: RegistryKeyRepository, useValue: mockRegistryKeyRepository }],
     }).compile();
 
     storageService = moduleRef.get(RegistryKeyStorageService);
+    configService = moduleRef.get(ConfigService);
+
+    jest.spyOn(configService, 'get').mockImplementation((path) => {
+      if (path === 'STREAM_TIMEOUT') {
+        return DEFAULT_STREAM_TIMEOUT;
+      }
+
+      return configService.get(path);
+    });
   });
 
   beforeEach(() => {
@@ -87,7 +99,7 @@ describe('Keys', () => {
     expect(mockedCreateQueryBuilder.orderBy).toBeCalledWith({ index: 'asc', operator_index: 'asc' });
     expect(mockedCreateQueryBuilder.getKnexQuery).toBeCalledTimes(1);
     expect(streamValue).toBeCalledTimes(1);
-    expect(addTimeoutToStream).toBeCalledWith(stream, STREAM_TIMEOUT, STREAM_KEYS_TIMEOUT_MESSAGE);
+    expect(addTimeoutToStream).toBeCalledWith(stream, DEFAULT_STREAM_TIMEOUT, STREAM_KEYS_TIMEOUT_MESSAGE);
   });
 
   test('findAll', async () => {
