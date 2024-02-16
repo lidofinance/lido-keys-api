@@ -120,6 +120,8 @@ export class KeysUpdateService {
     // read from database last execution layer data
     const prevElMeta = await this.elMetaStorage.get();
 
+    this.logger.log('Fetched current execution meta and meta from database');
+
     // handle the situation when the node has fallen behind the service state
     if (prevElMeta && prevElMeta?.blockNumber > currElMeta.number) {
       this.logger.warn('Previous data is newer than current data', prevElMeta);
@@ -133,6 +135,9 @@ export class KeysUpdateService {
 
     // Get modules from storage
     const storageModules = await this.srModulesStorage.findAll();
+
+    this.logger.log('Fetched modules from database');
+
     // Get staking modules from SR contract
     const contractModules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
 
