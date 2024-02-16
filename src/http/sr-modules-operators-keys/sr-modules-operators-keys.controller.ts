@@ -1,4 +1,3 @@
-import { pipeline } from 'node:stream/promises';
 import { IsolationLevel } from '@mikro-orm/core';
 import {
   Controller,
@@ -20,7 +19,6 @@ import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
-import { streamify } from 'common/streams';
 import { ModuleIdPipe } from 'http/common/pipeline/module-id-pipe';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 
