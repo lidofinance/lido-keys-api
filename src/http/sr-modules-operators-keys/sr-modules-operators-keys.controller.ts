@@ -122,21 +122,29 @@ export class SRModulesOperatorsKeysController {
 
     reply.type('application/json').send(jsonStream);
 
-    try {
-      await this.entityManager.transactional(
-        () => pipeline([streamify(this.srModulesOperatorsKeys.getModulesOperatorsKeysGenerator()), jsonStream]),
-        { isolationLevel: IsolationLevel.REPEATABLE_READ },
-      );
-    } catch (error) {
-      jsonStream.destroy();
+    const generator = await this.srModulesOperatorsKeys.getModulesOperatorsKeysGenerator();
 
-      if (error instanceof Error) {
-        const message = error.message;
-        const stack = error.stack;
-        this.logger.error(`modules-operators-keys error: ${message}`, stack);
-      } else {
-        this.logger.error('modules-operators-keys unknown error');
-      }
-    }
+    await this.entityManager.transactional(
+      async () => {
+        try {
+          for await (const value of generator) {
+            jsonStream.write(value);
+          }
+
+          jsonStream.end();
+        } catch (error) {
+          if (error instanceof Error) {
+            const message = error.message;
+            const stack = error.stack;
+            this.logger.error(`modules-operators-keys error: ${message}`, stack);
+          } else {
+            this.logger.error('modules-operators-keys unknown error');
+          }
+
+          jsonStream.destroy();
+        }
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
   }
 }
