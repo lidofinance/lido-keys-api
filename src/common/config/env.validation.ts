@@ -171,6 +171,11 @@ export class EnvironmentVariables {
   @IsPositive()
   @Transform(({ value }) => parseInt(value, 10))
   KEYS_FETCH_BATCH_SIZE = 1100;
+
+  @IsOptional()
+  @IsPositive()
+  @Transform(({ value }) => parseInt(value, 10))
+  STREAM_TIMEOUT = 60_000;
 }
 
 export function validate(config: Record<string, unknown>) {

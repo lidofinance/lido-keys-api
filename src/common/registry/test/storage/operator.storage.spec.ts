@@ -3,7 +3,8 @@ import { operator } from '../fixtures/operator.fixture';
 import { RegistryOperatorStorageService, RegistryOperator, RegistryOperatorRepository } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as streamUtils from '../../utils/stream.utils';
-import { STREAM_OPERATORS_TIMEOUT_MESSAGE, STREAM_TIMEOUT } from '../../../registry/storage/constants';
+import { DEFAULT_STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE } from '../../../registry/storage/constants';
+import { ConfigModule, ConfigService } from 'common/config';
 
 describe('Operators', () => {
   const CHAIN_ID = process.env.CHAIN_ID || 1;
@@ -53,9 +54,11 @@ describe('Operators', () => {
   };
 
   let storageService: RegistryOperatorStorageService;
+  let configService: ConfigService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
+      imports: [ConfigModule],
       providers: [
         RegistryOperatorStorageService,
         {
@@ -66,6 +69,15 @@ describe('Operators', () => {
     }).compile();
 
     storageService = moduleRef.get(RegistryOperatorStorageService);
+    configService = moduleRef.get(ConfigService);
+
+    jest.spyOn(configService, 'get').mockImplementation((path) => {
+      if (path === 'STREAM_TIMEOUT') {
+        return DEFAULT_STREAM_TIMEOUT;
+      }
+
+      return configService.get(path);
+    });
   });
 
   beforeEach(() => {
@@ -93,7 +105,7 @@ describe('Operators', () => {
     expect(mockedCreateQueryBuilder.orderBy).toBeCalledWith({ index: 'asc', module_address: 'asc' });
     expect(mockedCreateQueryBuilder.getKnexQuery).toBeCalledTimes(1);
     expect(streamValue).toBeCalledTimes(1);
-    expect(addTimeoutToStream).toBeCalledWith(stream, STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE);
+    expect(addTimeoutToStream).toBeCalledWith(stream, DEFAULT_STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE);
   });
 
   test('findAll', async () => {

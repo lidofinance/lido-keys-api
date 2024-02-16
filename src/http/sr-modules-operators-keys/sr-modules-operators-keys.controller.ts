@@ -128,8 +128,15 @@ export class SRModulesOperatorsKeysController {
         { isolationLevel: IsolationLevel.REPEATABLE_READ },
       );
     } catch (error) {
-      this.logger.error('modules-operators-keys error', error);
       jsonStream.destroy();
+
+      if (error instanceof Error) {
+        const message = error.message;
+        const stack = error.stack;
+        this.logger.error(`modules-operators-keys error: ${message}`, stack);
+      } else {
+        this.logger.error('modules-operators-keys unknown error');
+      }
     }
   }
 }

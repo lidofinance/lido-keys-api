@@ -6,12 +6,14 @@ import { RegistryKeyStorageService } from './key.storage';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { RegistryKey } from './key.entity';
 import { RegistryOperator } from './operator.entity';
+import { ConfigModule } from 'common/config';
 
 @Module({
   imports: [
     MikroOrmModule.forFeature({
       entities: [RegistryKey, RegistryOperator],
     }),
+    ConfigModule,
   ],
   providers: [RegistryStorageService, RegistryOperatorStorageService, RegistryKeyStorageService],
   exports: [RegistryStorageService, RegistryOperatorStorageService, RegistryKeyStorageService],
