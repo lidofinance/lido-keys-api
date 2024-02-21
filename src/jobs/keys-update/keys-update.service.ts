@@ -117,6 +117,7 @@ export class KeysUpdateService {
   public async update(): Promise<{ number: number; hash: string; timestamp: number } | undefined> {
     // reading latest block from blockchain
     const currElMeta = await this.executionProvider.getBlock('latest');
+    this.logger.log('Fetched latest block');
     // read from database last execution layer data
     const prevElMeta = await this.elMetaStorage.get();
 
