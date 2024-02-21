@@ -10,8 +10,7 @@ import {
   RegistryOperatorFetchService,
 } from '../../';
 
-import { clearDb, compareTestOperators } from '../testing.utils';
-import { operators } from '../fixtures/connect.fixture';
+import { clearDb } from '../testing.utils';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
@@ -30,9 +29,9 @@ describe('Registry', () => {
   }
   const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
 
-  const operatorsWithModuleAddress = operators.map((key) => {
-    return { ...key, moduleAddress: address };
-  });
+  // const operatorsWithModuleAddress = operators.map((key) => {
+  //   return { ...key, moduleAddress: address };
+  // });
 
   const blockHash = '0x42e6d3fe6df4bc4bdfda27595a015ac9fd5af65cf9bd9d8ad0f2ac802dd73749';
 
