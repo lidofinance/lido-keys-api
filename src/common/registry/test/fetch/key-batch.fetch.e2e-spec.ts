@@ -27,7 +27,8 @@ describe('Fetch keys in batch', () => {
   });
 
   test('fetch one key', async () => {
-    const keys = await fetchService.fetch(address, 17, 0, 3, { blockTag: 9641262 });
+    const overrides = { blockTag: 10573030 };
+    const keys = await fetchService.fetch(address, 17, 0, 3, overrides);
 
     expect(keys).toBeInstanceOf(Array);
 

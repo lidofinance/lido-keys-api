@@ -4,6 +4,7 @@ import {
   ConsensusValidatorsAndMetadata,
   Validator,
   ConsensusMeta,
+  ValidatorStatus,
 } from '@lido-nestjs/validators-registry';
 import { LOGGER_PROVIDER, LoggerService } from '../common/logger';
 import { ConfigService } from '../common/config';
@@ -11,7 +12,7 @@ import { QueryOrder } from '@mikro-orm/core';
 
 export interface ValidatorsFilter {
   pubkeys: string[];
-  statuses: string[];
+  statuses: ValidatorStatus[];
   max_amount: number | undefined;
   percent: number | undefined;
 }
