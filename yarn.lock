@@ -1333,10 +1333,10 @@
   resolved "https://registry.yarnpkg.com/@lido-nestjs/utils/-/utils-1.3.0.tgz#8bdc69c3fd18bc57752b1799516096d284f1112b"
   integrity sha512-/5I30Dos9TC18YfZq8O9ele28DpUQQCySB9X9GXPeSmY1AV4w2kIGQrws1wu2gtw7x5mZnW8PtWthJmH1f6vJQ==
 
-"@lido-nestjs/validators-registry@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/validators-registry/-/validators-registry-1.3.0.tgz#d40ad9cee57dbccad4da45ad5635e05c68a77c5e"
-  integrity sha512-qULzEmKSVbYUP8q9oOyS5O8v64XOY37Fk+KZTGtzWql/dW+P+EEz6htaVXbtGhI72c3TBKEleb6hS2TsZBOeCw==
+"@lido-nestjs/validators-registry@^1.3.1":
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/validators-registry/-/validators-registry-1.3.1.tgz#0851efcff7af8c56ebd27ee9021b1ccbe010e399"
+  integrity sha512-20frZsj7VG5iOoof+iPpXn3s5oBwuwsKuB9sRAGnqTFmwtiEr4AAGtE0WgGQNd4YLX9G7yF1bHr8mXCeaG8wUg==
   dependencies:
     "@lido-nestjs/consensus" "1.5.0"
     "@lido-nestjs/di" "1.0.1"
