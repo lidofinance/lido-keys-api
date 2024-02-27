@@ -1,14 +1,15 @@
 import { QueryOrder } from '@mikro-orm/core';
 import { FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from 'common/config';
 import { addTimeoutToStream } from '../utils/stream.utils';
 import { RegistryOperator } from './operator.entity';
 import { RegistryOperatorRepository } from './operator.repository';
-import { STREAM_OPERATORS_TIMEOUT_MESSAGE, STREAM_TIMEOUT } from './constants';
+import { DEFAULT_STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE } from './constants';
 
 @Injectable()
 export class RegistryOperatorStorageService {
-  constructor(private readonly repository: RegistryOperatorRepository) {}
+  constructor(private readonly repository: RegistryOperatorRepository, private readonly configService: ConfigService) {}
 
   /** find operators */
   async find<P extends string = never>(
@@ -28,7 +29,8 @@ export class RegistryOperatorStorageService {
     const knex = qb.getKnexQuery();
     const stream = knex.stream();
 
-    addTimeoutToStream(stream, STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE);
+    const streamTimeout = this.configService.get('STREAM_TIMEOUT') ?? DEFAULT_STREAM_TIMEOUT;
+    addTimeoutToStream(stream, streamTimeout, STREAM_OPERATORS_TIMEOUT_MESSAGE);
 
     return stream;
   }

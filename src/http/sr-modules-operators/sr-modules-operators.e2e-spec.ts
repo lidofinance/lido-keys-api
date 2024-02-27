@@ -22,7 +22,7 @@ import { elMeta } from '../el-meta.fixture';
 import { operators, dvtModule, curatedModule, srModules } from '../db.fixtures';
 import { dvtModuleResp, curatedModuleResp } from '../module.fixture';
 import { dvtOperatorsResp, curatedOperatorsResp } from '../operator.fixtures';
-import { DatabaseTestingModule } from 'app';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('SRModuleOperatorsController (e2e)', () => {
   let app: INestApplication;
@@ -65,7 +65,7 @@ describe('SRModuleOperatorsController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      DatabaseTestingModule.forRoot(),
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,

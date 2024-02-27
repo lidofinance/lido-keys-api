@@ -20,7 +20,7 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { elMeta } from '../el-meta.fixture';
 import { curatedKeyWithDuplicate, curatedModule, curatedModuleKeys, dvtModule, keys } from '../db.fixtures';
 import { curatedModuleKeysResponse, dvtModuleKeysResponse } from 'http/keys.fixtures';
-import { DatabaseTestingModule } from 'app';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('KeyController (e2e)', () => {
   let app: INestApplication;
@@ -52,7 +52,7 @@ describe('KeyController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      DatabaseTestingModule.forRoot(),
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,

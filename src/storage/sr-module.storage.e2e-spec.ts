@@ -1,31 +1,24 @@
 import { Test } from '@nestjs/testing';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { StorageModule } from './storage.module';
 import { SRModuleStorageService } from './sr-module.storage';
 import { MikroORM } from '@mikro-orm/core';
 import { curatedModule, dvtModule, updatedCuratedModule } from '../http/db.fixtures';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('Staking Module Storage', () => {
   let srModuleStorageService: SRModuleStorageService;
   let mikroOrm: MikroORM;
 
   beforeEach(async () => {
-    const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
-      StorageModule,
-    ];
+    const imports = [DatabaseE2ETestingModule.forRoot(), StorageModule];
 
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     srModuleStorageService = moduleRef.get(SRModuleStorageService);
     mikroOrm = moduleRef.get(MikroORM);
 
     const generator = mikroOrm.getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
   });
 
   afterEach(async () => {

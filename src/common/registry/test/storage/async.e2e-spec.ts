@@ -1,10 +1,9 @@
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { DynamicModule, Injectable, Module } from '@nestjs/common';
 import { ModuleMetadata } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { RegistryStorageModule, RegistryStorageService } from '../../';
+import { RegistryStorageModule, RegistryStorageService } from '../..';
 import { MikroORM } from '@mikro-orm/core';
-import { mikroORMConfig } from '../testing.utils';
+import { DatabaseE2ETestingModule } from 'app';
 
 @Injectable()
 class TestService {}
@@ -27,7 +26,8 @@ describe('Async module initializing', () => {
     const storageService: RegistryStorageService = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     expect(storageService).toBeDefined();
     await storageService.onModuleDestroy();
@@ -36,7 +36,7 @@ describe('Async module initializing', () => {
   test('forRootAsync', async () => {
     await testModules([
       TestModule.forRoot(),
-      MikroOrmModule.forRoot(mikroORMConfig),
+      DatabaseE2ETestingModule.forRoot(),
       RegistryStorageModule.forRootAsync({
         async useFactory() {
           return {};
@@ -49,7 +49,7 @@ describe('Async module initializing', () => {
   test('forFeatureAsync', async () => {
     await testModules([
       TestModule.forRoot(),
-      MikroOrmModule.forRoot(mikroORMConfig),
+      DatabaseE2ETestingModule.forRoot(),
       RegistryStorageModule.forFeatureAsync({
         async useFactory() {
           return {};

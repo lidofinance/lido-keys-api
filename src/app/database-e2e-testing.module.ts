@@ -4,10 +4,10 @@ import config from 'mikro-orm.config';
 import { ConfigModule, ConfigService } from 'common/config';
 
 @Module({})
-export class DatabaseTestingModule {
+export class DatabaseE2ETestingModule {
   static forRoot(mikroOrmConfigOverrides: Partial<typeof config> = {}): DynamicModule {
     return {
-      module: DatabaseTestingModule,
+      module: DatabaseE2ETestingModule,
       imports: [
         ConfigModule,
         MikroOrmModule.forRootAsync({

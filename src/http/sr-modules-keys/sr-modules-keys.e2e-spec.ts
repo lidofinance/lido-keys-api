@@ -21,7 +21,7 @@ import { curatedModule, dvtModule, keys } from '../db.fixtures';
 import { dvtModuleResp, curatedModuleResp } from '../module.fixture';
 import { curatedModuleKeysResponse, dvtModuleKeysResponse } from '../keys.fixtures';
 import { elMeta } from '../el-meta.fixture';
-import { DatabaseTestingModule } from 'app';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('SRModulesKeysController (e2e)', () => {
   let app: INestApplication;
@@ -64,7 +64,7 @@ describe('SRModulesKeysController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      DatabaseTestingModule.forRoot(),
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,

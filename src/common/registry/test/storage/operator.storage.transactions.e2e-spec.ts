@@ -4,7 +4,7 @@ import { operator } from '../fixtures/operator.fixture';
 import { RegistryStorageModule, RegistryStorageService, RegistryOperatorStorageService, RegistryOperator } from '../..';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
-import { DatabaseTestingModule } from 'app';
+import { DatabaseE2ETestingModule } from 'app';
 import { EntityManager } from '@mikro-orm/knex';
 
 dotenv.config();
@@ -21,7 +21,10 @@ describe('check that findAsStream method dont create a new connection', () => {
   const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
 
   beforeEach(async () => {
-    const imports = [DatabaseTestingModule.forRoot({ pool: { min: 1, max: 1 } }), RegistryStorageModule.forFeature()];
+    const imports = [
+      DatabaseE2ETestingModule.forRoot({ pool: { min: 1, max: 1 } }),
+      RegistryStorageModule.forFeature(),
+    ];
 
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     operatorStorageService = moduleRef.get(RegistryOperatorStorageService);
