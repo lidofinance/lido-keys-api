@@ -61,6 +61,7 @@ describe('Simple DVT deploy', () => {
     session = await sdk.env.hardhat({
       fork: forkUrl,
       chainId: 1,
+      forkBlockNumber: 19282216
     });
 
     moduleRef = await Test.createTestingModule({ imports: [AppModule] })
