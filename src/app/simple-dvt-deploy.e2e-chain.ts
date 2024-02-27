@@ -51,7 +51,7 @@ describe('Simple DVT deploy', () => {
   // let prevBlockNumber = 0;
 
   beforeAll(async () => {
-    sdk = await createSDK('http://localhost:8001');
+    sdk = await createSDK('http://localhost:8001',);
     const forkUrl = process.env.CHRONIX_PROVIDER_MAINNET_URL;
 
     if (!forkUrl || forkUrl.length < 1) {
@@ -61,6 +61,7 @@ describe('Simple DVT deploy', () => {
     session = await sdk.env.hardhat({
       fork: forkUrl,
       chainId: 1,
+      forkBlockNumber: 19282216
     });
 
     moduleRef = await Test.createTestingModule({ imports: [AppModule] })
