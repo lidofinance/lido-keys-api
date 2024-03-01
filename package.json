@@ -46,8 +46,8 @@
   },
   "dependencies": {
     "@lido-nestjs/consensus": "^1.5.0",
-    "@lido-nestjs/constants": "^5.2.0",
-    "@lido-nestjs/contracts": "^9.3.0",
+    "@lido-nestjs/constants": "^5.2.1",
+    "@lido-nestjs/contracts": "^9.5.1",
     "@lido-nestjs/execution": "^1.11.0",
     "@lido-nestjs/fetch": "^1.4.0",
     "@lido-nestjs/logger": "^1.3.2",
