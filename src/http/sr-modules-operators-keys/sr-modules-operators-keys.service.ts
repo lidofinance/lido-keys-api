@@ -52,8 +52,10 @@ export class SRModulesOperatorsKeysService {
     };
   }
 
-  public async *getModulesOperatorsKeysGenerator(): AsyncGenerator<ModulesOperatorsKeysRecord> {
-    const { stakingModules, elBlockSnapshot } = await this.stakingRouterService.getStakingModulesAndMeta();
+  public async *getModulesOperatorsKeysGenerator(filters: KeyQuery): AsyncGenerator<ModulesOperatorsKeysRecord> {
+    const { stakingModules, elBlockSnapshot } = await this.stakingRouterService.getStakingModulesAndMeta(
+      filters.moduleAddresses,
+    );
 
     const meta: MetaStreamRecord = { elBlockSnapshot };
     let metaHasSent = false;
@@ -69,7 +71,7 @@ export class SRModulesOperatorsKeysService {
 
       metaHasSent = true;
 
-      const keysGenerator = moduleInstance.getKeysStream(stakingModule.stakingModuleAddress, {});
+      const keysGenerator = moduleInstance.getKeysStream(stakingModule.stakingModuleAddress, filters);
       let nextKey = await keysGenerator.next();
       while (!nextKey.done) {
         // Yield all keys first
@@ -82,7 +84,9 @@ export class SRModulesOperatorsKeysService {
         nextKey = await keysGenerator.next();
       }
 
-      const operatorsGenerator = moduleInstance.getOperatorsStream(stakingModule.stakingModuleAddress, {});
+      const operatorsGenerator = moduleInstance.getOperatorsStream(stakingModule.stakingModuleAddress, {
+        index: filters.operatorIndex,
+      });
       let nextOperator = await operatorsGenerator.next();
       while (!nextOperator.done) {
         // After all keys, yield all operators

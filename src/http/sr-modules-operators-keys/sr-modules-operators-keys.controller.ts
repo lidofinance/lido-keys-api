@@ -115,12 +115,12 @@ export class SRModulesOperatorsKeysController {
     type: TooEarlyResponse,
   })
   @Get('operators/keys')
-  async getModulesOperatorsKeysStream(@Res() reply: FastifyReply) {
+  async getModulesOperatorsKeysStream(@Query() filters: KeyQuery, @Res() reply: FastifyReply) {
     const jsonStream = JSONStream.stringify();
 
     reply.type('application/json').send(jsonStream);
 
-    const generator = await this.srModulesOperatorsKeys.getModulesOperatorsKeysGenerator();
+    const generator = await this.srModulesOperatorsKeys.getModulesOperatorsKeysGenerator(filters);
 
     await this.entityManager.transactional(
       async () => {
