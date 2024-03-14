@@ -18,7 +18,7 @@ import { SRModulesService } from './sr-modules.service';
 
 import { elMeta } from '../el-meta.fixture';
 import { curatedModule, dvtModule } from '../db.fixtures';
-import { DatabaseTestingModule } from 'app';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('SRModulesController (e2e)', () => {
   let app: INestApplication;
@@ -48,7 +48,7 @@ describe('SRModulesController (e2e)', () => {
 
   beforeAll(async () => {
     const imports = [
-      DatabaseTestingModule,
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
       StakingRouterModule,

@@ -1,4 +1,3 @@
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import { ModuleMetadata } from '@nestjs/common';
 import { getNetwork } from '@ethersproject/networks';
@@ -6,7 +5,7 @@ import { getDefaultProvider, Provider } from '@ethersproject/providers';
 import { Test } from '@nestjs/testing';
 import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../../index';
 import { MikroORM } from '@mikro-orm/core';
-import { mikroORMConfig } from '../testing.utils';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('Sync module initializing', () => {
   const provider = getDefaultProvider('mainnet');
@@ -19,7 +18,8 @@ describe('Sync module initializing', () => {
     const storageService = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     expect(registryService).toBeDefined();
     await storageService.onModuleDestroy();
@@ -27,7 +27,7 @@ describe('Sync module initializing', () => {
 
   test('forRoot', async () => {
     const imports = [
-      MikroOrmModule.forRoot(mikroORMConfig),
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forRoot({
         provider,
@@ -39,12 +39,7 @@ describe('Sync module initializing', () => {
 
   test('forFeature', async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({
         provider,
@@ -56,12 +51,7 @@ describe('Sync module initializing', () => {
 
   test('forFeature + global provider', async () => {
     const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature(),
     ];

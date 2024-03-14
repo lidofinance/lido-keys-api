@@ -1,13 +1,15 @@
 import { QueryOrder } from '@mikro-orm/core';
 import { FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from 'common/config';
 import { addTimeoutToStream } from '../utils/stream.utils';
 import { RegistryKey } from './key.entity';
 import { RegistryKeyRepository } from './key.repository';
+import { DEFAULT_STREAM_TIMEOUT, STREAM_KEYS_TIMEOUT_MESSAGE } from './constants';
 
 @Injectable()
 export class RegistryKeyStorageService {
-  constructor(private readonly repository: RegistryKeyRepository) {}
+  constructor(private readonly repository: RegistryKeyRepository, private readonly configService: ConfigService) {}
 
   /** find keys */
   async find<P extends string = never>(
@@ -17,19 +19,17 @@ export class RegistryKeyStorageService {
     return await this.repository.find(where, options);
   }
 
-  findStream(where: FilterQuery<RegistryKey>, fields?: string[]): AsyncIterable<RegistryKey> {
-    const knex = this.repository.getKnex();
-    const stream = knex
-      .select(fields || '*')
-      .from<RegistryKey>('registry_key')
+  findAsStream(where: FilterQuery<RegistryKey>, fields?: string[]): AsyncIterable<RegistryKey> {
+    const qb = this.repository.createQueryBuilder();
+    qb.select(fields || '*')
       .where(where)
-      .orderBy([
-        { column: 'operatorIndex', order: 'asc' },
-        { column: 'index', order: 'asc' },
-      ])
-      .stream();
+      .orderBy({ operator_index: 'asc', index: 'asc' });
 
-    addTimeoutToStream(stream, 60_000, 'A timeout occurred loading keys from the database');
+    const knex = qb.getKnexQuery();
+    const stream = knex.stream();
+
+    const streamTimeout = this.configService.get('STREAM_TIMEOUT') ?? DEFAULT_STREAM_TIMEOUT;
+    addTimeoutToStream(stream, streamTimeout, STREAM_KEYS_TIMEOUT_MESSAGE);
 
     return stream;
   }

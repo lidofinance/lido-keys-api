@@ -1,0 +1,32 @@
+global:
+  # The default SMTP From header field.
+  smtp_from: 'alertmanager@example.com'
+  # # The default SMTP smarthost used for sending emails.
+  smtp_smarthost: 'localhost:25'
+  # The default route.
+  resolve_timeout: '5m'
+
+route:
+  # The route's receiver's name.
+  receiver: 'team-X-mails'
+  # Group by these labels.
+  group_by: ['alertname', 'cluster', 'service']
+  # Wait for 30 seconds before sending a notification.
+  group_wait: '30s'
+  # Send a notification every 5 minutes.
+  group_interval: '5m'
+  # Repeat a notification every 2 hours if the alert is still firing.
+  repeat_interval: '2h'
+  # Routes for specific alerts.
+  routes:
+    - match:
+        severity: critical
+      receiver: 'team-Y-mails'
+      continue: true
+receivers:
+  - name: 'team-X-mails'
+    email_configs:
+      - to: 'team-X+alerts@example.com'
+  - name: 'team-Y-mails'
+    email_configs:
+      - to: 'team-Y+alerts@example.com'

@@ -3,6 +3,7 @@ import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryKeyBatchFetchService } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
+import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 dotenv.config();
 
@@ -17,13 +18,17 @@ describe('Fetch keys in batch', () => {
   let fetchService: RegistryKeyBatchFetchService;
 
   beforeEach(async () => {
-    const imports = [RegistryFetchModule.forFeature({ provider })];
+    const imports = [
+      RegistryFetchModule.forFeature({ provider }),
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
+    ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     fetchService = moduleRef.get(RegistryKeyBatchFetchService);
   });
 
   test('fetch one key', async () => {
-    const keys = await fetchService.fetch(address, 17, 0, 3, { blockTag: 9641262 });
+    const overrides = { blockTag: 10573030 };
+    const keys = await fetchService.fetch(address, 17, 0, 3, overrides);
 
     expect(keys).toBeInstanceOf(Array);
 

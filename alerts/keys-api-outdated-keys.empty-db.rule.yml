@@ -1,0 +1,13 @@
+groups:
+  - name: Keys API. Initial keys update check
+    rules:
+      - alert: KeysApiOutdatedKeysEmptyDB
+        expr: |
+          (time() - process_start_time_seconds{}) >= 15 * 60  and (lido_keys_api_last_update_timestamp{} == 0)
+        labels:
+          severity: critical
+          service: keys_api
+          app_team: tooling
+        annotations:
+          summary: Keys are outdated
+          description: 'Initial update took more than {{ $value | humanizeDuration }}'

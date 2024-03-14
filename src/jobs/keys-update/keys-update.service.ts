@@ -45,10 +45,10 @@ export class KeysUpdateService {
   protected lastTimestampSec: number | undefined = undefined;
   protected lastBlockNumber: number | undefined = undefined;
 
-  // name of interval for updating keys
+  // Name of interval for updating keys
   public UPDATE_KEYS_JOB_NAME = 'SRModulesKeysUpdate';
-  // timeout for update keys
-  // if during 30 minutes nothing happen we will exit
+  // Timeout for update keys
+  // If during 30 minutes nothing happen we will exit
   UPDATE_KEYS_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
   updateDeadlineTimer: undefined | NodeJS.Timeout = undefined;
 
@@ -56,8 +56,11 @@ export class KeysUpdateService {
    * Initializes the job
    */
   public async initialize(): Promise<void> {
-    // at first start timer for checking update
-    // if timer isn't cleared in 30 minutes period, we will consider it as nodejs frizzing and exit
+    // Set metrics based on the values from the database
+    this.updateMetrics();
+
+    // Initially, start the timer to check whether an update has occurred or not
+    // If timer isn't cleared in 30 minutes period, we will consider it as nodejs frizzing and exit
     this.checkKeysUpdateTimeout();
     await this.updateKeys().catch((error) => this.logger.error(error));
 
@@ -70,9 +73,9 @@ export class KeysUpdateService {
 
   private checkKeysUpdateTimeout() {
     const currTimestampSec = new Date().getTime() / 1000;
-    // currTimestampSec - this.lastTimestampSec - time since last update in seconds
+    // currTimestampSec - this.lastTimestampSec - Time since last update in seconds
     // this.UPDATE_KEYS_TIMEOUT_MS / 1000 - timeout in seconds
-    // so if time since last update is less than timeout, this means keys are updated
+    // So if time since last update is less than timeout, this means keys are updated
     const isUpdated =
       this.lastTimestampSec && currTimestampSec - this.lastTimestampSec < this.UPDATE_KEYS_TIMEOUT_MS / 1000;
 
@@ -114,8 +117,11 @@ export class KeysUpdateService {
   public async update(): Promise<{ number: number; hash: string; timestamp: number } | undefined> {
     // reading latest block from blockchain
     const currElMeta = await this.executionProvider.getBlock('latest');
+    this.logger.log('Fetched latest block');
     // read from database last execution layer data
     const prevElMeta = await this.elMetaStorage.get();
+
+    this.logger.log('Fetched current execution meta and meta from database');
 
     // handle the situation when the node has fallen behind the service state
     if (prevElMeta && prevElMeta?.blockNumber > currElMeta.number) {
@@ -130,6 +136,9 @@ export class KeysUpdateService {
 
     // Get modules from storage
     const storageModules = await this.srModulesStorage.findAll();
+
+    this.logger.log('Fetched modules from database');
+
     // Get staking modules from SR contract
     const contractModules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
 
@@ -170,20 +179,20 @@ export class KeysUpdateService {
 
         this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.reset();
 
-        for (const module of stakingModules) {
-          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
+        for (const stakingModule of stakingModules) {
+          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(stakingModule.type);
 
           // update nonce metric
-          this.prometheusService.registryNonce.set({ srModuleId: module.moduleId }, module.nonce);
+          this.prometheusService.registryNonce.set({ srModuleId: stakingModule.moduleId }, stakingModule.nonce);
 
           // get operators
-          const operators = await moduleInstance.getOperators(module.stakingModuleAddress);
+          const operators = await moduleInstance.getOperators(stakingModule.stakingModuleAddress);
 
           operators.forEach((operator) => {
             this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
               {
                 operator: operator.index,
-                srModuleId: module.moduleId,
+                srModuleId: stakingModule.moduleId,
                 used: 'true',
               },
               operator.usedSigningKeys,
@@ -192,7 +201,7 @@ export class KeysUpdateService {
             this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.set(
               {
                 operator: operator.index,
-                srModuleId: module.moduleId,
+                srModuleId: stakingModule.moduleId,
                 used: 'false',
               },
               operator.totalSigningKeys - operator.usedSigningKeys,

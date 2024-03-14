@@ -4,6 +4,7 @@ import { RegistryFetchModule, RegistryKeyFetchService } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
 import { isAddress } from 'ethers/lib/utils';
+import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 dotenv.config();
 
@@ -18,13 +19,16 @@ describe('Keys', () => {
   let fetchService: RegistryKeyFetchService;
 
   beforeEach(async () => {
-    const imports = [RegistryFetchModule.forFeature({ provider })];
+    const imports = [
+      RegistryFetchModule.forFeature({ provider }),
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
+    ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     fetchService = moduleRef.get(RegistryKeyFetchService);
   });
 
   test('fetch one key', async () => {
-    const key = await fetchService.fetchOne(address, 21, 0, { blockTag: 6912872 });
+    const key = await fetchService.fetchOne(address, 17, 0, { blockTag: 10573030 });
 
     expect(key).toBeInstanceOf(Object);
 
@@ -36,23 +40,23 @@ describe('Keys', () => {
   });
 
   test('fetch operator keys', async () => {
-    const keys = await fetchService.fetch(address, 21, 0, -1, {
-      blockTag: 6912872,
+    const keys = await fetchService.fetch(address, 17, 0, 3, {
+      blockTag: 10573030,
     });
     expect(keys).toBeInstanceOf(Array);
     expect(keys.length).toBe(3);
   }, 15_000);
 
   test('fetch several keys', async () => {
-    const keys = await fetchService.fetch(address, 21, 0, 2, {
-      blockTag: 6912872,
+    const keys = await fetchService.fetch(address, 17, 0, 2, {
+      blockTag: 10573030,
     });
 
     expect(keys).toBeInstanceOf(Array);
     expect(keys.length).toBe(2);
 
-    expect(keys[0].operatorIndex).toBe(21);
-    expect(keys[1].operatorIndex).toBe(21);
+    expect(keys[0].operatorIndex).toBe(17);
+    expect(keys[1].operatorIndex).toBe(17);
 
     expect(keys[0].index).toBe(0);
     expect(keys[1].index).toBe(1);

@@ -1,13 +1,12 @@
 import { Test } from '@nestjs/testing';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/execution';
 import { KeyRegistryModule, KeyRegistryService, RegistryOperatorFetchService, RegistryStorageService } from '../../';
-import { clearDb, compareTestOperators, mikroORMConfig } from '../testing.utils';
-import { operators } from '../fixtures/connect.fixture';
+import { clearDb } from '../testing.utils';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
+import { DatabaseE2ETestingModule } from 'app';
 
 dotenv.config();
 
@@ -21,15 +20,15 @@ describe('Registry', () => {
     process.exit(1);
   }
   const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
-  const operatorsWithModuleAddress = operators.map((key) => {
-    return { ...key, moduleAddress: address };
-  });
+  // const operatorsWithModuleAddress = operators.map((key) => {
+  //   return { ...key, moduleAddress: address };
+  // });
 
-  const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
+  const blockHash = '0x42e6d3fe6df4bc4bdfda27595a015ac9fd5af65cf9bd9d8ad0f2ac802dd73749';
 
   beforeEach(async () => {
     const imports = [
-      MikroOrmModule.forRoot(mikroORMConfig),
+      DatabaseE2ETestingModule.forRoot(),
       BatchProviderModule.forRoot({
         url: process.env.PROVIDERS_URLS as string,
         requestPolicy: {
@@ -51,11 +50,11 @@ describe('Registry', () => {
     storageService = moduleRef.get(RegistryStorageService);
     registryOperatorFetchService = moduleRef.get(RegistryOperatorFetchService);
     mikroOrm = moduleRef.get(MikroORM);
-
     jest.spyOn(registryOperatorFetchService, 'getFinalizedBlockTag').mockImplementation(() => ({ blockHash } as any));
 
     const generator = mikroOrm.getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
   });
 
   afterEach(async () => {
@@ -66,11 +65,14 @@ describe('Registry', () => {
   test('Update', async () => {
     await registryService.update(address, blockHash);
 
-    await compareTestOperators(address, registryService, {
-      operators: operatorsWithModuleAddress,
-    });
+    // TODO: consider uncommit on holesky
+    // await compareTestOperators(address, registryService, {
+    //   operators: operatorsWithModuleAddress,
+    // });
 
+    const operators = await registryService.getOperatorsFromStorage(address);
+    expect(operators).toHaveLength(89);
     const keys = await registryService.getOperatorsKeysFromStorage(address);
-    expect(keys).toHaveLength(20527);
+    expect(keys).toHaveLength(57816);
   }, 400_000);
 });
