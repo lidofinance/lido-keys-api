@@ -1,10 +1,10 @@
 import { Test } from '@nestjs/testing';
-import { REGISTRY_CONTRACT_ADDRESSES, Registry__factory } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES, Registry__factory } from '@catalist-nestjs/contracts';
 import { getNetwork } from '@ethersproject/networks';
 import { Interface } from '@ethersproject/abi';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryMetaFetchService } from '../../';
-import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
+import { LoggerModule, nullTransport } from '@catalist-nestjs/logger';
 
 describe('Meta', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);

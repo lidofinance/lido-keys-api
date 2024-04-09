@@ -14,7 +14,7 @@ import { StakingRouterModule } from '../../staking-router-modules/staking-router
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
 import { ElMetaStorageService } from '../../storage/el-meta.storage';
 import { SRModulesValidatorsService } from './sr-modules-validators.service';
-import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
+import { nullTransport, LoggerModule } from '@catalist-nestjs/logger';
 
 import * as request from 'supertest';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -22,9 +22,9 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { elMeta } from '../el-meta.fixture';
 import { keys, dvtModule, curatedModule } from '../db.fixtures';
 import { ConfigService } from '../../common/config';
-import { ValidatorsRegistryInterface } from '@lido-nestjs/validators-registry';
-import { ConsensusModule, ConsensusService } from '@lido-nestjs/consensus';
-import { FetchModule } from '@lido-nestjs/fetch';
+import { ValidatorsRegistryInterface } from '@catalist-nestjs/validators-registry';
+import { ConsensusModule, ConsensusService } from '@catalist-nestjs/consensus';
+import { FetchModule } from '@catalist-nestjs/fetch';
 import { ValidatorsModule } from '../../validators';
 import {
   block,

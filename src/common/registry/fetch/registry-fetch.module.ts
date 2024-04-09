@@ -1,5 +1,5 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { LidoContractModule, RegistryContractModule } from '@lido-nestjs/contracts';
+import { CatalistContractModule, RegistryContractModule } from '@catalist-nestjs/contracts';
 import {
   RegistryFetchModuleSyncOptions,
   RegistryFetchModuleAsyncOptions,
@@ -47,7 +47,7 @@ export class RegistryFetchModule {
       module: RegistryFetchModule,
       imports: [
         ...(options?.imports || []),
-        LidoContractModule.forFeature({
+        CatalistContractModule.forFeature({
           address: options?.lidoAddress,
           provider: options?.provider,
         }),
@@ -62,7 +62,7 @@ export class RegistryFetchModule {
           useValue: options?.keysBatchSize ? { keysBatchSize: options.keysBatchSize } : {},
         },
       ],
-      exports: [LidoContractModule, RegistryContractModule],
+      exports: [CatalistContractModule, RegistryContractModule],
     };
   }
 
@@ -71,7 +71,7 @@ export class RegistryFetchModule {
       module: RegistryFetchModule,
       imports: [
         ...(options.imports || []),
-        LidoContractModule.forFeatureAsync({
+        CatalistContractModule.forFeatureAsync({
           async useFactory(...args) {
             const config = await options.useFactory(...args);
             const { provider, lidoAddress } = config;
@@ -97,7 +97,7 @@ export class RegistryFetchModule {
           inject: options.inject,
         },
       ],
-      exports: [LidoContractModule, RegistryContractModule],
+      exports: [CatalistContractModule, RegistryContractModule],
     };
   }
 }

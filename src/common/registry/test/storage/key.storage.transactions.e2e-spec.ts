@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { IsolationLevel, MikroORM } from '@mikro-orm/core';
 import { key } from '../fixtures/key.fixture';
 import { RegistryStorageModule, RegistryStorageService, RegistryKeyStorageService, RegistryKey } from '../..';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@catalist-nestjs/contracts';
 import * as dotenv from 'dotenv';
 import { DatabaseE2ETestingModule } from 'app';
 import { EntityManager } from '@mikro-orm/knex';

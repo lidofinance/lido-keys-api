@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { jsonTransport, simpleTransport, LoggerModule as Logger } from '@lido-nestjs/logger';
+import { jsonTransport, simpleTransport, LoggerModule as Logger } from '@catalist-nestjs/logger';
 import { ConfigModule, ConfigService, LogFormat } from '../config';
 
 @Module({

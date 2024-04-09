@@ -6,8 +6,8 @@ import * as path from 'path';
 import { MigrationObject } from '@mikro-orm/core/typings';
 import { RegistryOperator } from './common/registry/storage/operator.entity';
 import { RegistryKey } from './common/registry/storage/key.entity';
-import { ConsensusMetaEntity } from '@lido-nestjs/validators-registry';
-import { ConsensusValidatorEntity } from '@lido-nestjs/validators-registry';
+import { ConsensusMetaEntity } from '@catalist-nestjs/validators-registry';
+import { ConsensusValidatorEntity } from '@catalist-nestjs/validators-registry';
 import { readFileSync } from 'fs';
 import { SrModuleEntity } from './storage/sr-module.entity';
 import { ElMetaEntity } from './storage/el-meta.entity';
@@ -127,7 +127,7 @@ const config: Options = {
     SrModuleEntity,
     ElMetaEntity,
   ],
-  migrations: getMigrationOptions(path.join(__dirname, 'migrations'), ['@lido-nestjs/validators-registry']),
+  migrations: getMigrationOptions(path.join(__dirname, 'migrations'), ['@catalist-nestjs/validators-registry']),
 };
 
 export default config;

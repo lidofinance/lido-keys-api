@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
-import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
-import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/execution';
+import { nullTransport, LoggerModule } from '@catalist-nestjs/logger';
+import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@catalist-nestjs/execution';
 import { DatabaseE2ETestingModule } from 'app';
 
 import {
@@ -12,7 +12,7 @@ import {
 
 import { clearDb } from '../testing.utils';
 import { MikroORM } from '@mikro-orm/core';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@catalist-nestjs/contracts';
 import * as dotenv from 'dotenv';
 
 dotenv.config();

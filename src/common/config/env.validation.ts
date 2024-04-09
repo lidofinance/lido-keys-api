@@ -14,7 +14,7 @@ import {
   IsPositive,
 } from 'class-validator';
 import { Environment, LogLevel, LogFormat } from './interfaces';
-import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
+import { NonEmptyArray } from '@catalist-nestjs/execution/dist/interfaces/non-empty-array';
 
 const toNumber =
   ({ defaultValue }) =>

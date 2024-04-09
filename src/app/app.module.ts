@@ -13,8 +13,8 @@ import { JobsModule } from '../jobs';
 import { ScheduleModule } from '@nestjs/schedule';
 import config from '../mikro-orm.config';
 import { ValidatorsModule } from '../validators';
-import { LoggerModule } from '@lido-nestjs/logger';
-import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
+import { LoggerModule } from '@catalist-nestjs/logger';
+import { SimpleFallbackJsonRpcBatchProvider } from '@catalist-nestjs/execution';
 import { KeyRegistryModule } from '../common/registry';
 import { StakingRouterModule } from '../staking-router-modules';
 

@@ -4,9 +4,9 @@ import { getNetwork } from '@ethersproject/networks';
 import { hexZeroPad } from '@ethersproject/bytes';
 import { getDefaultProvider, Provider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryFetchService } from '../../';
-import { LIDO_CONTRACT_TOKEN, Lido } from '@lido-nestjs/contracts';
-import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
-import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
+import { LIDO_CONTRACT_TOKEN, Lido } from '@catalist-nestjs/contracts';
+import { REGISTRY_CONTRACT_TOKEN, Registry } from '@catalist-nestjs/contracts';
+import { LoggerModule, nullTransport } from '@catalist-nestjs/logger';
 
 describe('Sync module initializing', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);

@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { operator } from '../fixtures/operator.fixture';
 import { RegistryOperatorStorageService, RegistryOperator, RegistryOperatorRepository } from '../../';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@catalist-nestjs/contracts';
 import * as streamUtils from '../../utils/stream.utils';
 import { DEFAULT_STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE } from '../../../registry/storage/constants';
 import { ConfigModule, ConfigService } from 'common/config';

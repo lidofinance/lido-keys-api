@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import { getNetwork } from '@ethersproject/networks';
 import { getDefaultProvider, BaseProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryFetchService } from '../../';
-import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
+import { LoggerModule, nullTransport } from '@catalist-nestjs/logger';
 
 @Injectable()
 class TestService {

@@ -1,18 +1,18 @@
 import { Injectable, Inject, LoggerService } from '@nestjs/common';
 import { StakingModule } from '../../interfaces/staking-module.interface';
 import { STAKING_MODULE_TYPE } from '../../constants';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 import { StakingModuleInterfaceService } from '../staking-module-interface';
-import { LidoLocatorService } from '../lido-locator';
+import { CatalistLocatorService } from '../lido-locator';
 import { BlockTag } from '../interfaces';
-import { StakingRouter, STAKING_ROUTER_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
+import { StakingRouter, STAKING_ROUTER_CONTRACT_TOKEN } from '@catalist-nestjs/contracts';
 
 @Injectable()
 export class StakingRouterFetchService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly stakingModuleInterface: StakingModuleInterfaceService,
-    protected readonly lidoLocatorService: LidoLocatorService,
+    protected readonly catalistLocatorService: CatalistLocatorService,
     @Inject(STAKING_ROUTER_CONTRACT_TOKEN) protected readonly contract: StakingRouter,
   ) {}
 
@@ -25,7 +25,7 @@ export class StakingRouterFetchService {
    * @returns Staking modules list
    */
   public async getStakingModules(blockTag: BlockTag): Promise<StakingModule[]> {
-    const stakingRouterAddress = await this.lidoLocatorService.getStakingRouter(blockTag);
+    const stakingRouterAddress = await this.catalistLocatorService.getStakingRouter(blockTag);
 
     this.logger.log('Staking router module address', stakingRouterAddress);
 

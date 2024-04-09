@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Inject, Injectable } from '@nestjs/common';
 import { CallOverrides } from './interfaces/overrides.interface';
-import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_TOKEN, Registry } from '@catalist-nestjs/contracts';
 
 @Injectable()
 export class RegistryMetaFetchService {

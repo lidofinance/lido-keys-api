@@ -1,5 +1,5 @@
 import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 import { KeyListResponse } from './entities';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 import { ELBlockSnapshot, Key, KeyQuery } from '../common/entities';

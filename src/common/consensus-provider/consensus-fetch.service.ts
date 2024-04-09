@@ -1,10 +1,10 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { FetchModuleOptions, FetchService, RequestInfo } from '@lido-nestjs/fetch';
-import { MiddlewareService } from '@lido-nestjs/middleware';
+import { FetchModuleOptions, FetchService, RequestInfo } from '@catalist-nestjs/fetch';
+import { MiddlewareService } from '@catalist-nestjs/middleware';
 import { AbortController } from 'node-abort-controller';
 import { RequestInit, Response } from 'node-fetch';
 import { CONSENSUS_REQUEST_TIMEOUT } from './consensus-provider.constants';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 
 @Injectable()
 export class ConsensusFetchService extends FetchService {

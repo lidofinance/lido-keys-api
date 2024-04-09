@@ -1,5 +1,5 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 import { SRModuleResponse, SRModuleListResponse } from './entities';
 import { ELBlockSnapshot, StakingModuleResponse } from '../common/entities';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';

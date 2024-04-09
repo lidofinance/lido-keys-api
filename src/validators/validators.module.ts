@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { ValidatorsService } from './validators.service';
 import { LoggerModule } from '../common/logger';
-import { ValidatorsRegistryModule } from '@lido-nestjs/validators-registry';
+import { ValidatorsRegistryModule } from '@catalist-nestjs/validators-registry';
 
 @Global()
 @Module({

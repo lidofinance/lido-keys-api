@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Inject, Injectable } from '@nestjs/common';
-import { rangePromise } from '@lido-nestjs/utils';
+import { rangePromise } from '@catalist-nestjs/utils';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryKey } from './interfaces/key.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';
 import { REGISTRY_KEY_BATCH_SIZE } from './key.constants';
-import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_TOKEN, Registry } from '@catalist-nestjs/contracts';
 
 @Injectable()
 export class RegistryKeyFetchService {

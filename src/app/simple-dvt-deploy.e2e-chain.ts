@@ -1,4 +1,4 @@
-import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
+import { SimpleFallbackJsonRpcBatchProvider } from '@catalist-nestjs/execution';
 import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 
@@ -147,7 +147,7 @@ describe('Simple DVT deploy', () => {
     expect((await session.provider.getBlock('latest')).number).toBeGreaterThan(0);
     expect(deployState).toBeDefined();
     expect(deployState.isAppReady).toBeTruthy();
-    expect(deployState.lidoLocatorAddress).toBeDefined();
+    expect(deployState.catalistLocatorAddress).toBeDefined();
     expect(deployState.stakingRouterData.stakingModuleIds).toHaveLength(2);
   });
 

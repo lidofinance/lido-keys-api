@@ -1,13 +1,13 @@
-import { LidoLocator, LIDO_LOCATOR_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
+import { CatalistLocator, CATALIST_LOCATOR_CONTRACT_TOKEN } from '@catalist-nestjs/contracts';
 import { Injectable, Inject, LoggerService } from '@nestjs/common';
 import { BlockTag } from '../interfaces';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 import { ConfigService } from '../../../common/config';
 
 @Injectable()
-export class LidoLocatorService {
+export class CatalistLocatorService {
   constructor(
-    @Inject(LIDO_LOCATOR_CONTRACT_TOKEN) protected readonly contract: LidoLocator,
+    @Inject(CATALIST_LOCATOR_CONTRACT_TOKEN) protected readonly contract: CatalistLocator,
     @Inject(LOGGER_PROVIDER) protected readonly loggerService: LoggerService,
     protected readonly config: ConfigService,
   ) {}

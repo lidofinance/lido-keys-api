@@ -1,6 +1,6 @@
 import { Inject, Injectable, LoggerService, Optional } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/knex';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 
 import { RegistryMetaFetchService } from '../fetch/meta.fetch';
 import { RegistryKeyFetchService } from '../fetch/key.fetch';
@@ -16,7 +16,7 @@ import { compareOperators } from '../utils/operator.utils';
 
 import { REGISTRY_GLOBAL_OPTIONS_TOKEN } from './constants';
 import { RegistryOptions } from './interfaces/module.interface';
-import { chunk } from '@lido-nestjs/utils';
+import { chunk } from '@catalist-nestjs/utils';
 import { RegistryKeyBatchFetchService } from '../fetch/key-batch.fetch';
 import { IsolationLevel } from '@mikro-orm/core';
 

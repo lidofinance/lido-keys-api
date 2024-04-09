@@ -8,8 +8,8 @@ import {
   ValidatorsQuery,
 } from './entities';
 import { CLBlockSnapshot, ELBlockSnapshot } from '../common/entities/';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { Validator } from '@lido-nestjs/validators-registry';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
+import { Validator } from '@catalist-nestjs/validators-registry';
 import { ValidatorsService } from '../../validators';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 import { EntityManager } from '@mikro-orm/knex';

@@ -20,7 +20,7 @@ import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
 import { ModuleIdPipe } from 'http/common/pipeline/module-id-pipe';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 
 @Controller('/modules')
 @ApiTags('operators-keys')

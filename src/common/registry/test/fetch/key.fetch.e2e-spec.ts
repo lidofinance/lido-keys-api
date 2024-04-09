@@ -1,10 +1,10 @@
 import { Test } from '@nestjs/testing';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryKeyFetchService } from '../../';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@catalist-nestjs/contracts';
 import * as dotenv from 'dotenv';
 import { isAddress } from 'ethers/lib/utils';
-import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
+import { LoggerModule, nullTransport } from '@catalist-nestjs/logger';
 
 dotenv.config();
 

@@ -1,4 +1,4 @@
-import { ValidatorStatus } from '@lido-nestjs/validators-registry';
+import { ValidatorStatus } from '@catalist-nestjs/validators-registry';
 
 export const VALIDATORS_STATUSES_FOR_EXIT = [
   ValidatorStatus.ACTIVE_ONGOING,

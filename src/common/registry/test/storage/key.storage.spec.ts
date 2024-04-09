@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { key } from '../fixtures/key.fixture';
 import { RegistryKeyStorageService, RegistryKey, RegistryKeyRepository } from '../../';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@catalist-nestjs/contracts';
 import * as streamUtils from '../../utils/stream.utils';
 import { STREAM_KEYS_TIMEOUT_MESSAGE, DEFAULT_STREAM_TIMEOUT } from '../../../registry/storage/constants';
 import { ConfigModule, ConfigService } from 'common/config';

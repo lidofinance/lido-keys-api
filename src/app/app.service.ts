@@ -1,5 +1,5 @@
 import { Inject, Injectable, LoggerService, OnModuleInit } from '@nestjs/common';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 import { ExecutionProviderService } from '../common/execution-provider';
 import { ConsensusProviderService } from '../common/consensus-provider';
 import { ConfigService } from '../common/config';

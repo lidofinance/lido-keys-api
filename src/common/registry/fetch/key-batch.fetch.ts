@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_TOKEN, Registry } from '@catalist-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { KeyBatchRecord, RegistryKey } from './interfaces/key.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';

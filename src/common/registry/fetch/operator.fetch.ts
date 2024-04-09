@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { rangePromise } from '@lido-nestjs/utils';
-import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
+import { rangePromise } from '@catalist-nestjs/utils';
+import { REGISTRY_CONTRACT_TOKEN, Registry } from '@catalist-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';

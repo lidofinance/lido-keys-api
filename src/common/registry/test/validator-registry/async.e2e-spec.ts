@@ -1,6 +1,6 @@
 import { ModuleMetadata } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
+import { nullTransport, LoggerModule } from '@catalist-nestjs/logger';
 import { getNetwork } from '@ethersproject/networks';
 import { getDefaultProvider } from '@ethersproject/providers';
 import { ValidatorRegistryModule, ValidatorRegistryService, RegistryStorageService } from '../..';

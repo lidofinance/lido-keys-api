@@ -1,4 +1,4 @@
-import { ConsensusModule } from '@lido-nestjs/consensus';
+import { ConsensusModule } from '@catalist-nestjs/consensus';
 import { Global, Module } from '@nestjs/common';
 import { CONSENSUS_POOL_INTERVAL_MS } from './consensus-provider.constants';
 import { ConsensusFetchModule } from './consensus-fetch.module';

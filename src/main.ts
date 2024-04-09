@@ -3,7 +3,7 @@ import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 import { SWAGGER_URL } from './http/common/swagger';
 import { ConfigService } from './common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';

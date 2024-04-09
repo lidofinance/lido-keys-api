@@ -1,12 +1,12 @@
 import { Test } from '@nestjs/testing';
-import { REGISTRY_CONTRACT_ADDRESSES, Registry__factory } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES, Registry__factory } from '@catalist-nestjs/contracts';
 import { getNetwork } from '@ethersproject/networks';
 import { Interface } from '@ethersproject/abi';
 import { getDefaultProvider } from '@ethersproject/providers';
 import { operator, operatorFields } from '../fixtures/operator.fixture';
 import { key, keyFields } from '../fixtures/key.fixture';
 import { RegistryFetchModule, RegistryKeyFetchService } from '../../';
-import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
+import { LoggerModule, nullTransport } from '@catalist-nestjs/logger';
 
 describe('Keys', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);

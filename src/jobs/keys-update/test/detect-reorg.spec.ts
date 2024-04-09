@@ -1,4 +1,4 @@
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionProviderService } from 'common/execution-provider';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';

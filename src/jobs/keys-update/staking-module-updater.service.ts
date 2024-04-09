@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { range } from '@lido-nestjs/utils';
+import { range } from '@catalist-nestjs/utils';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 import { ElMetaStorageService } from 'storage/el-meta.storage';

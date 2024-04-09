@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
+import { nullTransport, LoggerModule } from '@catalist-nestjs/logger';
 import { getNetwork } from '@ethersproject/networks';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import { key } from '../fixtures/key.fixture';
@@ -10,7 +10,7 @@ import {
   ValidatorRegistryService,
 } from '../..';
 import { MikroORM } from '@mikro-orm/core';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@catalist-nestjs/contracts';
 import { DatabaseE2ETestingModule } from 'app';
 
 describe('Validator', () => {

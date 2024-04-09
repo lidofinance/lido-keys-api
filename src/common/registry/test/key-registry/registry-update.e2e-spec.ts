@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { nullTransport, LoggerModule, MockLoggerModule, LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { nullTransport, LoggerModule, MockLoggerModule, LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 import { getNetwork } from '@ethersproject/networks';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import {
@@ -14,7 +14,7 @@ import { clone, compareTestKeysAndOperators, compareTestKeys, compareTestOperato
 import { registryServiceMock } from '../mock-utils';
 import { DatabaseE2ETestingModule } from 'app';
 import { MikroORM } from '@mikro-orm/core';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@catalist-nestjs/contracts';
 import * as dotenv from 'dotenv';
 
 dotenv.config();

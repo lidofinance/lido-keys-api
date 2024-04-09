@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { FallbackProviderModule } from '@lido-nestjs/execution';
+import { FallbackProviderModule } from '@catalist-nestjs/execution';
 import { PrometheusService } from '../prometheus';
 import { ConfigService } from '../config';
 import { ExecutionProviderService } from './execution-provider.service';

@@ -5,7 +5,7 @@ import {
   SRModuleOperatorListResponse,
   SRModuleOperatorResponse,
 } from './entities';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';

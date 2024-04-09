@@ -2,9 +2,9 @@ import { Test } from '@nestjs/testing';
 import { getDefaultProvider } from '@ethersproject/providers';
 import { isAddress } from '@ethersproject/address';
 import { RegistryFetchModule, RegistryOperatorFetchService } from '../../';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@catalist-nestjs/contracts';
 import * as dotenv from 'dotenv';
-import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
+import { LoggerModule, nullTransport } from '@catalist-nestjs/logger';
 
 dotenv.config();
 

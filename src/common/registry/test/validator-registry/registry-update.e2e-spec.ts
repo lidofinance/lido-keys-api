@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { nullTransport, LoggerModule, LOGGER_PROVIDER, MockLoggerModule } from '@lido-nestjs/logger';
+import { nullTransport, LoggerModule, LOGGER_PROVIDER, MockLoggerModule } from '@catalist-nestjs/logger';
 import { getNetwork } from '@ethersproject/networks';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import {
@@ -13,7 +13,7 @@ import { keys, newKey, newOperator, operators, operatorWithDefaultsRecords } fro
 import { clone, compareTestKeysAndOperators, compareTestKeys, compareTestOperators, clearDb } from '../testing.utils';
 import { registryServiceMock } from '../mock-utils';
 import { MikroORM } from '@mikro-orm/core';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@catalist-nestjs/contracts';
 import { DatabaseE2ETestingModule } from 'app';
 
 const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
