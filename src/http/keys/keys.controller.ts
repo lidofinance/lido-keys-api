@@ -114,7 +114,7 @@ export class KeysController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Staking Router module keys.',
+    description: 'Staking Router module keys',
     type: KeyListResponse,
   })
   @ApiOperation({ summary: 'Get list of found keys in DB from pubkey list' })

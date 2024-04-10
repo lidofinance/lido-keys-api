@@ -17,31 +17,51 @@ export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKey
   }
 
   @ApiProperty({
+    required: true,
     description: 'Index of Operator',
   })
   index: number;
 
   @ApiProperty({
+    required: true,
     description: 'This value shows if node operator active',
   })
   active: boolean;
 
-  @ApiProperty({ description: 'Operator name' })
+  @ApiProperty({
+    required: true,
+    description: 'Operator name',
+  })
   name: string;
 
-  @ApiProperty({ description: 'Ethereum 1 address which receives stETH rewards for this operator' })
+  @ApiProperty({
+    required: true,
+    description: 'Ethereum 1 address which receives stETH rewards for this operator',
+  })
   rewardAddress: string;
 
-  @ApiProperty({ description: 'The number of keys vetted by the DAO and that can be used for the deposit' })
+  @ApiProperty({
+    required: true,
+    description: 'The number of keys vetted by the DAO and that can be used for the deposit',
+  })
   stakingLimit: number;
 
-  @ApiProperty({ description: 'Amount of stopped validators' })
+  @ApiProperty({
+    required: true,
+    description: 'Amount of stopped validators',
+  })
   stoppedValidators: number;
 
-  @ApiProperty({ description: 'Total signing keys amount' })
+  @ApiProperty({
+    required: true,
+    description: 'Total signing keys amount',
+  })
   totalSigningKeys: number;
 
-  @ApiProperty({ description: 'Amount of used signing keys' })
+  @ApiProperty({
+    required: true,
+    description: 'Amount of used signing keys',
+  })
   usedSigningKeys: number;
 
   @ApiProperty({
