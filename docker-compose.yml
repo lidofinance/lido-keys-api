@@ -5,9 +5,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME:-master}
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     volumes:
       - ./.volumes/pgdata-${CHAIN_ID}/:/var/lib/postgresql/data
 
@@ -26,11 +26,11 @@ services:
       - PROVIDERS_URLS=${PROVIDERS_URLS}
       - CL_API_URLS=${CL_API_URLS}
       - CHAIN_ID=${CHAIN_ID}
-      - DB_NAME=${DB_NAME}
+      - DB_NAME=${DB_NAME:-master}
       - DB_PORT=5432
       - DB_HOST=db
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
       - JOB_INTERVAL_REGISTRY=${JOB_INTERVAL_REGISTRY}
       - VALIDATOR_REGISTRY_ENABLE=${VALIDATOR_REGISTRY_ENABLE}
       - JOB_INTERVAL_VALIDATORS_REGISTRY=${JOB_INTERVAL_VALIDATORS_REGISTRY}
