@@ -3,7 +3,7 @@ import { StakingModuleResponse, ELMeta, Operator } from '../../common/entities/'
 
 export class OperatorAndSRModule {
   @ApiProperty({
-    type: () => [Operator],
+    type: () => Operator,
     required: true,
     description: 'Operator of staking router module',
   })
