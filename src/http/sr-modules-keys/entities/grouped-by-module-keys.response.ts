@@ -3,28 +3,32 @@ import { Key, StakingModuleResponse, ELMeta } from '../../common/entities/';
 
 export class KeyListWithModule {
   @ApiProperty({
-    description: 'Keys of staking router module',
     type: () => [Key],
+    required: true,
+    description: 'Keys of staking router module',
   })
   keys!: Key[];
 
   @ApiProperty({
-    description: 'Detailed Staking Router information',
     type: () => StakingModuleResponse,
+    required: true,
+    description: 'Detailed Staking Router information',
   })
   module!: StakingModuleResponse;
 }
 
 export class GroupedByModuleKeyListResponse {
   @ApiProperty({
-    description: 'Keys for all modules grouped by staking router module',
     type: () => [KeyListWithModule],
+    required: true,
+    description: 'Keys for all modules grouped by staking router module',
   })
   data!: KeyListWithModule[];
 
   @ApiProperty({
-    nullable: true,
     type: () => ELMeta,
+    required: true,
+    description: 'Meta',
   })
   meta!: ELMeta;
 }

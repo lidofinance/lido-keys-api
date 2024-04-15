@@ -36,7 +36,7 @@ export class SRModulesKeysController {
   ) {}
 
   @Version('1')
-  @ApiOperation({ summary: 'Get keys for all modules grouped by staking router module.' })
+  @ApiOperation({ summary: 'Get keys for all modules grouped by staking router module' })
   @ApiResponse({
     status: 200,
     description:
@@ -54,7 +54,7 @@ export class SRModulesKeysController {
   }
 
   @Version('1')
-  @ApiOperation({ summary: 'Staking router module keys.' })
+  @ApiOperation({ summary: 'Staking router module keys' })
   @ApiResponse({
     status: 200,
     description: 'List of all modules supported in API',
@@ -73,7 +73,7 @@ export class SRModulesKeysController {
   @ApiParam({
     name: 'module_id',
     type: String,
-    description: 'Staking router module_id or contract address.',
+    description: 'Staking router module_id or contract address',
   })
   @Get(':module_id/keys')
   async getModuleKeys(
@@ -118,10 +118,10 @@ export class SRModulesKeysController {
   @Version('1')
   @Post(':module_id/keys/find')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get list of found staking router module keys in db from pubkey list.' })
+  @ApiOperation({ summary: 'Get list of found staking router module keys in db from pubkey list' })
   @ApiResponse({
     status: 200,
-    description: 'Staking Router module keys.',
+    description: 'Staking Router module keys',
     type: SRModuleKeyListResponse,
   })
   @ApiResponse({
@@ -137,7 +137,7 @@ export class SRModulesKeysController {
   @ApiParam({
     name: 'module_id',
     type: String,
-    description: 'Staking router module_id or contract address.',
+    description: 'Staking router module_id or contract address',
   })
   getModuleKeysByPubkeys(@Param('module_id', ModuleIdPipe) module_id: string | number, @Body() keys: KeysFindBody) {
     return this.srModulesKeysService.getModuleKeysByPubKeys(module_id, keys.pubkeys);

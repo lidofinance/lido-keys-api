@@ -4,28 +4,31 @@ import { StakingModuleResponse, Key, ELMeta } from '../../common/entities/';
 export class SRKeyListWithModule {
   @ApiProperty({
     type: () => [Key],
+    required: true,
     description: 'Keys of staking router module',
   })
   keys!: Key[];
 
   @ApiProperty({
-    description: 'Detailed Staking Router information',
     type: () => StakingModuleResponse,
+    required: true,
+    description: 'Detailed Staking Router information',
   })
   module!: StakingModuleResponse;
 }
 
 export class SRModuleKeyListResponse {
   @ApiProperty({
-    description: 'Staking router module keys.',
-    nullable: true,
     type: () => SRKeyListWithModule,
+    required: true,
+    description: 'Staking router module keys',
   })
   data!: SRKeyListWithModule;
 
   @ApiProperty({
-    nullable: true,
     type: () => ELMeta,
+    required: true,
+    description: 'Meta',
   })
   meta!: ELMeta;
 }
