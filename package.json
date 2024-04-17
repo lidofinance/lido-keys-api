@@ -1,8 +1,8 @@
 {
-  "name": "lido-keys-api",
-  "version": "1.0.3",
-  "description": "Lido Node Operators keys service",
-  "author": "Lido team",
+  "name": "catalist-keys-api",
+  "version": "1.0.1",
+  "description": "Catalist Node Operators keys service",
+  "author": "Uncommonlab",
   "private": true,
   "license": "MIT",
   "mikro-orm": {
@@ -14,10 +14,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lidofinance/lido-keys-api.git"
+    "url": "git+https://github.com/blockarchivelabs/catalist-keys-api.git"
   },
   "bugs": {
-    "url": "https://github.com/lidofinance/lido-keys-api/issues"
+    "url": "https://github.com/blockarchivelabs/catalist-keys-api/issues"
   },
   "scripts": {
     "postinstall": "rimraf ./node_modules/@ethersproject/abstract-provider/src.ts/*.ts",
@@ -42,7 +42,8 @@
     "chronix:test": "chronix test",
     "test:alerts": "promtool test rules alerts/*.test.yml",
     "chronix:start": "chronix start",
-    "fork:init": "node chronix-init"
+    "fork:init": "node chronix-init",
+    "docker:build": "docker build -t blockarchivelabs/catalist-keys-api:$npm_config_tag ."
   },
   "dependencies": {
     "@catalist-nestjs/consensus": "0.0.0",
