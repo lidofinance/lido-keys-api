@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { CatalistLocatorService } from './lido-locator.service';
+import { CatalistLocatorService } from './catalist-locator.service';
 import { CatalistLocatorContractModule } from '@catalist-nestjs/contracts';
 // TODO: maybe ../../../ shows us that we need to move execution-provider on level up
 import { ExecutionProvider } from '../../../common/execution-provider';

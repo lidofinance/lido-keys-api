@@ -3,7 +3,7 @@ import { StakingModule } from '../../interfaces/staking-module.interface';
 import { STAKING_MODULE_TYPE } from '../../constants';
 import { LOGGER_PROVIDER } from '@catalist-nestjs/logger';
 import { StakingModuleInterfaceService } from '../staking-module-interface';
-import { CatalistLocatorService } from '../lido-locator';
+import { CatalistLocatorService } from '../catalist-locator';
 import { BlockTag } from '../interfaces';
 import { StakingRouter, STAKING_ROUTER_CONTRACT_TOKEN } from '@catalist-nestjs/contracts';
 
