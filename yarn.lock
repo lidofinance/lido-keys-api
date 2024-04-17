@@ -518,17 +518,7 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@catalist-nestjs/consensus@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@catalist-nestjs/consensus/-/consensus-0.0.5.tgz#cb1d09cf604e14a8095a6dd521c43a0f13996da9"
-  integrity sha512-fnNCPkpF42NZGqqWJJ6CJoxZCReK+NvpyQ5m+s9HwamTsY3CrouKbcrjz2AZtKxxvlPa3UDSJBgJJxxHmjwfDw==
-  dependencies:
-    "@catalist-nestjs/fetch" "workspace:*"
-    lodash.snakecase "^4.1.1"
-    node-abort-controller "^3.0.1"
-    node-fetch "^2.6.7"
-
-"@catalist-nestjs/consensus@workspace:*":
+"@catalist-nestjs/consensus@^0.0.0", "@catalist-nestjs/consensus@workspace:*":
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/@catalist-nestjs/consensus/-/consensus-0.0.0.tgz#c9e9f4f2790e9a07935d1f86b382d9c31e8f3536"
   integrity sha512-i4UMqLbQFC1bSBWqHKS9YaPfDl3wP1ref3hBox/Q4Zp2mwpwAY+B/b4U9AV8Vca4MytN14RJNbgc3L0wvJb4nQ==
@@ -538,12 +528,7 @@
     node-abort-controller "^3.0.1"
     node-fetch "^2.6.7"
 
-"@catalist-nestjs/constants@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@catalist-nestjs/constants/-/constants-0.0.5.tgz#fc7f76ad186340dbd8e63f098746675257d70f32"
-  integrity sha512-ZMo/tImMgpvkE4+KNaErTSes+bCSsBY/KcSzeB1vMiKFp+Gxh1hC68PUwC+/ntUwcvtPqLhX3NqfAFccJ4KJcQ==
-
-"@catalist-nestjs/constants@workspace:*":
+"@catalist-nestjs/constants@^0.0.0", "@catalist-nestjs/constants@workspace:*":
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/@catalist-nestjs/constants/-/constants-0.0.0.tgz#02287be6e76e70f9a84448e6e1465641f0320929"
   integrity sha512-ox9C1XCEsbnIqB6xYqwdy5Nr6CpyYFqKDtbu6cuIV90aI3Bm+OVNq+WLdF/oaEuRDD5fQg7navaBqyIfFQIjxQ==
@@ -563,10 +548,10 @@
   resolved "https://registry.yarnpkg.com/@catalist-nestjs/di/-/di-0.0.0.tgz#aee20f15e9880dc9f59b0806cc76b3ee559f8c2e"
   integrity sha512-BXln5MmKOmvzKifLLuCrB6YcQ1Ghq8IZ0N4AsuQdZhiWFdttu62VdtVeSipOfS++PoETd5HMDF8x9L8YciHoYQ==
 
-"@catalist-nestjs/execution@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@catalist-nestjs/execution/-/execution-0.0.5.tgz#56d01308423e042b5849d79613ddf0a2529d60fc"
-  integrity sha512-hKVKTtac+cs1vDL6TBuI3sk2g7MLDc0LRptP2UKYaEVdgqerZgm5WV/Htdo3h/lxsZjOfkptSgvmBMkwfb7mFw==
+"@catalist-nestjs/execution@^0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@catalist-nestjs/execution/-/execution-0.0.0.tgz#1371bfa7edec53d441592bf5dd1519b916f8193d"
+  integrity sha512-HHQOPYCQZIiMD4yY7WoNPVeLsvMFAldjWsESVKG14FfGVOUFF8MGLxCePgUIPMTM/GzLHLCgvfona65vgCcb4g==
   dependencies:
     "@catalist-nestjs/logger" "workspace:*"
     "@catalist-nestjs/middleware" "workspace:*"
@@ -578,16 +563,7 @@
     "@ethersproject/providers" "^5.5.3"
     "@ethersproject/web" "^5.5.1"
 
-"@catalist-nestjs/fetch@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@catalist-nestjs/fetch/-/fetch-0.0.6.tgz#927d06077e10c8d53e9fb7306181cfaa4a313c45"
-  integrity sha512-JJgiMdTZVcpUe4pAmsWTTW9+lHT7IePi8n9YYAptwExGaU8R7Nlm6qAmFbjL0aUoD6Wqt5xzUjFoT/vGemwSOw==
-  dependencies:
-    "@catalist-nestjs/middleware" "workspace:*"
-    "@types/node-fetch" "^2.5.12"
-    node-fetch "^2.6.7"
-
-"@catalist-nestjs/fetch@workspace:*":
+"@catalist-nestjs/fetch@^0.0.0", "@catalist-nestjs/fetch@workspace:*":
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/@catalist-nestjs/fetch/-/fetch-0.0.0.tgz#22477bbd66720204ee3247904cd8673e75299f04"
   integrity sha512-RbYf0u8sX+7imljaq21V94uU1+Rc7pq/xNuxhBPVmTUXYmxm9vcOKdT6rEf6W+86/WQfTqRdJpDPp7bLypQAZw==
@@ -596,16 +572,7 @@
     "@types/node-fetch" "^2.5.12"
     node-fetch "^2.6.7"
 
-"@catalist-nestjs/logger@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@catalist-nestjs/logger/-/logger-0.0.5.tgz#9b6f59ddf8420ffad93185fb58f324616b90f983"
-  integrity sha512-msoHZonG5XxCSF0sHngFZzJwa7McAv3R2Lww81y5S1Bchd0OKRLOjfy+Z3drBjVP2OO4t/QXgc61/ye+1StePA==
-  dependencies:
-    nest-winston "^1.6.2"
-    traverse "^0.6.7"
-    winston "^3.4.0"
-
-"@catalist-nestjs/logger@workspace:*":
+"@catalist-nestjs/logger@^0.0.0", "@catalist-nestjs/logger@workspace:*":
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/@catalist-nestjs/logger/-/logger-0.0.0.tgz#3eb918d3791d5597ca989d951137239b8f79a24e"
   integrity sha512-cO+sdZliMn2woPwMSRGQFycUs8K6YkCW5gdiYZfrPxTaQSuXXEvVcx9XJhynirlaS9soT/rlVahbwPVq0c/SfQ==
@@ -624,10 +591,10 @@
   resolved "https://registry.yarnpkg.com/@catalist-nestjs/utils/-/utils-0.0.0.tgz#6670a7f55c5bdddeb960cf9d4a72969de137940b"
   integrity sha512-pQdATH58e5gV1kG3TSy+yM183U4jOE7UPHvZejNVwhdsWlf8Wli+LIUaQhn38rFxxQYd8Kmw1o7hQUrz4lGmwQ==
 
-"@catalist-nestjs/validators-registry@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@catalist-nestjs/validators-registry/-/validators-registry-0.0.5.tgz#97de1185abadf4b58c6648024cc867500e4bd30b"
-  integrity sha512-GkUqS2gdnEHoKMzzn+4isXaqSFLBPgsWAJaJArhAkMHQ/X1b4HmwOo6r3XyabGlZ8Lgn6o5/dq1SpW1MU82jQA==
+"@catalist-nestjs/validators-registry@^0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@catalist-nestjs/validators-registry/-/validators-registry-0.0.0.tgz#49d1613c282e81bca11162d9e70d1a31d0b55336"
+  integrity sha512-X6BMHaJQ5P6dLyZkQdDiR3cztXWBmwI6zRhcUwpd9/XHjiG6yXQo6gA9hgslMjcrhYqeeFQ7RtwE11UbCDU+Rg==
   dependencies:
     "@catalist-nestjs/consensus" "workspace:*"
     "@catalist-nestjs/di" "workspace:*"

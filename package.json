@@ -1,6 +1,6 @@
 {
   "name": "catalist-keys-api",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Catalist Node Operators keys service",
   "author": "Uncommonlab",
   "private": true,
@@ -46,14 +46,14 @@
     "docker:build": "docker build -t blockarchivelabs/catalist-keys-api:$npm_config_tag ."
   },
   "dependencies": {
-    "@catalist-nestjs/consensus": "^0.0.5",
-    "@catalist-nestjs/constants": "^0.0.5",
+    "@catalist-nestjs/consensus": "^0.0.0",
+    "@catalist-nestjs/constants": "^0.0.0",
     "@catalist-nestjs/contracts": "^0.0.5",
-    "@catalist-nestjs/execution": "^0.0.5",
-    "@catalist-nestjs/fetch": "^0.0.6",
-    "@catalist-nestjs/logger": "^0.0.5",
+    "@catalist-nestjs/execution": "^0.0.0",
+    "@catalist-nestjs/fetch": "^0.0.0",
+    "@catalist-nestjs/logger": "^0.0.0",
     "@catalist-nestjs/middleware": "^0.0.0",
-    "@catalist-nestjs/validators-registry": "^0.0.5",
+    "@catalist-nestjs/validators-registry": "^0.0.0",
     "@mikro-orm/cli": "^5.7.13",
     "@mikro-orm/core": "^5.7.13",
     "@mikro-orm/knex": "^5.7.13",
