@@ -1,6 +1,6 @@
 {
   "name": "catalist-keys-api",
-  "version": "1.0.3",
+  "version": "1.0.7",
   "description": "Catalist Node Operators keys service",
   "author": "Uncommonlab",
   "private": true,
