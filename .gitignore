@@ -47,3 +47,6 @@ lerna-debug.log*
 
 # benchmarks
 /benchmarks/output.json
+
+
+src/scripts/*.json
