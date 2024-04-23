@@ -69,6 +69,7 @@
     "@nestjs/throttler": "^2.0.0",
     "@sentry/node": "^6.16.1",
     "@typechain/ethers-v5": "^9.0.0",
+    "@types/k6": "~0.44.2",
     "@willsoto/nestjs-prometheus": "^4.4.0",
     "cache-manager": "^3.6.1",
     "class-transformer": "^0.5.1",
@@ -81,8 +82,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.2",
-    "typechain": "^7.0.0",
-    "@types/k6": "~0.44.2"
+    "typechain": "^7.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.2.5",
@@ -94,6 +94,7 @@
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
+    "anvild": "0.0.11",
     "chronix": "0.0.9",
     "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
