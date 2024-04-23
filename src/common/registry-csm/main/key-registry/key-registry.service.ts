@@ -1,7 +1,7 @@
-import { RegistryOperator } from '../../storage/operator.entity';
+import { RegistryOperator } from '../../../registry/storage/operator.entity';
 import { AbstractRegistryService } from '../abstract-registry';
 
-export class KeyRegistryService extends AbstractRegistryService {
+export class CSMKeyRegistryService extends AbstractRegistryService {
   public getToIndex(currOperator: RegistryOperator) {
     // the right border for updating range is all operator keys
     return currOperator.totalSigningKeys;

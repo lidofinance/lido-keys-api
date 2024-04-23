@@ -6,11 +6,11 @@ import { RegistryMetaFetchService } from '../fetch/meta.fetch';
 import { RegistryKeyFetchService } from '../fetch/key.fetch';
 import { RegistryOperatorFetchService } from '../fetch/operator.fetch';
 
-import { RegistryKeyStorageService } from '../storage/key.storage';
-import { RegistryOperatorStorageService } from '../storage/operator.storage';
+import { RegistryKeyStorageService } from '../../registry/storage/key.storage';
+import { RegistryOperatorStorageService } from '../../registry/storage/operator.storage';
 
-import { RegistryKey } from '../storage/key.entity';
-import { RegistryOperator } from '../storage/operator.entity';
+import { RegistryKey } from '../../registry/storage/key.entity';
+import { RegistryOperator } from '../../registry/storage/operator.entity';
 
 import { compareOperators } from '../utils/operator.utils';
 
@@ -123,7 +123,14 @@ export abstract class AbstractRegistryService {
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
 
-      const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
+      const result = await this.keyBatchFetch.fetch(
+        moduleAddress,
+        operatorIndex,
+        fromIndex,
+        toIndex,
+        currOperator.usedSigningKeys,
+        overrides,
+      );
 
       const operatorKeys = result.filter((key) => key);
 

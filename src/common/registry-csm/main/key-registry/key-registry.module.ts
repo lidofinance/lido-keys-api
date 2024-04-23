@@ -1,16 +1,16 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { RegistryModuleSyncOptions, RegistryModuleAsyncOptions } from '../interfaces/module.interface';
-import { KeyRegistryService } from './key-registry.service';
-import { RegistryStorageModule } from '../../storage/registry-storage.module';
+import { CSMKeyRegistryService } from './key-registry.service';
+import { RegistryStorageModule } from '../../../registry/storage/registry-storage.module';
 import { RegistryFetchModule } from '../../fetch/registry-fetch.module';
 import { REGISTRY_GLOBAL_OPTIONS_TOKEN } from '../constants';
 
 @Module({
   imports: [RegistryStorageModule],
-  providers: [KeyRegistryService],
-  exports: [KeyRegistryService, RegistryStorageModule],
+  providers: [CSMKeyRegistryService],
+  exports: [CSMKeyRegistryService, RegistryStorageModule],
 })
-export class KeyRegistryModule {
+export class CSMKeyRegistryModule {
   static forRoot(options?: RegistryModuleSyncOptions): DynamicModule {
     return {
       global: true,
@@ -27,7 +27,7 @@ export class KeyRegistryModule {
 
   static forFeature(options?: RegistryModuleSyncOptions): DynamicModule {
     return {
-      module: KeyRegistryModule,
+      module: CSMKeyRegistryModule,
       imports: [...(options?.imports || []), RegistryFetchModule.forFeature(options)],
       providers: [
         {
@@ -41,7 +41,7 @@ export class KeyRegistryModule {
 
   public static forFeatureAsync(options: RegistryModuleAsyncOptions): DynamicModule {
     return {
-      module: KeyRegistryModule,
+      module: CSMKeyRegistryModule,
       imports: [...(options.imports || []), RegistryFetchModule.forFeatureAsync(options)],
       providers: [
         {

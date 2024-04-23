@@ -1,4 +1,4 @@
-import { RegistryOperator } from '../storage/operator.entity';
+import { RegistryOperator } from '../../registry/storage/operator.entity';
 
 export const compareOperators = (
   operatorOne: RegistryOperator | null,

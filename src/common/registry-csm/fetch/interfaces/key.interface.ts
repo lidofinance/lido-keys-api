@@ -7,8 +7,7 @@ export interface RegistryKey {
   moduleAddress: string;
 }
 
-export type KeyBatchRecord = [string, string, boolean[]] & {
-  pubkeys: string;
+export type KeyBatchRecord = [string, string] & {
+  keys: string;
   signatures: string;
-  used: boolean[];
 };

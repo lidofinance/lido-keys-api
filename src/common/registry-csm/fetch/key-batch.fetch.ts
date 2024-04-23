@@ -7,6 +7,7 @@ import { KEYS_BATCH_SIZE, KEYS_LENGTH, SIGNATURE_LENGTH } from './key-batch.cons
 import { RegistryFetchOptions, REGISTRY_FETCH_OPTIONS_TOKEN } from './interfaces/module.interface';
 import { splitHex } from './utils/split-hex';
 import { makeBatches } from './utils/batches';
+import { Csm__factory } from 'generated';
 
 @Injectable()
 export class RegistryKeyBatchFetchService {
@@ -17,7 +18,8 @@ export class RegistryKeyBatchFetchService {
   ) {}
 
   private getContract(moduleAddress: string) {
-    return this.contract.attach(moduleAddress);
+    // TODO: pass provider instead this.contract.provider
+    return Csm__factory.connect(moduleAddress, this.contract.provider);
   }
 
   protected unformattedSignaturesToArray(unformattedSignatures: string) {
@@ -33,23 +35,24 @@ export class RegistryKeyBatchFetchService {
     operatorIndex: number,
     unformattedRecords: KeyBatchRecord,
     startIndex: number,
+    usedKeysCount: number,
   ): RegistryKey[] {
     const keys = this.unformattedKeysToArray(unformattedRecords[0]);
     const signatures = this.unformattedSignaturesToArray(unformattedRecords[1]);
-    const usedStatuses = unformattedRecords[2];
 
-    if (keys.length !== signatures.length || keys.length !== usedStatuses.length) {
+    if (keys.length !== signatures.length) {
       throw new Error('format keys error');
     }
 
-    return usedStatuses.map((used, chunkIndex) => {
+    return keys.map((key, chunkIndex) => {
       const index = startIndex + chunkIndex;
       return {
         operatorIndex,
         index,
-        key: keys[chunkIndex],
+        key: key,
         depositSignature: signatures[chunkIndex],
-        used,
+        // TODO: write test
+        used: index < usedKeysCount,
         moduleAddress,
       };
     });
@@ -61,6 +64,7 @@ export class RegistryKeyBatchFetchService {
     operatorIndex: number,
     fromIndex = 0,
     toIndex = -1,
+    usedKeysCount = -1,
     overrides: CallOverrides = {},
   ): Promise<RegistryKey[]> {
     if (fromIndex > toIndex && toIndex !== -1) {
@@ -73,12 +77,19 @@ export class RegistryKeyBatchFetchService {
       toIndex = operator.totalSigningKeys;
     }
 
+    if (usedKeysCount == null || usedKeysCount === -1) {
+      const operator = await this.operatorsService.fetchOne(moduleAddress, operatorIndex, overrides);
+
+      usedKeysCount = operator.usedSigningKeys;
+    }
+
     const [offset, limit] = this.convertIndicesToOffsetAndTotal(fromIndex, toIndex);
     const unformattedKeys = await this.fetchSigningKeysInBatches(
       moduleAddress,
       operatorIndex,
       offset,
       limit,
+      usedKeysCount,
       overrides,
     );
 
@@ -90,20 +101,21 @@ export class RegistryKeyBatchFetchService {
     operatorIndex: number,
     defaultOffset: number,
     totalAmount: number,
+    usedKeysCount: number,
     overrides: CallOverrides,
   ) {
     const defaultBatchSize = this.options.keysBatchSize || KEYS_BATCH_SIZE;
     const batches = makeBatches(defaultBatchSize, defaultOffset, totalAmount);
 
     const promises = batches.map(async ({ offset, batchSize }) => {
-      const keys = await this.getContract(moduleAddress).getSigningKeys(
+      const keys = await this.getContract(moduleAddress).getSigningKeysWithSignatures(
         operatorIndex,
         offset,
         batchSize,
         overrides as any,
       );
 
-      return this.formatKeys(moduleAddress, operatorIndex, keys, offset);
+      return this.formatKeys(moduleAddress, operatorIndex, keys, offset, usedKeysCount);
     });
 
     const results = await Promise.all(promises);

@@ -17,6 +17,7 @@ import { LoggerModule } from '@lido-nestjs/logger';
 import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
 import { KeyRegistryModule } from '../common/registry';
 import { StakingRouterModule } from '../staking-router-modules';
+import { CSMKeyRegistryModule } from 'common/registry-csm';
 
 @Module({
   imports: [
@@ -46,6 +47,12 @@ import { StakingRouterModule } from '../staking-router-modules';
     }),
     ScheduleModule.forRoot(),
     KeyRegistryModule.forRootAsync({
+      inject: [SimpleFallbackJsonRpcBatchProvider, ConfigService],
+      async useFactory(provider: SimpleFallbackJsonRpcBatchProvider, configService: ConfigService) {
+        return { provider, keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE') };
+      },
+    }),
+    CSMKeyRegistryModule.forRootAsync({
       inject: [SimpleFallbackJsonRpcBatchProvider, ConfigService],
       async useFactory(provider: SimpleFallbackJsonRpcBatchProvider, configService: ConfigService) {
         return { provider, keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE') };

@@ -1,4 +1,4 @@
-import { RegistryOperator } from '../../storage/operator.entity';
+import { RegistryOperator } from '../../../registry/storage/operator.entity';
 import { AbstractRegistryService } from '../abstract-registry';
 
 export class ValidatorRegistryService extends AbstractRegistryService {

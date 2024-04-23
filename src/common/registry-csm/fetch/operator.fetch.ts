@@ -6,6 +6,7 @@ import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
+import { Csm__factory } from 'generated';
 
 @Injectable()
 export class RegistryOperatorFetchService {
@@ -15,7 +16,8 @@ export class RegistryOperatorFetchService {
   ) {}
 
   private getContract(moduleAddress: string) {
-    return this.contract.attach(moduleAddress);
+    // TODO: pass provider instead this.contract.provider
+    return Csm__factory.connect(moduleAddress, this.contract.provider);
   }
 
   public async operatorsWereChanged(
@@ -81,10 +83,9 @@ export class RegistryOperatorFetchService {
    * @returns used signing keys count, if error happened returns 0 (because of range error)
    */
   public async getFinalizedNodeOperatorUsedSigningKeys(moduleAddress: string, operatorIndex: number): Promise<number> {
-    const fullInfo = true;
     const contract = this.getContract(moduleAddress);
     try {
-      const { totalDepositedValidators } = await contract.getNodeOperator(operatorIndex, fullInfo, {
+      const { totalDepositedValidators } = await contract.getNodeOperator(operatorIndex, {
         blockTag: this.getFinalizedBlockTag(),
       });
 
@@ -104,13 +105,11 @@ export class RegistryOperatorFetchService {
     operatorIndex: number,
     overrides: CallOverrides = {},
   ): Promise<RegistryOperator> {
-    const fullInfo = true;
     const contract = this.getContract(moduleAddress);
 
-    const operator = await contract.getNodeOperator(operatorIndex, fullInfo, overrides as any);
+    const operator = await contract.getNodeOperator(operatorIndex, overrides as any);
 
     const {
-      name,
       active,
       rewardAddress,
       totalVettedValidators,
@@ -124,7 +123,7 @@ export class RegistryOperatorFetchService {
     return {
       index: operatorIndex,
       active,
-      name,
+      name: `operator-${operatorIndex}`,
       rewardAddress,
       stakingLimit: totalVettedValidators.toNumber(),
       stoppedValidators: totalExitedValidators.toNumber(),

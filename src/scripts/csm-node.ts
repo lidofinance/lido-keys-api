@@ -38,7 +38,7 @@ const b = async () => {
     console.log(`Transaction failed: ${decodedError.name}`);
   }
 
-  await node.stop();
+  console.log(`CSM running at ${node.url}`);
 };
 
 b().catch(console.error);

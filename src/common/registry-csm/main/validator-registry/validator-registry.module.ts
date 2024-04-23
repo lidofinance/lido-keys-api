@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { RegistryModuleSyncOptions, RegistryModuleAsyncOptions } from '../interfaces/module.interface';
 import { ValidatorRegistryService } from './validator-registry.service';
-import { RegistryStorageModule } from '../../storage/registry-storage.module';
+import { RegistryStorageModule } from '../../../registry/storage/registry-storage.module';
 import { RegistryFetchModule } from '../../fetch/registry-fetch.module';
 import { REGISTRY_GLOBAL_OPTIONS_TOKEN } from '../constants';
 
