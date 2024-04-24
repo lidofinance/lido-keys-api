@@ -6,7 +6,6 @@ import { StakingModuleInterfaceService } from '../staking-module-interface';
 import { LidoLocatorService } from '../lido-locator';
 import { BlockTag } from '../interfaces';
 import { StakingRouter, STAKING_ROUTER_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
-import { CSM_CONTRACT_ADDRESS } from 'scripts/constants';
 
 @Injectable()
 export class StakingRouterFetchService {
@@ -38,21 +37,6 @@ export class StakingRouterFetchService {
 
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
-        // TODO: add SR deploy and remove this mock
-        return {
-          moduleId: 1,
-          stakingModuleAddress: CSM_CONTRACT_ADDRESS,
-          moduleFee: 500,
-          treasuryFee: 500,
-          targetShare: 100,
-          status: 0,
-          name: 'Mock CSM',
-          type: 'community-onchain-v1',
-          lastDepositAt: 1711716696,
-          lastDepositBlock: 1239914,
-          exitedValidatorsCount: 21,
-          active: true,
-        };
         // TODO: what is the diff between status and active ?
         const isActive = await srContract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
 
@@ -67,20 +51,20 @@ export class StakingRouterFetchService {
           process.exit(1);
         }
 
-        // return {
-        //   moduleId: stakingModule.id,
-        //   stakingModuleAddress: stakingModule.stakingModuleAddress.toLowerCase(),
-        //   moduleFee: stakingModule.stakingModuleFee,
-        //   treasuryFee: stakingModule.treasuryFee,
-        //   targetShare: stakingModule.targetShare,
-        //   status: stakingModule.status,
-        //   name: stakingModule.name,
-        //   type: stakingModuleType,
-        //   lastDepositAt: stakingModule.lastDepositAt.toNumber(),
-        //   lastDepositBlock: stakingModule.lastDepositBlock.toNumber(),
-        //   exitedValidatorsCount: stakingModule.exitedValidatorsCount.toNumber(),
-        //   active: isActive,
-        // };
+        return {
+          moduleId: stakingModule.id,
+          stakingModuleAddress: stakingModule.stakingModuleAddress.toLowerCase(),
+          moduleFee: stakingModule.stakingModuleFee,
+          treasuryFee: stakingModule.treasuryFee,
+          targetShare: stakingModule.targetShare,
+          status: stakingModule.status,
+          name: stakingModule.name,
+          type: stakingModuleType,
+          lastDepositAt: stakingModule.lastDepositAt.toNumber(),
+          lastDepositBlock: stakingModule.lastDepositBlock.toNumber(),
+          exitedValidatorsCount: stakingModule.exitedValidatorsCount.toNumber(),
+          active: isActive,
+        };
       }),
     );
 
