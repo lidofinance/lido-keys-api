@@ -176,6 +176,10 @@ export class EnvironmentVariables {
   @IsPositive()
   @Transform(({ value }) => parseInt(value, 10))
   STREAM_TIMEOUT = 60_000;
+
+  @IsOptional()
+  @IsString()
+  LIDO_LOCATOR_ADDRESS = '';
 }
 
 export function validate(config: Record<string, unknown>) {
