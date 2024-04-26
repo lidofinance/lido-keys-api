@@ -260,12 +260,22 @@
 				"internalType": "bytes"
 			},
 			{
+				"name": "managerAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "rewardAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
 				"name": "eaProof",
 				"type": "bytes32[]",
 				"internalType": "bytes32[]"
 			},
 			{
-				"name": "referral",
+				"name": "referrer",
 				"type": "address",
 				"internalType": "address"
 			}
@@ -293,6 +303,16 @@
 				"internalType": "bytes"
 			},
 			{
+				"name": "managerAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "rewardAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
 				"name": "permit",
 				"type": "tuple",
 				"internalType": "struct ICSAccounting.PermitInput",
@@ -330,7 +350,7 @@
 				"internalType": "bytes32[]"
 			},
 			{
-				"name": "referral",
+				"name": "referrer",
 				"type": "address",
 				"internalType": "address"
 			}
@@ -358,6 +378,16 @@
 				"internalType": "bytes"
 			},
 			{
+				"name": "managerAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "rewardAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
 				"name": "permit",
 				"type": "tuple",
 				"internalType": "struct ICSAccounting.PermitInput",
@@ -395,7 +425,7 @@
 				"internalType": "bytes32[]"
 			},
 			{
-				"name": "referral",
+				"name": "referrer",
 				"type": "address",
 				"internalType": "address"
 			}
@@ -873,15 +903,15 @@
 			{
 				"name": "",
 				"type": "tuple",
-				"internalType": "struct ICSModule.NodeOperatorInfo",
+				"internalType": "struct NodeOperator",
 				"components": [
 					{
-						"name": "active",
-						"type": "bool",
-						"internalType": "bool"
+						"name": "managerAddress",
+						"type": "address",
+						"internalType": "address"
 					},
 					{
-						"name": "managerAddress",
+						"name": "proposedManagerAddress",
 						"type": "address",
 						"internalType": "address"
 					},
@@ -891,27 +921,67 @@
 						"internalType": "address"
 					},
 					{
-						"name": "totalVettedValidators",
+						"name": "proposedRewardAddress",
+						"type": "address",
+						"internalType": "address"
+					},
+					{
+						"name": "active",
+						"type": "bool",
+						"internalType": "bool"
+					},
+					{
+						"name": "targetLimit",
 						"type": "uint256",
 						"internalType": "uint256"
 					},
 					{
-						"name": "totalExitedValidators",
+						"name": "targetLimitMode",
+						"type": "uint8",
+						"internalType": "uint8"
+					},
+					{
+						"name": "stuckPenaltyEndTimestamp",
 						"type": "uint256",
 						"internalType": "uint256"
 					},
 					{
-						"name": "totalWithdrawnValidators",
+						"name": "totalExitedKeys",
 						"type": "uint256",
 						"internalType": "uint256"
 					},
 					{
-						"name": "totalAddedValidators",
+						"name": "totalAddedKeys",
 						"type": "uint256",
 						"internalType": "uint256"
 					},
 					{
-						"name": "totalDepositedValidators",
+						"name": "totalWithdrawnKeys",
+						"type": "uint256",
+						"internalType": "uint256"
+					},
+					{
+						"name": "totalDepositedKeys",
+						"type": "uint256",
+						"internalType": "uint256"
+					},
+					{
+						"name": "totalVettedKeys",
+						"type": "uint256",
+						"internalType": "uint256"
+					},
+					{
+						"name": "stuckValidatorsCount",
+						"type": "uint256",
+						"internalType": "uint256"
+					},
+					{
+						"name": "refundedValidatorsCount",
+						"type": "uint256",
+						"internalType": "uint256"
+					},
+					{
+						"name": "depositableValidatorsCount",
 						"type": "uint256",
 						"internalType": "uint256"
 					},
@@ -964,6 +1034,44 @@
 				"name": "",
 				"type": "bool",
 				"internalType": "bool"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "getNodeOperatorNonWithdrawnKeys",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "getNodeOperatorRewardAddress",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "address",
+				"internalType": "address"
 			}
 		],
 		"stateMutability": "view"
@@ -1275,6 +1383,11 @@
 			},
 			{
 				"name": "_earlyAdoption",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "verifier",
 				"type": "address",
 				"internalType": "address"
 			},
@@ -1845,7 +1958,7 @@
 				"internalType": "uint256"
 			},
 			{
-				"name": "",
+				"name": "refundedValidatorsCount",
 				"type": "uint256",
 				"internalType": "uint256"
 			}
@@ -2089,13 +2202,13 @@
 				"internalType": "uint256"
 			},
 			{
-				"name": "referral",
+				"name": "managerAddress",
 				"type": "address",
 				"indexed": true,
 				"internalType": "address"
 			},
 			{
-				"name": "from",
+				"name": "rewardAddress",
 				"type": "address",
 				"indexed": true,
 				"internalType": "address"
@@ -2133,6 +2246,44 @@
 		"type": "event",
 		"name": "PublicRelease",
 		"inputs": [],
+		"anonymous": false
+	},
+	{
+		"type": "event",
+		"name": "ReferrerSet",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"indexed": true,
+				"internalType": "uint256"
+			},
+			{
+				"name": "referrer",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"type": "event",
+		"name": "RefundedKeysCountChanged",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"indexed": true,
+				"internalType": "uint256"
+			},
+			{
+				"name": "refundedKeysCount",
+				"type": "uint256",
+				"indexed": false,
+				"internalType": "uint256"
+			}
+		],
 		"anonymous": false
 	},
 	{
@@ -2275,7 +2426,7 @@
 	},
 	{
 		"type": "event",
-		"name": "TargetValidatorsCountChanged",
+		"name": "TargetValidatorsCountChangedByRequest",
 		"inputs": [
 			{
 				"name": "nodeOperatorId",
@@ -2494,7 +2645,7 @@
 	},
 	{
 		"type": "error",
-		"name": "SenderIsNotManagerAddress",
+		"name": "SenderIsNotEligible",
 		"inputs": []
 	},
 	{
@@ -2504,7 +2655,7 @@
 	},
 	{
 		"type": "error",
-		"name": "StuckKeysHigherThanTotalDeposited",
+		"name": "StuckKeysHigherThanTotalDepositedMinusTotalExited",
 		"inputs": []
 	},
 	{
