@@ -40,28 +40,6 @@ export class RegistryOperatorFetchService {
       return true;
     }
 
-    const nodeOperatorNameSetFilter = this.getContract(moduleAddress).filters['NodeOperatorNameSet']();
-    const nodeOperatorNameSetEvents = await this.getContract(moduleAddress).queryFilter(
-      nodeOperatorNameSetFilter,
-      fromBlockNumber,
-      toBlockNumber,
-    );
-
-    if (nodeOperatorNameSetEvents.length) {
-      return true;
-    }
-    const nodeOperatorRewardAddressSetFilter =
-      this.getContract(moduleAddress).filters['NodeOperatorRewardAddressSet']();
-    const nodeOperatorRewardAddressSetEvents = await this.getContract(moduleAddress).queryFilter(
-      nodeOperatorRewardAddressSetFilter,
-      fromBlockNumber,
-      toBlockNumber,
-    );
-
-    if (nodeOperatorRewardAddressSetEvents.length) {
-      return true;
-    }
-
     return false;
   }
 
