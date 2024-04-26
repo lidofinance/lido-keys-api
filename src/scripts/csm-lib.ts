@@ -45,6 +45,8 @@ export const addNodeOperator = async (
     keysCount,
     keys,
     signatures,
+    '0x067c49AD74D0D7cCB3b062B027bfeA8Dee943193',
+    '0x067c49AD74D0D7cCB3b062B027bfeA8Dee943193',
     [],
     '0x067c49AD74D0D7cCB3b062B027bfeA8Dee943193',
     {
