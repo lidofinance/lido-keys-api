@@ -3,6 +3,7 @@ import { GroupedByModuleKeyListResponse, SRModuleKeyListResponse } from './entit
 import { KeyQuery, Key, ELBlockSnapshot, StakingModuleResponse } from '../common/entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
+import { KeysFilter } from '../../staking-router-modules/interfaces/filters';
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
 import { SrModuleEntity } from 'storage/sr-module.entity';
@@ -40,7 +41,7 @@ export class SRModulesKeysService {
 
   async getModuleKeys(
     moduleId: string | number,
-    filters: KeyQuery,
+    filters: KeysFilter,
   ): Promise<{
     keysGenerator: AsyncGenerator<Key>;
     module: StakingModuleResponse;
