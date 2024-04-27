@@ -14,7 +14,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags, PickType } from '@nestjs/swagger';
+import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
 import { KeyQuery, Key } from '../common/entities/';
@@ -25,8 +25,6 @@ import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
 import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
-
-class ReducedKeyQuery extends PickType(KeyQuery, ['used', 'operatorIndex']) {}
 
 @Controller('modules')
 @ApiTags('sr-module-keys')
@@ -80,7 +78,7 @@ export class SRModulesKeysController {
   @Get(':module_id/keys')
   async getModuleKeys(
     @Param('module_id', ModuleIdPipe) module_id: string | number,
-    @Query() filters: ReducedKeyQuery,
+    @Query() filters: KeyQuery,
     @Res() reply: FastifyReply,
   ) {
     await this.entityManager.transactional(

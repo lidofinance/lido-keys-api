@@ -40,7 +40,7 @@ export class SRModulesKeysService {
 
   async getModuleKeys(
     moduleId: string | number,
-    filters: Pick<KeyQuery, 'used' | 'operatorIndex'>,
+    filters: KeyQuery,
   ): Promise<{
     keysGenerator: AsyncGenerator<Key>;
     module: StakingModuleResponse;
