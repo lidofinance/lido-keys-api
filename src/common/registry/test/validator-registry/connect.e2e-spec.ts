@@ -33,7 +33,7 @@ describe('Registry', () => {
   //   return { ...key, moduleAddress: address };
   // });
 
-  const blockHash = '0x42e6d3fe6df4bc4bdfda27595a015ac9fd5af65cf9bd9d8ad0f2ac802dd73749';
+  const blockHash = '0x947aa07f029fd9fed1af664339373077e61f54aff32d692e1f00139fcd4c5039';
 
   beforeEach(async () => {
     const imports = [
@@ -81,8 +81,8 @@ describe('Registry', () => {
     // });
 
     const operators = await registryService.getOperatorsFromStorage(address);
-    expect(operators).toHaveLength(89);
+    expect(operators.length).toEqual(36);
     const keys = await registryService.getOperatorsKeysFromStorage(address);
-    expect(keys).toHaveLength(55131);
+    expect(keys.length).toEqual(28123);
   }, 400_000);
 });
