@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsInt, IsBoolean, IsOptional, Min } from 'class-validator';
 
@@ -16,7 +16,7 @@ const toBoolean = (value, propertyName: string): boolean => {
 };
 
 // TODO: use it in staking-module-service
-export class KeyQueryWithAddress {
+export class KeyQuery {
   @ApiProperty({
     required: false,
     description:
@@ -37,12 +37,12 @@ export class KeyQueryWithAddress {
   @Type(() => Number)
   @IsOptional()
   operatorIndex?: number;
+}
 
+export class KeyQueryWithAddress extends KeyQuery {
   @ApiProperty({ isArray: true, type: String, required: false, description: 'Module address list' })
   @Transform(({ value }) => (Array.isArray(value) ? value : Array(value)))
   @Transform(({ value }) => value.map((v) => v.toLowerCase()))
   @IsOptional()
   moduleAddresses!: string[];
 }
-
-export class KeyQuery extends PickType(KeyQueryWithAddress, ['used', 'operatorIndex']) {}
