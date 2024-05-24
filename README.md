@@ -49,7 +49,7 @@ To view the list of alerts in Prometheus, visit http://localhost:9090/alerts. Fo
 
 ## E2E tests
 
-`$ yarn test:e2e`
+`$ yarn test:e2e:docker`
 
 ## Environment variable
 
