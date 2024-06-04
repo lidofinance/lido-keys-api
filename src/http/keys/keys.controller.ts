@@ -18,7 +18,7 @@ import type { FastifyReply } from 'fastify';
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
 import { KeyListResponse } from './entities';
-import { Key, KeyQuery } from '../common/entities';
+import { Key, KeyQueryWithAddress } from '../common/entities';
 import { KeysFindBody } from '../common/entities/pubkeys';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import * as JSONStream from 'jsonstream';
@@ -47,7 +47,7 @@ export class KeysController {
     type: KeyListResponse,
   })
   @ApiOperation({ summary: 'Get list of all keys in stream' })
-  async get(@Query() filters: KeyQuery, @Res() reply: FastifyReply) {
+  async get(@Query() filters: KeyQueryWithAddress, @Res() reply: FastifyReply) {
     // Because the real execution of generators occurs in the controller's method, that's why we moved the transaction here
     await this.entityManager.transactional(
       async () => {
