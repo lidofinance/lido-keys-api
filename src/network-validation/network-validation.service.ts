@@ -8,7 +8,7 @@ import { ExecutionProviderService } from '../common/execution-provider';
 import { RegistryKeyStorageService, RegistryOperatorStorageService } from '../common/registry';
 import { SRModuleStorageService } from '../storage/sr-module.storage';
 import { AppInfoStorageService } from '../storage/app-info.storage';
-import { MODULE_ADDRESSES_FOR_CHAINS } from './network-validation.constants';
+import { CURATED_MODULE_ADDRESSES_FOR_CHAINS } from './network-validation.constants';
 
 @Injectable()
 export class NetworkValidationService {
@@ -69,7 +69,7 @@ export class NetworkValidationService {
       throw new Error('Inconsistent data in database. Some DB tables are empty, but some are not.');
     }
 
-    if (dbCuratedModule.stakingModuleAddress !== MODULE_ADDRESSES_FOR_CHAINS[configChainId]) {
+    if (dbCuratedModule.stakingModuleAddress !== CURATED_MODULE_ADDRESSES_FOR_CHAINS[configChainId]) {
       throw new Error(
         `Chain configuration mismatch. Service is trying to start for chain ${configChainId}, but DB contains data for another chain.`,
       );
