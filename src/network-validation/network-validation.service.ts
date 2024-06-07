@@ -41,7 +41,7 @@ export class NetworkValidationService {
 
     const [dbKey, dbCuratedModule, dbOperator] = await Promise.all([
       await this.keyStorageService.find({}, { limit: 1 }),
-      await this.moduleStorageService.findOneById(1),
+      await this.moduleStorageService.findOneByModuleId(1),
       await this.operatorStorageService.find({}, { limit: 1 }),
     ]);
 
