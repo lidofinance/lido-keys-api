@@ -12,4 +12,4 @@ RUN yarn install --frozen-lockfile --non-interactive && yarn cache clean
 COPY ./src ./src
 RUN yarn typechain
 
-CMD ["yarn", "test:e2e:docker"]
+CMD ["yarn", "test:e2e"]
