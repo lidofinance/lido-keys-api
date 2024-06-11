@@ -7,7 +7,6 @@ import {
 } from './interfaces/module.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';
 import { RegistryMetaFetchService } from './meta.fetch';
-import { RegistryKeyFetchService } from './key.fetch';
 import { RegistryKeyBatchFetchService } from './key-batch.fetch';
 import { RegistryFetchService } from './registry-fetch.service';
 
@@ -16,16 +15,9 @@ import { RegistryFetchService } from './registry-fetch.service';
     RegistryFetchService,
     RegistryOperatorFetchService,
     RegistryMetaFetchService,
-    RegistryKeyFetchService,
     RegistryKeyBatchFetchService,
   ],
-  exports: [
-    RegistryFetchService,
-    RegistryOperatorFetchService,
-    RegistryMetaFetchService,
-    RegistryKeyFetchService,
-    RegistryKeyBatchFetchService,
-  ],
+  exports: [RegistryFetchService, RegistryOperatorFetchService, RegistryMetaFetchService, RegistryKeyBatchFetchService],
 })
 export class RegistryFetchModule {
   static forRoot(options?: RegistryFetchModuleSyncOptions): DynamicModule {
