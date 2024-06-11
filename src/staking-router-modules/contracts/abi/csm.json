@@ -8,7 +8,12 @@
 				"internalType": "bytes32"
 			},
 			{
-				"name": "elStealingFine",
+				"name": "minSlashingPenaltyQuotient",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "elRewardsStealingFine",
 				"type": "uint256",
 				"internalType": "uint256"
 			},
@@ -34,19 +39,6 @@
 				"name": "",
 				"type": "bytes32",
 				"internalType": "bytes32"
-			}
-		],
-		"stateMutability": "view"
-	},
-	{
-		"type": "function",
-		"name": "DEPOSIT_SIZE",
-		"inputs": [],
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256",
-				"internalType": "uint256"
 			}
 		],
 		"stateMutability": "view"
@@ -203,6 +195,19 @@
 				"name": "",
 				"type": "bytes32",
 				"internalType": "bytes32"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "STETH",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "address",
+				"internalType": "contract IStETH"
 			}
 		],
 		"stateMutability": "view"
@@ -629,6 +634,34 @@
 	},
 	{
 		"type": "function",
+		"name": "claimRewardsUnstETH",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "stEthAmount",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "cumulativeFeeShares",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "rewardsProof",
+				"type": "bytes32[]",
+				"internalType": "bytes32[]"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
 		"name": "claimRewardsWstETH",
 		"inputs": [
 			{
@@ -715,17 +748,17 @@
 	},
 	{
 		"type": "function",
-		"name": "decreaseOperatorVettedKeys",
+		"name": "decreaseVettedSigningKeysCount",
 		"inputs": [
 			{
 				"name": "nodeOperatorIds",
-				"type": "uint256[]",
-				"internalType": "uint256[]"
+				"type": "bytes",
+				"internalType": "bytes"
 			},
 			{
-				"name": "vettedKeysByOperator",
-				"type": "uint256[]",
-				"internalType": "uint256[]"
+				"name": "vettedSigningKeysCounts",
+				"type": "bytes",
+				"internalType": "bytes"
 			}
 		],
 		"outputs": [],
@@ -743,6 +776,24 @@
 		],
 		"outputs": [],
 		"stateMutability": "payable"
+	},
+	{
+		"type": "function",
+		"name": "depositQueue",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "head",
+				"type": "uint128",
+				"internalType": "uint128"
+			},
+			{
+				"name": "length",
+				"type": "uint128",
+				"internalType": "uint128"
+			}
+		],
+		"stateMutability": "view"
 	},
 	{
 		"type": "function",
@@ -906,6 +957,56 @@
 				"internalType": "struct NodeOperator",
 				"components": [
 					{
+						"name": "totalAddedKeys",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "totalWithdrawnKeys",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "totalDepositedKeys",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "totalVettedKeys",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "stuckValidatorsCount",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "depositableValidatorsCount",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "targetLimit",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "targetLimitMode",
+						"type": "uint8",
+						"internalType": "uint8"
+					},
+					{
+						"name": "totalExitedKeys",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "enqueuedCount",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
 						"name": "managerAddress",
 						"type": "address",
 						"internalType": "address"
@@ -924,71 +1025,6 @@
 						"name": "proposedRewardAddress",
 						"type": "address",
 						"internalType": "address"
-					},
-					{
-						"name": "active",
-						"type": "bool",
-						"internalType": "bool"
-					},
-					{
-						"name": "targetLimit",
-						"type": "uint256",
-						"internalType": "uint256"
-					},
-					{
-						"name": "targetLimitMode",
-						"type": "uint8",
-						"internalType": "uint8"
-					},
-					{
-						"name": "stuckPenaltyEndTimestamp",
-						"type": "uint256",
-						"internalType": "uint256"
-					},
-					{
-						"name": "totalExitedKeys",
-						"type": "uint256",
-						"internalType": "uint256"
-					},
-					{
-						"name": "totalAddedKeys",
-						"type": "uint256",
-						"internalType": "uint256"
-					},
-					{
-						"name": "totalWithdrawnKeys",
-						"type": "uint256",
-						"internalType": "uint256"
-					},
-					{
-						"name": "totalDepositedKeys",
-						"type": "uint256",
-						"internalType": "uint256"
-					},
-					{
-						"name": "totalVettedKeys",
-						"type": "uint256",
-						"internalType": "uint256"
-					},
-					{
-						"name": "stuckValidatorsCount",
-						"type": "uint256",
-						"internalType": "uint256"
-					},
-					{
-						"name": "refundedValidatorsCount",
-						"type": "uint256",
-						"internalType": "uint256"
-					},
-					{
-						"name": "depositableValidatorsCount",
-						"type": "uint256",
-						"internalType": "uint256"
-					},
-					{
-						"name": "enqueuedCount",
-						"type": "uint256",
-						"internalType": "uint256"
 					}
 				]
 			}
@@ -1059,25 +1095,6 @@
 	},
 	{
 		"type": "function",
-		"name": "getNodeOperatorRewardAddress",
-		"inputs": [
-			{
-				"name": "nodeOperatorId",
-				"type": "uint256",
-				"internalType": "uint256"
-			}
-		],
-		"outputs": [
-			{
-				"name": "",
-				"type": "address",
-				"internalType": "address"
-			}
-		],
-		"stateMutability": "view"
-	},
-	{
-		"type": "function",
 		"name": "getNodeOperatorSummary",
 		"inputs": [
 			{
@@ -1089,8 +1106,8 @@
 		"outputs": [
 			{
 				"name": "targetLimitMode",
-				"type": "uint8",
-				"internalType": "uint8"
+				"type": "uint256",
+				"internalType": "uint256"
 			},
 			{
 				"name": "targetValidatorsCount",
@@ -1387,9 +1404,9 @@
 				"internalType": "address"
 			},
 			{
-				"name": "verifier",
-				"type": "address",
-				"internalType": "address"
+				"name": "_keyRemovalCharge",
+				"type": "uint256",
+				"internalType": "uint256"
 			},
 			{
 				"name": "admin",
@@ -1607,24 +1624,6 @@
 	},
 	{
 		"type": "function",
-		"name": "queue",
-		"inputs": [],
-		"outputs": [
-			{
-				"name": "head",
-				"type": "uint128",
-				"internalType": "uint128"
-			},
-			{
-				"name": "length",
-				"type": "uint128",
-				"internalType": "uint128"
-			}
-		],
-		"stateMutability": "view"
-	},
-	{
-		"type": "function",
 		"name": "recoverERC1155",
 		"inputs": [
 			{
@@ -1750,34 +1749,6 @@
 				"name": "amount",
 				"type": "uint256",
 				"internalType": "uint256"
-			}
-		],
-		"outputs": [],
-		"stateMutability": "nonpayable"
-	},
-	{
-		"type": "function",
-		"name": "requestRewardsETH",
-		"inputs": [
-			{
-				"name": "nodeOperatorId",
-				"type": "uint256",
-				"internalType": "uint256"
-			},
-			{
-				"name": "ethAmount",
-				"type": "uint256",
-				"internalType": "uint256"
-			},
-			{
-				"name": "cumulativeFeeShares",
-				"type": "uint256",
-				"internalType": "uint256"
-			},
-			{
-				"name": "rewardsProof",
-				"type": "bytes32[]",
-				"internalType": "bytes32[]"
 			}
 		],
 		"outputs": [],
@@ -1953,12 +1924,12 @@
 		"name": "updateRefundedValidatorsCount",
 		"inputs": [
 			{
-				"name": "nodeOperatorId",
+				"name": "",
 				"type": "uint256",
 				"internalType": "uint256"
 			},
 			{
-				"name": "refundedValidatorsCount",
+				"name": "",
 				"type": "uint256",
 				"internalType": "uint256"
 			}
@@ -1995,8 +1966,8 @@
 			},
 			{
 				"name": "targetLimitMode",
-				"type": "uint8",
-				"internalType": "uint8"
+				"type": "uint256",
+				"internalType": "uint256"
 			},
 			{
 				"name": "targetLimit",
@@ -2006,25 +1977,6 @@
 		],
 		"outputs": [],
 		"stateMutability": "nonpayable"
-	},
-	{
-		"type": "event",
-		"name": "BatchEnqueued",
-		"inputs": [
-			{
-				"name": "nodeOperatorId",
-				"type": "uint256",
-				"indexed": true,
-				"internalType": "uint256"
-			},
-			{
-				"name": "count",
-				"type": "uint256",
-				"indexed": false,
-				"internalType": "uint256"
-			}
-		],
-		"anonymous": false
 	},
 	{
 		"type": "event",
@@ -2269,25 +2221,6 @@
 	},
 	{
 		"type": "event",
-		"name": "RefundedKeysCountChanged",
-		"inputs": [
-			{
-				"name": "nodeOperatorId",
-				"type": "uint256",
-				"indexed": true,
-				"internalType": "uint256"
-			},
-			{
-				"name": "refundedKeysCount",
-				"type": "uint256",
-				"indexed": false,
-				"internalType": "uint256"
-			}
-		],
-		"anonymous": false
-	},
-	{
-		"type": "event",
 		"name": "Resumed",
 		"inputs": [],
 		"anonymous": false
@@ -2370,6 +2303,44 @@
 	{
 		"type": "event",
 		"name": "SigningKeyAdded",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"indexed": true,
+				"internalType": "uint256"
+			},
+			{
+				"name": "pubkey",
+				"type": "bytes",
+				"indexed": false,
+				"internalType": "bytes"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"type": "event",
+		"name": "SigningKeyAdded",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"indexed": true,
+				"internalType": "uint256"
+			},
+			{
+				"name": "pubkey",
+				"type": "bytes",
+				"indexed": false,
+				"internalType": "bytes"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"type": "event",
+		"name": "SigningKeyRemoved",
 		"inputs": [
 			{
 				"name": "nodeOperatorId",
@@ -2545,6 +2516,11 @@
 	},
 	{
 		"type": "error",
+		"name": "AlreadyWithdrawn",
+		"inputs": []
+	},
+	{
+		"type": "error",
 		"name": "EmptyKey",
 		"inputs": []
 	},
@@ -2620,6 +2596,11 @@
 	},
 	{
 		"type": "error",
+		"name": "NotSupported",
+		"inputs": []
+	},
+	{
+		"type": "error",
 		"name": "PauseUntilMustBeInFuture",
 		"inputs": []
 	},
@@ -2631,11 +2612,6 @@
 	{
 		"type": "error",
 		"name": "QueueIsEmpty",
-		"inputs": []
-	},
-	{
-		"type": "error",
-		"name": "QueueLookupNoLimit",
 		"inputs": []
 	},
 	{
@@ -2655,7 +2631,22 @@
 	},
 	{
 		"type": "error",
-		"name": "StuckKeysHigherThanTotalDepositedMinusTotalExited",
+		"name": "StuckKeysHigherThanExited",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ZeroAccountingAddress",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ZeroAdminAddress",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ZeroLocatorAddress",
 		"inputs": []
 	},
 	{

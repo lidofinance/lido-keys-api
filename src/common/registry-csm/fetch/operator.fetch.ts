@@ -67,7 +67,7 @@ export class RegistryOperatorFetchService {
         blockTag: this.getFinalizedBlockTag(),
       });
 
-      return totalDepositedKeys.toNumber();
+      return totalDepositedKeys;
     } catch (error) {
       this.logger.warn(
         `an error occurred while trying to load the finalized state for operator ${operatorIndex} from module ${moduleAddress}`,
@@ -86,8 +86,9 @@ export class RegistryOperatorFetchService {
     const contract = this.getContract(moduleAddress);
 
     const operator = await contract.getNodeOperator(operatorIndex, overrides as any);
+    const { rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys, totalVettedKeys } = operator;
 
-    const { active, rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys, totalVettedKeys } = operator;
+    const active = await contract.getNodeOperatorIsActive(operatorIndex, overrides as any);
 
     const finalizedUsedSigningKeys = await this.getFinalizedNodeOperatorUsedSigningKeys(moduleAddress, operatorIndex);
 
@@ -96,10 +97,10 @@ export class RegistryOperatorFetchService {
       active,
       name: `operator-${operatorIndex}`,
       rewardAddress,
-      stakingLimit: totalVettedKeys.toNumber(),
-      stoppedValidators: totalExitedKeys.toNumber(),
-      totalSigningKeys: totalAddedKeys.toNumber(),
-      usedSigningKeys: totalDepositedKeys.toNumber(),
+      stakingLimit: totalVettedKeys,
+      stoppedValidators: totalExitedKeys,
+      totalSigningKeys: totalAddedKeys,
+      usedSigningKeys: totalDepositedKeys,
       moduleAddress,
       finalizedUsedSigningKeys,
     };
