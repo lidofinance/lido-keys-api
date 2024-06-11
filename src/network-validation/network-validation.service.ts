@@ -2,13 +2,13 @@ import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { LidoLocator, LIDO_LOCATOR_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import { ConfigService } from '../common/config';
 import { ConsensusProviderService } from '../common/consensus-provider';
 import { ExecutionProviderService } from '../common/execution-provider';
 import { RegistryKeyStorageService, RegistryOperatorStorageService } from '../common/registry';
 import { SRModuleStorageService } from '../storage/sr-module.storage';
 import { AppInfoStorageService } from '../storage/app-info.storage';
-import { CURATED_MODULE_ADDRESSES_FOR_CHAINS } from './network-validation.constants';
 
 @Injectable()
 export class NetworkValidationService {
@@ -69,7 +69,7 @@ export class NetworkValidationService {
       throw new Error('Inconsistent data in database. Some DB tables are empty, but some are not.');
     }
 
-    if (dbCuratedModule.stakingModuleAddress !== CURATED_MODULE_ADDRESSES_FOR_CHAINS[configChainId]) {
+    if (dbCuratedModule.stakingModuleAddress !== REGISTRY_CONTRACT_ADDRESSES[configChainId].toLowerCase()) {
       throw new Error(
         `Chain configuration mismatch. Service is trying to start for chain ${configChainId}, but DB contains data for another chain.`,
       );
