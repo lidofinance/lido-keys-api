@@ -28,7 +28,7 @@ describe('Keys', () => {
   });
 
   test('fetch one key', async () => {
-    const key = await fetchService.fetchOne(address, 17, 0, { blockTag: 10573030 });
+    const key = await fetchService.fetchOne(address, 17, 0, { blockTag: 1488022 });
 
     expect(key).toBeInstanceOf(Object);
 
@@ -41,7 +41,7 @@ describe('Keys', () => {
 
   test('fetch operator keys', async () => {
     const keys = await fetchService.fetch(address, 17, 0, 3, {
-      blockTag: 10573030,
+      blockTag: 1488022,
     });
     expect(keys).toBeInstanceOf(Array);
     expect(keys.length).toBe(3);
@@ -49,7 +49,7 @@ describe('Keys', () => {
 
   test('fetch several keys', async () => {
     const keys = await fetchService.fetch(address, 17, 0, 2, {
-      blockTag: 10573030,
+      blockTag: 1488022,
     });
 
     expect(keys).toBeInstanceOf(Array);
