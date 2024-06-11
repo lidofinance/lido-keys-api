@@ -16,7 +16,6 @@ import { DatabaseE2ETestingModule } from '../app';
 describe('network configuration correctness sanity checker', () => {
   let configService: ConfigService;
   let locator: { address: string };
-  let consensusProviderService: ConsensusProviderService;
   let executionProviderService: ExecutionProviderService;
   let registryKeyStorageService: RegistryKeyStorageService;
   let moduleStorageService: SRModuleStorageService;
@@ -47,16 +46,13 @@ describe('network configuration correctness sanity checker', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule,
-        DatabaseE2ETestingModule.forRoot(),
-      ],
+      imports: [ConfigModule, DatabaseE2ETestingModule.forRoot()],
       providers: [
         {
           provide: LIDO_LOCATOR_CONTRACT_TOKEN,
           useValue: {
             address: '0x17000',
-          }
+          },
         },
         {
           provide: LOGGER_PROVIDER,
@@ -69,34 +65,34 @@ describe('network configuration correctness sanity checker', () => {
           useValue: {
             getDepositContract: jest.fn(async () => ({
               data: {
-                chain_id: '1'
-              }
+                chain_id: '1',
+              },
             })),
-          }
+          },
         },
         {
           provide: ExecutionProviderService,
           useValue: {
             getChainId: jest.fn(async () => 17000),
-          }
+          },
         },
         {
           provide: RegistryKeyStorageService,
           useValue: {
             find: jest.fn(async () => []),
-          }
+          },
         },
         {
           provide: SRModuleStorageService,
           useValue: {
             findOneByModuleId: jest.fn(async () => null),
-          }
+          },
         },
         {
           provide: RegistryOperatorStorageService,
           useValue: {
             find: jest.fn(async () => []),
-          }
+          },
         },
         {
           provide: AppInfoStorageService,
@@ -106,7 +102,7 @@ describe('network configuration correctness sanity checker', () => {
               chainId: 17000,
               locatorAddress: '0x17000',
             })),
-          }
+          },
         },
         NetworkValidationService,
       ],
@@ -114,7 +110,6 @@ describe('network configuration correctness sanity checker', () => {
 
     configService = module.get<ConfigService>(ConfigService);
     locator = module.get(LIDO_LOCATOR_CONTRACT_TOKEN);
-    consensusProviderService = module.get<ConsensusProviderService>(ConsensusProviderService);
     executionProviderService = module.get<ExecutionProviderService>(ExecutionProviderService);
     registryKeyStorageService = module.get<RegistryKeyStorageService>(RegistryKeyStorageService);
     moduleStorageService = module.get<SRModuleStorageService>(SRModuleStorageService);
@@ -122,18 +117,16 @@ describe('network configuration correctness sanity checker', () => {
     appInfoStorageService = module.get<AppInfoStorageService>(AppInfoStorageService);
     networkValidationService = module.get<NetworkValidationService>(NetworkValidationService);
 
-    jest
-      .spyOn(configService, 'get')
-      .mockImplementation((path) => {
-        if (path === 'VALIDATOR_REGISTRY_ENABLE') {
-          return false;
-        }
+    jest.spyOn(configService, 'get').mockImplementation((path) => {
+      if (path === 'VALIDATOR_REGISTRY_ENABLE') {
+        return false;
+      }
 
-        if (path === 'CHAIN_ID') {
-          return 17000;
-        }
+      if (path === 'CHAIN_ID') {
+        return 17000;
+      }
 
-        return undefined;
+      return undefined;
     });
   });
 
@@ -142,19 +135,17 @@ describe('network configuration correctness sanity checker', () => {
   });
 
   it("should throw error if the chain ID defined in env variables doesn't match the chain ID returned by EL node if the validator registry is enabled in config", async () => {
-    jest
-      .spyOn(configService, 'get')
-      .mockImplementation((path) => {
-        if (path === 'VALIDATOR_REGISTRY_ENABLE') {
-          return true;
-        }
+    jest.spyOn(configService, 'get').mockImplementation((path) => {
+      if (path === 'VALIDATOR_REGISTRY_ENABLE') {
+        return true;
+      }
 
-        if (path === 'CHAIN_ID') {
-          return 1;
-        }
+      if (path === 'CHAIN_ID') {
+        return 1;
+      }
 
-        return undefined;
-      });
+      return undefined;
+    });
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -163,19 +154,17 @@ describe('network configuration correctness sanity checker', () => {
   });
 
   it("should throw error if the chain ID returned by EL node doesn't match the chain ID returned by CL node if the validator registry is enabled in config", async () => {
-    jest
-      .spyOn(configService, 'get')
-      .mockImplementation((path) => {
-        if (path === 'VALIDATOR_REGISTRY_ENABLE') {
-          return true;
-        }
+    jest.spyOn(configService, 'get').mockImplementation((path) => {
+      if (path === 'VALIDATOR_REGISTRY_ENABLE') {
+        return true;
+      }
 
-        if (path === 'CHAIN_ID') {
-          return 17000;
-        }
+      if (path === 'CHAIN_ID') {
+        return 17000;
+      }
 
-        return undefined;
-      });
+      return undefined;
+    });
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -184,19 +173,17 @@ describe('network configuration correctness sanity checker', () => {
   });
 
   it("should throw error if the chain ID defined in env variables doesn't match the chain ID returned by CL node if the validator registry is enabled in config", async () => {
-    jest
-      .spyOn(configService, 'get')
-      .mockImplementation((path) => {
-        if (path === 'VALIDATOR_REGISTRY_ENABLE') {
-          return true;
-        }
+    jest.spyOn(configService, 'get').mockImplementation((path) => {
+      if (path === 'VALIDATOR_REGISTRY_ENABLE') {
+        return true;
+      }
 
-        if (path === 'CHAIN_ID') {
-          return 17000;
-        }
+      if (path === 'CHAIN_ID') {
+        return 17000;
+      }
 
-        return undefined;
-      });
+      return undefined;
+    });
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -204,7 +191,7 @@ describe('network configuration correctness sanity checker', () => {
     expect(updateAppInfoMock).not.toHaveBeenCalled();
   });
 
-  it("should save information about the chain and locator to the DB if there are no keys, modules, and operators in the DB", async () => {
+  it('should save information about the chain and locator to the DB if there are no keys, modules, and operators in the DB', async () => {
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
     await expect(networkValidationService.validate()).resolves.not.toThrow();
@@ -216,35 +203,27 @@ describe('network configuration correctness sanity checker', () => {
   });
 
   it("should throw error if info about chain ID stored in the DB doesn't match chain ID configured in env variables and keys, modules or operators tables have some info in the DB", async () => {
-    jest
-      .spyOn(configService, 'get')
-      .mockImplementation((path) => {
-        if (path === 'VALIDATOR_REGISTRY_ENABLE') {
-          return false;
-        }
+    jest.spyOn(configService, 'get').mockImplementation((path) => {
+      if (path === 'VALIDATOR_REGISTRY_ENABLE') {
+        return false;
+      }
 
-        if (path === 'CHAIN_ID') {
-          return 1;
-        }
+      if (path === 'CHAIN_ID') {
+        return 1;
+      }
 
-        return undefined;
-      });
+      return undefined;
+    });
 
-    jest
-      .spyOn(executionProviderService, 'getChainId')
-      .mockImplementationOnce(() => Promise.resolve(1));
+    jest.spyOn(executionProviderService, 'getChainId').mockImplementationOnce(() => Promise.resolve(1));
 
-    jest
-      .spyOn(registryKeyStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([keyFixture]));
+    jest.spyOn(registryKeyStorageService, 'find').mockImplementationOnce(() => Promise.resolve([keyFixture]));
 
     jest
       .spyOn(moduleStorageService, 'findOneByModuleId')
       .mockImplementationOnce(() => Promise.resolve(holeskyCuratedModuleFixture));
 
-    jest
-      .spyOn(operatorStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([operatorFixture]));
+    jest.spyOn(operatorStorageService, 'find').mockImplementationOnce(() => Promise.resolve([operatorFixture]));
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -253,17 +232,13 @@ describe('network configuration correctness sanity checker', () => {
   });
 
   it("should throw error if info about locator address stored in the DB doesn't match locator address returned by locator service and keys, modules or operators tables have some info in the DB", async () => {
-    jest
-      .spyOn(registryKeyStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([keyFixture]));
+    jest.spyOn(registryKeyStorageService, 'find').mockImplementationOnce(() => Promise.resolve([keyFixture]));
 
     jest
       .spyOn(moduleStorageService, 'findOneByModuleId')
       .mockImplementationOnce(() => Promise.resolve(holeskyCuratedModuleFixture));
 
-    jest
-      .spyOn(operatorStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([operatorFixture]));
+    jest.spyOn(operatorStorageService, 'find').mockImplementationOnce(() => Promise.resolve([operatorFixture]));
 
     locator.address = '0x1';
 
@@ -273,18 +248,14 @@ describe('network configuration correctness sanity checker', () => {
     expect(updateAppInfoMock).not.toHaveBeenCalled();
   });
 
-  it("should execute successfully if info about chain ID matches the chain ID configured in env variables and locator address stored in the DB matches the locator address returned by locator service, and keys, modules, or operators tables have some info in the DB", async () => {
-    jest
-      .spyOn(registryKeyStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([keyFixture]));
+  it('should execute successfully if info about chain ID matches the chain ID configured in env variables and locator address stored in the DB matches the locator address returned by locator service, and keys, modules, or operators tables have some info in the DB', async () => {
+    jest.spyOn(registryKeyStorageService, 'find').mockImplementationOnce(() => Promise.resolve([keyFixture]));
 
     jest
       .spyOn(moduleStorageService, 'findOneByModuleId')
       .mockImplementationOnce(() => Promise.resolve(holeskyCuratedModuleFixture));
 
-    jest
-      .spyOn(operatorStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([operatorFixture]));
+    jest.spyOn(operatorStorageService, 'find').mockImplementationOnce(() => Promise.resolve([operatorFixture]));
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -297,9 +268,7 @@ describe('network configuration correctness sanity checker', () => {
       .spyOn(moduleStorageService, 'findOneByModuleId')
       .mockImplementationOnce(() => Promise.resolve(holeskyCuratedModuleFixture));
 
-    jest
-      .spyOn(appInfoStorageService, 'get')
-      .mockImplementationOnce(() => Promise.resolve(null));
+    jest.spyOn(appInfoStorageService, 'get').mockImplementationOnce(() => Promise.resolve(null));
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -308,13 +277,9 @@ describe('network configuration correctness sanity checker', () => {
   });
 
   it("should throw error if operators table is not empty in the DB, but the keys table is empty, and DB doesn't have information about chain ID and locator", async () => {
-    jest
-      .spyOn(operatorStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([operatorFixture]));
+    jest.spyOn(operatorStorageService, 'find').mockImplementationOnce(() => Promise.resolve([operatorFixture]));
 
-    jest
-      .spyOn(appInfoStorageService, 'get')
-      .mockImplementationOnce(() => Promise.resolve(null));
+    jest.spyOn(appInfoStorageService, 'get').mockImplementationOnce(() => Promise.resolve(null));
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -323,13 +288,9 @@ describe('network configuration correctness sanity checker', () => {
   });
 
   it("should throw error if keys table is not empty in the DB, but the module table is empty, and DB doesn't have information about chain ID and locator", async () => {
-    jest
-      .spyOn(registryKeyStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([keyFixture]));
+    jest.spyOn(registryKeyStorageService, 'find').mockImplementationOnce(() => Promise.resolve([keyFixture]));
 
-    jest
-      .spyOn(appInfoStorageService, 'get')
-      .mockImplementationOnce(() => Promise.resolve(null));
+    jest.spyOn(appInfoStorageService, 'get').mockImplementationOnce(() => Promise.resolve(null));
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -338,13 +299,9 @@ describe('network configuration correctness sanity checker', () => {
   });
 
   it("should throw error if operators table is not empty in the DB, but the module table is empty, and DB doesn't have information about chain ID and locator", async () => {
-    jest
-      .spyOn(operatorStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([operatorFixture]));
+    jest.spyOn(operatorStorageService, 'find').mockImplementationOnce(() => Promise.resolve([operatorFixture]));
 
-    jest
-      .spyOn(appInfoStorageService, 'get')
-      .mockImplementationOnce(() => Promise.resolve(null));
+    jest.spyOn(appInfoStorageService, 'get').mockImplementationOnce(() => Promise.resolve(null));
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -353,13 +310,9 @@ describe('network configuration correctness sanity checker', () => {
   });
 
   it("should throw error if keys table is not empty in the DB, but the operators table is empty, and DB doesn't have information about chain ID and locator", async () => {
-    jest
-      .spyOn(registryKeyStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([keyFixture]));
+    jest.spyOn(registryKeyStorageService, 'find').mockImplementationOnce(() => Promise.resolve([keyFixture]));
 
-    jest
-      .spyOn(appInfoStorageService, 'get')
-      .mockImplementationOnce(() => Promise.resolve(null));
+    jest.spyOn(appInfoStorageService, 'get').mockImplementationOnce(() => Promise.resolve(null));
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -372,9 +325,7 @@ describe('network configuration correctness sanity checker', () => {
       .spyOn(moduleStorageService, 'findOneByModuleId')
       .mockImplementationOnce(() => Promise.resolve(holeskyCuratedModuleFixture));
 
-    jest
-      .spyOn(appInfoStorageService, 'get')
-      .mockImplementationOnce(() => Promise.resolve(null));
+    jest.spyOn(appInfoStorageService, 'get').mockImplementationOnce(() => Promise.resolve(null));
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -383,9 +334,7 @@ describe('network configuration correctness sanity checker', () => {
   });
 
   it("should throw error if DB has information about keys, modules and operators, but doesn't have information about chain and locator, and address of the curated module stored in the DB doesn't match the correct address of the curated module for the chain for which the app was started", async () => {
-    jest
-      .spyOn(registryKeyStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([keyFixture]));
+    jest.spyOn(registryKeyStorageService, 'find').mockImplementationOnce(() => Promise.resolve([keyFixture]));
 
     const mainnetCuratedModuleFixture = {
       ...holeskyCuratedModuleFixture,
@@ -396,13 +345,9 @@ describe('network configuration correctness sanity checker', () => {
       .spyOn(moduleStorageService, 'findOneByModuleId')
       .mockImplementationOnce(() => Promise.resolve(mainnetCuratedModuleFixture));
 
-    jest
-      .spyOn(operatorStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([operatorFixture]));
+    jest.spyOn(operatorStorageService, 'find').mockImplementationOnce(() => Promise.resolve([operatorFixture]));
 
-    jest
-      .spyOn(appInfoStorageService, 'get')
-      .mockImplementationOnce(() => Promise.resolve(null));
+    jest.spyOn(appInfoStorageService, 'get').mockImplementationOnce(() => Promise.resolve(null));
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -411,39 +356,29 @@ describe('network configuration correctness sanity checker', () => {
   });
 
   it("should throw error if DB has information about keys, modules and operators, but doesn't have information about chain and locator, and address of the curated module stored in the DB doesn't match the correct address of the curated module for the chain for which the app was started", async () => {
-    jest
-      .spyOn(configService, 'get')
-      .mockImplementation((path) => {
-        if (path === 'VALIDATOR_REGISTRY_ENABLE') {
-          return false;
-        }
+    jest.spyOn(configService, 'get').mockImplementation((path) => {
+      if (path === 'VALIDATOR_REGISTRY_ENABLE') {
+        return false;
+      }
 
-        if (path === 'CHAIN_ID') {
-          return 1;
-        }
+      if (path === 'CHAIN_ID') {
+        return 1;
+      }
 
-        return configService.get(path);
-      });
+      return configService.get(path);
+    });
 
-    jest
-      .spyOn(executionProviderService, 'getChainId')
-      .mockImplementationOnce(() => Promise.resolve(1));
+    jest.spyOn(executionProviderService, 'getChainId').mockImplementationOnce(() => Promise.resolve(1));
 
-    jest
-      .spyOn(registryKeyStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([keyFixture]));
+    jest.spyOn(registryKeyStorageService, 'find').mockImplementationOnce(() => Promise.resolve([keyFixture]));
 
     jest
       .spyOn(moduleStorageService, 'findOneByModuleId')
       .mockImplementationOnce(() => Promise.resolve(holeskyCuratedModuleFixture));
 
-    jest
-      .spyOn(operatorStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([operatorFixture]));
+    jest.spyOn(operatorStorageService, 'find').mockImplementationOnce(() => Promise.resolve([operatorFixture]));
 
-    jest
-      .spyOn(appInfoStorageService, 'get')
-      .mockImplementationOnce(() => Promise.resolve(null));
+    jest.spyOn(appInfoStorageService, 'get').mockImplementationOnce(() => Promise.resolve(null));
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -452,21 +387,15 @@ describe('network configuration correctness sanity checker', () => {
   });
 
   it("should execute successfully if DB has information about keys, modules, and operators, doesn't have information about chain and locator, and address of the curated module stored in the DB matches the address of the curated module for the chain for which the app was started", async () => {
-    jest
-      .spyOn(registryKeyStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([keyFixture]));
+    jest.spyOn(registryKeyStorageService, 'find').mockImplementationOnce(() => Promise.resolve([keyFixture]));
 
     jest
       .spyOn(moduleStorageService, 'findOneByModuleId')
       .mockImplementationOnce(() => Promise.resolve(holeskyCuratedModuleFixture));
 
-    jest
-      .spyOn(operatorStorageService, 'find')
-      .mockImplementationOnce(() => Promise.resolve([operatorFixture]));
+    jest.spyOn(operatorStorageService, 'find').mockImplementationOnce(() => Promise.resolve([operatorFixture]));
 
-    jest
-      .spyOn(appInfoStorageService, 'get')
-      .mockImplementationOnce(() => Promise.resolve(null));
+    jest.spyOn(appInfoStorageService, 'get').mockImplementationOnce(() => Promise.resolve(null));
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
@@ -477,4 +406,4 @@ describe('network configuration correctness sanity checker', () => {
       locatorAddress: '0x17000',
     });
   });
-})
+});
