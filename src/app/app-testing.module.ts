@@ -14,6 +14,7 @@ import { KeyRegistryModule } from 'common/registry';
 import { StakingRouterModule } from 'staking-router-modules';
 import { KeysUpdateModule } from 'jobs/keys-update';
 import { DatabaseE2ETestingModule } from './database-e2e-testing.module';
+import { CSMKeyRegistryModule } from 'common/registry-csm';
 
 @Module({
   imports: [
@@ -26,6 +27,12 @@ import { DatabaseE2ETestingModule } from './database-e2e-testing.module';
     LoggerModule.forRoot({ transports: [nullTransport()] }),
     ScheduleModule.forRoot(),
     KeyRegistryModule.forRootAsync({
+      inject: [SimpleFallbackJsonRpcBatchProvider],
+      async useFactory(provider) {
+        return { provider };
+      },
+    }),
+    CSMKeyRegistryModule.forRootAsync({
       inject: [SimpleFallbackJsonRpcBatchProvider],
       async useFactory(provider) {
         return { provider };
