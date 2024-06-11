@@ -30,8 +30,8 @@ function convertAddressToLowerCase(input: string): string {
     return input;
   }
 }
-// TODO: fix the test
-describe.skip('Simple DVT deploy', () => {
+
+describe('Simple DVT deploy', () => {
   let sdk: chronix.SDK;
   let session: chronix.HardhatSession;
   let deployState: chronix.StoryResult<'simple-dvt/deploy'>;
