@@ -87,7 +87,7 @@ export class RegistryOperatorFetchService {
 
     const operator = await contract.getNodeOperator(operatorIndex, overrides as any);
 
-    const { active, rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys } = operator;
+    const { active, rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys, totalVettedKeys } = operator;
 
     const finalizedUsedSigningKeys = await this.getFinalizedNodeOperatorUsedSigningKeys(moduleAddress, operatorIndex);
 
@@ -96,7 +96,7 @@ export class RegistryOperatorFetchService {
       active,
       name: `operator-${operatorIndex}`,
       rewardAddress,
-      stakingLimit: totalAddedKeys.toNumber(),
+      stakingLimit: totalVettedKeys.toNumber(),
       stoppedValidators: totalExitedKeys.toNumber(),
       totalSigningKeys: totalAddedKeys.toNumber(),
       usedSigningKeys: totalDepositedKeys.toNumber(),
