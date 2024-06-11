@@ -4,10 +4,19 @@ export const getCSMArtifact = () => {
   const artifact = JSON.parse(fs.readFileSync('src/scripts/CSModule.json', 'utf-8'));
   return artifact;
 };
-
+const PARTS = [
+  'getNodeOperatorIsActive',
+  'getNodeOperator',
+  'getSigningKey',
+  'getNonce',
+  'getNodeOperatorsCount',
+  'getSigningKeysWithSignatures',
+  'addNodeOperatorETH',
+];
 export const getCSMAbi = () => {
   const { abi } = getCSMArtifact();
-  return abi;
+
+  return abi.filter((node) => PARTS.includes(node.name));
 };
 
 fs.writeFileSync(
