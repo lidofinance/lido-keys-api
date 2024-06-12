@@ -12,11 +12,17 @@ const PARTS = [
   'getNodeOperatorsCount',
   'getSigningKeysWithSignatures',
   'addNodeOperatorETH',
+  'activatePublicRelease',
+  'grantRole',
+  'MODULE_MANAGER_ROLE',
+  'decreaseVettedSigningKeysCount',
+  'STAKING_ROUTER_ROLE',
+  'NodeOperatorAdded',
 ];
 export const getCSMAbi = () => {
   const { abi } = getCSMArtifact();
 
-  return abi.filter((node) => PARTS.includes(node.name));
+  return abi.filter((node) => PARTS.includes(node.name) || node.type === 'error');
 };
 
 fs.writeFileSync(
