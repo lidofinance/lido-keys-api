@@ -13,7 +13,7 @@ export class LidoLocatorService {
   ) {}
 
   async getStakingRouter(blockTag: BlockTag) {
-    const locatorENVAddress = this.config.get('LIDO_LOCATOR_ADDRESS');
+    const locatorENVAddress = this.config.get('LIDO_LOCATOR_DEVNET_ADDRESS');
 
     this.loggerService.log('Contract locator address', { contract: this.contract.address, env: locatorENVAddress });
 

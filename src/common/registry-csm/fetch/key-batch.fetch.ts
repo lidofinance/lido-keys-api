@@ -41,7 +41,7 @@ export class RegistryKeyBatchFetchService {
     const signatures = this.unformattedSignaturesToArray(unformattedRecords[1]);
 
     if (keys.length !== signatures.length) {
-      throw new Error('format keys error');
+      throw new Error('format CSM keys error');
     }
 
     return keys.map((key, chunkIndex) => {
@@ -68,7 +68,7 @@ export class RegistryKeyBatchFetchService {
     overrides: CallOverrides = {},
   ): Promise<RegistryKey[]> {
     if (fromIndex > toIndex && toIndex !== -1) {
-      throw new Error('fromIndex is greater than or equal to toIndex');
+      throw new Error('fromIndex is greater than or equal to toIndex in CSM module');
     }
 
     if (toIndex == null || toIndex === -1) {

@@ -179,7 +179,7 @@ export class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
-  LIDO_LOCATOR_ADDRESS = '';
+  LIDO_LOCATOR_DEVNET_ADDRESS = '';
 }
 
 export function validate(config: Record<string, unknown>) {

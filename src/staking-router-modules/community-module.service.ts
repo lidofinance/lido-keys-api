@@ -38,8 +38,7 @@ export class CommunityModuleService implements StakingModuleInterface {
   }
 
   public async getCurrentNonce(moduleAddress: string, blockHash: string): Promise<number> {
-    const nonce = await this.keyRegistryService.getStakingModuleNonce(moduleAddress, blockHash);
-    return nonce;
+    return await this.keyRegistryService.getStakingModuleNonce(moduleAddress, blockHash);
   }
 
   public async getKeys(moduleAddress: string, filters: KeysFilter): Promise<RegistryKey[]> {
