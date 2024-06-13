@@ -1,12 +1,25 @@
 import { ethers } from 'ethers';
+import { NodeOperatorAddedEvent } from 'generated/Csm';
 import { Csm__factory } from '../generated';
-import { CSM_CONTRACT_ADDRESS } from './constants';
+import { CSM_ADD_ROLE_ADDRESS, CSM_ADMIN, CSM_CONTRACT_ADDRESS, NODE_URL, NO_PK } from './constants';
+
+export const getProvider = () => {
+  const provider = new ethers.providers.JsonRpcProvider(NODE_URL);
+  return provider;
+};
 
 export const getContract = (
   address: string,
   provider: ethers.providers.JsonRpcProvider | ethers.providers.JsonRpcSigner,
 ) => {
   return Csm__factory.connect(address, provider);
+};
+
+export const getDefaultContract = () => {
+  const provider = getProvider();
+  const signer = provider.getSigner(CSM_ADD_ROLE_ADDRESS);
+  const csm = getContract(CSM_CONTRACT_ADDRESS, signer);
+  return csm;
 };
 
 export const keysSignatures = (keysCount: number, startIndex: number): [string, string] => {
@@ -45,11 +58,12 @@ export const addNodeOperator = async (
     keysCount,
     keys,
     signatures,
-    '0x067c49AD74D0D7cCB3b062B027bfeA8Dee943193',
-    '0x067c49AD74D0D7cCB3b062B027bfeA8Dee943193',
+    CSM_ADD_ROLE_ADDRESS,
+    CSM_ADD_ROLE_ADDRESS,
     [],
-    '0x067c49AD74D0D7cCB3b062B027bfeA8Dee943193',
+    CSM_ADD_ROLE_ADDRESS,
     {
+      // TODO: fix to getBondAmountByKeysCount
       value: BOND_SIZE.mul(keysCount),
     },
   );
@@ -59,7 +73,42 @@ export const addNodeOperator = async (
 
 export const getNodeOperator = async (provider: ethers.providers.JsonRpcProvider, noId: number) => {
   const csm = getContract(CSM_CONTRACT_ADDRESS, provider);
-  return await csm.getNodeOperator(noId);
+  return { ...formatContractResponse(await csm.getNodeOperator(noId)), nodeOperatorId: noId };
+};
+
+export const watchForNewOperator = async (blockNumber: number) => {
+  const csm = getDefaultContract();
+  const fromBlockNumber = blockNumber;
+  const toBlockNumber = blockNumber + 10_000;
+  const nodeOperatorAddedFilter = csm.filters['NodeOperatorAdded']();
+
+  let nodeOperatorAddedEvents: NodeOperatorAddedEvent[] = [];
+  while (true) {
+    nodeOperatorAddedEvents = await csm.queryFilter(nodeOperatorAddedFilter, fromBlockNumber, toBlockNumber);
+    if (nodeOperatorAddedEvents.length) break;
+    await new Promise((res) => setTimeout(res, 1000));
+  }
+  const res: any[] = [];
+  for (const no of nodeOperatorAddedEvents) {
+    res.push(await getNodeOperator(getProvider(), no.args.nodeOperatorId.toNumber()));
+  }
+  return res;
+};
+
+export const addAndLogNodeOperator = async (
+  provider: ethers.providers.JsonRpcProvider,
+  nodeOperatorAddress: string,
+  keysCount: number,
+) => {
+  const { number: blockNumber } = await getProvider().getBlock('latest');
+  await addNodeOperator(provider, nodeOperatorAddress, keysCount);
+  const nodeOperators = await watchForNewOperator(blockNumber + 1);
+  console.log('Node Operator:');
+  console.log(nodeOperators);
+  console.log('Node Operator Keys:');
+  for (const no of nodeOperators) {
+    console.log(await getSigningKeysWithSignatures(provider, no.nodeOperatorId, 0, keysCount));
+  }
 };
 
 export const getSigningKeysWithSignatures = async (
@@ -70,4 +119,49 @@ export const getSigningKeysWithSignatures = async (
 ) => {
   const csm = getContract(CSM_CONTRACT_ADDRESS, provider);
   return await csm.getSigningKeysWithSignatures(noId, startIndex, keysCount);
+};
+
+export const grantAllRoles = async (addr: string) => {
+  const csm = getDefaultContract();
+
+  await csm.grantRole(await csm.MODULE_MANAGER_ROLE(), addr);
+  await csm.grantRole(await csm.STAKING_ROUTER_ROLE(), addr);
+  await csm.grantRole(await csm.RESUME_ROLE(), addr);
+};
+
+export const activatePublicRelease = async () => {
+  const csm = getDefaultContract();
+
+  await grantAllRoles(CSM_ADD_ROLE_ADDRESS);
+  await csm.activatePublicRelease();
+};
+
+export const run = async <CB extends () => void>(cb: CB) => {
+  const csm = getDefaultContract();
+  const provider = getProvider();
+  const wallet = new ethers.Wallet(NO_PK, provider);
+
+  await provider.send('anvil_setBalance', [wallet.address, ethers.utils.parseEther('320').toHexString()]);
+  await provider.send('anvil_setBalance', [CSM_ADMIN, ethers.utils.parseEther('320').toHexString()]);
+  await provider.send('anvil_setBalance', [CSM_ADD_ROLE_ADDRESS, ethers.utils.parseEther('320').toHexString()]);
+
+  await provider.send('anvil_autoImpersonateAccount', [true]);
+
+  try {
+    await cb();
+  } catch (error: any) {
+    if (!error?.error?.error?.data) {
+      console.error(error);
+      return;
+    }
+    const revertData = error.error.error.data;
+    const decodedError = csm.interface.parseError(revertData);
+    console.error(`Transaction failed: ${decodedError.name}`);
+  }
+};
+
+const formatContractResponse = (response: any) => {
+  return Object.entries(response)
+    .filter(([key]) => isNaN(key as any))
+    .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
 };
