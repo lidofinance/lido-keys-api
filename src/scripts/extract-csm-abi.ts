@@ -18,6 +18,8 @@ const PARTS = [
   'decreaseVettedSigningKeysCount',
   'STAKING_ROUTER_ROLE',
   'NodeOperatorAdded',
+  'RESUME_ROLE',
+  'resume',
 ];
 export const getCSMAbi = () => {
   const { abi } = getCSMArtifact();

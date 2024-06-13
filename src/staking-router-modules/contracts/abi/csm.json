@@ -14,6 +14,19 @@
 	},
 	{
 		"type": "function",
+		"name": "RESUME_ROLE",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
 		"name": "STAKING_ROUTER_ROLE",
 		"inputs": [],
 		"outputs": [
@@ -278,6 +291,13 @@
 				"internalType": "address"
 			}
 		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "resume",
+		"inputs": [],
 		"outputs": [],
 		"stateMutability": "nonpayable"
 	},
