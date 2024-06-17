@@ -10,6 +10,34 @@ import { RegistryKeyStorageService, RegistryOperatorStorageService } from '../co
 import { SRModuleStorageService } from '../storage/sr-module.storage';
 import { AppInfoStorageService } from '../storage/app-info.storage';
 
+export enum InconsistentDataInDBErrorTypes {
+  appInfoMismatch = 'APP_INFO_TABLE_DATA_MISMATCH_ERROR',
+  emptyModule = 'EMPTY_MODULE_TABLE_ERROR',
+  curatedModuleAddressMismatch = 'CURATED_MODULE_ADDRESS_MISMATCH',
+}
+
+export class ChainMismatchError extends Error {
+  configChainId: number;
+  elChainId: number;
+  clChainId: number | undefined;
+
+  constructor(message: string, configChainId: number, elChainId: number, clChainId?: number | undefined) {
+    super(message);
+    this.configChainId = configChainId;
+    this.elChainId = elChainId;
+    this.clChainId = clChainId;
+  }
+}
+
+export class InconsistentDataInDBError extends Error {
+  type: InconsistentDataInDBErrorTypes;
+
+  constructor(message: string, type: InconsistentDataInDBErrorTypes) {
+    super(message);
+    this.type = type;
+  }
+}
+
 @Injectable()
 export class NetworkValidationService {
   constructor(
@@ -50,8 +78,9 @@ export class NetworkValidationService {
 
     if (appInfo != null) {
       if (appInfo.chainId !== configChainId || appInfo.locatorAddress !== this.contract.address) {
-        throw new Error(
+        throw new InconsistentDataInDBError(
           `Chain configuration mismatch. Database is not empty and contains information for chain ${appInfo.chainId} and locator address ${appInfo.locatorAddress}, but the service is trying to start for chain ${configChainId} and locator address ${this.contract.address}`,
+          InconsistentDataInDBErrorTypes.appInfoMismatch,
         );
       }
 
@@ -59,12 +88,16 @@ export class NetworkValidationService {
     }
 
     if (dbCuratedModule == null) {
-      throw new Error('Inconsistent data in database. Some DB tables are empty, but some are not.');
+      throw new InconsistentDataInDBError(
+        'Inconsistent data in database. Some DB tables are empty, but some are not.',
+        InconsistentDataInDBErrorTypes.emptyModule,
+      );
     }
 
     if (dbCuratedModule.stakingModuleAddress !== REGISTRY_CONTRACT_ADDRESSES[configChainId].toLowerCase()) {
-      throw new Error(
+      throw new InconsistentDataInDBError(
         `Chain configuration mismatch. Service is trying to start for chain ${configChainId}, but DB contains data for another chain.`,
+        InconsistentDataInDBErrorTypes.curatedModuleAddressMismatch,
       );
     }
 
@@ -77,7 +110,7 @@ export class NetworkValidationService {
 
   private async checkChainIdMismatch(configChainId: number, elChainId: number): Promise<void> {
     if (configChainId !== elChainId) {
-      throw new Error("Chain ID in the config doesn't match EL chain ID");
+      throw new ChainMismatchError("Chain ID in the config doesn't match EL chain ID", configChainId, elChainId);
     }
 
     if (this.configService.get('VALIDATOR_REGISTRY_ENABLE')) {
@@ -85,7 +118,12 @@ export class NetworkValidationService {
       const clChainId = Number(depositContract.data?.chain_id);
 
       if (elChainId !== clChainId) {
-        throw new Error('Execution and consensus chain IDs do not match');
+        throw new ChainMismatchError(
+          'Execution and consensus chain IDs do not match',
+          configChainId,
+          elChainId,
+          clChainId,
+        );
       }
     }
   }

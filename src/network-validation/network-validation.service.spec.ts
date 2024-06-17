@@ -12,6 +12,11 @@ import { key } from 'common/registry/test/fixtures/key.fixture';
 import { curatedModule } from '../http/db.fixtures';
 import { operator } from 'common/registry/test/fixtures/operator.fixture';
 import { DatabaseE2ETestingModule } from '../app';
+import {
+  InconsistentDataInDBErrorTypes,
+  ChainMismatchError,
+  InconsistentDataInDBError,
+} from './network-validation.service';
 
 describe('network configuration correctness sanity checker', () => {
   let configService: ConfigService;
@@ -149,8 +154,13 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(ChainMismatchError);
+      expect(error).toHaveProperty('configChainId', 1);
+      expect(error).toHaveProperty('elChainId', 17000);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it("should throw error if the chain ID returned by EL node doesn't match the chain ID returned by CL node if the validator registry is enabled in config", async () => {
@@ -168,8 +178,14 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(ChainMismatchError);
+      expect(error).toHaveProperty('configChainId', 17000);
+      expect(error).toHaveProperty('elChainId', 17000);
+      expect(error).toHaveProperty('clChainId', 1);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it("should throw error if the chain ID defined in env variables doesn't match the chain ID returned by CL node if the validator registry is enabled in config", async () => {
@@ -187,8 +203,14 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(ChainMismatchError);
+      expect(error).toHaveProperty('configChainId', 17000);
+      expect(error).toHaveProperty('elChainId', 17000);
+      expect(error).toHaveProperty('clChainId', 1);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it('should save information about the chain and locator to the DB if there are no keys, modules, and operators in the DB', async () => {
@@ -227,8 +249,12 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(InconsistentDataInDBError);
+      expect(error).toHaveProperty('type', InconsistentDataInDBErrorTypes.appInfoMismatch);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it("should throw error if info about locator address stored in the DB doesn't match locator address returned by locator service and keys, modules or operators tables have some info in the DB", async () => {
@@ -244,8 +270,12 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(InconsistentDataInDBError);
+      expect(error).toHaveProperty('type', InconsistentDataInDBErrorTypes.appInfoMismatch);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it('should execute successfully if info about chain ID matches the chain ID configured in env variables and locator address stored in the DB matches the locator address returned by locator service, and keys, modules, or operators tables have some info in the DB', async () => {
@@ -294,8 +324,12 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(InconsistentDataInDBError);
+      expect(error).toHaveProperty('type', InconsistentDataInDBErrorTypes.emptyModule);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it("should throw error if operators table is not empty in the DB, but the module table is empty, and DB doesn't have information about chain ID and locator", async () => {
@@ -305,8 +339,12 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(InconsistentDataInDBError);
+      expect(error).toHaveProperty('type', InconsistentDataInDBErrorTypes.emptyModule);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it("should throw error if keys table is not empty in the DB, but the operators table is empty, and DB doesn't have information about chain ID and locator", async () => {
@@ -351,8 +389,12 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(InconsistentDataInDBError);
+      expect(error).toHaveProperty('type', InconsistentDataInDBErrorTypes.curatedModuleAddressMismatch);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it("should throw error if DB has information about keys, modules and operators, but doesn't have information about chain and locator, and address of the curated module stored in the DB doesn't match the correct address of the curated module for the chain for which the app was started", async () => {
@@ -382,8 +424,12 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(InconsistentDataInDBError);
+      expect(error).toHaveProperty('type', InconsistentDataInDBErrorTypes.curatedModuleAddressMismatch);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it("should execute successfully if DB has information about keys, modules, and operators, doesn't have information about chain and locator, and address of the curated module stored in the DB matches the address of the curated module for the chain for which the app was started", async () => {
