@@ -30,12 +30,16 @@ export class NetworkValidationService {
     const configChainId = this.configService.get('CHAIN_ID');
     const elChainId = await this.executionProviderService.getChainId();
 
+    if (configChainId !== elChainId) {
+      throw new Error("Chain ID in the config doesn't match EL chain ID");
+    }
+
     if (this.configService.get('VALIDATOR_REGISTRY_ENABLE')) {
       const depositContract = await this.consensusProviderService.getDepositContract();
       const clChainId = Number(depositContract.data?.chain_id);
 
-      if (configChainId !== elChainId || elChainId !== clChainId) {
-        throw new Error('Execution and consensus chain ids do not match');
+      if (elChainId !== clChainId) {
+        throw new Error('Execution and consensus chain IDs do not match');
       }
     }
 
