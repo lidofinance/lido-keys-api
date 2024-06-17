@@ -30,18 +30,7 @@ export class NetworkValidationService {
     const configChainId = this.configService.get('CHAIN_ID');
     const elChainId = await this.executionProviderService.getChainId();
 
-    if (configChainId !== elChainId) {
-      throw new Error("Chain ID in the config doesn't match EL chain ID");
-    }
-
-    if (this.configService.get('VALIDATOR_REGISTRY_ENABLE')) {
-      const depositContract = await this.consensusProviderService.getDepositContract();
-      const clChainId = Number(depositContract.data?.chain_id);
-
-      if (elChainId !== clChainId) {
-        throw new Error('Execution and consensus chain IDs do not match');
-      }
-    }
+    await this.checkChainIdMismatch(configChainId, elChainId);
 
     const [dbKey, dbCuratedModule, dbOperator] = await Promise.all([
       await this.keyStorageService.find({}, { limit: 1 }),
@@ -84,5 +73,20 @@ export class NetworkValidationService {
       chainId: configChainId,
       locatorAddress: this.contract.address,
     });
+  }
+
+  private async checkChainIdMismatch(configChainId: number, elChainId: number): Promise<void> {
+    if (configChainId !== elChainId) {
+      throw new Error("Chain ID in the config doesn't match EL chain ID");
+    }
+
+    if (this.configService.get('VALIDATOR_REGISTRY_ENABLE')) {
+      const depositContract = await this.consensusProviderService.getDepositContract();
+      const clChainId = Number(depositContract.data?.chain_id);
+
+      if (elChainId !== clChainId) {
+        throw new Error('Execution and consensus chain IDs do not match');
+      }
+    }
   }
 }
