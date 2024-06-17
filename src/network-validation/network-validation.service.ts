@@ -60,13 +60,13 @@ export class NetworkValidationService {
 
     await this.checkChainIdMismatch(configChainId, elChainId);
 
-    const [dbKey, dbCuratedModule, dbOperator] = await Promise.all([
+    const [dbKeys, dbCuratedModule, dbOperators] = await Promise.all([
       await this.keyStorageService.find({}, { limit: 1 }),
       await this.moduleStorageService.findOneByModuleId(1),
       await this.operatorStorageService.find({}, { limit: 1 }),
     ]);
 
-    if (dbKey.length === 0 && dbCuratedModule == null && dbOperator.length === 0) {
+    if (dbKeys.length === 0 && dbCuratedModule == null && dbOperators.length === 0) {
       this.logger.log('DB is empty, write chain info into DB');
       return await this.appInfoStorageService.update({
         chainId: configChainId,
