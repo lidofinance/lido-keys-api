@@ -20,7 +20,7 @@ import {
 
 describe('network configuration correctness sanity checker', () => {
   let configService: ConfigService;
-  let locator: { address: string };
+  let locatorContract: { address: string };
   let executionProviderService: ExecutionProviderService;
   let registryKeyStorageService: RegistryKeyStorageService;
   let moduleStorageService: SRModuleStorageService;
@@ -114,7 +114,7 @@ describe('network configuration correctness sanity checker', () => {
     }).compile();
 
     configService = module.get<ConfigService>(ConfigService);
-    locator = module.get(LIDO_LOCATOR_CONTRACT_TOKEN);
+    locatorContract = module.get(LIDO_LOCATOR_CONTRACT_TOKEN);
     executionProviderService = module.get<ExecutionProviderService>(ExecutionProviderService);
     registryKeyStorageService = module.get<RegistryKeyStorageService>(RegistryKeyStorageService);
     moduleStorageService = module.get<SRModuleStorageService>(SRModuleStorageService);
@@ -266,7 +266,7 @@ describe('network configuration correctness sanity checker', () => {
 
     jest.spyOn(operatorStorageService, 'find').mockImplementationOnce(() => Promise.resolve([operatorFixture]));
 
-    locator.address = '0x1';
+    locatorContract.address = '0x1';
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 

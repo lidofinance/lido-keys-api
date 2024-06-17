@@ -42,7 +42,7 @@ export class InconsistentDataInDBError extends Error {
 export class NetworkValidationService {
   constructor(
     protected readonly orm: MikroORM,
-    @Inject(LIDO_LOCATOR_CONTRACT_TOKEN) protected readonly contract: LidoLocator,
+    @Inject(LIDO_LOCATOR_CONTRACT_TOKEN) protected readonly locatorContract: LidoLocator,
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly configService: ConfigService,
     protected readonly consensusProviderService: ConsensusProviderService,
@@ -70,16 +70,16 @@ export class NetworkValidationService {
       this.logger.log('DB is empty, write chain info into DB');
       return await this.appInfoStorageService.update({
         chainId: configChainId,
-        locatorAddress: this.contract.address,
+        locatorAddress: this.locatorContract.address,
       });
     }
 
     const appInfo = await this.appInfoStorageService.get();
 
     if (appInfo != null) {
-      if (appInfo.chainId !== configChainId || appInfo.locatorAddress !== this.contract.address) {
+      if (appInfo.chainId !== configChainId || appInfo.locatorAddress !== this.locatorContract.address) {
         throw new InconsistentDataInDBError(
-          `Chain configuration mismatch. Database is not empty and contains information for chain ${appInfo.chainId} and locator address ${appInfo.locatorAddress}, but the service is trying to start for chain ${configChainId} and locator address ${this.contract.address}`,
+          `Chain configuration mismatch. Database is not empty and contains information for chain ${appInfo.chainId} and locator address ${appInfo.locatorAddress}, but the service is trying to start for chain ${configChainId} and locator address ${this.locatorContract.address}`,
           InconsistentDataInDBErrorTypes.appInfoMismatch,
         );
       }
@@ -104,7 +104,7 @@ export class NetworkValidationService {
     this.logger.log('DB is not empty and chain info is not found in DB, write chain info into DB');
     await this.appInfoStorageService.update({
       chainId: configChainId,
-      locatorAddress: this.contract.address,
+      locatorAddress: this.locatorContract.address,
     });
   }
 
