@@ -68,6 +68,11 @@ export class NetworkValidationService {
       await this.operatorStorageService.find({}, { limit: 1 }),
     ]);
 
+    /**
+     * @note If all these 3 tables are empty, it is assumed that the service is run on the clean DB and it is safe to
+     * store info about the chain ID for which the service is run to tie information about the chain ID and locator to
+     * keys, modules, and operators that will be downloaded and stored into the DB.
+     */
     if (dbKeys.length === 0 && dbCuratedModule == null && dbOperators.length === 0) {
       this.logger.log('DB is empty, write chain info into DB');
       return await this.appInfoStorageService.update({
@@ -79,6 +84,12 @@ export class NetworkValidationService {
     const appInfo = await this.appInfoStorageService.get();
 
     if (appInfo != null) {
+      /**
+       * @note If the app info table has information about the chain and locator, and this information doesn't match the
+       * chain specified in the env variables, it indicates that the service was already run and saved to the DB info
+       * for one chain, and now it is going to run for another chain. This case is detected here to prevent corruption
+       * of data in the DB.
+       */
       if (appInfo.chainId !== configChainId || appInfo.locatorAddress !== this.locatorContract.address) {
         throw new InconsistentDataInDBError(
           `Chain configuration mismatch. Database is not empty and contains information for chain ${appInfo.chainId} and locator address ${appInfo.locatorAddress}, but the service is trying to start for chain ${configChainId} and locator address ${this.locatorContract.address}`,
@@ -110,6 +121,13 @@ export class NetworkValidationService {
       );
     }
 
+    /**
+     * @note If the service is upgraded to the new version (so that in the previous version there was no "app_info"
+     * table and this sanity checker service, but in the new version it appears), it has information in the DB. If the
+     * service starts after the version upgrade with an incorrect chain ID specified in the env variables, it will lead
+     * to data corruption. To prevent this case, this code checks that the curated module stored in the DB has the
+     * correct address for the chain specified in the env variables.
+     */
     if (dbCuratedModule.stakingModuleAddress !== REGISTRY_CONTRACT_ADDRESSES[configChainId].toLowerCase()) {
       throw new InconsistentDataInDBError(
         `Chain configuration mismatch. Service is trying to start for chain ${configChainId}, but DB contains data for another chain.`,
@@ -117,6 +135,12 @@ export class NetworkValidationService {
       );
     }
 
+    /**
+     * @note If the service is upgraded to the new version, it doesn't have the "app_info" table yet, but the curated
+     * module stored in the DB has the correct address for the chain specified in env variables, it's pretty safe to
+     * assume that the service is run with the correct config. In this case, the service just stores the information
+     * about chain ID and locator for which it is run into the DB.
+     */
     this.logger.log('DB is not empty and chain info is not found in DB, write chain info into DB');
     await this.appInfoStorageService.update({
       chainId: configChainId,
