@@ -139,12 +139,8 @@ describe('network configuration correctness sanity checker', () => {
     expect(networkValidationService).toBeDefined();
   });
 
-  it("should throw error if the chain ID defined in env variables doesn't match the chain ID returned by EL node if the validator registry is enabled in config", async () => {
+  it("should throw error if the chain ID defined in env variables doesn't match the chain ID returned by EL node", async () => {
     jest.spyOn(configService, 'get').mockImplementation((path) => {
-      if (path === 'VALIDATOR_REGISTRY_ENABLE') {
-        return true;
-      }
-
       if (path === 'CHAIN_ID') {
         return 1;
       }
