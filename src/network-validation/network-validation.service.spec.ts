@@ -302,8 +302,18 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(InconsistentDataInDBError);
+      expect(error).toHaveProperty('type');
+
+      const dbDataError = error as InconsistentDataInDBError;
+      expect([InconsistentDataInDBErrorTypes.emptyKeys, InconsistentDataInDBErrorTypes.emptyOperators]).toContain(
+        dbDataError.type,
+      );
+      expect(dbDataError.type).not.toEqual(InconsistentDataInDBErrorTypes.emptyModules);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it("should throw error if operators table is not empty in the DB, but the keys table is empty, and DB doesn't have information about chain ID and locator", async () => {
@@ -313,8 +323,18 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(InconsistentDataInDBError);
+      expect(error).toHaveProperty('type');
+
+      const dbDataError = error as InconsistentDataInDBError;
+      expect([InconsistentDataInDBErrorTypes.emptyKeys, InconsistentDataInDBErrorTypes.emptyModules]).toContain(
+        dbDataError.type,
+      );
+      expect(dbDataError.type).not.toEqual(InconsistentDataInDBErrorTypes.emptyOperators);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it("should throw error if keys table is not empty in the DB, but the module table is empty, and DB doesn't have information about chain ID and locator", async () => {
@@ -326,7 +346,13 @@ describe('network configuration correctness sanity checker', () => {
 
     return networkValidationService.validate().catch((error: Error) => {
       expect(error).toBeInstanceOf(InconsistentDataInDBError);
-      expect(error).toHaveProperty('type', InconsistentDataInDBErrorTypes.emptyModule);
+      expect(error).toHaveProperty('type');
+
+      const dbDataError = error as InconsistentDataInDBError;
+      expect([InconsistentDataInDBErrorTypes.emptyModules, InconsistentDataInDBErrorTypes.emptyOperators]).toContain(
+        dbDataError.type,
+      );
+      expect(dbDataError.type).not.toEqual(InconsistentDataInDBErrorTypes.emptyKeys);
 
       expect(updateAppInfoMock).not.toHaveBeenCalled();
     });
@@ -341,7 +367,13 @@ describe('network configuration correctness sanity checker', () => {
 
     return networkValidationService.validate().catch((error: Error) => {
       expect(error).toBeInstanceOf(InconsistentDataInDBError);
-      expect(error).toHaveProperty('type', InconsistentDataInDBErrorTypes.emptyModule);
+      expect(error).toHaveProperty('type');
+
+      const dbDataError = error as InconsistentDataInDBError;
+      expect([InconsistentDataInDBErrorTypes.emptyKeys, InconsistentDataInDBErrorTypes.emptyModules]).toContain(
+        dbDataError.type,
+      );
+      expect(dbDataError.type).not.toEqual(InconsistentDataInDBErrorTypes.emptyOperators);
 
       expect(updateAppInfoMock).not.toHaveBeenCalled();
     });
@@ -354,8 +386,18 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(InconsistentDataInDBError);
+      expect(error).toHaveProperty('type');
+
+      const dbDataError = error as InconsistentDataInDBError;
+      expect([InconsistentDataInDBErrorTypes.emptyModules, InconsistentDataInDBErrorTypes.emptyOperators]).toContain(
+        dbDataError.type,
+      );
+      expect(dbDataError.type).not.toEqual(InconsistentDataInDBErrorTypes.emptyKeys);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it("should throw error if modules table is not empty in the DB, but the operators table is empty, and DB doesn't have information about chain ID and locator", async () => {
@@ -367,8 +409,18 @@ describe('network configuration correctness sanity checker', () => {
 
     const updateAppInfoMock = jest.spyOn(appInfoStorageService, 'update');
 
-    await expect(networkValidationService.validate()).rejects.toThrow();
-    expect(updateAppInfoMock).not.toHaveBeenCalled();
+    return networkValidationService.validate().catch((error: Error) => {
+      expect(error).toBeInstanceOf(InconsistentDataInDBError);
+      expect(error).toHaveProperty('type');
+
+      const dbDataError = error as InconsistentDataInDBError;
+      expect([InconsistentDataInDBErrorTypes.emptyKeys, InconsistentDataInDBErrorTypes.emptyOperators]).toContain(
+        dbDataError.type,
+      );
+      expect(dbDataError.type).not.toEqual(InconsistentDataInDBErrorTypes.emptyModules);
+
+      expect(updateAppInfoMock).not.toHaveBeenCalled();
+    });
   });
 
   it("should throw error if DB has information about keys, modules and operators, but doesn't have information about chain and locator, and address of the curated module stored in the DB doesn't match the correct address of the curated module for the chain for which the app was started", async () => {

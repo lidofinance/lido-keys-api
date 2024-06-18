@@ -12,7 +12,9 @@ import { AppInfoStorageService } from '../storage/app-info.storage';
 
 export enum InconsistentDataInDBErrorTypes {
   appInfoMismatch = 'APP_INFO_TABLE_DATA_MISMATCH_ERROR',
-  emptyModule = 'EMPTY_MODULE_TABLE_ERROR',
+  emptyKeys = 'EMPTY_KEYS_TABLE_ERROR',
+  emptyModules = 'EMPTY_MODULES_TABLE_ERROR',
+  emptyOperators = 'EMPTY_OPERATORS_TABLE_ERROR',
   curatedModuleAddressMismatch = 'CURATED_MODULE_ADDRESS_MISMATCH',
 }
 
@@ -87,10 +89,24 @@ export class NetworkValidationService {
       return;
     }
 
+    if (dbKeys.length === 0) {
+      throw new InconsistentDataInDBError(
+        'Inconsistent data in database. Keys table is empty, but other tables are not empty.',
+        InconsistentDataInDBErrorTypes.emptyKeys,
+      );
+    }
+
     if (dbCuratedModule == null) {
       throw new InconsistentDataInDBError(
-        'Inconsistent data in database. Some DB tables are empty, but some are not.',
-        InconsistentDataInDBErrorTypes.emptyModule,
+        'Inconsistent data in database. Modules table is empty, but other tables are not empty.',
+        InconsistentDataInDBErrorTypes.emptyModules,
+      );
+    }
+
+    if (dbOperators.length === 0) {
+      throw new InconsistentDataInDBError(
+        'Inconsistent data in database. Operators table is empty, but other tables are not empty.',
+        InconsistentDataInDBErrorTypes.emptyOperators,
       );
     }
 
