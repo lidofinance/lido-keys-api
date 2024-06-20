@@ -95,7 +95,7 @@ export class RegistryOperatorFetchService {
     return {
       index: operatorIndex,
       active,
-      name: `operator-${operatorIndex}`,
+      name: `CSM Operator ${operatorIndex}`,
       rewardAddress,
       stakingLimit: totalVettedKeys,
       stoppedValidators: totalExitedKeys,
