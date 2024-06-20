@@ -42,6 +42,7 @@ import {
   dvtOpOneRespExitMessages5maxAmount,
 } from '../consensus.fixtures';
 import { DatabaseE2ETestingModule } from 'app';
+import { CSMKeyRegistryService } from 'common/registry-csm';
 
 describe('SRModulesValidatorsController (e2e)', () => {
   let app: INestApplication;
@@ -73,6 +74,20 @@ describe('SRModulesValidatorsController (e2e)', () => {
     }
   }
 
+  @Global()
+  @Module({
+    imports: [RegistryStorageModule],
+    providers: [CSMKeyRegistryService],
+    exports: [CSMKeyRegistryService, RegistryStorageModule],
+  })
+  class CSMKeyRegistryModule {}
+
+  class CSMKeysRegistryServiceMock {
+    async update(moduleAddress, blockHash) {
+      return;
+    }
+  }
+
   const consensusServiceMock = {
     getBlockV2: (args: { blockId: string | number }) => {
       return block;
@@ -90,6 +105,7 @@ describe('SRModulesValidatorsController (e2e)', () => {
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
+      CSMKeyRegistryModule,
       StakingRouterModule,
       ConsensusModule.forRoot({
         imports: [FetchModule],
@@ -102,6 +118,8 @@ describe('SRModulesValidatorsController (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
       .overrideProvider(KeyRegistryService)
       .useClass(KeysRegistryServiceMock)
+      .overrideProvider(CSMKeyRegistryService)
+      .useClass(CSMKeysRegistryServiceMock)
       .overrideProvider(ConsensusService)
       .useValue(consensusServiceMock)
       .compile();

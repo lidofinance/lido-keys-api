@@ -13,8 +13,14 @@ export class LidoLocatorService {
   ) {}
 
   async getStakingRouter(blockTag: BlockTag) {
-    // if set address via attach this.contract.address will still have the same address
-    this.loggerService.log('Contract locator address', this.contract.address);
+    const locatorENVAddress = this.config.get('LIDO_LOCATOR_DEVNET_ADDRESS');
+
+    this.loggerService.log('Contract locator address', { contract: this.contract.address, env: locatorENVAddress });
+
+    if (locatorENVAddress) {
+      return await this.contract.attach(locatorENVAddress).stakingRouter({ blockTag } as any);
+    }
+
     return await this.contract.stakingRouter({ blockTag } as any);
   }
 }

@@ -1,0 +1,500 @@
+[
+	{
+		"type": "function",
+		"name": "MODULE_MANAGER_ROLE",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "RESUME_ROLE",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "STAKING_ROUTER_ROLE",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "activatePublicRelease",
+		"inputs": [],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "addNodeOperatorETH",
+		"inputs": [
+			{
+				"name": "keysCount",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "publicKeys",
+				"type": "bytes",
+				"internalType": "bytes"
+			},
+			{
+				"name": "signatures",
+				"type": "bytes",
+				"internalType": "bytes"
+			},
+			{
+				"name": "managerAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "rewardAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "eaProof",
+				"type": "bytes32[]",
+				"internalType": "bytes32[]"
+			},
+			{
+				"name": "referrer",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "payable"
+	},
+	{
+		"type": "function",
+		"name": "decreaseVettedSigningKeysCount",
+		"inputs": [
+			{
+				"name": "nodeOperatorIds",
+				"type": "bytes",
+				"internalType": "bytes"
+			},
+			{
+				"name": "vettedSigningKeysCounts",
+				"type": "bytes",
+				"internalType": "bytes"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "getNodeOperator",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "tuple",
+				"internalType": "struct NodeOperator",
+				"components": [
+					{
+						"name": "totalAddedKeys",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "totalWithdrawnKeys",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "totalDepositedKeys",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "totalVettedKeys",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "stuckValidatorsCount",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "depositableValidatorsCount",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "targetLimit",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "targetLimitMode",
+						"type": "uint8",
+						"internalType": "uint8"
+					},
+					{
+						"name": "totalExitedKeys",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "enqueuedCount",
+						"type": "uint32",
+						"internalType": "uint32"
+					},
+					{
+						"name": "managerAddress",
+						"type": "address",
+						"internalType": "address"
+					},
+					{
+						"name": "proposedManagerAddress",
+						"type": "address",
+						"internalType": "address"
+					},
+					{
+						"name": "rewardAddress",
+						"type": "address",
+						"internalType": "address"
+					},
+					{
+						"name": "proposedRewardAddress",
+						"type": "address",
+						"internalType": "address"
+					}
+				]
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "getNodeOperatorIsActive",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool",
+				"internalType": "bool"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "getNodeOperatorsCount",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "getNonce",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "getSigningKeysWithSignatures",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "startIndex",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "keysCount",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"outputs": [
+			{
+				"name": "keys",
+				"type": "bytes",
+				"internalType": "bytes"
+			},
+			{
+				"name": "signatures",
+				"type": "bytes",
+				"internalType": "bytes"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "grantRole",
+		"inputs": [
+			{
+				"name": "role",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			},
+			{
+				"name": "account",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "resume",
+		"inputs": [],
+		"outputs": [],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "event",
+		"name": "NodeOperatorAdded",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"indexed": true,
+				"internalType": "uint256"
+			},
+			{
+				"name": "managerAddress",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "rewardAddress",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			}
+		],
+		"anonymous": false
+	},
+	{
+		"type": "error",
+		"name": "AccessControlBadConfirmation",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "AccessControlUnauthorizedAccount",
+		"inputs": [
+			{
+				"name": "account",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "neededRole",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			}
+		]
+	},
+	{
+		"type": "error",
+		"name": "AlreadySet",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "AlreadySubmitted",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "AlreadyWithdrawn",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "EmptyKey",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ExitedKeysDecrease",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ExitedKeysHigherThanTotalDeposited",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "InvalidAmount",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "InvalidInitialization",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "InvalidKeysCount",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "InvalidLength",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "InvalidReportData",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "InvalidVetKeysPointer",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "MaxSigningKeysCountExceeded",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "NodeOperatorDoesNotExist",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "NotAllowedToJoinYet",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "NotAllowedToRecover",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "NotEnoughKeys",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "NotInitializing",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "NotSupported",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "PauseUntilMustBeInFuture",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "PausedExpected",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "QueueIsEmpty",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ResumedExpected",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "SenderIsNotEligible",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "SigningKeysInvalidOffset",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "StuckKeysHigherThanExited",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ZeroAccountingAddress",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ZeroAdminAddress",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ZeroLocatorAddress",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "ZeroPauseDuration",
+		"inputs": []
+	}
+]
