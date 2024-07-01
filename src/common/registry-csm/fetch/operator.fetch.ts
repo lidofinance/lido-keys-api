@@ -40,6 +40,18 @@ export class RegistryOperatorFetchService {
       return true;
     }
 
+    const nodeOperatorRewardAddressChangedFilter =
+      this.getContract(moduleAddress).filters['NodeOperatorRewardAddressChanged']();
+    const nodeOperatorRewardAddressChangedEvents = await this.getContract(moduleAddress).queryFilter(
+      nodeOperatorRewardAddressChangedFilter,
+      fromBlockNumber,
+      toBlockNumber,
+    );
+
+    if (nodeOperatorRewardAddressChangedEvents.length) {
+      return true;
+    }
+
     return false;
   }
 
