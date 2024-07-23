@@ -42,7 +42,8 @@
     "chronix:test": "chronix test",
     "test:alerts": "promtool test rules alerts/*.test.yml",
     "chronix:start": "chronix start",
-    "fork:init": "node chronix-init"
+    "fork:init": "node chronix-init",
+    "prepare:csm": "node scripts/prepare-csm-abi.js"
   },
   "dependencies": {
     "@lido-nestjs/consensus": "^1.5.0",

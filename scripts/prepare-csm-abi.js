@@ -1,9 +1,10 @@
-import * as fs from 'fs';
+const fs = require('fs');
 
-export const getCSMArtifact = () => {
-  const artifact = JSON.parse(fs.readFileSync('src/scripts/CSModule.json', 'utf-8'));
+const getCSMArtifact = () => {
+  const artifact = JSON.parse(fs.readFileSync('./artifacts/CSModule.json', 'utf-8'));
   return artifact;
 };
+
 const PARTS = [
   'getNodeOperatorIsActive',
   'getNodeOperator',
@@ -22,7 +23,8 @@ const PARTS = [
   'resume',
   'NodeOperatorRewardAddressChanged',
 ];
-export const getCSMAbi = () => {
+
+const getCSMAbi = () => {
   const { abi } = getCSMArtifact();
 
   return abi.filter((node) => PARTS.includes(node.name) || node.type === 'error');
