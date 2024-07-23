@@ -65,14 +65,26 @@
 				"internalType": "bytes"
 			},
 			{
-				"name": "managerAddress",
-				"type": "address",
-				"internalType": "address"
-			},
-			{
-				"name": "rewardAddress",
-				"type": "address",
-				"internalType": "address"
+				"name": "managementProperties",
+				"type": "tuple",
+				"internalType": "struct NodeOperatorManagementProperties",
+				"components": [
+					{
+						"name": "managerAddress",
+						"type": "address",
+						"internalType": "address"
+					},
+					{
+						"name": "rewardAddress",
+						"type": "address",
+						"internalType": "address"
+					},
+					{
+						"name": "extendedManagerPermissions",
+						"type": "bool",
+						"internalType": "bool"
+					}
+				]
 			},
 			{
 				"name": "eaProof",
@@ -191,6 +203,11 @@
 						"name": "proposedRewardAddress",
 						"type": "address",
 						"internalType": "address"
+					},
+					{
+						"name": "extendedManagerPermissions",
+						"type": "bool",
+						"internalType": "bool"
 					}
 				]
 			}
@@ -327,6 +344,31 @@
 		"anonymous": false
 	},
 	{
+		"type": "event",
+		"name": "NodeOperatorRewardAddressChanged",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"indexed": true,
+				"internalType": "uint256"
+			},
+			{
+				"name": "oldAddress",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "newAddress",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			}
+		],
+		"anonymous": false
+	},
+	{
 		"type": "error",
 		"name": "AccessControlBadConfirmation",
 		"inputs": []
@@ -354,6 +396,11 @@
 	},
 	{
 		"type": "error",
+		"name": "AlreadyProposed",
+		"inputs": []
+	},
+	{
+		"type": "error",
 		"name": "AlreadySubmitted",
 		"inputs": []
 	},
@@ -375,6 +422,11 @@
 	{
 		"type": "error",
 		"name": "ExitedKeysHigherThanTotalDeposited",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "FailedToSendEther",
 		"inputs": []
 	},
 	{
@@ -415,6 +467,11 @@
 	{
 		"type": "error",
 		"name": "MaxSigningKeysCountExceeded",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "MethodCallIsNotAllowed",
 		"inputs": []
 	},
 	{
@@ -464,12 +521,37 @@
 	},
 	{
 		"type": "error",
+		"name": "QueueLookupNoLimit",
+		"inputs": []
+	},
+	{
+		"type": "error",
 		"name": "ResumedExpected",
 		"inputs": []
 	},
 	{
 		"type": "error",
+		"name": "SameAddress",
+		"inputs": []
+	},
+	{
+		"type": "error",
 		"name": "SenderIsNotEligible",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "SenderIsNotManagerAddress",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "SenderIsNotProposedAddress",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "SenderIsNotRewardAddress",
 		"inputs": []
 	},
 	{
@@ -501,103 +583,5 @@
 		"type": "error",
 		"name": "ZeroPauseDuration",
 		"inputs": []
-	},
-	{
-		"type": "error",
-		"name": "QueueLookupNoLimit",
-		"inputs": []
-	},
-	{
-		"type": "event",
-		"name": "NodeOperatorRewardAddressChanged",
-		"inputs": [
-			{
-				"name": "nodeOperatorId",
-				"type": "uint256",
-				"indexed": true,
-				"internalType": "uint256"
-			},
-			{
-				"name": "oldAddress",
-				"type": "address",
-				"indexed": true,
-				"internalType": "address"
-			},
-			{
-				"name": "newAddress",
-				"type": "address",
-				"indexed": true,
-				"internalType": "address"
-			}
-		],
-		"anonymous": false
-	},
-	{
-		"type": "error",
-		"name": "AlreadyProposed",
-		"inputs": []
-	},
-	{
-		"type": "error",
-		"name": "SameAddress",
-		"inputs": []
-	},
-	{
-		"type": "error",
-		"name": "SenderIsNotManagerAddress",
-		"inputs": []
-	},
-	{
-		"type": "error",
-		"name": "SenderIsNotProposedAddress",
-		"inputs": []
-	},
-	{
-		"type": "error",
-		"name": "SenderIsNotRewardAddress",
-		"inputs": []
-	},
-	{
-		"type": "error",
-		"name": "AddressEmptyCode",
-		"inputs": [
-			{
-				"name": "target",
-				"type": "address",
-				"internalType": "address"
-			}
-		]
-	},
-	{
-		"type": "error",
-		"name": "AddressInsufficientBalance",
-		"inputs": [
-			{
-				"name": "account",
-				"type": "address",
-				"internalType": "address"
-			}
-		]
-	},
-	{
-		"type": "error",
-		"name": "FailedInnerCall",
-		"inputs": []
-	},
-	{
-		"type": "error",
-		"name": "FailedToSendEther",
-		"inputs": []
-	},
-	{
-		"type": "error",
-		"name": "SafeERC20FailedOperation",
-		"inputs": [
-			{
-				"name": "token",
-				"type": "address",
-				"internalType": "address"
-			}
-		]
 	}
 ]

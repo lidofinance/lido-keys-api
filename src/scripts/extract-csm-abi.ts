@@ -23,7 +23,7 @@ const PARTS = [
   'NodeOperatorRewardAddressChanged',
 ];
 export const getCSMAbi = () => {
-  const abi = getCSMArtifact();
+  const { abi } = getCSMArtifact();
 
   return abi.filter((node) => PARTS.includes(node.name) || node.type === 'error');
 };
