@@ -49,4 +49,4 @@ lerna-debug.log*
 /benchmarks/output.json
 
 
-src/scripts/*.json
+artifacts

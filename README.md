@@ -47,6 +47,25 @@ For configuring Grafana, navigate to http://localhost:8000/dashboards. Here, you
 
 To view the list of alerts in Prometheus, visit http://localhost:9090/alerts. For checking the list of fired alerts in Alertmanager, go to http://localhost:9093/#/alerts.
 
+## Update CSM module ABI
+
+Execute the command in the CSM module repository
+
+```sh
+forge build --force
+```
+Copy CSModule.json
+
+```sh
+cp community-staking-module/out/CSModule.sol/CSModule.json ./artifacts/CSMModule.json
+```
+
+Execute the ABI preparation command
+
+```sh
+yarn prepare:csm
+```
+
 ## E2E tests
 
 `$ yarn test:e2e:docker`

@@ -65,14 +65,26 @@
 				"internalType": "bytes"
 			},
 			{
-				"name": "managerAddress",
-				"type": "address",
-				"internalType": "address"
-			},
-			{
-				"name": "rewardAddress",
-				"type": "address",
-				"internalType": "address"
+				"name": "managementProperties",
+				"type": "tuple",
+				"internalType": "struct NodeOperatorManagementProperties",
+				"components": [
+					{
+						"name": "managerAddress",
+						"type": "address",
+						"internalType": "address"
+					},
+					{
+						"name": "rewardAddress",
+						"type": "address",
+						"internalType": "address"
+					},
+					{
+						"name": "extendedManagerPermissions",
+						"type": "bool",
+						"internalType": "bool"
+					}
+				]
 			},
 			{
 				"name": "eaProof",
@@ -191,6 +203,11 @@
 						"name": "proposedRewardAddress",
 						"type": "address",
 						"internalType": "address"
+					},
+					{
+						"name": "extendedManagerPermissions",
+						"type": "bool",
+						"internalType": "bool"
 					}
 				]
 			}
@@ -327,6 +344,31 @@
 		"anonymous": false
 	},
 	{
+		"type": "event",
+		"name": "NodeOperatorRewardAddressChanged",
+		"inputs": [
+			{
+				"name": "nodeOperatorId",
+				"type": "uint256",
+				"indexed": true,
+				"internalType": "uint256"
+			},
+			{
+				"name": "oldAddress",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "newAddress",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			}
+		],
+		"anonymous": false
+	},
+	{
 		"type": "error",
 		"name": "AccessControlBadConfirmation",
 		"inputs": []
@@ -349,7 +391,12 @@
 	},
 	{
 		"type": "error",
-		"name": "AlreadySet",
+		"name": "AlreadyActivated",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "AlreadyProposed",
 		"inputs": []
 	},
 	{
@@ -379,12 +426,22 @@
 	},
 	{
 		"type": "error",
+		"name": "FailedToSendEther",
+		"inputs": []
+	},
+	{
+		"type": "error",
 		"name": "InvalidAmount",
 		"inputs": []
 	},
 	{
 		"type": "error",
 		"name": "InvalidInitialization",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "InvalidInput",
 		"inputs": []
 	},
 	{
@@ -410,6 +467,11 @@
 	{
 		"type": "error",
 		"name": "MaxSigningKeysCountExceeded",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "MethodCallIsNotAllowed",
 		"inputs": []
 	},
 	{
@@ -459,7 +521,17 @@
 	},
 	{
 		"type": "error",
+		"name": "QueueLookupNoLimit",
+		"inputs": []
+	},
+	{
+		"type": "error",
 		"name": "ResumedExpected",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "SameAddress",
 		"inputs": []
 	},
 	{
@@ -469,12 +541,27 @@
 	},
 	{
 		"type": "error",
+		"name": "SenderIsNotManagerAddress",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "SenderIsNotProposedAddress",
+		"inputs": []
+	},
+	{
+		"type": "error",
+		"name": "SenderIsNotRewardAddress",
+		"inputs": []
+	},
+	{
+		"type": "error",
 		"name": "SigningKeysInvalidOffset",
 		"inputs": []
 	},
 	{
 		"type": "error",
-		"name": "StuckKeysHigherThanExited",
+		"name": "StuckKeysHigherThanNonExited",
 		"inputs": []
 	},
 	{
