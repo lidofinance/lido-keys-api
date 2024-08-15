@@ -11,6 +11,3 @@ export * from './fetch/operator.fetch';
 
 export * from './main/key-registry/key-registry.service';
 export * from './main/key-registry/key-registry.module';
-
-export * from './main/validator-registry/validator-registry.service';
-export * from './main/validator-registry/validator-registry.module';
