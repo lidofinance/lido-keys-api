@@ -51,7 +51,6 @@ export class RegistryKeyBatchFetchService {
         index,
         key: key,
         depositSignature: signatures[chunkIndex],
-        // TODO: write test
         used: index < usedKeysCount,
         moduleAddress,
       };

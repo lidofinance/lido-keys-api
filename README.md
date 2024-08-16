@@ -49,6 +49,13 @@ To view the list of alerts in Prometheus, visit http://localhost:9090/alerts. Fo
 
 ## Update CSM module ABI
 
+Clone CSM repo
+
+```sh
+git clone https://github.com/lidofinance/community-staking-module
+cd community-staking-module
+```
+
 Execute the command in the CSM module repository
 
 ```sh
