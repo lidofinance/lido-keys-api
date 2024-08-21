@@ -31,11 +31,13 @@ export class RegistryOperatorFetchService {
 
     const events = await this.getContract(moduleAddress).provider.getLogs({
       topics: [
-        // KECCAK256 hash of the text bytes
-        utils.id('NodeOperatorAdded'),
-        utils.id('NodeOperatorRewardAddressChanged'),
-        utils.id('VettedSigningKeysCountChanged'),
-        utils.id('DepositedSigningKeysCountChanged'),
+        [
+          // KECCAK256 hash of the text bytes
+          utils.id('NodeOperatorAdded(uint256,address,address)'),
+          utils.id('NodeOperatorRewardAddressChanged(uint256,address,address)'),
+          utils.id('VettedSigningKeysCountChanged(uint256,uint256)'),
+          utils.id('DepositedSigningKeysCountChanged(uint256,uint256)'),
+        ],
       ],
       fromBlock,
       toBlock,

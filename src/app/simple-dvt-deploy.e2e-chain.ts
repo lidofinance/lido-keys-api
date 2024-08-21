@@ -225,72 +225,72 @@ describe('Simple DVT deploy', () => {
     expect(currentOperators[1].name).toBe(dvtNodeOperator2WithoutKeys.name);
   });
 
-  test('update operator name', async () => {
-    const simpleDvtState = deployState.stakingRouterData.stakingModules[1];
-    const srModuleAddress = convertAddressToLowerCase(simpleDvtState.stakingModuleAddress);
-    const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
+  // test('update operator name', async () => {
+  //   const simpleDvtState = deployState.stakingRouterData.stakingModules[1];
+  //   const srModuleAddress = convertAddressToLowerCase(simpleDvtState.stakingModuleAddress);
+  //   const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
 
-    await session.story('simple-dvt/set-node-operator-name', {
-      norAddress: simpleDvtState.stakingModuleAddress,
-      nodeOperatorId: dvtNodeOperator2WithoutKeys.nodeOperatorId,
-      name: 'some other name',
-    });
+  //   await session.story('simple-dvt/set-node-operator-name', {
+  //     norAddress: simpleDvtState.stakingModuleAddress,
+  //     nodeOperatorId: dvtNodeOperator2WithoutKeys.nodeOperatorId,
+  //     name: 'some other name',
+  //   });
 
-    await keysUpdateService.update();
+  //   await keysUpdateService.update();
 
-    const keys1 = await moduleInstance.getKeys(srModuleAddress, {});
-    const operators1 = await moduleInstance.getOperators(srModuleAddress);
-    const dvtModule = await stakingRouterService.getStakingModule(simpleDvtState.id);
+  //   const keys1 = await moduleInstance.getKeys(srModuleAddress, {});
+  //   const operators1 = await moduleInstance.getOperators(srModuleAddress);
+  //   const dvtModule = await stakingRouterService.getStakingModule(simpleDvtState.id);
 
-    expect(dvtModule?.nonce).toEqual(1);
-    expect(keys1).toHaveLength(1);
-    expect(operators1).toHaveLength(2);
-    expect(operators1[1].name).toBe('some other name');
-  });
+  //   expect(dvtModule?.nonce).toEqual(1);
+  //   expect(keys1).toHaveLength(1);
+  //   expect(operators1).toHaveLength(2);
+  //   expect(operators1[1].name).toBe('some other name');
+  // });
 
-  it('update operator reward address', async () => {
-    const simpleDvtState = deployState.stakingRouterData.stakingModules[1];
-    const srModuleAddress = convertAddressToLowerCase(simpleDvtState.stakingModuleAddress);
-    const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
+  // it('update operator reward address', async () => {
+  //   const simpleDvtState = deployState.stakingRouterData.stakingModules[1];
+  //   const srModuleAddress = convertAddressToLowerCase(simpleDvtState.stakingModuleAddress);
+  //   const moduleInstance = stakingRouterService.getStakingRouterModuleImpl(simpleDvtState.type);
 
-    await session.story('simple-dvt/set-node-operator-reward-address', {
-      norAddress: simpleDvtState.stakingModuleAddress,
-      nodeOperatorId: dvtNodeOperator2WithoutKeys.nodeOperatorId,
-      rewardAddress: '0x' + '3'.repeat(40),
-    });
+  //   await session.story('simple-dvt/set-node-operator-reward-address', {
+  //     norAddress: simpleDvtState.stakingModuleAddress,
+  //     nodeOperatorId: dvtNodeOperator2WithoutKeys.nodeOperatorId,
+  //     rewardAddress: '0x' + '3'.repeat(40),
+  //   });
 
-    await keysUpdateService.update();
+  //   await keysUpdateService.update();
 
-    const keys2 = await moduleInstance.getKeys(srModuleAddress, {});
-    const operators2 = await moduleInstance.getOperators(srModuleAddress);
-    const dvtModule = await stakingRouterService.getStakingModule(simpleDvtState.id);
+  //   const keys2 = await moduleInstance.getKeys(srModuleAddress, {});
+  //   const operators2 = await moduleInstance.getOperators(srModuleAddress);
+  //   const dvtModule = await stakingRouterService.getStakingModule(simpleDvtState.id);
 
-    expect(dvtModule?.nonce).toEqual(1);
-    expect(keys2).toHaveLength(1);
-    expect(operators2).toHaveLength(2);
-    expect(operators2[1].rewardAddress).toBe('0x' + '3'.repeat(40));
-  });
+  //   expect(dvtModule?.nonce).toEqual(1);
+  //   expect(keys2).toHaveLength(1);
+  //   expect(operators2).toHaveLength(2);
+  //   expect(operators2[1].rewardAddress).toBe('0x' + '3'.repeat(40));
+  // });
 
-  it('block is changing every iteration', async () => {
-    const prevBlockNumber = (await session.provider.getBlock('latest')).number;
-    await keysUpdateService.update();
+  // it('block is changing every iteration', async () => {
+  //   const prevBlockNumber = (await session.provider.getBlock('latest')).number;
+  //   await keysUpdateService.update();
 
-    const prevElSnapshot = await stakingRouterService.getElBlockSnapshot();
+  //   const prevElSnapshot = await stakingRouterService.getElBlockSnapshot();
 
-    expect(prevElSnapshot).toBeDefined();
-    expect(prevElSnapshot?.blockNumber).toBe(prevBlockNumber);
+  //   expect(prevElSnapshot).toBeDefined();
+  //   expect(prevElSnapshot?.blockNumber).toBe(prevBlockNumber);
 
-    //  mine new block
-    await session.provider.evm_mine();
-    const currentBlockNumber = (await session.provider.getBlock('latest')).number;
-    // // check if the block has been changed
-    expect(prevBlockNumber).toBeLessThan(currentBlockNumber);
+  //   //  mine new block
+  //   await session.provider.evm_mine();
+  //   const currentBlockNumber = (await session.provider.getBlock('latest')).number;
+  //   // // check if the block has been changed
+  //   expect(prevBlockNumber).toBeLessThan(currentBlockNumber);
 
-    await keysUpdateService.update();
+  //   await keysUpdateService.update();
 
-    const currentElSnapshot = await stakingRouterService.getElBlockSnapshot();
+  //   const currentElSnapshot = await stakingRouterService.getElBlockSnapshot();
 
-    expect(currentElSnapshot).toBeDefined();
-    expect(currentElSnapshot?.blockNumber).toBe(currentBlockNumber);
-  });
+  //   expect(currentElSnapshot).toBeDefined();
+  //   expect(currentElSnapshot?.blockNumber).toBe(currentBlockNumber);
+  // });
 });

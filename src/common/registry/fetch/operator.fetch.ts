@@ -26,6 +26,8 @@ export class RegistryOperatorFetchService {
       return [];
     }
 
+    const contract = await this.getContract(moduleAddress);
+
     // https://github.com/lidofinance/core/blob/master/contracts/0.4.24/nos/NodeOperatorsRegistry.sol#L39
     // https://docs.ethers.org/v5/api/providers/provider/#Provider-getLogs
     // from docs: Keep in mind that many backends will discard old events,
@@ -33,10 +35,28 @@ export class RegistryOperatorFetchService {
     let events = await this.getContract(moduleAddress).provider.getLogs({
       topics: [
         // KECCAK256 hash of the text bytes
-        utils.id('NodeOperatorAdded(uint256,string,address,uint64)'),
-        utils.id('NodeOperatorActiveSet'),
-        utils.id('NodeOperatorNameSet'),
-        utils.id('NodeOperatorRewardAddressSet'),
+        [
+          utils.id('NodeOperatorAdded(uint256,string,address,uint64)'),
+          utils.id('NodeOperatorNameSet(uint256,string)'),
+          utils.id('NodeOperatorActiveSet(uint256,bool)'),
+          utils.id('NodeOperatorRewardAddressSet(uint256, address)'),
+        ],
+      ],
+      fromBlock,
+      toBlock,
+    });
+
+    if (events.length > 0) return events;
+
+    events = await this.getContract(moduleAddress).provider.getLogs({
+      topics: [
+        [
+          // KECCAK256 hash of the text bytes
+          utils.id('VettedSigningKeysCountChanged(uint256,uint256)'),
+          utils.id('DepositedSigningKeysCountChanged(uint256,uint256)'),
+          utils.id('ExitedSigningKeysCountChanged(uint256,uint256)'),
+          utils.id('TotalSigningKeysCountChanged(uint256,uint256)'),
+        ],
       ],
       fromBlock,
       toBlock,
@@ -47,21 +67,7 @@ export class RegistryOperatorFetchService {
     events = await this.getContract(moduleAddress).provider.getLogs({
       topics: [
         // KECCAK256 hash of the text bytes
-        utils.id('VettedSigningKeysCountChanged'),
-        utils.id('DepositedSigningKeysCountChanged'),
-        utils.id('ExitedSigningKeysCountChanged'),
-        utils.id('TotalSigningKeysCountChanged'),
-      ],
-      fromBlock,
-      toBlock,
-    });
-
-    if (events.length > 0) return events;
-
-    events = await this.getContract(moduleAddress).provider.getLogs({
-      topics: [
-        // KECCAK256 hash of the text bytes
-        utils.id('NodeOperatorTotalKeysTrimmed'),
+        utils.id('NodeOperatorTotalKeysTrimmed(uint256,uint64)'),
       ],
       fromBlock,
       toBlock,
