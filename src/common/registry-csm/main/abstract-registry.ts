@@ -125,8 +125,6 @@ export abstract class AbstractRegistryService {
 
       totalKeysAmount += toIndex - fromIndex;
 
-      if (fromIndex === toIndex) return;
-
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
 
@@ -141,18 +139,20 @@ export abstract class AbstractRegistryService {
 
       const operatorKeys = result.filter((key) => key);
 
-      this.logger.log('Keys fetched', {
-        operatorIndex,
-        fromIndex,
-        toIndex,
-        operatorKeys: operatorKeys.length,
-        fetchedKeys: result.length,
-        stakingModuleAddress: moduleAddress,
-      });
+      if (operatorKeys.length > 0) {
+        this.logger.log('Keys fetched', {
+          operatorIndex,
+          fromIndex,
+          toIndex,
+          operatorKeys: operatorKeys.length,
+          fetchedKeys: result.length,
+          stakingModuleAddress: moduleAddress,
+        });
 
-      await this.saveKeys(operatorKeys);
+        await this.saveKeys(operatorKeys);
 
-      this.logger.log('Keys saved', { operatorIndex, stakingModuleAddress: moduleAddress });
+        this.logger.log('Keys saved', { operatorIndex, stakingModuleAddress: moduleAddress });
+      }
     }
 
     const updateTimeEnd = performance.now();

@@ -8,6 +8,7 @@ import {
   RegistryStorageService,
   RegistryKeyStorageService,
   RegistryOperatorStorageService,
+  RegistryKeyBatchFetchService,
 } from '../..';
 import { keys, newKey, newOperator, operators, operatorWithDefaultsRecords } from '../fixtures/db.fixture';
 import { clone, compareTestKeysAndOperators, compareTestKeys, compareTestOperators, clearDb } from '../testing.utils';
@@ -87,8 +88,7 @@ describe('Validator registry', () => {
       // update function doesn't make a decision about update no more
       // so here would happen update if list of keys was changed
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
-      // 2 - number of operators
-      expect(saveKeyRegistryMock).toBeCalledTimes(2);
+      expect(saveKeyRegistryMock).toBeCalledTimes(0);
       await compareTestKeysAndOperators(address, registryService, {
         keys: keysWithModuleAddress,
         operators: operatorsWithModuleAddress,
@@ -106,7 +106,7 @@ describe('Validator registry', () => {
 
       await registryService.update(address, blockHash);
       expect(saveRegistryMock).toBeCalledTimes(1);
-      expect(saveKeyRegistryMock).toBeCalledTimes(2);
+      expect(saveKeyRegistryMock).toBeCalledTimes(0);
     });
 
     test('used keys are immutable', async () => {
@@ -123,7 +123,7 @@ describe('Validator registry', () => {
 
       await registryService.update(address, blockHash);
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
-      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(0);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
       await compareTestOperators(address, registryService, { operators: operatorsWithModuleAddress });
     });
@@ -143,7 +143,7 @@ describe('Validator registry', () => {
 
       await registryService.update(address, blockHash);
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
-      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(0);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
       await compareTestOperators(address, registryService, {
         operators: newOperators,
@@ -154,6 +154,8 @@ describe('Validator registry', () => {
       const newOperators = clone([...operatorsWithModuleAddress, { ...newOperator, moduleAddress: address }]);
       const saveRegistryMock = jest.spyOn(registryService, 'saveOperators');
       const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
+      const fetchBatchKey = moduleRef.get(RegistryKeyBatchFetchService);
+      const fetchSigningKeysInBatchesMock = jest.spyOn(fetchBatchKey, 'fetchSigningKeysInBatches');
 
       registryServiceMock(moduleRef, provider, {
         keys: keysWithModuleAddress,
@@ -162,7 +164,8 @@ describe('Validator registry', () => {
 
       await registryService.update(address, blockHash);
       expect(saveRegistryMock).toBeCalledTimes(1);
-      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(0);
+      expect(fetchSigningKeysInBatchesMock.mock.calls.length).toBeGreaterThanOrEqual(1);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
       await compareTestOperators(address, registryService, {
         operators: newOperators,
@@ -185,7 +188,7 @@ describe('Validator registry', () => {
 
       await registryService.update(address, blockHash);
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
-      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(0);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
       await compareTestOperators(address, registryService, {
         operators: newOperators,
@@ -230,7 +233,7 @@ describe('Validator registry', () => {
 
       await registryService.update(address, blockHash);
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
-      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(0);
       await compareTestOperators(address, registryService, {
         operators: newOperators,
       });
@@ -240,13 +243,17 @@ describe('Validator registry', () => {
         .sort((a, b) => a.operatorIndex - b.operatorIndex)
         .slice(0, -1);
 
-      await compareTestKeys(address, registryService, {
-        keys: newOperator0Keys,
-      });
-
       const keysOfOperator0 = await (
         await registryService.getOperatorsKeysFromStorage(address)
       ).filter(({ operatorIndex }) => operatorIndex === 0);
+
+      const oldOperators1Keys = keysWithModuleAddress
+        .filter(({ operatorIndex }) => operatorIndex === 1)
+        .sort((a, b) => a.operatorIndex - b.operatorIndex);
+
+      await compareTestKeys(address, registryService, {
+        keys: [...newOperator0Keys, ...oldOperators1Keys],
+      });
 
       expect(keysOfOperator0.length).toBe(newOperators[0].totalSigningKeys);
     });

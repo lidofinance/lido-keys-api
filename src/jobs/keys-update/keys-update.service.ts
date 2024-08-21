@@ -148,9 +148,7 @@ export class KeysUpdateService {
     this.logger.log('Fetched modules from database', { modules: storageModules.length });
 
     // Get staking modules from SR contract
-    const contractModules = (
-      await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash })
-    ).slice(0, 1);
+    const contractModules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
 
     //Is this scenario impossible ?
     if (this.modulesWereDeleted(contractModules, storageModules)) {
