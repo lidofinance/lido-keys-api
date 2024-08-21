@@ -98,6 +98,15 @@ export class KeysUpdateService {
   private async updateKeys(): Promise<void> {
     await this.jobService.wrapJob({ name: 'Update Staking Router Modules keys' }, async () => {
       const meta = await this.update();
+
+      if (meta) {
+        this.logger.log('Set registryLastUpdate metric value', { meta });
+
+        // update timestamp and block number metrics
+        this.prometheusService.registryLastUpdate.set(meta.timestamp);
+        this.prometheusService.registryBlockNumber.set(meta.number);
+      }
+
       await this.updateMetrics();
 
       if (meta) {
@@ -117,11 +126,10 @@ export class KeysUpdateService {
   public async update(): Promise<{ number: number; hash: string; timestamp: number } | undefined> {
     // reading latest block from blockchain
     const currElMeta = await this.executionProvider.getBlock('latest');
-    this.logger.log('Fetched latest block');
     // read from database last execution layer data
     const prevElMeta = await this.elMetaStorage.get();
 
-    this.logger.log('Fetched current execution meta and meta from database');
+    this.logger.log('Fetched current execution meta and meta from database', { currElMeta, prevElMeta });
 
     // handle the situation when the node has fallen behind the service state
     if (prevElMeta && prevElMeta?.blockNumber > currElMeta.number) {
@@ -137,10 +145,12 @@ export class KeysUpdateService {
     // Get modules from storage
     const storageModules = await this.srModulesStorage.findAll();
 
-    this.logger.log('Fetched modules from database');
+    this.logger.log('Fetched modules from database', { modules: storageModules.length });
 
     // Get staking modules from SR contract
-    const contractModules = await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash });
+    const contractModules = (
+      await this.stakingRouterFetchService.getStakingModules({ blockHash: currElMeta.hash })
+    ).slice(0, 1);
 
     //Is this scenario impossible ?
     if (this.modulesWereDeleted(contractModules, storageModules)) {
@@ -151,7 +161,11 @@ export class KeysUpdateService {
 
     await this.entityManager.transactional(
       async () => {
-        await this.stakingModuleUpdaterService.updateStakingModules({ currElMeta, prevElMeta, contractModules });
+        await this.stakingModuleUpdaterService.updateStakingModules({
+          currElMeta,
+          prevElMeta,
+          contractModules,
+        });
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
     );
@@ -166,16 +180,6 @@ export class KeysUpdateService {
     await this.entityManager.transactional(
       async () => {
         const stakingModules = await this.stakingRouterService.getStakingModules();
-        const elMeta = await this.stakingRouterService.getElBlockSnapshot();
-
-        if (!elMeta) {
-          this.logger.warn("Meta is null, maybe data hasn't been written in db yet");
-          return;
-        }
-
-        // update timestamp and block number metrics
-        this.prometheusService.registryLastUpdate.set(elMeta.timestamp);
-        this.prometheusService.registryBlockNumber.set(elMeta.blockNumber);
 
         this.prometheusService.registryNumberOfKeysBySRModuleAndOperator.reset();
 

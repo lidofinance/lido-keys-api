@@ -8,7 +8,16 @@ export class ExecutionProviderService {
   constructor(
     protected readonly provider: SimpleFallbackJsonRpcBatchProvider,
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
-  ) {}
+  ) {
+    this.setupListeners();
+  }
+
+  protected setupListeners(): void {
+    this.provider.on('initialized', (data: any) => {
+      this.logger.log('debug!!!!!', data);
+      process.exit(1);
+    });
+  }
 
   /**
    * Returns network name

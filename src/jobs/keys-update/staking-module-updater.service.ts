@@ -31,6 +31,7 @@ export class StakingModuleUpdaterService {
       isReorgDetected: false,
     };
 
+    // TODO: Promise.all
     for (const contractModule of contractModules) {
       const { stakingModuleAddress } = contractModule;
 

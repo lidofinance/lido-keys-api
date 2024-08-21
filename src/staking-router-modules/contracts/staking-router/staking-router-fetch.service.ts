@@ -32,21 +32,28 @@ export class StakingRouterFetchService {
     const srContract = this.getContract(stakingRouterAddress);
     const modules = await srContract.getStakingModules({ blockTag } as any);
 
-    this.logger.log(`Fetched ${modules.length} modules`);
-    this.logger.log('Staking modules', modules);
+    this.logger.log('Fetched staking modules', { stakingModules: modules.length });
+
+    const stakingModuleTypeSet = new Set(Object.values(STAKING_MODULE_TYPE));
 
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
-        // TODO: what is the diff between status and active ?
-        const isActive = await srContract.getStakingModuleIsActive(stakingModule.id, { blockTag } as any);
+        const isActive = stakingModule.status == 0;
+
+        if (!isActive) {
+          this.logger.warn('Staking module is not active', {
+            stakingModuleAddress: stakingModule.stakingModuleAddress,
+            stakingModuleId: stakingModule.id,
+            status: stakingModule.status,
+          });
+        }
 
         const stakingModuleType = (await this.stakingModuleInterface.getType(
           stakingModule.stakingModuleAddress,
           blockTag,
         )) as STAKING_MODULE_TYPE;
 
-        // TODO: reconsider way of checking this module type
-        if (!Object.values(STAKING_MODULE_TYPE).includes(stakingModuleType)) {
+        if (!stakingModuleTypeSet.has(stakingModuleType)) {
           this.logger.error(new Error(`Staking Module type ${stakingModuleType} is unknown`));
           process.exit(1);
         }

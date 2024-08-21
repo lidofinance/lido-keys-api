@@ -47,6 +47,7 @@ export abstract class AbstractRegistryService {
     this.logger.log('Collected operators', {
       previousOperators: previousOperators.length,
       currentOperators: currentOperators.length,
+      stakingModuleAddress: moduleAddress,
     });
 
     await this.entityManager.transactional(
@@ -55,6 +56,7 @@ export abstract class AbstractRegistryService {
 
         this.logger.log('Saved data operators to the DB', {
           operators: currentOperators.length,
+          stakingModuleAddress: moduleAddress,
         });
 
         await this.syncUpdatedKeysWithContract(moduleAddress, previousOperators, currentOperators, blockHash);
@@ -101,6 +103,9 @@ export abstract class AbstractRegistryService {
      * TODO: optimize a number of queries
      * it's possible to update keys faster by using different strategies depending on the reason for the update
      */
+    const updateTimeStart = performance.now();
+    let totalKeysAmount = 0;
+
     for (const [currentIndex, currOperator] of currentOperators.entries()) {
       // check if the operator in the registry has changed since the last update
       const prevOperator = previousOperators[currentIndex] ?? null;
@@ -117,6 +122,10 @@ export abstract class AbstractRegistryService {
       // fromIndex may become larger than toIndex if used keys are deleted
       // this should not happen in mainnet, but sometimes keys can be deleted in testnet by modification of the contract
       const fromIndex = unchangedKeysMaxIndex <= toIndex ? unchangedKeysMaxIndex : 0;
+
+      totalKeysAmount += toIndex - fromIndex;
+
+      if (fromIndex === toIndex) return;
 
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
@@ -138,12 +147,18 @@ export abstract class AbstractRegistryService {
         toIndex,
         operatorKeys: operatorKeys.length,
         fetchedKeys: result.length,
+        stakingModuleAddress: moduleAddress,
       });
 
       await this.saveKeys(operatorKeys);
 
-      this.logger.log('Keys saved', { operatorIndex });
+      this.logger.log('Keys saved', { operatorIndex, stakingModuleAddress: moduleAddress });
     }
+
+    const updateTimeEnd = performance.now();
+    const updateTime = Math.ceil(updateTimeEnd - updateTimeStart) / 1000;
+
+    this.logger.log('Update statistic', { stakingModuleAddress: moduleAddress, time: updateTime, totalKeysAmount });
   }
 
   /** storage */

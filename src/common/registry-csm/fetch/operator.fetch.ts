@@ -7,6 +7,7 @@ import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
 import { Csm__factory } from 'generated';
+import { utils } from 'ethers';
 
 @Injectable()
 export class RegistryOperatorFetchService {
@@ -20,39 +21,35 @@ export class RegistryOperatorFetchService {
     return Csm__factory.connect(moduleAddress, this.contract.provider);
   }
 
-  public async operatorsWereChanged(
-    moduleAddress: string,
-    fromBlockNumber: number,
-    toBlockNumber: number,
-  ): Promise<boolean> {
-    if (fromBlockNumber > toBlockNumber) {
-      return false;
+  /**
+   * Exits early if relevant events are found, as they are used only as indicators for an update.
+   */
+  private async fetchOperatorsEvents(moduleAddress: string, fromBlock: number, toBlock: number) {
+    if (fromBlock > toBlock) {
+      return [];
     }
 
-    const nodeOperatorAddedFilter = this.getContract(moduleAddress).filters['NodeOperatorAdded']();
-    const nodeOperatorAddedEvents = await this.getContract(moduleAddress).queryFilter(
-      nodeOperatorAddedFilter,
-      fromBlockNumber,
-      toBlockNumber,
-    );
+    const events = await this.getContract(moduleAddress).provider.getLogs({
+      topics: [
+        // KECCAK256 hash of the text bytes
+        utils.id('NodeOperatorAdded'),
+        utils.id('NodeOperatorRewardAddressChanged'),
+        utils.id('VettedSigningKeysCountChanged'),
+        utils.id('DepositedSigningKeysCountChanged'),
+      ],
+      fromBlock,
+      toBlock,
+    });
 
-    if (nodeOperatorAddedEvents.length) {
-      return true;
-    }
+    if (events.length > 0) return events;
 
-    const nodeOperatorRewardAddressChangedFilter =
-      this.getContract(moduleAddress).filters['NodeOperatorRewardAddressChanged']();
-    const nodeOperatorRewardAddressChangedEvents = await this.getContract(moduleAddress).queryFilter(
-      nodeOperatorRewardAddressChangedFilter,
-      fromBlockNumber,
-      toBlockNumber,
-    );
+    return events;
+  }
 
-    if (nodeOperatorRewardAddressChangedEvents.length) {
-      return true;
-    }
+  public async operatorsWereChanged(moduleAddress: string, fromBlock: number, toBlock: number): Promise<boolean> {
+    const events = await this.fetchOperatorsEvents(moduleAddress, fromBlock, toBlock);
 
-    return false;
+    return events.length > 0;
   }
 
   /** return blockTag for finalized block, it need for testing purposes */
@@ -100,7 +97,7 @@ export class RegistryOperatorFetchService {
     const operator = await contract.getNodeOperator(operatorIndex, overrides as any);
     const { rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys, totalVettedKeys } = operator;
 
-    const active = await contract.getNodeOperatorIsActive(operatorIndex, overrides as any);
+    const active = true; // await contract.getNodeOperatorIsActive(operatorIndex, overrides as any);
 
     const finalizedUsedSigningKeys = await this.getFinalizedNodeOperatorUsedSigningKeys(moduleAddress, operatorIndex);
 
