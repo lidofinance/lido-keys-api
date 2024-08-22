@@ -18,6 +18,7 @@ import { RegistryOptions } from './interfaces/module.interface';
 import { chunk } from '@lido-nestjs/utils';
 import { RegistryKeyBatchFetchService } from '../fetch/key-batch.fetch';
 import { IsolationLevel } from '@mikro-orm/core';
+import { PrometheusService } from 'common/prometheus';
 
 @Injectable()
 export abstract class AbstractRegistryService {
@@ -33,6 +34,8 @@ export abstract class AbstractRegistryService {
     protected readonly operatorStorage: RegistryOperatorStorageService,
 
     protected readonly entityManager: EntityManager,
+
+    protected readonly prometheusService: PrometheusService,
 
     @Optional()
     @Inject(REGISTRY_GLOBAL_OPTIONS_TOKEN)
@@ -100,7 +103,6 @@ export abstract class AbstractRegistryService {
     blockHash: string,
   ) {
     /**
-     * TODO: optimize a number of queries
      * it's possible to update keys faster by using different strategies depending on the reason for the update
      */
     const updateTimeStart = performance.now();
@@ -157,6 +159,8 @@ export abstract class AbstractRegistryService {
 
     const updateTimeEnd = performance.now();
     const updateTime = Math.ceil(updateTimeEnd - updateTimeStart) / 1000;
+
+    this.prometheusService.updateDurationByModule.labels(moduleAddress, totalKeysAmount.toString()).observe(updateTime);
 
     this.logger.log('Update statistic', { stakingModuleAddress: moduleAddress, time: updateTime, totalKeysAmount });
   }
