@@ -84,6 +84,11 @@ describe('Simple DVT deploy', () => {
         validatorsRegistryLastBlockNumber: jest.fn(),
         validatorsRegistryLastSlot: jest.fn(),
         validatorsEnabled: jest.fn(),
+        updateDurationByModule: {
+          labels: (...args) => {
+            return { observe: (value) => ({}) };
+          },
+        },
       })
       .compile();
 
