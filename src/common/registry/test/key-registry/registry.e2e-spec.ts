@@ -7,6 +7,7 @@ import { RegistryKeyStorageService, KeyRegistryModule, KeyRegistryService, Regis
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import { DatabaseE2ETestingModule } from 'app';
+import { PrometheusModule } from 'common/prometheus';
 
 describe('Key', () => {
   const CHAIN_ID = process.env.CHAIN_ID || 1;
@@ -25,6 +26,7 @@ describe('Key', () => {
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),
+      PrometheusModule,
     ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     validatorService = moduleRef.get(KeyRegistryService);

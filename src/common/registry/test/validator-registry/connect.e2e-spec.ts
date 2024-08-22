@@ -14,6 +14,7 @@ import { clearDb } from '../testing.utils';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
+import { PrometheusModule } from 'common/prometheus';
 
 dotenv.config();
 
@@ -28,10 +29,6 @@ describe('Registry', () => {
     process.exit(1);
   }
   const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
-
-  // const operatorsWithModuleAddress = operators.map((key) => {
-  //   return { ...key, moduleAddress: address };
-  // });
 
   const blockHash = '0x947aa07f029fd9fed1af664339373077e61f54aff32d692e1f00139fcd4c5039';
 
@@ -53,6 +50,7 @@ describe('Registry', () => {
           return { provider };
         },
       }),
+      PrometheusModule,
     ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     registryService = moduleRef.get(ValidatorRegistryService);
@@ -75,11 +73,6 @@ describe('Registry', () => {
 
   test('Update', async () => {
     await registryService.update(address, blockHash);
-
-    // await compareTestOperators(address, registryService, {
-    //   operators: operatorsWithModuleAddress,
-    // });
-
     const operators = await registryService.getOperatorsFromStorage(address);
     expect(operators.length).toEqual(36);
     const keys = await registryService.getOperatorsKeysFromStorage(address);

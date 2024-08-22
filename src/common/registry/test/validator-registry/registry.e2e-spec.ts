@@ -12,6 +12,7 @@ import {
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import { DatabaseE2ETestingModule } from 'app';
+import { PrometheusModule } from 'common/prometheus';
 
 describe('Validator', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
@@ -31,6 +32,7 @@ describe('Validator', () => {
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature({ provider }),
+      PrometheusModule,
     ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     validatorService = moduleRef.get(ValidatorRegistryService);

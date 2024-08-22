@@ -16,6 +16,7 @@ import { registryServiceMock } from '../mock-utils';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import { DatabaseE2ETestingModule } from 'app';
+import { PrometheusModule } from 'common/prometheus';
 
 const blockHash = '0x947aa07f029fd9fed1af664339373077e61f54aff32d692e1f00139fcd4c5039';
 
@@ -50,6 +51,7 @@ describe('Validator registry', () => {
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature({ provider }),
+      PrometheusModule,
     ];
 
     moduleRef = await Test.createTestingModule({ imports }).compile();
@@ -289,6 +291,7 @@ describe('Empty registry', () => {
         warn: jest.fn(),
       }),
       ValidatorRegistryModule.forFeature({ provider }),
+      PrometheusModule,
     ];
     moduleRef = await Test.createTestingModule({
       imports,
@@ -348,6 +351,7 @@ describe('Reorg detection', () => {
         warn: jest.fn(),
       }),
       ValidatorRegistryModule.forFeature({ provider }),
+      PrometheusModule,
     ];
     moduleRef = await Test.createTestingModule({
       imports,

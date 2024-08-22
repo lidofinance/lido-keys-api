@@ -17,6 +17,7 @@ import { DatabaseE2ETestingModule } from 'app';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
+import { PrometheusModule } from 'common/prometheus';
 
 dotenv.config();
 
@@ -53,6 +54,7 @@ describe('Registry', () => {
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),
+      PrometheusModule,
     ];
 
     moduleRef = await Test.createTestingModule({ imports }).compile();
@@ -333,6 +335,7 @@ describe('Reorg detection', () => {
         warn: jest.fn(),
       }),
       KeyRegistryModule.forFeature({ provider }),
+      PrometheusModule,
     ];
     moduleRef = await Test.createTestingModule({
       imports,

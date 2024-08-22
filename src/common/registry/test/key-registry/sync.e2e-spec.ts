@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing';
 import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../../index';
 import { MikroORM } from '@mikro-orm/core';
 import { DatabaseE2ETestingModule } from 'app';
+import { PrometheusModule } from 'common/prometheus';
 
 describe('Sync module initializing', () => {
   const provider = getDefaultProvider('mainnet');
@@ -33,6 +34,7 @@ describe('Sync module initializing', () => {
         provider,
         subscribeInterval: '*/12 * * * * *',
       }),
+      PrometheusModule,
     ];
     await testModules({ imports });
   });
@@ -45,6 +47,7 @@ describe('Sync module initializing', () => {
         provider,
         subscribeInterval: '*/12 * * * * *',
       }),
+      PrometheusModule,
     ];
     await testModules({ imports });
   });
@@ -54,6 +57,7 @@ describe('Sync module initializing', () => {
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature(),
+      PrometheusModule,
     ];
 
     const metadata = {
