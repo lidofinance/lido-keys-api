@@ -32,14 +32,15 @@ export class RegistryOperatorFetchService {
     // https://docs.ethers.org/v5/api/providers/provider/#Provider-getLogs
     // from docs: Keep in mind that many backends will discard old events,
     // and that requests which are too broad may get dropped as they require too many resources to execute the query.
-    let events = await this.getContract(moduleAddress).provider.getLogs({
+
+    let events = await contract.provider.getLogs({
       topics: [
         // KECCAK256 hash of the text bytes
         [
           utils.id('NodeOperatorAdded(uint256,string,address,uint64)'),
           utils.id('NodeOperatorNameSet(uint256,string)'),
           utils.id('NodeOperatorActiveSet(uint256,bool)'),
-          utils.id('NodeOperatorRewardAddressSet(uint256, address)'),
+          utils.id('NodeOperatorRewardAddressSet(uint256,address)'),
         ],
       ],
       fromBlock,
@@ -48,7 +49,7 @@ export class RegistryOperatorFetchService {
 
     if (events.length > 0) return events;
 
-    events = await this.getContract(moduleAddress).provider.getLogs({
+    events = await contract.provider.getLogs({
       topics: [
         [
           // KECCAK256 hash of the text bytes
@@ -64,7 +65,7 @@ export class RegistryOperatorFetchService {
 
     if (events.length > 0) return events;
 
-    events = await this.getContract(moduleAddress).provider.getLogs({
+    events = await contract.provider.getLogs({
       topics: [
         // KECCAK256 hash of the text bytes
         utils.id('NodeOperatorTotalKeysTrimmed(uint256,uint64)'),
