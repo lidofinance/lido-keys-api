@@ -7,11 +7,16 @@ import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
 import { utils } from 'ethers';
+import { Multicall3 } from 'generated/Multicall';
+import { MulticallService } from 'common/contracts/multicall.service';
+import { ConfigService } from 'common/config';
 @Injectable()
 export class RegistryOperatorFetchService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
     @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
+    private multicallService: MulticallService,
+    private configService: ConfigService,
   ) {}
 
   private getContract(moduleAddress: string) {
@@ -177,5 +182,152 @@ export class RegistryOperatorFetchService {
     const batchSize = REGISTRY_OPERATORS_BATCH_SIZE;
 
     return await rangePromise(fetcher, fromIndex, toIndex, batchSize);
+  }
+
+  public async fetchOperators(
+    moduleAddress: string,
+    fromIndex = 0,
+    toIndex = -1,
+    overrides: { blockTag: string | number },
+  ): Promise<RegistryOperator[]> {
+    const MULTICALL_ENABLE = this.configService.get('MULTICALL_ENABLE');
+
+    if (MULTICALL_ENABLE) {
+      return await this.multicallFetch(moduleAddress, fromIndex, toIndex, overrides);
+    }
+
+    return await this.fetch(moduleAddress, fromIndex, toIndex, overrides);
+  }
+
+  /**
+   *
+   * @param moduleAddress
+   * @param fromIndex
+   * @param toIndex
+   * @param overrides
+   * @returns
+   */
+  public async multicallFetch(
+    moduleAddress: string,
+    fromIndex = 0,
+    toIndex = -1,
+    overrides: { blockTag: string | number },
+  ) {
+    const fullInfo = true;
+    const contract = this.getContract(moduleAddress);
+
+    if (fromIndex > toIndex && toIndex !== -1) {
+      throw new Error('fromIndex is greater than or equal to toIndex');
+    }
+
+    if (toIndex == null || toIndex === -1) {
+      toIndex = await this.count(moduleAddress, overrides);
+    }
+
+    // encode calls
+    const calls = this.encode(contract, fromIndex, toIndex, fullInfo);
+
+    // send via aggregate
+    const multicallResults = await this.multicallService.aggregateInBatch(calls, overrides);
+
+    // TODO: optimize
+    const multicallResultsFinalized = await this.multicallService.aggregateInBatch(calls, {
+      blockTag: this.getFinalizedBlockTag(),
+    });
+
+    // decode data
+    const operators = this.decode(contract, multicallResults);
+    const finalizedUsedSigningKeysValues = this.decodeFinalized(contract, multicallResultsFinalized);
+
+    const results: RegistryOperator[] = finalizedUsedSigningKeysValues.map(({ finalizedUsedSigningKeys }, i) => ({
+      ...operators[i],
+      finalizedUsedSigningKeys,
+    }));
+
+    return results;
+  }
+
+  private encode(contract: Registry, fromIndex: number, toIndex: number, fullInfo): Multicall3.Call3Struct[] {
+    const totalItems = toIndex - fromIndex;
+
+    const calls: Multicall3.Call3Struct[] = Array.from({ length: totalItems }).map((_, i) => {
+      const encodedFunction = this.encodeGetNodeOperatorCall(contract, i, fullInfo);
+
+      return {
+        target: contract.address,
+        allowFailure: false,
+        callData: encodedFunction,
+      };
+    });
+
+    return calls;
+  }
+
+  private decode(
+    contract: Registry,
+    multicallResult: Multicall3.ResultStructOutput[],
+  ): Omit<RegistryOperator, 'finalizedUsedSigningKeys'>[] {
+    const decodedResults = multicallResult.map((result, index) => {
+      const { success, returnData } = result;
+
+      if (!success) {
+        throw Error(`Call to getNodeOperator for index ${index} failed.`);
+      }
+
+      const decodedResult = this.decodeGetNodeOperatorCall(contract, index, returnData);
+
+      return {
+        index,
+        active: decodedResult.active,
+        name: decodedResult.name,
+        rewardAddress: decodedResult.rewardAddress,
+        stakingLimit: decodedResult.totalVettedValidators.toNumber(),
+        stoppedValidators: decodedResult.totalExitedValidators.toNumber(),
+        totalSigningKeys: decodedResult.totalAddedValidators.toNumber(),
+        usedSigningKeys: decodedResult.totalDepositedValidators.toNumber(),
+        moduleAddress: contract.address,
+      };
+    });
+
+    return decodedResults;
+  }
+
+  private decodeFinalized(
+    contract: Registry,
+    multicallResult: Multicall3.ResultStructOutput[],
+  ): Pick<RegistryOperator, 'finalizedUsedSigningKeys'>[] {
+    const decodedResults = multicallResult.map((result, index) => {
+      const { success, returnData } = result;
+
+      if (!success) {
+        return { finalizedUsedSigningKeys: 0 };
+      }
+
+      const decodedResult = this.decodeGetNodeOperatorCall(contract, index, returnData);
+
+      return {
+        finalizedUsedSigningKeys: decodedResult.totalDepositedValidators.toNumber(),
+      };
+    });
+
+    return decodedResults;
+  }
+
+  private encodeGetNodeOperatorCall(contract: Registry, operatorIndex: number, fullInfo: boolean) {
+    return contract.interface.encodeFunctionData('getNodeOperator', [operatorIndex, fullInfo]);
+  }
+
+  private decodeGetNodeOperatorCall(contract: Registry, index, result: string) {
+    const decodedResult = contract.interface.decodeFunctionResult('getNodeOperator' as any, result);
+
+    return {
+      active: decodedResult[0],
+      name: decodedResult[1],
+      rewardAddress: decodedResult[2],
+      totalVettedValidators: decodedResult[3],
+      totalExitedValidators: decodedResult[4],
+      totalAddedValidators: decodedResult[5],
+      totalDepositedValidators: decodedResult[6],
+    };
   }
 }
