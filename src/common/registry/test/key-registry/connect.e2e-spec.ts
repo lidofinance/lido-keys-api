@@ -1,12 +1,20 @@
 import { Test } from '@nestjs/testing';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
-import { BatchProviderModule, ExtendedJsonRpcBatchProvider } from '@lido-nestjs/execution';
+import {
+  BatchProviderModule,
+  ExtendedJsonRpcBatchProvider,
+  SimpleFallbackJsonRpcBatchProvider,
+} from '@lido-nestjs/execution';
 import { KeyRegistryModule, KeyRegistryService, RegistryOperatorFetchService, RegistryStorageService } from '../../';
 import { clearDb } from '../testing.utils';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
 import { DatabaseE2ETestingModule } from 'app';
+import { ExecutionProviderModule } from 'common/execution-provider';
+import { ConfigModule } from 'common/config';
+import { PrometheusModule } from 'common/prometheus';
+import { getDefaultProvider } from 'ethers';
 
 dotenv.config();
 
@@ -25,9 +33,11 @@ describe('Registry', () => {
   // });
 
   const blockHash = '0x947aa07f029fd9fed1af664339373077e61f54aff32d692e1f00139fcd4c5039';
+  const provider = getDefaultProvider('mainnet');
 
   beforeEach(async () => {
     const imports = [
+      ExecutionProviderModule,
       DatabaseE2ETestingModule.forRoot(),
       BatchProviderModule.forRoot({
         url: process.env.PROVIDERS_URLS as string,
@@ -44,8 +54,13 @@ describe('Registry', () => {
           return { provider };
         },
       }),
+      ConfigModule,
+      PrometheusModule,
     ];
-    const moduleRef = await Test.createTestingModule({ imports }).compile();
+    const moduleRef = await Test.createTestingModule({ imports })
+      .overrideProvider(SimpleFallbackJsonRpcBatchProvider)
+      .useValue(provider)
+      .compile();
     registryService = moduleRef.get(KeyRegistryService);
     storageService = moduleRef.get(RegistryStorageService);
     registryOperatorFetchService = moduleRef.get(RegistryOperatorFetchService);

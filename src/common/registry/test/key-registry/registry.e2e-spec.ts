@@ -7,6 +7,9 @@ import { RegistryKeyStorageService, KeyRegistryModule, KeyRegistryService, Regis
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import { DatabaseE2ETestingModule } from 'app';
+import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
+import { ExecutionProviderModule } from 'common/execution-provider';
+import { PrometheusModule } from 'common/prometheus';
 
 describe('Key', () => {
   const CHAIN_ID = process.env.CHAIN_ID || 1;
@@ -22,11 +25,16 @@ describe('Key', () => {
 
   beforeEach(async () => {
     const imports = [
+      ExecutionProviderModule,
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),
+      PrometheusModule,
     ];
-    const moduleRef = await Test.createTestingModule({ imports }).compile();
+    const moduleRef = await Test.createTestingModule({ imports })
+      .overrideProvider(SimpleFallbackJsonRpcBatchProvider)
+      .useValue(provider)
+      .compile();
     validatorService = moduleRef.get(KeyRegistryService);
     keyStorage = moduleRef.get(RegistryKeyStorageService);
     storageService = moduleRef.get(RegistryStorageService);

@@ -6,6 +6,10 @@ import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import { operator, operatorFields } from '../fixtures/operator.fixture';
 import { RegistryFetchModule, RegistryOperatorFetchService } from '../../';
 import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
+import { ConfigModule } from 'common/config';
+import { PrometheusModule } from 'common/prometheus';
+import { ExecutionProviderModule } from 'common/execution-provider';
+import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
 
 describe('Operators', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
@@ -19,10 +23,16 @@ describe('Operators', () => {
 
   beforeEach(async () => {
     const imports = [
+      ExecutionProviderModule,
       RegistryFetchModule.forFeature({ provider }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
+      ConfigModule,
+      PrometheusModule,
     ];
-    const moduleRef = await Test.createTestingModule({ imports }).compile();
+    const moduleRef = await Test.createTestingModule({ imports })
+      .overrideProvider(SimpleFallbackJsonRpcBatchProvider)
+      .useValue(provider)
+      .compile();
     fetchService = moduleRef.get(RegistryOperatorFetchService);
   });
 
@@ -33,6 +43,7 @@ describe('Operators', () => {
   test('count', async () => {
     const expected = 2;
     mockCall.mockImplementation(async () => {
+      console.log('mockCall');
       const iface = new Interface(Registry__factory.abi);
       return iface.encodeFunctionResult('getNodeOperatorsCount', [expected]);
     });

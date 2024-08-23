@@ -5,14 +5,19 @@ import { getNetwork } from '@ethersproject/networks';
 import { getDefaultProvider, BaseProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryFetchService } from '../../';
 import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
+import { ConfigModule } from 'common/config';
+import { ExecutionProviderModule } from 'common/execution-provider';
+import { PrometheusModule } from 'common/prometheus';
+import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
 
+const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
+jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
 @Injectable()
 class TestService {
   provider: BaseProvider;
 
   constructor() {
-    this.provider = getDefaultProvider(process.env.PROVIDERS_URLS);
-    jest.spyOn(this.provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
+    this.provider = provider;
   }
 }
 @Module({
@@ -30,7 +35,10 @@ class TestModule {
 
 describe('Async module initializing', () => {
   const testModules = async (imports: ModuleMetadata['imports']) => {
-    const moduleRef = await Test.createTestingModule({ imports }).compile();
+    const moduleRef = await Test.createTestingModule({ imports })
+      .overrideProvider(SimpleFallbackJsonRpcBatchProvider)
+      .useValue(provider)
+      .compile();
     const fetchService: RegistryFetchService = moduleRef.get(RegistryFetchService);
 
     expect(fetchService).toBeDefined();
@@ -38,6 +46,7 @@ describe('Async module initializing', () => {
 
   test('forRootAsync', async () => {
     await testModules([
+      ExecutionProviderModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       TestModule.forRoot(),
       RegistryFetchModule.forRootAsync({
@@ -46,11 +55,14 @@ describe('Async module initializing', () => {
         },
         inject: [TestService],
       }),
+      ConfigModule,
+      PrometheusModule,
     ]);
   });
 
   test('forFeatureAsync', async () => {
     await testModules([
+      ExecutionProviderModule,
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       TestModule.forRoot(),
       RegistryFetchModule.forFeatureAsync({
@@ -59,6 +71,8 @@ describe('Async module initializing', () => {
         },
         inject: [TestService],
       }),
+      ConfigModule,
+      PrometheusModule,
     ]);
   });
 });

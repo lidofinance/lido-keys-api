@@ -17,6 +17,10 @@ import { DatabaseE2ETestingModule } from 'app';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
+import { ExecutionProviderModule } from 'common/execution-provider';
+import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
+import { PrometheusModule } from 'common/prometheus';
+import { ConfigModule } from 'common/config';
 
 dotenv.config();
 
@@ -50,12 +54,18 @@ describe('Registry', () => {
 
   beforeEach(async () => {
     const imports = [
+      ExecutionProviderModule,
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),
+      ConfigModule,
+      PrometheusModule,
     ];
 
-    moduleRef = await Test.createTestingModule({ imports }).compile();
+    moduleRef = await Test.createTestingModule({ imports })
+      .overrideProvider(SimpleFallbackJsonRpcBatchProvider)
+      .useValue(provider)
+      .compile();
     registryService = moduleRef.get(KeyRegistryService);
     registryStorageService = moduleRef.get(RegistryStorageService);
 
@@ -326,6 +336,7 @@ describe('Reorg detection', () => {
 
   beforeEach(async () => {
     const imports = [
+      ExecutionProviderModule,
       DatabaseE2ETestingModule.forRoot(),
       MockLoggerModule.forRoot({
         log: jest.fn(),
@@ -333,11 +344,15 @@ describe('Reorg detection', () => {
         warn: jest.fn(),
       }),
       KeyRegistryModule.forFeature({ provider }),
+      PrometheusModule,
     ];
     moduleRef = await Test.createTestingModule({
       imports,
       providers: [{ provide: LOGGER_PROVIDER, useValue: {} }],
-    }).compile();
+    })
+      .overrideProvider(SimpleFallbackJsonRpcBatchProvider)
+      .useValue(provider)
+      .compile();
     registryService = moduleRef.get(KeyRegistryService);
     registryStorageService = moduleRef.get(RegistryStorageService);
     mikroOrm = moduleRef.get(MikroORM);

@@ -7,6 +7,10 @@ import { operator, operatorFields } from '../fixtures/operator.fixture';
 import { key, keyFields } from '../fixtures/key.fixture';
 import { RegistryFetchModule, RegistryKeyFetchService } from '../../';
 import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
+import { ConfigModule } from 'common/config';
+import { ExecutionProviderModule } from 'common/execution-provider';
+import { PrometheusModule } from 'common/prometheus';
+import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
 
 describe('Keys', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
@@ -19,10 +23,16 @@ describe('Keys', () => {
 
   beforeEach(async () => {
     const imports = [
+      ExecutionProviderModule,
       RegistryFetchModule.forFeature({ provider }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
+      ConfigModule,
+      PrometheusModule,
     ];
-    const moduleRef = await Test.createTestingModule({ imports }).compile();
+    const moduleRef = await Test.createTestingModule({ imports })
+      .overrideProvider(SimpleFallbackJsonRpcBatchProvider)
+      .useValue(provider)
+      .compile();
     fetchService = moduleRef.get(RegistryKeyFetchService);
   });
 

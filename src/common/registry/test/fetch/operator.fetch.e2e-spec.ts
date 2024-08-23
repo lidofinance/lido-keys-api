@@ -5,6 +5,10 @@ import { RegistryFetchModule, RegistryOperatorFetchService } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
 import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
+import { PrometheusModule } from 'common/prometheus';
+import { ConfigModule } from 'common/config';
+import { ExecutionProviderModule } from 'common/execution-provider';
+import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
 
 dotenv.config();
 
@@ -20,10 +24,16 @@ describe('Operators', () => {
 
   beforeEach(async () => {
     const imports = [
+      ExecutionProviderModule,
       RegistryFetchModule.forFeature({ provider }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
+      ConfigModule,
+      PrometheusModule,
     ];
-    const moduleRef = await Test.createTestingModule({ imports }).compile();
+    const moduleRef = await Test.createTestingModule({ imports })
+      .overrideProvider(SimpleFallbackJsonRpcBatchProvider)
+      .useValue(provider)
+      .compile();
     fetchService = moduleRef.get(RegistryOperatorFetchService);
   });
 
