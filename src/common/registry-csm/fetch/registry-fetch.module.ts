@@ -9,8 +9,10 @@ import { RegistryOperatorFetchService } from './operator.fetch';
 import { RegistryMetaFetchService } from './meta.fetch';
 import { RegistryKeyBatchFetchService } from './key-batch.fetch';
 import { RegistryFetchService } from './registry-fetch.service';
+import { MulticallModule } from 'common/contracts/multicall.module';
 
 @Module({
+  imports: [MulticallModule],
   providers: [
     RegistryFetchService,
     RegistryOperatorFetchService,

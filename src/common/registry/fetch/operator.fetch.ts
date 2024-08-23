@@ -274,7 +274,7 @@ export class RegistryOperatorFetchService {
         throw Error(`Call to getNodeOperator for index ${index} failed.`);
       }
 
-      const decodedResult = this.decodeGetNodeOperatorCall(contract, index, returnData);
+      const decodedResult = this.decodeGetNodeOperatorCall(contract, returnData);
 
       return {
         index,
@@ -296,14 +296,14 @@ export class RegistryOperatorFetchService {
     contract: Registry,
     multicallResult: Multicall3.ResultStructOutput[],
   ): Pick<RegistryOperator, 'finalizedUsedSigningKeys'>[] {
-    const decodedResults = multicallResult.map((result, index) => {
+    const decodedResults = multicallResult.map((result) => {
       const { success, returnData } = result;
 
       if (!success) {
         return { finalizedUsedSigningKeys: 0 };
       }
 
-      const decodedResult = this.decodeGetNodeOperatorCall(contract, index, returnData);
+      const decodedResult = this.decodeGetNodeOperatorCall(contract, returnData);
 
       return {
         finalizedUsedSigningKeys: decodedResult.totalDepositedValidators.toNumber(),
@@ -317,7 +317,7 @@ export class RegistryOperatorFetchService {
     return contract.interface.encodeFunctionData('getNodeOperator', [operatorIndex, fullInfo]);
   }
 
-  private decodeGetNodeOperatorCall(contract: Registry, index, result: string) {
+  private decodeGetNodeOperatorCall(contract: Registry, result: string) {
     const decodedResult = contract.interface.decodeFunctionResult('getNodeOperator' as any, result);
 
     return {
