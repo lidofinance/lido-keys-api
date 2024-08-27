@@ -38,7 +38,7 @@ export class StakingRouterFetchService {
 
     const transformedModules = await Promise.all(
       modules.map(async (stakingModule) => {
-        const isActive = stakingModule.status == 0;
+        const isActive = stakingModule.status === 0;
 
         if (!isActive) {
           this.logger.warn('Staking module is not active', {

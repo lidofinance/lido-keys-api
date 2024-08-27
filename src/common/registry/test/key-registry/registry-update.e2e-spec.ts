@@ -91,7 +91,7 @@ describe('Registry', () => {
 
       await registryService.update(address, blockHash);
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
-      //  finalizedUsedSigningKeys == totalSigningKeys
+      // finalizedUsedSigningKeys == totalSigningKeys
       // nothing to update
       expect(saveKeyRegistryMock).toBeCalledTimes(0);
       await compareTestKeysAndOperators(address, registryService, {

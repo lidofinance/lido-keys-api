@@ -99,6 +99,9 @@ export class RegistryOperatorFetchService {
     const operator = await contract.getNodeOperator(operatorIndex, overrides as any);
     const { rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys, totalVettedKeys } = operator;
 
+    // There is no concept of "active/inactive" operator in CSM.
+    // The method `getNodeOperatorIsActive` only checks if the operator's ID exists (ID < count).
+    // We fetch operators with IDs < count, so here we can just set `active` to true.
     const active = true;
 
     const finalizedUsedSigningKeys = await this.getFinalizedNodeOperatorUsedSigningKeys(moduleAddress, operatorIndex);

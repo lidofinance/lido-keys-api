@@ -125,7 +125,6 @@ export abstract class AbstractRegistryService {
       // fromIndex may become larger than toIndex if used keys are deleted
       // this should not happen in mainnet, but sometimes keys can be deleted in testnet by modification of the contract
       const fromIndex = unchangedKeysMaxIndex <= toIndex ? unchangedKeysMaxIndex : 0;
-      totalKeysAmount += toIndex - fromIndex;
 
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
@@ -133,6 +132,8 @@ export abstract class AbstractRegistryService {
       const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
 
       const operatorKeys = result.filter((key) => key);
+
+      totalKeysAmount += operatorKeys.length;
 
       if (operatorKeys.length > 0) {
         this.logger.log('Keys fetched', {
