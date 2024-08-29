@@ -19,6 +19,7 @@ import { RegistryOptions } from './interfaces/module.interface';
 import { chunk } from '@lido-nestjs/utils';
 import { RegistryKeyBatchFetchService } from '../fetch/key-batch.fetch';
 import { IsolationLevel } from '@mikro-orm/core';
+import { PrometheusService } from 'common/prometheus';
 
 @Injectable()
 export abstract class AbstractRegistryService {
@@ -33,8 +34,9 @@ export abstract class AbstractRegistryService {
 
     protected readonly operatorFetch: RegistryOperatorFetchService,
     protected readonly operatorStorage: RegistryOperatorStorageService,
-
     protected readonly entityManager: EntityManager,
+
+    protected readonly prometheusService: PrometheusService,
 
     @Optional()
     @Inject(REGISTRY_GLOBAL_OPTIONS_TOKEN)
@@ -105,7 +107,6 @@ export abstract class AbstractRegistryService {
     const updateTimeStart = performance.now();
     let totalKeysAmount = 0;
     /**
-     * TODO: optimize a number of queries
      * it's possible to update keys faster by using different strategies depending on the reason for the update
      */
     for (const [currentIndex, currOperator] of currentOperators.entries()) {
@@ -125,7 +126,6 @@ export abstract class AbstractRegistryService {
       // fromIndex may become larger than toIndex if used keys are deleted
       // this should not happen in mainnet, but sometimes keys can be deleted in testnet by modification of the contract
       const fromIndex = unchangedKeysMaxIndex <= toIndex ? unchangedKeysMaxIndex : 0;
-      totalKeysAmount += toIndex - fromIndex;
 
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
@@ -133,6 +133,8 @@ export abstract class AbstractRegistryService {
       const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
 
       const operatorKeys = result.filter((key) => key);
+
+      totalKeysAmount += operatorKeys.length;
 
       if (operatorKeys.length > 0) {
         this.logger.log('Keys fetched', {
@@ -151,6 +153,8 @@ export abstract class AbstractRegistryService {
 
     const updateTimeEnd = performance.now();
     const updateTime = Math.ceil(updateTimeEnd - updateTimeStart) / 1000;
+
+    this.prometheusService.updateDurationByModule.labels(moduleAddress, totalKeysAmount.toString()).observe(updateTime);
 
     this.logger.log('Update statistic', { stakingModuleAddress: moduleAddress, time: updateTime, totalKeysAmount });
   }

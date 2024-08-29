@@ -52,6 +52,14 @@ export class PrometheusService {
     labelNames: ['result', 'job'],
   });
 
+  public updateDurationByModule = this.getOrCreateMetric('Histogram', {
+    prefix: true,
+    name: 'sr_module_key_update_duration_seconds',
+    help: 'Time taken to update a certain number of keys for a staking module',
+    buckets: [0.2, 0.6, 1, 2, 3, 5, 8, 13, 30, 60, 120, 180],
+    labelNames: ['srModuleAddress', 'totalKeysAmount'],
+  });
+
   public registryLastUpdate = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'last_update_timestamp',

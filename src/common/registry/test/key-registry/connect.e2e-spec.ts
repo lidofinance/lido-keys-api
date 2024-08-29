@@ -28,9 +28,6 @@ describe('Registry', () => {
     process.exit(1);
   }
   const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
-  // const operatorsWithModuleAddress = operators.map((key) => {
-  //   return { ...key, moduleAddress: address };
-  // });
 
   const blockHash = '0x947aa07f029fd9fed1af664339373077e61f54aff32d692e1f00139fcd4c5039';
   const provider = getDefaultProvider('mainnet');
@@ -79,12 +76,6 @@ describe('Registry', () => {
 
   test('Update', async () => {
     await registryService.update(address, blockHash);
-
-    // TODO: consider uncommit on holesky
-    // await compareTestOperators(address, registryService, {
-    //   operators: operatorsWithModuleAddress,
-    // });
-
     const operators = await registryService.getOperatorsFromStorage(address);
     expect(operators.length).toEqual(36);
     const keys = await registryService.getOperatorsKeysFromStorage(address);
