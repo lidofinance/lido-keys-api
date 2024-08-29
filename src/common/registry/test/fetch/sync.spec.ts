@@ -10,7 +10,7 @@ import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 import { ConfigModule } from 'common/config';
 import { ExecutionProviderModule } from 'common/execution-provider';
 import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
-import { PrometheusModule, PrometheusService } from 'common/prometheus';
+import { PrometheusModule } from 'common/prometheus';
 
 describe('Sync module initializing', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
