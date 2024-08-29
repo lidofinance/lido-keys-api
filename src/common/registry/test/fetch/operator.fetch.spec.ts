@@ -43,7 +43,6 @@ describe('Operators', () => {
   test('count', async () => {
     const expected = 2;
     mockCall.mockImplementation(async () => {
-      console.log('mockCall');
       const iface = new Interface(Registry__factory.abi);
       return iface.encodeFunctionResult('getNodeOperatorsCount', [expected]);
     });
