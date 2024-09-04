@@ -1,23 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from 'common/config';
 import { ExecutionProvider } from 'common/execution-provider';
-import { Multicall, Multicall__factory } from 'generated';
+import { Multicall__factory } from 'generated';
 import { Multicall3 } from 'generated/Multicall';
 import { MULTICALL_ADDRESS } from './constants';
 
+import { CallOverrides } from '../registry/fetch/interfaces/overrides.interface';
+
 @Injectable()
 export class MulticallService {
-  protected contract: Multicall;
-  protected MULTICALL_BATCH_SIZE;
+  // TODO: use config
+  MULTICALL_BATCH_SIZE = 20;
 
-  constructor(protected readonly provider: ExecutionProvider, protected readonly configService: ConfigService) {
-    const chainId = this.configService.get('CHAIN_ID');
-    this.contract = Multicall__factory.connect(MULTICALL_ADDRESS[chainId], this.provider);
-    this.MULTICALL_BATCH_SIZE = this.configService.get('MULTICALL_BATCH_SIZE');
+  constructor(protected readonly provider: ExecutionProvider) {}
+
+  private async contract() {
+    const network = await this.provider.getNetwork();
+    network.chainId;
+    return Multicall__factory.connect(MULTICALL_ADDRESS[network.chainId], this.provider);
   }
 
-  public async aggregateInBatch(calls: Multicall3.Call3Struct[], overrides: { blockTag: string | number }) {
-    const aggregateFunctions = this.createCallsBatchFunctions(calls, overrides);
+  public async aggregateInBatch(calls: Multicall3.Call3Struct[], overrides: CallOverrides) {
+    // overrides: { blockTag: string | number }) {
+    const aggregateFunctions = await this.createCallsBatchFunctions(calls, overrides);
     const results = await this.executeAggregateBatches(aggregateFunctions, 20);
 
     return results.flat();
@@ -28,17 +32,19 @@ export class MulticallService {
    * @param calls
    * @param overrides
    */
-  createCallsBatchFunctions(
+  async createCallsBatchFunctions(
     calls: Multicall3.Call3Struct[],
-    overrides: { blockTag: string | number },
-  ): (() => Promise<Multicall3.ResultStructOutput[]>)[] {
+    overrides: CallOverrides, // { blockTag: string | number },
+  ): Promise<(() => Promise<Multicall3.ResultStructOutput[]>)[]> {
     const aggregateFunctions: (() => Promise<Multicall3.ResultStructOutput[]>)[] = [];
+
+    const contract = await this.contract();
 
     for (let batch = 0; batch < calls.length; batch += this.MULTICALL_BATCH_SIZE) {
       const callBatch = calls.slice(batch, batch + this.MULTICALL_BATCH_SIZE);
 
       const batchFunction = async () => {
-        return await this.contract.callStatic.aggregate3(callBatch, overrides);
+        return await contract.callStatic.aggregate3(callBatch, overrides as any);
       };
       aggregateFunctions.push(batchFunction);
     }

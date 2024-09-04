@@ -10,6 +10,8 @@ export interface RegistryFetchOptions {
   lidoAddress?: string;
   provider?: Provider | Signer;
   keysBatchSize?: number;
+  multicallEnable?: boolean;
+  multicallBatchSize?: number;
 }
 
 export interface RegistryFetchModuleSyncOptions extends Pick<ModuleMetadata, 'imports'>, RegistryFetchOptions {}

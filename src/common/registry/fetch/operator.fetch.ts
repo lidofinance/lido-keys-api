@@ -9,14 +9,15 @@ import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
 import { utils } from 'ethers';
 import { Multicall3 } from 'generated/Multicall';
 import { MulticallService } from 'common/contracts/multicall.service';
-import { ConfigService } from 'common/config';
+import { RegistryFetchOptions, REGISTRY_FETCH_OPTIONS_TOKEN } from './interfaces/module.interface';
+
 @Injectable()
 export class RegistryOperatorFetchService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
     @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
     private multicallService: MulticallService,
-    private configService: ConfigService,
+    @Inject(REGISTRY_FETCH_OPTIONS_TOKEN) private options: RegistryFetchOptions,
   ) {}
 
   private getContract(moduleAddress: string) {
@@ -188,9 +189,9 @@ export class RegistryOperatorFetchService {
     moduleAddress: string,
     fromIndex = 0,
     toIndex = -1,
-    overrides: { blockTag: string | number },
+    overrides: { blockTag: { blockHash: string } },
   ): Promise<RegistryOperator[]> {
-    const MULTICALL_ENABLE = this.configService.get('MULTICALL_ENABLE');
+    const MULTICALL_ENABLE = this.options.multicallEnable || true;
 
     if (MULTICALL_ENABLE) {
       return await this.multicallFetch(moduleAddress, fromIndex, toIndex, overrides);
@@ -211,7 +212,7 @@ export class RegistryOperatorFetchService {
     moduleAddress: string,
     fromIndex = 0,
     toIndex = -1,
-    overrides: { blockTag: string | number },
+    overrides: { blockTag: { blockHash: string } }, //{ blockTag: string | number },
   ) {
     const fullInfo = true;
     const contract = this.getContract(moduleAddress);
