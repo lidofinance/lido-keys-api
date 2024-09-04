@@ -37,7 +37,7 @@
     "test:e2e": "mikro-orm schema:drop -r && mikro-orm migration:up && jest -i --config jest-e2e.json && chronix compile && chronix test",
     "test:e2e:debug": "mikro-orm schema:drop -r && mikro-orm migration:up && node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest -i --config jest-e2e.json && chronix compile && chronix test",
     "test:e2e:docker": "docker-compose -f docker-compose.e2e.yml up --build --abort-on-container-exit",
-    "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/staking-router-modules/contracts/abi/*.json",
+    "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/staking-router-modules/contracts/abi/*.json ./src/common/contracts/abi/*.json",
     "chronix:compile": "chronix compile",
     "chronix:test": "chronix test",
     "test:alerts": "promtool test rules alerts/*.test.yml",

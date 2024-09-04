@@ -180,6 +180,16 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsString()
   LIDO_LOCATOR_DEVNET_ADDRESS = '';
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => toBoolean(value))
+  MULTICALL_ENABLE = true;
+
+  @IsOptional()
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
+  MULTICALL_BATCH_SIZE = 20;
 }
 
 export function validate(config: Record<string, unknown>) {

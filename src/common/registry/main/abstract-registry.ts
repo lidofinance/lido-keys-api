@@ -85,6 +85,7 @@ export abstract class AbstractRegistryService {
   /** returns operators from the contract */
   public async getOperatorsFromContract(moduleAddress: string, blockHash: string) {
     const overrides = { blockTag: { blockHash } };
+
     return await this.operatorFetch.fetch(moduleAddress, 0, -1, overrides);
   }
 

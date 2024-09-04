@@ -6,6 +6,10 @@ import { getDefaultProvider } from '@ethersproject/providers';
 import { keysResponse, usedStatuses, mergedKeys, mergedSignatures } from '../fixtures/key-batch.fixture';
 import { RegistryFetchModule, RegistryKeyBatchFetchService } from '../../';
 import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
+import { ConfigModule } from 'common/config';
+import { ExecutionProviderModule } from 'common/execution-provider';
+import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
+import { PrometheusModule } from 'common/prometheus';
 
 describe('Keys', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
@@ -19,10 +23,16 @@ describe('Keys', () => {
 
   beforeEach(async () => {
     const imports = [
+      ExecutionProviderModule,
       RegistryFetchModule.forFeature({ provider }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
+      ConfigModule,
+      PrometheusModule,
     ];
-    const moduleRef = await Test.createTestingModule({ imports }).compile();
+    const moduleRef = await Test.createTestingModule({ imports })
+      .overrideProvider(SimpleFallbackJsonRpcBatchProvider)
+      .useValue(provider)
+      .compile();
     fetchService = moduleRef.get(RegistryKeyBatchFetchService);
   });
 

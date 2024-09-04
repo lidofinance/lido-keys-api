@@ -15,6 +15,8 @@ import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import { DatabaseE2ETestingModule } from 'app';
 import { CSMKeyRegistryModule } from 'common/registry-csm';
+import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
+import { ExecutionProviderModule } from 'common/execution-provider';
 import { PrometheusModule } from 'common/prometheus';
 
 describe('Registry', () => {
@@ -43,13 +45,17 @@ describe('Registry', () => {
 
   beforeEach(async () => {
     const imports = [
+      ExecutionProviderModule,
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),
       CSMKeyRegistryModule.forFeature({ provider }),
       PrometheusModule,
     ];
-    const moduleRef = await Test.createTestingModule({ imports }).compile();
+    const moduleRef = await Test.createTestingModule({ imports })
+      .overrideProvider(SimpleFallbackJsonRpcBatchProvider)
+      .useValue(provider)
+      .compile();
     registryService = moduleRef.get(KeyRegistryService);
     registryStorageService = moduleRef.get(RegistryStorageService);
 
