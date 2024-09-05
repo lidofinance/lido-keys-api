@@ -120,10 +120,12 @@ export abstract class AbstractRegistryService {
 
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
+      const stakingLimit = currOperator.stakingLimit;
 
       const result = await this.keyBatchFetch.fetch(
         moduleAddress,
         operatorIndex,
+        stakingLimit,
         fromIndex,
         toIndex,
         currOperator.usedSigningKeys,

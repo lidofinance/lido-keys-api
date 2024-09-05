@@ -34,8 +34,8 @@ export const compareTestKeysAndOperators = async (
   registryService: AbstractRegistryService,
   { keys, operators }: Expected,
 ) => {
-  await compareTestKeys(address, registryService, { keys });
   await compareTestOperators(address, registryService, { operators });
+  await compareTestKeys(address, registryService, { keys });
 };
 
 export const clone = <T>(obj: T) => JSON.parse(JSON.stringify(obj)) as T;
