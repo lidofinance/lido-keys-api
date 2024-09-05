@@ -78,6 +78,7 @@ export class CuratedModuleService implements StakingModuleInterface {
       'deposit_signature as depositSignature',
       'used',
       'module_address as moduleAddress',
+      'vetted',
     ]);
   }
 

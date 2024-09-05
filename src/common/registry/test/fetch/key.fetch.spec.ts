@@ -31,22 +31,24 @@ describe('Keys', () => {
   });
 
   test('fetchOne', async () => {
-    const expected = { operatorIndex: 0, index: 1, moduleAddress: address, ...key };
+    const expected = { operatorIndex: 0, index: 1, moduleAddress: address, ...key, vetted: true };
 
+    const stakingLimit = 3;
     mockCall.mockImplementation(async () => {
       const iface = new Interface(Registry__factory.abi);
       return iface.encodeFunctionResult('getSigningKey', keyFields);
     });
-    const result = await fetchService.fetchOne(address, expected.operatorIndex, expected.index);
+    const result = await fetchService.fetchOne(address, expected.operatorIndex, stakingLimit, expected.index);
 
     expect(result).toEqual(expected);
     expect(mockCall).toBeCalledTimes(1);
   });
 
   test('fetch', async () => {
-    const expectedFirst = { operatorIndex: 0, index: 1, moduleAddress: address, ...key };
-    const expectedSecond = { operatorIndex: 0, index: 2, moduleAddress: address, ...key };
+    const expectedFirst = { operatorIndex: 0, index: 1, moduleAddress: address, ...key, vetted: true };
+    const expectedSecond = { operatorIndex: 0, index: 2, moduleAddress: address, ...key, vetted: true };
 
+    const stakingLimit = 3;
     mockCall.mockImplementation(async () => {
       const iface = new Interface(Registry__factory.abi);
       return iface.encodeFunctionResult('getSigningKey', keyFields);
@@ -54,6 +56,7 @@ describe('Keys', () => {
     const result = await fetchService.fetch(
       address,
       expectedFirst.operatorIndex,
+      stakingLimit,
       expectedFirst.index,
       expectedSecond.index + 1,
     );
@@ -64,20 +67,20 @@ describe('Keys', () => {
 
   test('fetch all operator keys', async () => {
     const expected = { operatorIndex: 1, index: 0, moduleAddress: address, ...key };
-
+    const stakingLimit = 2;
     mockCall
       .mockImplementationOnce(async () => {
         const iface = new Interface(Registry__factory.abi);
         return iface.encodeFunctionResult(
           'getNodeOperator',
-          operatorFields({ ...operator, moduleAddress: address, totalSigningKeys: 1 }),
+          operatorFields({ ...operator, moduleAddress: address, stakingLimit, totalSigningKeys: 1 }),
         );
       })
       .mockImplementation(async () => {
         const iface = new Interface(Registry__factory.abi);
         return iface.encodeFunctionResult('getSigningKey', keyFields);
       });
-    const result = await fetchService.fetch(address, expected.operatorIndex);
+    const result = await fetchService.fetch(address, expected.operatorIndex, stakingLimit);
 
     expect(result).toEqual([expected]);
     expect(mockCall).toBeCalledTimes(3);
@@ -85,7 +88,7 @@ describe('Keys', () => {
 
   test('fetch all operator keys with reorg', async () => {
     const expected = { operatorIndex: 1, index: 0, moduleAddress: address, ...key };
-
+    const stakingLimit = 2;
     mockCall
       .mockImplementationOnce(async () => {
         const iface = new Interface(Registry__factory.abi);
@@ -94,6 +97,7 @@ describe('Keys', () => {
           operatorFields({
             ...operator,
             moduleAddress: address,
+            stakingLimit,
             totalSigningKeys: 1,
             usedSigningKeys: 2,
             finalizedUsedSigningKeys: 1,
@@ -104,12 +108,13 @@ describe('Keys', () => {
         const iface = new Interface(Registry__factory.abi);
         return iface.encodeFunctionResult('getSigningKey', keyFields);
       });
-    const result = await fetchService.fetch(address, expected.operatorIndex);
+    const result = await fetchService.fetch(address, expected.operatorIndex, stakingLimit);
     expect(result).toEqual([expected]);
     expect(mockCall).toBeCalledTimes(3);
   });
 
   test('fetch. fromIndex > toIndex', async () => {
-    await expect(() => fetchService.fetch(address, 0, 2, 1)).rejects.toThrow();
+    const stakingLimit = 2;
+    await expect(() => fetchService.fetch(address, 0, stakingLimit, 2, 1)).rejects.toThrow();
   });
 });

@@ -42,8 +42,8 @@ describe('check that findAsStream method dont create a new connection', () => {
 
   it('should return list of keys', async () => {
     const keys = [
-      { operatorIndex: 1, index: 1, moduleAddress: address, ...key },
-      { operatorIndex: 2, index: 2, moduleAddress: address, ...key },
+      { operatorIndex: 1, index: 1, moduleAddress: address, ...key, vetted: true },
+      { operatorIndex: 2, index: 2, moduleAddress: address, ...key, vetted: true },
     ];
     await keyStorageService.save(keys);
 
@@ -56,6 +56,7 @@ describe('check that findAsStream method dont create a new connection', () => {
       'deposit_signature as depositSignature',
       'used',
       'module_address as moduleAddress',
+      'vetted',
     ];
 
     await entityManager.transactional(

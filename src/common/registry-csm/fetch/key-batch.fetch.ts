@@ -33,6 +33,7 @@ export class RegistryKeyBatchFetchService {
   public formatKeys(
     moduleAddress: string,
     operatorIndex: number,
+    stakingLimit: number,
     unformattedRecords: KeyBatchRecord,
     startIndex: number,
     usedKeysCount: number,
@@ -52,6 +53,7 @@ export class RegistryKeyBatchFetchService {
         key: key,
         depositSignature: signatures[chunkIndex],
         used: index < usedKeysCount,
+        vetted: index < stakingLimit,
         moduleAddress,
       };
     });
@@ -61,6 +63,7 @@ export class RegistryKeyBatchFetchService {
   public async fetch(
     moduleAddress: string,
     operatorIndex: number,
+    stakingLimit: number,
     fromIndex = 0,
     toIndex = -1,
     usedKeysCount = -1,
@@ -86,6 +89,7 @@ export class RegistryKeyBatchFetchService {
     const unformattedKeys = await this.fetchSigningKeysInBatches(
       moduleAddress,
       operatorIndex,
+      stakingLimit,
       offset,
       limit,
       usedKeysCount,
@@ -98,6 +102,7 @@ export class RegistryKeyBatchFetchService {
   public async fetchSigningKeysInBatches(
     moduleAddress: string,
     operatorIndex: number,
+    stakingLimit: number,
     defaultOffset: number,
     totalAmount: number,
     usedKeysCount: number,
@@ -114,7 +119,7 @@ export class RegistryKeyBatchFetchService {
         overrides as any,
       );
 
-      return this.formatKeys(moduleAddress, operatorIndex, keys, offset, usedKeysCount);
+      return this.formatKeys(moduleAddress, operatorIndex, stakingLimit, keys, offset, usedKeysCount);
     });
 
     const results = await Promise.all(promises);

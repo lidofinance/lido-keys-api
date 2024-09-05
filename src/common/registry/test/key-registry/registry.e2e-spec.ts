@@ -50,14 +50,14 @@ describe('Key', () => {
   });
 
   test('getModuleKeysFromStorage', async () => {
-    const expected = [{ index: 0, operatorIndex: 0, moduleAddress: address, ...key, used: false }];
+    const expected = [{ index: 0, operatorIndex: 0, moduleAddress: address, ...key, used: false, vetted: true }];
     jest.spyOn(keyStorage, 'findAll').mockImplementation(async () => expected);
 
     await expect(validatorService.getModuleKeysFromStorage(address)).resolves.toBe(expected);
   });
 
   test('getUsedKeysFromStorage', async () => {
-    const expected = [{ index: 0, operatorIndex: 0, moduleAddress: address, ...key, used: true }];
+    const expected = [{ index: 0, operatorIndex: 0, moduleAddress: address, ...key, used: true, vetted: true }];
     jest.spyOn(keyStorage, 'findUsed').mockImplementation(async () => expected);
 
     await expect(validatorService.getUsedKeysFromStorage(address)).resolves.toBe(expected);
