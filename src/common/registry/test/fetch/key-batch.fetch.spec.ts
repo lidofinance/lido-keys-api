@@ -38,7 +38,7 @@ describe('Keys', () => {
       const iface = new Interface(Registry__factory.abi);
       return iface.encodeFunctionResult('getSigningKeys', keysResponse);
     });
-    const result = await fetchService.fetch(address, operatorIndex, stakingLimit, usedStatuses.length);
+    const result = await fetchService.fetch(address, operatorIndex, stakingLimit, 0, usedStatuses.length);
 
     const [firstKey] = result;
 

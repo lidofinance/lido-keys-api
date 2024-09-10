@@ -9,7 +9,7 @@ import { ConfigModule, ConfigService } from 'common/config';
 describe('Keys', () => {
   const CHAIN_ID = process.env.CHAIN_ID || 1;
   const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
-  const registryKey = { index: 1, operatorIndex: 1, moduleAddress: address, ...key };
+  const registryKey = { index: 1, operatorIndex: 1, moduleAddress: address, ...key, vetted: true };
 
   async function* findKeysAsStream() {
     yield registryKey;
