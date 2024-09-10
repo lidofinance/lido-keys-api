@@ -66,7 +66,7 @@ describe('Keys', () => {
   });
 
   test('fetch all operator keys', async () => {
-    const expected = { operatorIndex: 1, index: 0, moduleAddress: address, ...key };
+    const expected = { operatorIndex: 1, index: 0, moduleAddress: address, ...key, vetted: true };
     const stakingLimit = 2;
     mockCall
       .mockImplementationOnce(async () => {
@@ -87,7 +87,7 @@ describe('Keys', () => {
   });
 
   test('fetch all operator keys with reorg', async () => {
-    const expected = { operatorIndex: 1, index: 0, moduleAddress: address, ...key };
+    const expected = { operatorIndex: 1, index: 0, moduleAddress: address, ...key, vetted: true };
     const stakingLimit = 2;
     mockCall
       .mockImplementationOnce(async () => {
