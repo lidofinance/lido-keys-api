@@ -133,20 +133,26 @@ export abstract class AbstractRegistryService {
 
       const operatorKeys = result.filter((key) => key);
 
-      totalKeysAmount += operatorKeys.length;
+      const operatorKeysCount = operatorKeys.length;
+      totalKeysAmount += operatorKeysCount;
 
-      if (operatorKeys.length > 0) {
-        this.logger.log('Keys fetched', {
-          operatorIndex,
-          fromIndex,
-          toIndex,
-          operatorKeys: operatorKeys.length,
-          fetchedKeys: result.length,
-          stakingModuleAddress: moduleAddress,
-        });
+      const logMeta = {
+        operatorIndex,
+        fromIndex,
+        toIndex,
+        operatorKeys: operatorKeysCount,
+        fetchedKeys: result.length,
+        stakingModuleAddress: moduleAddress,
+      };
 
+      if (operatorKeysCount > 0) {
+        this.logger.log('Keys fetched', logMeta);
         await this.saveKeys(operatorKeys);
         this.logger.log('Keys saved', { operatorIndex, stakingModuleAddress: moduleAddress });
+      }
+
+      if (operatorKeysCount === 0) {
+        this.logger.log('No keys fetched', logMeta);
       }
     }
 
