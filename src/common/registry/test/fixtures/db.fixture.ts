@@ -38,6 +38,7 @@ export const keys = [
     depositSignature:
       '0x967875a0104d9f674538e2ec0df4be0a61ef08061cdcfa83e5a63a43dadb772d29053368224e5d8e046ba1a78490f5fc0f0186f23af0465d0a82b2db2e7535782fe12e1fd1cd4f6eb77d8dc7a4f7ab0fde31435d5fa98a013e0a716c5e1ef6a2',
     used: true,
+    vetted: true,
   },
   {
     operatorIndex: 0,
@@ -46,6 +47,7 @@ export const keys = [
     depositSignature:
       '0xb048f4a409d5a0aa638e5ec65c21e936ffde9a8d848e74e6b2f6972a4145620dc78c79db5425ea1a5c6b1dd8d50fc77f0bcec894c0a9446776936f2adf4f1dc7056fb3c4bdf9dbd00981288d4e582875d10b13d780dddc642496e97826abd3c7',
     used: true,
+    vetted: true,
   },
   {
     operatorIndex: 0,
@@ -54,6 +56,7 @@ export const keys = [
     depositSignature:
       '0x9990450099816e066c20b5947be6bf089b57fcfacfb2c8285ddfd6c678a44198bf7c013a0d1a6353ed19dd94423eef7b010d25aaa2c3093760c79bf247f5350120e8a74e4586eeba0f1e2bcf17806f705007d7b5862039da5cd93ee659280d77',
     used: true,
+    vetted: true,
   },
   {
     operatorIndex: 1,
@@ -62,6 +65,7 @@ export const keys = [
     depositSignature:
       '0x967875a0104d9f674538e2ec0df4be0a61ef08061cdcfa83e5a63a43dadb772d29053368224e5d8e046ba1a78490f5fc0f0186f23af0465d0a82b2db2e7535782fe12e1fd1cd4f6eb77d8dc7a4f7ab0fde31435d5fa98a013e0a716c5e1ef6a2',
     used: true,
+    vetted: true,
   },
   {
     operatorIndex: 1,
@@ -70,6 +74,7 @@ export const keys = [
     depositSignature:
       '0xb048f4a409d5a0aa638e5ec65c21e936ffde9a8d848e74e6b2f6972a4145620dc78c79db5425ea1a5c6b1dd8d50fc77f0bcec894c0a9446776936f2adf4f1dc7056fb3c4bdf9dbd00981288d4e582875d10b13d780dddc642496e97826abd3c7',
     used: true,
+    vetted: true,
   },
   {
     operatorIndex: 1,
@@ -78,6 +83,7 @@ export const keys = [
     depositSignature:
       '0x9990450099816e066c20b5947be6bf089b57fcfacfb2c8285ddfd6c678a44198bf7c013a0d1a6353ed19dd94423eef7b010d25aaa2c3093760c79bf247f5350120e8a74e4586eeba0f1e2bcf17806f705007d7b5862039da5cd93ee659280d77',
     used: true,
+    vetted: true,
   },
 ];
 
@@ -88,6 +94,7 @@ export const newKey = {
   depositSignature:
     '0x967875a0104d1f674538e2ec0df4be0a61ef08061cdcfa83e5a63a43dadb772d29053368224e5d8e046ba1a78490f5fc0f0186f23af0465d0a82b2db2e7535782fe12e1fd1cd4f6eb77d8dc7a4f7ab0fde31435d5fa98a013e0a716c5e1ef6a2',
   used: true,
+  vetted: true,
 };
 
 export const usedSigningKeys = [...keys.slice(1, 2), ...keys.slice(4, 5)];

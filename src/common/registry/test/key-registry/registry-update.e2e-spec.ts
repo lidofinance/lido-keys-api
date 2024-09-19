@@ -19,6 +19,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+// const blockHash = '0x947aa07f029fd9fed1af664339373077e61f54aff32d692e1f00139fcd4c5039';
 const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
 describe('Registry', () => {
@@ -30,8 +31,8 @@ describe('Registry', () => {
     return { ...key, moduleAddress: address };
   });
 
-  const operatorsWithModuleAddress = operators.map((key) => {
-    return { ...key, moduleAddress: address };
+  const operatorsWithModuleAddress = operators.map((operator) => {
+    return { ...operator, moduleAddress: address };
   });
 
   let registryService: KeyRegistryService;
@@ -118,7 +119,7 @@ describe('Registry', () => {
     });
 
     test('new key is added to database if totalSigningKeys is increased', async () => {
-      const newKeys = clone([...keysWithModuleAddress, { ...newKey, moduleAddress: address }]);
+      const newKeys = clone([...keysWithModuleAddress, { ...newKey, moduleAddress: address, vetted: true }]);
 
       const newOperators = clone(operatorsWithModuleAddress);
       newOperators[0].totalSigningKeys++;
@@ -261,6 +262,7 @@ describe('Registry', () => {
             '0x967875a0104d1f674538e2ec0df4be0a61ef08061cdcfa83e5a63a43dadb772d29053368224e5d8e046ba1a78490f5fc0f0186f23af0465d0a82b2db2e7535782fe12e1fd1cd4f6eb77d8dc7a4f7ab0fde31435d5fa98a013e0a716c5e1ef6a2',
           used: true,
           moduleAddress: address,
+          vetted: true,
         },
       ]);
 

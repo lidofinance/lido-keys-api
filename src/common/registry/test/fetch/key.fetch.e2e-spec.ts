@@ -18,6 +18,9 @@ describe('Keys', () => {
 
   let fetchService: RegistryKeyFetchService;
 
+  const operatorIndex = 17;
+  const stakingLimit = 500;
+
   beforeEach(async () => {
     const imports = [
       RegistryFetchModule.forFeature({ provider }),
@@ -28,7 +31,8 @@ describe('Keys', () => {
   });
 
   test('fetch one key', async () => {
-    const key = await fetchService.fetchOne(address, 17, 0, { blockTag: 1488022 });
+    const stakingLimit = 100;
+    const key = await fetchService.fetchOne(address, operatorIndex, stakingLimit, 0, { blockTag: 1488022 });
 
     expect(key).toBeInstanceOf(Object);
 
@@ -40,7 +44,8 @@ describe('Keys', () => {
   });
 
   test('fetch operator keys', async () => {
-    const keys = await fetchService.fetch(address, 17, 0, 3, {
+    const stakingLimit = 100;
+    const keys = await fetchService.fetch(address, operatorIndex, stakingLimit, 0, 3, {
       blockTag: 1488022,
     });
     expect(keys).toBeInstanceOf(Array);
@@ -48,17 +53,23 @@ describe('Keys', () => {
   }, 15_000);
 
   test('fetch several keys', async () => {
-    const keys = await fetchService.fetch(address, 17, 0, 2, {
+    const keys = await fetchService.fetch(address, operatorIndex, stakingLimit, 0, 2, {
       blockTag: 1488022,
     });
 
     expect(keys).toBeInstanceOf(Array);
     expect(keys.length).toBe(2);
 
-    expect(keys[0].operatorIndex).toBe(17);
-    expect(keys[1].operatorIndex).toBe(17);
+    expect(keys[0].operatorIndex).toBe(operatorIndex);
+    expect(keys[1].operatorIndex).toBe(operatorIndex);
 
     expect(keys[0].index).toBe(0);
     expect(keys[1].index).toBe(1);
+
+    expect(keys[0].used).toBe(true);
+    expect(keys[1].used).toBe(true);
+
+    expect(keys[0].vetted).toBe(true);
+    expect(keys[1].vetted).toBe(true);
   });
 });

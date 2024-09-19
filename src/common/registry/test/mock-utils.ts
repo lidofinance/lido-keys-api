@@ -21,7 +21,7 @@ export const registryServiceMock = (
   const fetchBatchKey = moduleRef.get(RegistryKeyBatchFetchService);
   const fetchSigningKeysInBatchesMock = jest
     .spyOn(fetchBatchKey, 'fetchSigningKeysInBatches')
-    .mockImplementation(async (moduleAddress, operatorIndex, fromIndex, totalAmount) => {
+    .mockImplementation(async (moduleAddress, operatorIndex, stakingLimit, fromIndex, totalAmount) => {
       return findKeys(keys, operatorIndex, fromIndex, totalAmount);
     });
 

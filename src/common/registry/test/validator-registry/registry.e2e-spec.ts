@@ -54,7 +54,7 @@ describe('Validator', () => {
   });
 
   test('getValidatorsKeysFromStorage', async () => {
-    const expected = [{ index: 0, operatorIndex: 0, moduleAddress: address, ...key }];
+    const expected = [{ index: 0, operatorIndex: 0, moduleAddress: address, ...key, vetted: true }];
     jest.spyOn(keyStorage, 'findUsed').mockImplementation(async () => expected);
 
     await expect(validatorService.getValidatorsKeysFromStorage(address)).resolves.toBe(expected);

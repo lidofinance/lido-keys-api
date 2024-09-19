@@ -123,7 +123,16 @@ export abstract class AbstractRegistryService {
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
 
-      const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
+      const stakingLimit = currOperator.stakingLimit;
+
+      const result = await this.keyBatchFetch.fetch(
+        moduleAddress,
+        operatorIndex,
+        stakingLimit,
+        fromIndex,
+        toIndex,
+        overrides,
+      );
 
       const operatorKeys = result.filter((key) => key);
 

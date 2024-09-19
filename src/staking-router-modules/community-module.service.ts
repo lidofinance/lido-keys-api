@@ -81,6 +81,7 @@ export class CommunityModuleService implements StakingModuleInterface {
       'deposit_signature as depositSignature',
       'used',
       'module_address as moduleAddress',
+      'vetted',
     ]);
   }
 
