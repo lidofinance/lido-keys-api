@@ -33,42 +33,14 @@ export class RegistryOperatorFetchService {
     // from docs: Keep in mind that many backends will discard old events,
     // and that requests which are too broad may get dropped as they require too many resources to execute the query.
 
-    let events = await contract.provider.getLogs({
+    const events = await contract.provider.getLogs({
       topics: [
         // KECCAK256 hash of the text bytes
         [
           utils.id('NodeOperatorAdded(uint256,string,address,uint64)'),
           utils.id('NodeOperatorNameSet(uint256,string)'),
-          utils.id('NodeOperatorActiveSet(uint256,bool)'),
           utils.id('NodeOperatorRewardAddressSet(uint256,address)'),
         ],
-      ],
-      fromBlock,
-      toBlock,
-    });
-
-    if (events.length > 0) return events;
-
-    events = await contract.provider.getLogs({
-      topics: [
-        [
-          // KECCAK256 hash of the text bytes
-          utils.id('VettedSigningKeysCountChanged(uint256,uint256)'),
-          utils.id('DepositedSigningKeysCountChanged(uint256,uint256)'),
-          utils.id('ExitedSigningKeysCountChanged(uint256,uint256)'),
-          utils.id('TotalSigningKeysCountChanged(uint256,uint256)'),
-        ],
-      ],
-      fromBlock,
-      toBlock,
-    });
-
-    if (events.length > 0) return events;
-
-    events = await contract.provider.getLogs({
-      topics: [
-        // KECCAK256 hash of the text bytes
-        utils.id('NodeOperatorTotalKeysTrimmed(uint256,uint64)'),
       ],
       fromBlock,
       toBlock,

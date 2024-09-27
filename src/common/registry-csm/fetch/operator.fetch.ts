@@ -35,15 +35,11 @@ export class RegistryOperatorFetchService {
           // KECCAK256 hash of the text bytes
           utils.id('NodeOperatorAdded(uint256,address,address)'),
           utils.id('NodeOperatorRewardAddressChanged(uint256,address,address)'),
-          utils.id('VettedSigningKeysCountChanged(uint256,uint256)'),
-          utils.id('DepositedSigningKeysCountChanged(uint256,uint256)'),
         ],
       ],
       fromBlock,
       toBlock,
     });
-
-    if (events.length > 0) return events;
 
     return events;
   }
