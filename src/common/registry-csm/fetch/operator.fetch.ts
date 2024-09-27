@@ -33,7 +33,6 @@ export class RegistryOperatorFetchService {
       topics: [
         [
           // KECCAK256 hash of the text bytes
-          utils.id('NodeOperatorAdded(uint256,address,address)'),
           utils.id('NodeOperatorRewardAddressChanged(uint256,address,address)'),
         ],
       ],
