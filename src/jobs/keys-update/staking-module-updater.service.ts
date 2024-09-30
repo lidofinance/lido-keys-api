@@ -39,7 +39,7 @@ export class StakingModuleUpdaterService {
       // Read current nonce from contract
       const currNonce = await moduleInstance.getCurrentNonce(stakingModuleAddress, currentBlockHash);
       // Read module in storage
-      const moduleInStorage = await this.srModulesStorage.findOneById(contractModule.moduleId);
+      const moduleInStorage = await this.srModulesStorage.findOneByModuleId(contractModule.moduleId);
       const prevNonce = moduleInStorage?.nonce;
 
       this.logger.log(`Nonce previous value: ${prevNonce}, nonce current value: ${currNonce}`);

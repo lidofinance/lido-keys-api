@@ -45,7 +45,7 @@ describe('detect reorg', () => {
         {
           provide: SRModuleStorageService,
           useValue: {
-            findOneById: jest.fn(),
+            findOneByModuleId: jest.fn(),
             upsert: jest.fn(),
           },
         },
