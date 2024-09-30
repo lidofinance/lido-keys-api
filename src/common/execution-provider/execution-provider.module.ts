@@ -17,6 +17,7 @@ import { ExecutionProviderService } from './execution-provider.service';
             maxConcurrentRequests: configService.get('PROVIDER_CONCURRENT_REQUESTS'),
             batchAggregationWaitMs: configService.get('PROVIDER_BATCH_AGGREGATION_WAIT_MS'),
           },
+          logRetries: true,
           fetchMiddlewares: [
             async (next) => {
               const endTimer = prometheusService.elRpcRequestDuration.startTimer();

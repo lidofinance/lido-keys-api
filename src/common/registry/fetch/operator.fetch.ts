@@ -6,7 +6,7 @@ import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
-
+import { utils } from 'ethers';
 @Injectable()
 export class RegistryOperatorFetchService {
   constructor(
@@ -18,49 +18,41 @@ export class RegistryOperatorFetchService {
     return this.contract.attach(moduleAddress);
   }
 
-  public async operatorsWereChanged(
-    moduleAddress: string,
-    fromBlockNumber: number,
-    toBlockNumber: number,
-  ): Promise<boolean> {
-    if (fromBlockNumber > toBlockNumber) {
-      return false;
+  /**
+   * Exits early if relevant events are found, as they are used only as indicators for an update.
+   */
+  private async fetchOperatorsEvents(moduleAddress: string, fromBlock: number, toBlock: number) {
+    if (fromBlock > toBlock) {
+      return [];
     }
 
-    const nodeOperatorAddedFilter = this.getContract(moduleAddress).filters['NodeOperatorAdded']();
-    const nodeOperatorAddedEvents = await this.getContract(moduleAddress).queryFilter(
-      nodeOperatorAddedFilter,
-      fromBlockNumber,
-      toBlockNumber,
-    );
+    const contract = await this.getContract(moduleAddress);
 
-    if (nodeOperatorAddedEvents.length) {
-      return true;
-    }
+    // https://github.com/lidofinance/core/blob/master/contracts/0.4.24/nos/NodeOperatorsRegistry.sol#L39
+    // https://docs.ethers.org/v5/api/providers/provider/#Provider-getLogs
+    // from docs: Keep in mind that many backends will discard old events,
+    // and that requests which are too broad may get dropped as they require too many resources to execute the query.
 
-    const nodeOperatorNameSetFilter = this.getContract(moduleAddress).filters['NodeOperatorNameSet']();
-    const nodeOperatorNameSetEvents = await this.getContract(moduleAddress).queryFilter(
-      nodeOperatorNameSetFilter,
-      fromBlockNumber,
-      toBlockNumber,
-    );
+    const events = await contract.provider.getLogs({
+      topics: [
+        // KECCAK256 hash of the text bytes
+        [
+          utils.id('NodeOperatorAdded(uint256,string,address,uint64)'),
+          utils.id('NodeOperatorNameSet(uint256,string)'),
+          utils.id('NodeOperatorRewardAddressSet(uint256,address)'),
+        ],
+      ],
+      fromBlock,
+      toBlock,
+    });
 
-    if (nodeOperatorNameSetEvents.length) {
-      return true;
-    }
-    const nodeOperatorRewardAddressSetFilter =
-      this.getContract(moduleAddress).filters['NodeOperatorRewardAddressSet']();
-    const nodeOperatorRewardAddressSetEvents = await this.getContract(moduleAddress).queryFilter(
-      nodeOperatorRewardAddressSetFilter,
-      fromBlockNumber,
-      toBlockNumber,
-    );
+    return events;
+  }
 
-    if (nodeOperatorRewardAddressSetEvents.length) {
-      return true;
-    }
+  public async operatorsWereChanged(moduleAddress: string, fromBlock: number, toBlock: number): Promise<boolean> {
+    const events = await this.fetchOperatorsEvents(moduleAddress, fromBlock, toBlock);
 
-    return false;
+    return events.length > 0;
   }
 
   /** return blockTag for finalized block, it need for testing purposes */

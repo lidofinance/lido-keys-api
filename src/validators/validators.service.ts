@@ -82,7 +82,6 @@ export class ValidatorsService {
 
   public async getMetaDataFromStorage(): Promise<ConsensusMeta | null> {
     if (this.isDisabledRegistry()) {
-      this.logger.warn('ValidatorsRegistry is disabled in API');
       return null;
     }
 

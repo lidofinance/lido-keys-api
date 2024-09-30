@@ -19,6 +19,7 @@ export const compareTestKeys = async (
   ).sort((a, b) => a.operatorIndex - b.operatorIndex);
 
   expect(fetchedAndSorted).toEqual(expect.arrayContaining(sorted));
+  expect(fetchedAndSorted.length).toEqual(sorted.length);
 };
 
 export const compareTestOperators = async (

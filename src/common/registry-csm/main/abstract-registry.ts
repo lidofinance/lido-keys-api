@@ -18,6 +18,7 @@ import { RegistryOptions } from './interfaces/module.interface';
 import { chunk } from '@lido-nestjs/utils';
 import { RegistryKeyBatchFetchService } from '../fetch/key-batch.fetch';
 import { IsolationLevel } from '@mikro-orm/core';
+import { PrometheusService } from 'common/prometheus';
 
 @Injectable()
 export abstract class AbstractRegistryService {
@@ -34,6 +35,8 @@ export abstract class AbstractRegistryService {
 
     protected readonly entityManager: EntityManager,
 
+    protected readonly prometheusService: PrometheusService,
+
     @Optional()
     @Inject(REGISTRY_GLOBAL_OPTIONS_TOKEN)
     public options?: RegistryOptions,
@@ -47,6 +50,7 @@ export abstract class AbstractRegistryService {
     this.logger.log('Collected operators', {
       previousOperators: previousOperators.length,
       currentOperators: currentOperators.length,
+      stakingModuleAddress: moduleAddress,
     });
 
     await this.entityManager.transactional(
@@ -55,6 +59,7 @@ export abstract class AbstractRegistryService {
 
         this.logger.log('Saved data operators to the DB', {
           operators: currentOperators.length,
+          stakingModuleAddress: moduleAddress,
         });
 
         await this.syncUpdatedKeysWithContract(moduleAddress, previousOperators, currentOperators, blockHash);
@@ -98,9 +103,11 @@ export abstract class AbstractRegistryService {
     blockHash: string,
   ) {
     /**
-     * TODO: optimize a number of queries
      * it's possible to update keys faster by using different strategies depending on the reason for the update
      */
+    const updateTimeStart = performance.now();
+    let totalKeysAmount = 0;
+
     for (const [currentIndex, currOperator] of currentOperators.entries()) {
       // check if the operator in the registry has changed since the last update
       const prevOperator = previousOperators[currentIndex] ?? null;
@@ -134,18 +141,35 @@ export abstract class AbstractRegistryService {
 
       const operatorKeys = result.filter((key) => key);
 
-      this.logger.log('Keys fetched', {
+      const operatorKeysCount = operatorKeys.length;
+      totalKeysAmount += operatorKeysCount;
+
+      const logMeta = {
         operatorIndex,
         fromIndex,
         toIndex,
-        operatorKeys: operatorKeys.length,
+        operatorKeys: operatorKeysCount,
         fetchedKeys: result.length,
-      });
+        stakingModuleAddress: moduleAddress,
+      };
 
-      await this.saveKeys(operatorKeys);
+      if (operatorKeysCount > 0) {
+        this.logger.log('Keys fetched', logMeta);
+        await this.saveKeys(operatorKeys);
+        this.logger.log('Keys saved', { operatorIndex, stakingModuleAddress: moduleAddress });
+      }
 
-      this.logger.log('Keys saved', { operatorIndex });
+      if (operatorKeysCount === 0) {
+        this.logger.log('No keys fetched', logMeta);
+      }
     }
+
+    const updateTimeEnd = performance.now();
+    const updateTime = Math.ceil(updateTimeEnd - updateTimeStart) / 1000;
+
+    this.prometheusService.updateDurationByModule.labels(moduleAddress, totalKeysAmount.toString()).observe(updateTime);
+
+    this.logger.log('Update statistic', { stakingModuleAddress: moduleAddress, time: updateTime, totalKeysAmount });
   }
 
   /** storage */

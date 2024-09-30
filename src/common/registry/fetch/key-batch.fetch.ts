@@ -16,7 +16,7 @@ export class RegistryKeyBatchFetchService {
     @Inject(REGISTRY_FETCH_OPTIONS_TOKEN) private options: RegistryFetchOptions,
   ) {}
 
-  private getContract(moduleAddress: string) {
+  private getContract(moduleAddress: string): Registry {
     return this.contract.attach(moduleAddress);
   }
 
