@@ -11,6 +11,7 @@ export class Key implements RegistryKey {
     this.used = key.used;
     this.moduleAddress = addressToChecksum(key.moduleAddress);
     this.index = key.index;
+    this.vetted = key.vetted;
   }
 
   @ApiProperty({
@@ -48,4 +49,10 @@ export class Key implements RegistryKey {
     description: 'Module address',
   })
   moduleAddress: string;
+
+  @ApiProperty({
+    required: true,
+    description: 'Vetted key status',
+  })
+  vetted: boolean;
 }

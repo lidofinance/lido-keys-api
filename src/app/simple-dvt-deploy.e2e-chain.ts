@@ -61,7 +61,7 @@ describe('Simple DVT deploy', () => {
     session = await sdk.env.hardhat({
       fork: forkUrl,
       chainId: 1,
-      forkBlockNumber: 19282216
+      forkBlockNumber: 19282216,
     });
 
     moduleRef = await Test.createTestingModule({ imports: [AppModule] })
@@ -84,6 +84,11 @@ describe('Simple DVT deploy', () => {
         validatorsRegistryLastBlockNumber: jest.fn(),
         validatorsRegistryLastSlot: jest.fn(),
         validatorsEnabled: jest.fn(),
+        updateDurationByModule: {
+          labels: () => {
+            return { observe: () => ({}) };
+          },
+        },
       })
       .compile();
 
@@ -100,7 +105,7 @@ describe('Simple DVT deploy', () => {
     stakingRouterService = moduleRef.get(StakingRouterService);
 
     jest.spyOn(configService, 'get').mockImplementation((path: any) => {
-      if (path === 'LIDO_LOCATOR_ADDRESS') {
+      if (path === 'LIDO_LOCATOR_DEVNET_ADDRESS') {
         return '0xC1d0b3DE6792Bf6b4b37EccdcC24e45978Cfd2Eb';
       }
 

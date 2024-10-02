@@ -33,7 +33,7 @@ export class SRModulesValidatorsController {
   @ApiOperation({ summary: 'Get list of N oldest lido validators' })
   @ApiResponse({
     status: 200,
-    description: 'N oldest lido validators for operator.',
+    description: 'N oldest lido validators for operator',
     type: ExitValidatorListResponse,
   })
   @ApiResponse({
@@ -54,7 +54,7 @@ export class SRModulesValidatorsController {
   @ApiParam({
     name: 'module_id',
     type: String,
-    description: 'Staking router module_id or contract address.',
+    description: 'Staking router module_id or contract address',
   })
   getOldestValidators(
     @Param('module_id', ModuleIdPipe) module_id: string | number,

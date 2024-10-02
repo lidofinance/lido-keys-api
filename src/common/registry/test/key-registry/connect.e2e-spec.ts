@@ -7,6 +7,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
 import { DatabaseE2ETestingModule } from 'app';
+import { PrometheusModule } from 'common/prometheus';
 
 dotenv.config();
 
@@ -20,11 +21,8 @@ describe('Registry', () => {
     process.exit(1);
   }
   const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
-  // const operatorsWithModuleAddress = operators.map((key) => {
-  //   return { ...key, moduleAddress: address };
-  // });
 
-  const blockHash = '0x42e6d3fe6df4bc4bdfda27595a015ac9fd5af65cf9bd9d8ad0f2ac802dd73749';
+  const blockHash = '0x947aa07f029fd9fed1af664339373077e61f54aff32d692e1f00139fcd4c5039';
 
   beforeEach(async () => {
     const imports = [
@@ -44,6 +42,7 @@ describe('Registry', () => {
           return { provider };
         },
       }),
+      PrometheusModule,
     ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     registryService = moduleRef.get(KeyRegistryService);
@@ -71,8 +70,8 @@ describe('Registry', () => {
     // });
 
     const operators = await registryService.getOperatorsFromStorage(address);
-    expect(operators).toHaveLength(89);
+    expect(operators.length).toEqual(36);
     const keys = await registryService.getOperatorsKeysFromStorage(address);
-    expect(keys).toHaveLength(57816);
+    expect(keys.length).toEqual(62381);
   }, 400_000);
 });

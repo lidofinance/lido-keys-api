@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing';
 import { ValidatorRegistryModule, ValidatorRegistryService, RegistryStorageService } from '../..';
 import { MikroORM } from '@mikro-orm/core';
 import { DatabaseE2ETestingModule } from 'app';
+import { PrometheusModule } from 'common/prometheus';
 
 describe('Sync module initializing', () => {
   const provider = getDefaultProvider('mainnet');
@@ -32,6 +33,7 @@ describe('Sync module initializing', () => {
       ValidatorRegistryModule.forRoot({
         provider,
       }),
+      PrometheusModule,
     ];
     await testModules({ imports });
   });
@@ -43,6 +45,7 @@ describe('Sync module initializing', () => {
       ValidatorRegistryModule.forFeature({
         provider,
       }),
+      PrometheusModule,
     ];
     await testModules({ imports });
   });
@@ -52,6 +55,7 @@ describe('Sync module initializing', () => {
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       ValidatorRegistryModule.forFeature(),
+      PrometheusModule,
     ];
 
     const metadata = {

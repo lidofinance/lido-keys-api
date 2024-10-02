@@ -9,6 +9,7 @@ dotenv.config();
 
 describe('Operators', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
+
   if (!process.env.CHAIN_ID) {
     console.error("CHAIN_ID wasn't provides");
     process.exit(1);

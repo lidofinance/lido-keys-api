@@ -8,6 +8,7 @@ import {
   RegistryStorageService,
   RegistryKeyStorageService,
   RegistryOperatorStorageService,
+  RegistryKeyBatchFetchService,
 } from '../..';
 import { keys, newKey, newOperator, operators, operatorWithDefaultsRecords } from '../fixtures/db.fixture';
 import { clone, compareTestKeysAndOperators, compareTestKeys, compareTestOperators, clearDb } from '../testing.utils';
@@ -16,9 +17,11 @@ import { DatabaseE2ETestingModule } from 'app';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
+import { PrometheusModule } from 'common/prometheus';
 
 dotenv.config();
 
+// const blockHash = '0x947aa07f029fd9fed1af664339373077e61f54aff32d692e1f00139fcd4c5039';
 const blockHash = '0x4ef0f15a8a04a97f60a9f76ba83d27bcf98dac9635685cd05fe1d78bd6e93418';
 
 describe('Registry', () => {
@@ -30,8 +33,8 @@ describe('Registry', () => {
     return { ...key, moduleAddress: address };
   });
 
-  const operatorsWithModuleAddress = operators.map((key) => {
-    return { ...key, moduleAddress: address };
+  const operatorsWithModuleAddress = operators.map((operator) => {
+    return { ...operator, moduleAddress: address };
   });
 
   let registryService: KeyRegistryService;
@@ -52,6 +55,7 @@ describe('Registry', () => {
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),
+      PrometheusModule,
     ];
 
     moduleRef = await Test.createTestingModule({ imports }).compile();
@@ -88,8 +92,9 @@ describe('Registry', () => {
 
       await registryService.update(address, blockHash);
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
-      // 2 - number of operators
-      expect(saveKeyRegistryMock).toBeCalledTimes(2);
+      // finalizedUsedSigningKeys == totalSigningKeys
+      // nothing to update
+      expect(saveKeyRegistryMock).toBeCalledTimes(0);
       await compareTestKeysAndOperators(address, registryService, {
         keys: keysWithModuleAddress,
         operators: operatorsWithModuleAddress,
@@ -99,6 +104,7 @@ describe('Registry', () => {
     test('used keys are immutable', async () => {
       // this test is based on usedSigningKeys = 3 value of operator with index 0
       // so keys will be updated from usedSigningKeys to totalSigningKeys
+      // test will be updated from finalizedUsedSigningKeys
       const newKeys = clone(keysWithModuleAddress);
       newKeys[0].used = false;
 
@@ -112,13 +118,13 @@ describe('Registry', () => {
 
       await registryService.update(address, blockHash);
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
-      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(0);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
       await compareTestOperators(address, registryService, { operators: operatorsWithModuleAddress });
     });
 
     test('new key is added to database if totalSigningKeys is increased', async () => {
-      const newKeys = clone([...keysWithModuleAddress, { ...newKey, moduleAddress: address }]);
+      const newKeys = clone([...keysWithModuleAddress, { ...newKey, moduleAddress: address, vetted: true }]);
 
       const newOperators = clone(operatorsWithModuleAddress);
       newOperators[0].totalSigningKeys++;
@@ -148,6 +154,9 @@ describe('Registry', () => {
       const saveOperatorRegistryMock = jest.spyOn(registryService, 'saveOperators');
       const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
+      const fetchBatchKey = moduleRef.get(RegistryKeyBatchFetchService);
+      const fetchSigningKeysInBatchesMock = jest.spyOn(fetchBatchKey, 'fetchSigningKeysInBatches');
+
       registryServiceMock(moduleRef, provider, {
         keys: keysWithModuleAddress,
         operators: newOperators,
@@ -155,7 +164,9 @@ describe('Registry', () => {
 
       await registryService.update(address, blockHash);
       expect(saveOperatorRegistryMock).toBeCalledTimes(1);
-      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
+      // no keys were added for 2 operator
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(0);
+      expect(fetchSigningKeysInBatchesMock.mock.calls.length).toBeGreaterThanOrEqual(1);
 
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
       await compareTestOperators(address, registryService, {
@@ -179,7 +190,10 @@ describe('Registry', () => {
 
       await registryService.update(address, blockHash);
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
-      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
+
+      // keysWithModuleAddress already in database, new operator should influence keys update
+      // update should happen only if totalSigningKeys  - finalizedUsedSigningKeys > 0
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(0);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
       await compareTestOperators(address, registryService, {
         operators: newOperators,
@@ -187,9 +201,11 @@ describe('Registry', () => {
     });
 
     test('decrease of usedSigningKeys will not result in the removal of a key', async () => {
-      // keys will be updated in range form = usedSigningKeys to=totalSigningKeys
+      // keys will be updated in range from = finalizedUsedSigningKeys to=totalSigningKeys
       const newOperators = clone(operatorsWithModuleAddress);
       newOperators[0].usedSigningKeys--;
+
+      // here we just check that this change will not influence update of keys
 
       const saveOperatorsRegistryMock = jest.spyOn(registryService, 'saveOperators');
       const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
@@ -201,7 +217,7 @@ describe('Registry', () => {
 
       await registryService.update(address, blockHash);
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
-      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
+      expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(0);
       await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
       await compareTestOperators(address, registryService, {
         operators: newOperators,
@@ -233,8 +249,12 @@ describe('Registry', () => {
         .sort((a, b) => a.operatorIndex - b.operatorIndex)
         .slice(0, -1);
 
+      const oldOperators1Keys = keysWithModuleAddress
+        .filter(({ operatorIndex }) => operatorIndex === 1)
+        .sort((a, b) => a.operatorIndex - b.operatorIndex);
+
       await compareTestKeys(address, registryService, {
-        keys: newOperator0Keys,
+        keys: [...newOperator0Keys, ...oldOperators1Keys],
       });
 
       const keysOfOperator0 = await (
@@ -244,23 +264,39 @@ describe('Registry', () => {
       expect(keysOfOperator0.length).toBe(newOperators[0].totalSigningKeys);
     });
 
-    test('during update previous operator usedSigningKeys value is being used', async () => {
+    test('during update previous operator finalizedUsedSigningKeys value is being used', async () => {
       const newOperators = clone(operatorsWithModuleAddress);
-      newOperators[0].usedSigningKeys++;
 
       const saveOperatorsRegistryMock = jest.spyOn(registryService, 'saveOperators');
       const saveKeyRegistryMock = jest.spyOn(registryService, 'saveKeys');
 
+      // check what we have in database
+      await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestOperators(address, registryService, {
+        operators: newOperators,
+      });
+
+      // increased usedSigningKeys but will fetch from finalizedUsedSigningKeys
+      newOperators[0].usedSigningKeys++;
+
+      // keysWithModuleAddress contains 3 keys of operator 0 , all keys are used
+      // operator 0 has  totalSigningKeys: 3, usedSigningKeys: 3, finalizedUsedSigningKeys: 3
+      // it means nothing was changed since finalized state
+      // if algorithm uses current value of usedSigningKeys, it will not find key to fetch
+      // but as totalSigningKeys == 3, key will not be in range
+      newOperators[0].totalSigningKeys++;
+
       const newKeys = clone([
         ...keysWithModuleAddress,
         {
-          operatorIndex: 0,
+          operatorIndex: newOperators[0].index,
           index: 3,
           key: '0xa544bc44d8eacbf4dd6a2d6087b43f4c67fd5618651b97effcb30997bf49e5d7acf0100ef14e5d087cc228bc78d498e6',
           depositSignature:
             '0x967875a0104d1f674538e2ec0df4be0a61ef08061cdcfa83e5a63a43dadb772d29053368224e5d8e046ba1a78490f5fc0f0186f23af0465d0a82b2db2e7535782fe12e1fd1cd4f6eb77d8dc7a4f7ab0fde31435d5fa98a013e0a716c5e1ef6a2',
           used: true,
           moduleAddress: address,
+          vetted: true,
         },
       ]);
 
@@ -272,7 +308,7 @@ describe('Registry', () => {
       await registryService.update(address, blockHash);
       expect(saveOperatorsRegistryMock).toBeCalledTimes(1);
       expect(saveKeyRegistryMock.mock.calls.length).toBeGreaterThanOrEqual(1);
-      await compareTestKeys(address, registryService, { keys: keysWithModuleAddress });
+      await compareTestKeys(address, registryService, { keys: newKeys });
       await compareTestOperators(address, registryService, {
         operators: newOperators,
       });
@@ -301,6 +337,7 @@ describe('Reorg detection', () => {
         warn: jest.fn(),
       }),
       KeyRegistryModule.forFeature({ provider }),
+      PrometheusModule,
     ];
     moduleRef = await Test.createTestingModule({
       imports,

@@ -16,7 +16,7 @@ export class RegistryKeyBatchFetchService {
     @Inject(REGISTRY_FETCH_OPTIONS_TOKEN) private options: RegistryFetchOptions,
   ) {}
 
-  private getContract(moduleAddress: string) {
+  private getContract(moduleAddress: string): Registry {
     return this.contract.attach(moduleAddress);
   }
 
@@ -31,6 +31,7 @@ export class RegistryKeyBatchFetchService {
   public formatKeys(
     moduleAddress: string,
     operatorIndex: number,
+    stakingLimit: number,
     unformattedRecords: KeyBatchRecord,
     startIndex: number,
   ): RegistryKey[] {
@@ -44,6 +45,7 @@ export class RegistryKeyBatchFetchService {
 
     return usedStatuses.map((used, chunkIndex) => {
       const index = startIndex + chunkIndex;
+      const vetted = index < stakingLimit;
       return {
         operatorIndex,
         index,
@@ -51,6 +53,7 @@ export class RegistryKeyBatchFetchService {
         depositSignature: signatures[chunkIndex],
         used,
         moduleAddress,
+        vetted,
       };
     });
   }
@@ -59,6 +62,7 @@ export class RegistryKeyBatchFetchService {
   public async fetch(
     moduleAddress: string,
     operatorIndex: number,
+    stakingLimit: number,
     fromIndex = 0,
     toIndex = -1,
     overrides: CallOverrides = {},
@@ -77,6 +81,7 @@ export class RegistryKeyBatchFetchService {
     const unformattedKeys = await this.fetchSigningKeysInBatches(
       moduleAddress,
       operatorIndex,
+      stakingLimit,
       offset,
       limit,
       overrides,
@@ -88,6 +93,7 @@ export class RegistryKeyBatchFetchService {
   public async fetchSigningKeysInBatches(
     moduleAddress: string,
     operatorIndex: number,
+    stakingLimit: number,
     defaultOffset: number,
     totalAmount: number,
     overrides: CallOverrides,
@@ -103,7 +109,7 @@ export class RegistryKeyBatchFetchService {
         overrides as any,
       );
 
-      return this.formatKeys(moduleAddress, operatorIndex, keys, offset);
+      return this.formatKeys(moduleAddress, operatorIndex, stakingLimit, keys, offset);
     });
 
     const results = await Promise.all(promises);

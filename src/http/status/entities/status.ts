@@ -3,11 +3,13 @@ import { CLBlockSnapshot, ELBlockSnapshot } from 'http/common/entities';
 
 export class Status {
   @ApiProperty({
+    required: true,
     description: 'App version',
   })
   appVersion!: string;
 
   @ApiProperty({
+    required: true,
     description: 'Chain id',
   })
   chainId!: number;
@@ -21,6 +23,7 @@ export class Status {
 
   @ApiProperty({
     type: () => CLBlockSnapshot,
+    nullable: true,
     description: 'Consensus layer block information',
   })
   clBlockSnapshot!: CLBlockSnapshot | null;

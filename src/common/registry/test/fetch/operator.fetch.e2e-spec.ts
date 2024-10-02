@@ -33,8 +33,10 @@ describe('Operators', () => {
     expect(count).toBeGreaterThan(0);
   });
 
-  test('fetch one operator', async () => {
-    const operator = await fetchService.fetchOne(address, 0);
+  test('fetch one operator8', async () => {
+    const operator = await fetchService.fetchOne(address, 0, {
+      blockTag: 1488022,
+    });
 
     expect(operator).toBeInstanceOf(Object);
     expect(typeof operator.active).toBe('boolean');
@@ -52,7 +54,7 @@ describe('Operators', () => {
 
   test('fetch all operators', async () => {
     const operators = await fetchService.fetch(address, 0, -1, {
-      blockTag: 10573030,
+      blockTag: 1488022,
     });
 
     expect(operators).toBeInstanceOf(Array);
@@ -61,7 +63,7 @@ describe('Operators', () => {
 
   test('fetch multiply operators', async () => {
     const operators = await fetchService.fetch(address, 1, 3, {
-      blockTag: 10573030,
+      blockTag: 1488022,
     });
 
     expect(operators).toBeInstanceOf(Array);

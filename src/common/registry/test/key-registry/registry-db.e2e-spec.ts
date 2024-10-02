@@ -14,6 +14,8 @@ import { clearDb, compareTestKeysAndOperators } from '../testing.utils';
 import { MikroORM } from '@mikro-orm/core';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import { DatabaseE2ETestingModule } from 'app';
+import { CSMKeyRegistryModule } from 'common/registry-csm';
+import { PrometheusModule } from 'common/prometheus';
 
 describe('Registry', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
@@ -44,6 +46,8 @@ describe('Registry', () => {
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({ provider }),
+      CSMKeyRegistryModule.forFeature({ provider }),
+      PrometheusModule,
     ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     registryService = moduleRef.get(KeyRegistryService);

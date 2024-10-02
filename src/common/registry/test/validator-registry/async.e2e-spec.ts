@@ -6,6 +6,7 @@ import { getDefaultProvider } from '@ethersproject/providers';
 import { ValidatorRegistryModule, ValidatorRegistryService, RegistryStorageService } from '../..';
 import { MikroORM } from '@mikro-orm/core';
 import { DatabaseE2ETestingModule } from 'app';
+import { PrometheusModule } from 'common/prometheus';
 
 describe('Async module initializing', () => {
   const provider = getDefaultProvider('mainnet');
@@ -34,6 +35,7 @@ describe('Async module initializing', () => {
           return { provider, subscribeInterval: '*/12 * * * * *' };
         },
       }),
+      PrometheusModule,
     ]);
   });
 
@@ -46,6 +48,7 @@ describe('Async module initializing', () => {
           return { provider, subscribeInterval: '*/12 * * * * *' };
         },
       }),
+      PrometheusModule,
     ]);
   });
 });

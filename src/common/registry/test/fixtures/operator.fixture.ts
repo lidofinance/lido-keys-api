@@ -6,7 +6,7 @@ export const operator = {
   name: 'test',
   rewardAddress: AddressZero,
   stoppedValidators: 0,
-  stakingLimit: 1,
+  stakingLimit: 2,
   usedSigningKeys: 2,
   totalSigningKeys: 3,
   finalizedUsedSigningKeys: 2,

@@ -1,31 +1,57 @@
 import { RegistryKey, RegistryOperator } from 'common/registry';
 import { KeysFilter, OperatorsFilter } from './filters';
 
-// interface of modules we get from SR contract
+/**
+ * Interface representing a staking module retrieved from the Staking Router (SR) contract.
+ */
 export interface StakingModule {
-  // unique id of the staking module
+  /**
+   * Unique id of the staking module.
+   */
   moduleId: number;
-  // address of staking module
+  /**
+   * Address of staking module
+   */
   stakingModuleAddress: string;
-  // part of the fee taken from staking rewards that goes to the staking module
+  /**
+   * Part of the fee taken from staking rewards that goes to the staking module
+   */
   moduleFee: number;
-  // part of the fee taken from staking rewards that goes to the treasury
+  /**
+   * Part of the fee taken from staking rewards that goes to the treasury
+   */
   treasuryFee: number;
-  // target percent of total validators in protocol, in BP
+  /**
+   * Target percent of total validators in protocol, in BP
+   */
   targetShare: number;
-  // staking module status if staking module can not accept the deposits or can participate in further reward distribution
+  /**
+   * Staking module status if staking module can not accept the deposits or can participate in further reward distribution
+   */
   status: number;
-  // name of staking module
+  /**
+   * Name of staking module
+   */
   name: string;
-  // block.timestamp of the last deposit of the staking module
+  /**
+   * Block timestamp of the last deposit of the staking module
+   */
   lastDepositAt: number;
-  // block.number of the last deposit of the staking module
+  /**
+   * Block number of the last deposit of the staking module
+   */
   lastDepositBlock: number;
-  // number of exited validators
+  /**
+   * Number of exited validators
+   */
   exitedValidatorsCount: number;
-  // type of staking router module
+  /**
+   * Type of staking router module
+   */
   type: string; //STAKING_MODULE_TYPE;
-  // is module active
+  /**
+   * Is module active
+   */
   active: boolean;
 }
 

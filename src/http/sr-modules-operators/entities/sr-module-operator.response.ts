@@ -3,29 +3,32 @@ import { StakingModuleResponse, ELMeta, Operator } from '../../common/entities/'
 
 export class OperatorAndSRModule {
   @ApiProperty({
-    type: () => [Operator],
+    type: () => Operator,
+    required: true,
     description: 'Operator of staking router module',
   })
   operator!: Operator;
 
   @ApiProperty({
-    description: 'Detailed Staking Router information',
     type: () => StakingModuleResponse,
+    required: true,
+    description: 'Detailed Staking Router information',
   })
   module!: StakingModuleResponse;
 }
 
 export class SRModuleOperatorResponse {
   @ApiProperty({
-    description: 'Staking router module keys.',
-    nullable: true,
     type: () => OperatorAndSRModule,
+    required: true,
+    description: 'Staking router module keys',
   })
   data!: OperatorAndSRModule;
 
   @ApiProperty({
-    nullable: true,
     type: () => ELMeta,
+    required: true,
+    description: 'Meta',
   })
   meta!: ELMeta;
 }

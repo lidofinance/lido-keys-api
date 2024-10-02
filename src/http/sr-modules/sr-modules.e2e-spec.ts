@@ -19,6 +19,7 @@ import { SRModulesService } from './sr-modules.service';
 import { elMeta } from '../el-meta.fixture';
 import { curatedModule, dvtModule } from '../db.fixtures';
 import { DatabaseE2ETestingModule } from 'app';
+import { CSMKeyRegistryService } from 'common/registry-csm';
 
 describe('SRModulesController (e2e)', () => {
   let app: INestApplication;
@@ -35,12 +36,26 @@ describe('SRModulesController (e2e)', () => {
   @Global()
   @Module({
     imports: [RegistryStorageModule],
-    providers: [KeyRegistryService],
-    exports: [KeyRegistryService, RegistryStorageModule],
+    providers: [KeyRegistryService, CSMKeyRegistryService],
+    exports: [KeyRegistryService, CSMKeyRegistryService, RegistryStorageModule],
   })
   class KeyRegistryModule {}
 
   class KeysRegistryServiceMock {
+    async update(moduleAddress, blockHash) {
+      return;
+    }
+  }
+
+  @Global()
+  @Module({
+    imports: [RegistryStorageModule],
+    providers: [CSMKeyRegistryService],
+    exports: [CSMKeyRegistryService, RegistryStorageModule],
+  })
+  class CSMKeyRegistryModule {}
+
+  class CSMKeysRegistryServiceMock {
     async update(moduleAddress, blockHash) {
       return;
     }
@@ -51,6 +66,7 @@ describe('SRModulesController (e2e)', () => {
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
+      CSMKeyRegistryModule,
       StakingRouterModule,
     ];
 
@@ -60,6 +76,8 @@ describe('SRModulesController (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
       .overrideProvider(KeyRegistryService)
       .useClass(KeysRegistryServiceMock)
+      .overrideProvider(CSMKeyRegistryService)
+      .useClass(CSMKeysRegistryServiceMock)
       .compile();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);

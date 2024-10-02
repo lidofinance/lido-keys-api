@@ -4,17 +4,16 @@ import { ExitPresignMessage } from './exits-presign-message';
 
 export class ExitPresignMessageListResponse {
   @ApiProperty({
+    type: () => [ExitPresignMessage],
     required: true,
     description: 'Voluntary exit message list',
-    type: () => [ExitPresignMessage],
   })
   data!: ExitPresignMessage[];
 
   @ApiProperty({
+    type: () => CLMeta,
     required: true,
     description: 'Meta for voluntary exit endpoints',
-    nullable: true,
-    type: () => CLMeta,
   })
   meta!: CLMeta;
 }

@@ -32,7 +32,7 @@ export class SRModulesOperatorsKeysController {
   ) {}
 
   @Version('1')
-  @ApiOperation({ summary: 'Staking router module operators.' })
+  @ApiOperation({ summary: 'Staking router module operators' })
   @ApiResponse({
     status: 200,
     description: 'List of all SR module operators',
@@ -51,7 +51,7 @@ export class SRModulesOperatorsKeysController {
   @ApiParam({
     name: 'module_id',
     type: String,
-    description: 'Staking router module_id or contract address.',
+    description: 'Staking router module_id or contract address',
   })
   @Get(':module_id/operators/keys')
   async getOperatorsKeys(

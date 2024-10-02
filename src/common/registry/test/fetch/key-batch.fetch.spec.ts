@@ -17,6 +17,9 @@ describe('Keys', () => {
 
   jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
 
+  const operatorIndex = 0;
+  const stakingLimit = 100;
+
   beforeEach(async () => {
     const imports = [
       RegistryFetchModule.forFeature({ provider }),
@@ -35,7 +38,7 @@ describe('Keys', () => {
       const iface = new Interface(Registry__factory.abi);
       return iface.encodeFunctionResult('getSigningKeys', keysResponse);
     });
-    const result = await fetchService.fetch(address, 0, 0, usedStatuses.length);
+    const result = await fetchService.fetch(address, operatorIndex, stakingLimit, 0, usedStatuses.length);
 
     const [firstKey] = result;
 
@@ -53,6 +56,6 @@ describe('Keys', () => {
   });
 
   test('fetch. fromIndex > toIndex', async () => {
-    await expect(() => fetchService.fetch(address, 0, 2, 1)).rejects.toThrow();
+    await expect(() => fetchService.fetch(address, operatorIndex, stakingLimit, 2, 1)).rejects.toThrow();
   });
 });
