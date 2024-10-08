@@ -49,7 +49,7 @@ export class KeysUpdateService {
   public UPDATE_KEYS_JOB_NAME = 'SRModulesKeysUpdate';
   // Timeout for update keys
   // If during 30 minutes nothing happen we will exit
-  UPDATE_KEYS_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+  UPDATE_KEYS_TIMEOUT_MS = 60 * 60 * 1000; // 60 minutes
   updateDeadlineTimer: undefined | NodeJS.Timeout = undefined;
 
   /**
