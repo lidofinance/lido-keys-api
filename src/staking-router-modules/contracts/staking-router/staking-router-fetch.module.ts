@@ -5,7 +5,6 @@ import { LidoLocatorModule } from '../lido-locator/lido-locator.module';
 import { StakingRouterContractModule } from '@lido-nestjs/contracts';
 import { ExecutionProvider } from '../../../common/execution-provider';
 import { ConfigService } from 'common/config';
-import { ethers } from 'ethers';
 
 @Module({
   imports: [
