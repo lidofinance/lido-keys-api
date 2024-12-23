@@ -12,8 +12,8 @@ import { ConfigService } from 'common/config';
     LidoLocatorModule,
     StakingRouterContractModule.forRootAsync({
       inject: [ExecutionProvider, ConfigService],
-      async useFactory(provider, configService: ConfigService) {
-        return { provider, address: '0x0000000000000000000000000000000000000000' };
+      async useFactory(provider) {
+        return { provider };
       },
     }),
   ],

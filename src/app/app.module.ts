@@ -52,8 +52,6 @@ import { CSMKeyRegistryModule } from 'common/registry-csm';
         return {
           provider,
           keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE'),
-          lidoAddress: '0x0000000000000000000000000000000000000000',
-          registryAddress: '0x0000000000000000000000000000000000000000',
         };
       },
     }),
@@ -63,8 +61,6 @@ import { CSMKeyRegistryModule } from 'common/registry-csm';
         return {
           provider,
           keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE'),
-          lidoAddress: '0x0000000000000000000000000000000000000000',
-          registryAddress: '0x0000000000000000000000000000000000000000',
         };
       },
     }),
