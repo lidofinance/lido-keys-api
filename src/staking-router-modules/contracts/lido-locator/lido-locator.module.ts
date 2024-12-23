@@ -3,14 +3,15 @@ import { LidoLocatorService } from './lido-locator.service';
 import { LidoLocatorContractModule } from '@lido-nestjs/contracts';
 // TODO: maybe ../../../ shows us that we need to move execution-provider on level up
 import { ExecutionProvider } from '../../../common/execution-provider';
+import { ConfigService } from 'common/config';
 
 @Global()
 @Module({
   imports: [
     LidoLocatorContractModule.forRootAsync({
-      inject: [ExecutionProvider],
-      async useFactory(provider) {
-        return { provider };
+      inject: [ExecutionProvider, ConfigService],
+      async useFactory(provider, configService: ConfigService) {
+        return { provider, address: configService.get('LIDO_LOCATOR_DEVNET_ADDRESS') };
       },
     }),
   ],
