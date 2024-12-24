@@ -52,6 +52,7 @@ import { CSMKeyRegistryModule } from 'common/registry-csm';
         return {
           provider,
           keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE'),
+          registryAddress: configService.get('CURATED_MODULE_DEVNET_ADDRESS'),
         };
       },
     }),
@@ -61,6 +62,7 @@ import { CSMKeyRegistryModule } from 'common/registry-csm';
         return {
           provider,
           keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE'),
+          registryAddress: configService.get('CSM_MODULE_DEVNET_ADDRESS'),
         };
       },
     }),

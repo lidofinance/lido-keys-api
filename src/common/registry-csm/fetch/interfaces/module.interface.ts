@@ -7,7 +7,6 @@ export const REGISTRY_FETCH_OPTIONS_TOKEN = Symbol('registryFetchOptionsToken');
 
 export interface RegistryFetchOptions {
   registryAddress?: string;
-  lidoAddress?: string;
   provider?: Provider | Signer;
   keysBatchSize?: number;
 }

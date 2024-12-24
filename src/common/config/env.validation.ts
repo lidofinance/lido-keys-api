@@ -180,6 +180,18 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsString()
   LIDO_LOCATOR_DEVNET_ADDRESS = '';
+
+  @IsOptional()
+  @IsString()
+  CURATED_MODULE_DEVNET_ADDRESS = '';
+
+  @IsOptional()
+  @IsString()
+  CSM_MODULE_DEVNET_ADDRESS = '';
+
+  @IsOptional()
+  @IsString()
+  STAKING_ROUTER_DEVNET_ADDRESS = '';
 }
 
 export function validate(config: Record<string, unknown>) {

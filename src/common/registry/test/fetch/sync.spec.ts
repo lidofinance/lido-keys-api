@@ -47,22 +47,17 @@ describe('Sync module initializing', () => {
   });
 
   test('forFeature addresses', async () => {
-    const lidoAddress = hexZeroPad('0x01', 20);
     const registryAddress = hexZeroPad('0x02', 20);
 
     const imports = [
       RegistryFetchModule.forFeature({
         provider,
-        lidoAddress,
         registryAddress,
       }),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
     ];
 
     const moduleRef = await testModules({ imports });
-
-    const lidoContract: Lido = moduleRef.get(LIDO_CONTRACT_TOKEN);
-    expect(lidoContract.address).toBe(lidoAddress);
 
     const registryContract: Registry = moduleRef.get(REGISTRY_CONTRACT_TOKEN);
     expect(registryContract.address).toBe(registryAddress);
