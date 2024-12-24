@@ -11,7 +11,6 @@ import { ConfigModule, ConfigService } from 'common/config';
     LidoLocatorContractModule.forRootAsync({
       inject: [ExecutionProvider, ConfigService],
       async useFactory(provider, configService: ConfigService) {
-        console.log('address:', configService);
         return { provider, address: configService.get('LIDO_LOCATOR_DEVNET_ADDRESS') };
       },
     }),

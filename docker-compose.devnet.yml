@@ -9,6 +9,8 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    networks:
+      - devnet
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
@@ -43,6 +45,9 @@ services:
       - VALIDATOR_REGISTRY_ENABLE=${VALIDATOR_REGISTRY_ENABLE}
       - JOB_INTERVAL_VALIDATORS_REGISTRY=${JOB_INTERVAL_VALIDATORS_REGISTRY}
       - LIDO_LOCATOR_DEVNET_ADDRESS=${LIDO_LOCATOR_DEVNET_ADDRESS}
+      - CURATED_MODULE_DEVNET_ADDRESS=${CURATED_MODULE_DEVNET_ADDRESS}
+      - CSM_MODULE_DEVNET_ADDRESS=${CSM_MODULE_DEVNET_ADDRESS}
+      - STAKING_ROUTER_DEVNET_ADDRESS=${STAKING_ROUTER_DEVNET_ADDRESS}
     ports:
       - '${PORT}:${PORT}'
     depends_on:
