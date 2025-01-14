@@ -16,7 +16,7 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
-      - ./.volumes/pgdata-${CHAIN_ID}/:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
 
   keys_api:
     build: ./
@@ -53,5 +53,5 @@ services:
     depends_on:
       - db
 
-# volumes:
-#   db-data:
+volumes:
+  pgdata:
