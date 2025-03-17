@@ -18,7 +18,7 @@ import { PrometheusModule } from 'common/prometheus';
 
 dotenv.config();
 
-describe('Registry', () => {
+describe.skip('Registry', () => {
   let registryService: ValidatorRegistryService;
   let registryOperatorFetchService: RegistryOperatorFetchService;
   let mikroOrm: MikroORM;

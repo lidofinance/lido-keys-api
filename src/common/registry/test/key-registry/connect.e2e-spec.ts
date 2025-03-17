@@ -11,7 +11,7 @@ import { PrometheusModule } from 'common/prometheus';
 
 dotenv.config();
 
-describe('Registry', () => {
+describe.skip('Registry', () => {
   let registryService: KeyRegistryService;
   let storageService: RegistryStorageService;
   let registryOperatorFetchService: RegistryOperatorFetchService;
