@@ -1270,19 +1270,19 @@
     node-abort-controller "^3.0.1"
     node-fetch "^2.6.7"
 
-"@lido-nestjs/constants@5.2.1", "@lido-nestjs/constants@^5.2.1":
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/constants/-/constants-5.2.1.tgz#f006972b7b69429f7623b0c5ac8b4bba594f9c01"
-  integrity sha512-0UvUdQ4KilnH0Nf5JkdKdOrS2HFMjmrS4+2wUXoX08N25MzFryWC0qcdFLp1bvod04Ey/PoUNlj+S2WVKEYgwQ==
+"@lido-nestjs/constants@5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/constants/-/constants-5.3.0.tgz#a257d9aff873bc10c8be940541405342f82e610e"
+  integrity sha512-8lW8DPmZ1t4t8tOs7E4eqPlWCjhN9poe3q81DtG/Nt0+AMWzx4zTmeap0DGHdeMC4QPB3vRdjb2i3E+B4aJbgA==
 
-"@lido-nestjs/contracts@^9.5.1":
-  version "9.5.1"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/contracts/-/contracts-9.5.1.tgz#e88054f2336414161824785b013b39b7fda589ae"
-  integrity sha512-EvA7EUin/qpL3pWMykSLGNH1xwBKo779v3KUw/L+koWKMtsdAJUK/7SX01xcbnkSQfOR+iIkL6YZGZ+JSrrZ6A==
+"@lido-nestjs/contracts@9.7.0":
+  version "9.7.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/contracts/-/contracts-9.7.0.tgz#bdfa4e224b1f62bdc87c3492c3803911cf178966"
+  integrity sha512-RAZkK2PsvdHujjRA7s6g6iV4I7Z4iz767YCRghUtObgCg7yC7G88FVUegejbJtKq6lKEEpsoezR4LPtWcfIwoQ==
   dependencies:
     "@ethersproject/abi" "^5.5.0"
     "@ethersproject/providers" "^5.5.3"
-    "@lido-nestjs/constants" "5.2.1"
+    "@lido-nestjs/constants" "5.3.0"
     ethers "^5.5.4"
 
 "@lido-nestjs/di@1.0.1":
