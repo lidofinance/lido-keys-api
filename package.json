@@ -35,15 +35,11 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "echo 'TODO: connect e2e tests'",
-    "test:e2e_skip": "mikro-orm schema:drop -r && mikro-orm migration:up && jest -i --config jest-e2e.json && chronix compile && chronix test",
-    "test:e2e:debug": "mikro-orm schema:drop -r && mikro-orm migration:up && node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest -i --config jest-e2e.json && chronix compile && chronix test",
+    "test:e2e_skip": "mikro-orm schema:drop -r && mikro-orm migration:up && jest -i --config jest-e2e.json",
+    "test:e2e:debug": "mikro-orm schema:drop -r && mikro-orm migration:up && node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest -i --config jest-e2e.json",
     "test:e2e:docker": "docker-compose -f docker-compose.e2e.yml up --build --abort-on-container-exit",
     "typechain": "typechain --target=ethers-v5 --out-dir ./src/generated ./src/staking-router-modules/contracts/abi/*.json",
-    "chronix:compile": "chronix compile",
-    "chronix:test": "chronix test",
     "test:alerts": "promtool test rules alerts/*.test.yml",
-    "chronix:start": "chronix start",
-    "fork:init": "node chronix-init",
     "prepare:csm": "node scripts/prepare-csm-abi.js"
   },
   "dependencies": {
@@ -96,7 +92,6 @@
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
-    "chronix": "0.0.9",
     "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
@@ -109,5 +104,6 @@
     "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.12.0",
     "typescript": "^4.5.5"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
