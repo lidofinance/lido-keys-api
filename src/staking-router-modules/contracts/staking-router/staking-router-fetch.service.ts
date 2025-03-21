@@ -6,6 +6,7 @@ import { StakingModuleInterfaceService } from '../staking-module-interface';
 import { LidoLocatorService } from '../lido-locator';
 import { BlockTag } from '../interfaces';
 import { StakingRouter, STAKING_ROUTER_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
+import { PrometheusService } from 'common/prometheus';
 
 @Injectable()
 export class StakingRouterFetchService {
@@ -14,6 +15,7 @@ export class StakingRouterFetchService {
     protected readonly stakingModuleInterface: StakingModuleInterfaceService,
     protected readonly lidoLocatorService: LidoLocatorService,
     @Inject(STAKING_ROUTER_CONTRACT_TOKEN) protected readonly contract: StakingRouter,
+    protected readonly prometheusService: PrometheusService,
   ) {}
 
   private getContract(contractAddress: string) {
@@ -31,6 +33,8 @@ export class StakingRouterFetchService {
 
     const srContract = this.getContract(stakingRouterAddress);
     const modules = await srContract.getStakingModules({ blockTag } as any);
+
+    this.prometheusService.totalRpcRequests.inc();
 
     this.logger.log('Fetched staking modules', { stakingModules: modules.length });
 

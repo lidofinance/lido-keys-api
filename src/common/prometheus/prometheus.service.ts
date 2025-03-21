@@ -109,4 +109,10 @@ export class PrometheusService {
     name: 'validators_registry_enabled',
     help: 'Validators registry is enabled',
   });
+
+  public totalRpcRequests = this.getOrCreateMetric('Counter', {
+    prefix: true,
+    name: 'rpc_requests_total',
+    help: 'Total number of rpc requests',
+  });
 }

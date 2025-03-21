@@ -7,6 +7,7 @@ import { KEYS_BATCH_SIZE, KEYS_LENGTH, SIGNATURE_LENGTH } from './key-batch.cons
 import { RegistryFetchOptions, REGISTRY_FETCH_OPTIONS_TOKEN } from './interfaces/module.interface';
 import { splitHex } from './utils/split-hex';
 import { makeBatches } from './utils/batches';
+import { PrometheusService } from 'common/prometheus';
 
 @Injectable()
 export class RegistryKeyBatchFetchService {
@@ -14,6 +15,7 @@ export class RegistryKeyBatchFetchService {
     protected readonly operatorsService: RegistryOperatorFetchService,
     @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
     @Inject(REGISTRY_FETCH_OPTIONS_TOKEN) private options: RegistryFetchOptions,
+    protected readonly prometheusService: PrometheusService,
   ) {}
 
   private getContract(moduleAddress: string): Registry {
@@ -108,6 +110,7 @@ export class RegistryKeyBatchFetchService {
         batchSize,
         overrides as any,
       );
+      this.prometheusService.totalRpcRequests.inc();
 
       return this.formatKeys(moduleAddress, operatorIndex, stakingLimit, keys, offset);
     });

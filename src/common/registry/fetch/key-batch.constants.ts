@@ -5,4 +5,4 @@
  */
 export const KEYS_LENGTH = 96;
 export const SIGNATURE_LENGTH = 192;
-export const KEYS_BATCH_SIZE = 1100;
+export const KEYS_BATCH_SIZE = 1;

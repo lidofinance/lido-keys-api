@@ -7,11 +7,13 @@ import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
 import { utils } from 'ethers';
+import { PrometheusService } from 'common/prometheus';
 @Injectable()
 export class RegistryOperatorFetchService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
     @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
+    protected readonly prometheusService: PrometheusService,
   ) {}
 
   private getContract(moduleAddress: string) {
@@ -46,6 +48,8 @@ export class RegistryOperatorFetchService {
       toBlock,
     });
 
+    this.prometheusService.totalRpcRequests.inc();
+
     return events;
   }
 
@@ -63,6 +67,7 @@ export class RegistryOperatorFetchService {
   /** fetches number of operators */
   public async count(moduleAddress: string, overrides: CallOverrides = {}): Promise<number> {
     const bigNumber = await this.getContract(moduleAddress).getNodeOperatorsCount(overrides as any);
+    this.prometheusService.totalRpcRequests.inc();
     return bigNumber.toNumber();
   }
 
@@ -79,6 +84,7 @@ export class RegistryOperatorFetchService {
       const { totalDepositedValidators } = await contract.getNodeOperator(operatorIndex, fullInfo, {
         blockTag: this.getFinalizedBlockTag(),
       });
+      this.prometheusService.totalRpcRequests.inc();
 
       return totalDepositedValidators.toNumber();
     } catch (error) {
@@ -100,6 +106,7 @@ export class RegistryOperatorFetchService {
     const contract = this.getContract(moduleAddress);
 
     const operator = await contract.getNodeOperator(operatorIndex, fullInfo, overrides as any);
+    this.prometheusService.totalRpcRequests.inc();
 
     const {
       name,

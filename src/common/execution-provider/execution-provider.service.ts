@@ -2,11 +2,13 @@ import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
 import { CHAINS } from '@lido-nestjs/constants';
 import { Injectable, Inject } from '@nestjs/common';
 import { LOGGER_PROVIDER, LoggerService } from '../logger';
+import { PrometheusService } from 'common/prometheus';
 
 @Injectable()
 export class ExecutionProviderService {
   constructor(
     protected readonly provider: SimpleFallbackJsonRpcBatchProvider,
+    protected readonly prometheusService: PrometheusService,
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
   ) {}
 
@@ -33,6 +35,7 @@ export class ExecutionProviderService {
    */
   public async getBlockHash(blockHashOrBlockTag: number | string): Promise<string> {
     const block = await this.provider.getBlock(blockHashOrBlockTag);
+    this.prometheusService.totalRpcRequests.inc();
     return block.hash;
   }
 
@@ -44,6 +47,7 @@ export class ExecutionProviderService {
     blockHashOrBlockTag: number | string,
   ): Promise<{ number: number; hash: string; timestamp: number }> {
     const block = await this.provider.getBlock(blockHashOrBlockTag);
+    this.prometheusService.totalRpcRequests.inc();
     return { number: block.number, hash: block.hash, timestamp: block.timestamp };
   }
 
@@ -53,6 +57,7 @@ export class ExecutionProviderService {
    */
   public async getFullBlock(blockHashOrBlockTag: number | string) {
     const block = await this.provider.getBlock(blockHashOrBlockTag);
+    this.prometheusService.totalRpcRequests.inc();
     return block;
   }
 }

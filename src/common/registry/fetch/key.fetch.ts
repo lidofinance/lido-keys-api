@@ -6,12 +6,14 @@ import { RegistryKey } from './interfaces/key.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';
 import { REGISTRY_KEY_BATCH_SIZE } from './key.constants';
 import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
+import { PrometheusService } from 'common/prometheus';
 
 @Injectable()
 export class RegistryKeyFetchService {
   constructor(
     @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
     private operatorsService: RegistryOperatorFetchService,
+    protected readonly prometheusService: PrometheusService,
   ) {}
 
   private getContract(moduleAddress: string) {
@@ -27,6 +29,7 @@ export class RegistryKeyFetchService {
     overrides: CallOverrides = {},
   ): Promise<RegistryKey> {
     const keyData = await this.getContract(moduleAddress).getSigningKey(operatorIndex, keyIndex, overrides as any);
+    this.prometheusService.totalRpcRequests.inc();
 
     const { key, depositSignature, used } = keyData;
 
