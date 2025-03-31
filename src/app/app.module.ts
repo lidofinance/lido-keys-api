@@ -49,13 +49,21 @@ import { CSMKeyRegistryModule } from 'common/registry-csm';
     KeyRegistryModule.forRootAsync({
       inject: [SimpleFallbackJsonRpcBatchProvider, ConfigService],
       async useFactory(provider: SimpleFallbackJsonRpcBatchProvider, configService: ConfigService) {
-        return { provider, keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE') };
+        return {
+          provider,
+          keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE'),
+          registryAddress: configService.get('CURATED_MODULE_DEVNET_ADDRESS'),
+        };
       },
     }),
     CSMKeyRegistryModule.forRootAsync({
       inject: [SimpleFallbackJsonRpcBatchProvider, ConfigService],
       async useFactory(provider: SimpleFallbackJsonRpcBatchProvider, configService: ConfigService) {
-        return { provider, keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE') };
+        return {
+          provider,
+          keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE'),
+          registryAddress: configService.get('CSM_MODULE_DEVNET_ADDRESS'),
+        };
       },
     }),
     StakingRouterModule,
