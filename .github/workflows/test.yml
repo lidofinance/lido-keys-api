@@ -41,7 +41,6 @@ jobs:
           PROVIDERS_URLS: ${{ secrets.PROVIDERS_URLS }}
           CL_API_URLS: "https://e2e-test.lido.fi,"
           CHAIN_ID: ${{ secrets.CHAIN_ID }}
-          CHRONIX_PROVIDER_MAINNET_URL: ${{ secrets.CHRONIX_PROVIDER_MAINNET_URL }}
           DB_NAME: node_operator_keys_service_db
           DB_PORT: 5432
           DB_HOST: localhost
