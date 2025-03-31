@@ -17,9 +17,6 @@ describe('Fetch keys in batch', () => {
 
   let fetchService: RegistryKeyBatchFetchService;
 
-  const operatorIndex = 17;
-  const stakingLimit = 500;
-
   beforeEach(async () => {
     const imports = [
       RegistryFetchModule.forFeature({ provider }),
@@ -30,8 +27,13 @@ describe('Fetch keys in batch', () => {
   });
 
   test('fetch one key', async () => {
-    const overrides = { blockTag: 1488022 };
-    const keys = await fetchService.fetch(address, operatorIndex, stakingLimit, 0, 3, overrides);
+    const operatorIndex = 0;
+    // we dont check here correctness of vetted keys identification, so just use fake stake limit
+    const fakeStakingLimit = 500;
+
+    const block = await provider.getBlock('latest');
+    const overrides = { blockTag: block.hash };
+    const keys = await fetchService.fetch(address, operatorIndex, fakeStakingLimit, 0, 3, overrides);
 
     expect(keys).toBeInstanceOf(Array);
 
