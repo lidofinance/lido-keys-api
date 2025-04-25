@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class ExitValidator {
   @ApiProperty({
     required: true,
-    description: 'Index of validator.',
+    description: 'Index of validator',
   })
   validatorIndex!: number;
 

@@ -1,6 +1,4 @@
-// TODO: maybe we should to move 'generated' near contracts now
 import { IStakingModule__factory } from '../../../generated';
-// TODO: maybe ../../../ shows us that we need to move execution-provider on level up
 import { ExecutionProvider } from '../../../common/execution-provider';
 import { Injectable } from '@nestjs/common';
 import { ethers } from 'ethers';

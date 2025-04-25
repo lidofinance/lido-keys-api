@@ -3,6 +3,7 @@ import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import { RegistryFetchModule, RegistryKeyBatchFetchService } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
+import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 dotenv.config();
 
@@ -17,28 +18,43 @@ describe('Fetch keys in batch', () => {
   let fetchService: RegistryKeyBatchFetchService;
 
   beforeEach(async () => {
-    const imports = [RegistryFetchModule.forFeature({ provider })];
+    const imports = [
+      RegistryFetchModule.forFeature({ provider }),
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
+    ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     fetchService = moduleRef.get(RegistryKeyBatchFetchService);
   });
 
   test('fetch one key', async () => {
-    const keys = await fetchService.fetch(address, 17, 0, 3, { blockTag: 9641262 });
+    const operatorIndex = 0;
+    // we dont check here correctness of vetted keys identification, so just use fake stake limit
+    const fakeStakingLimit = 500;
+
+    const block = await provider.getBlock('latest');
+    const overrides = { blockTag: block.hash };
+    const keys = await fetchService.fetch(address, operatorIndex, fakeStakingLimit, 0, 3, overrides);
 
     expect(keys).toBeInstanceOf(Array);
 
     expect(keys.length).toBe(3);
 
     expect(keys[0].index).toBe(0);
-    expect(keys[0].operatorIndex).toBe(17);
+    expect(keys[0].operatorIndex).toBe(operatorIndex);
     expect(keys[0].moduleAddress).toBe(address);
+    expect(keys[0].used).toBe(true);
+    expect(keys[0].vetted).toBe(true);
 
     expect(keys[1].index).toBe(1);
-    expect(keys[1].operatorIndex).toBe(17);
+    expect(keys[1].operatorIndex).toBe(operatorIndex);
     expect(keys[1].moduleAddress).toBe(address);
+    expect(keys[1].used).toBe(true);
+    expect(keys[1].vetted).toBe(true);
 
     expect(keys[2].index).toBe(2);
-    expect(keys[2].operatorIndex).toBe(17);
+    expect(keys[2].operatorIndex).toBe(operatorIndex);
     expect(keys[2].moduleAddress).toBe(address);
+    expect(keys[2].used).toBe(true);
+    expect(keys[2].vetted).toBe(true);
   });
 });

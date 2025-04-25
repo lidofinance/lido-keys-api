@@ -5,6 +5,7 @@ import { Interface } from '@ethersproject/abi';
 import { getDefaultProvider } from '@ethersproject/providers';
 import { keysResponse, usedStatuses, mergedKeys, mergedSignatures } from '../fixtures/key-batch.fixture';
 import { RegistryFetchModule, RegistryKeyBatchFetchService } from '../../';
+import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 describe('Keys', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
@@ -16,8 +17,14 @@ describe('Keys', () => {
 
   jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
 
+  const operatorIndex = 0;
+  const stakingLimit = 100;
+
   beforeEach(async () => {
-    const imports = [RegistryFetchModule.forFeature({ provider })];
+    const imports = [
+      RegistryFetchModule.forFeature({ provider }),
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
+    ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     fetchService = moduleRef.get(RegistryKeyBatchFetchService);
   });
@@ -31,7 +38,7 @@ describe('Keys', () => {
       const iface = new Interface(Registry__factory.abi);
       return iface.encodeFunctionResult('getSigningKeys', keysResponse);
     });
-    const result = await fetchService.fetch(address, 0, 0, usedStatuses.length);
+    const result = await fetchService.fetch(address, operatorIndex, stakingLimit, 0, usedStatuses.length);
 
     const [firstKey] = result;
 
@@ -49,6 +56,6 @@ describe('Keys', () => {
   });
 
   test('fetch. fromIndex > toIndex', async () => {
-    await expect(() => fetchService.fetch(address, 0, 2, 1)).rejects.toThrow();
+    await expect(() => fetchService.fetch(address, operatorIndex, stakingLimit, 2, 1)).rejects.toThrow();
   });
 });

@@ -5,6 +5,7 @@ export interface RegistryKey {
   key: string;
   used: boolean;
   moduleAddress: string;
+  vetted: boolean;
 }
 
 export type KeyBatchRecord = [string, string, boolean[]] & {

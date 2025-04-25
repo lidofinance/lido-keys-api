@@ -32,15 +32,50 @@ For running locally in container run
 
 1. `docker-compose -f docker-compose.yml build`
 2. `docker-compose -f docker-compose.yml up`
-3. `docker-compose -f docker-compose.metrics.yml up`
-
-To configure grafana go to `http://localhost:8000/dashboards` and dashboards from `./grafana` folder.
 
 For running KAPI, one can also use the image from this page https://docs.lido.fi/guides/tooling#keys-api. Please always use the SHA256 hash of the Docker image for the latest release: lidofinance/lido-keys-api@<latest-hash>.
 
+## Metrics and alerts
+
+To launch Prometheus, Grafana, and Alertmanager, execute the following command:
+
+```
+docker-compose -f docker-compose.metrics.yml up
+```
+
+For configuring Grafana, navigate to http://localhost:8000/dashboards. Here, you can import dashboards from the ./grafana folder.
+
+To view the list of alerts in Prometheus, visit http://localhost:9090/alerts. For checking the list of fired alerts in Alertmanager, go to http://localhost:9093/#/alerts.
+
+## Update CSM module ABI
+
+Clone CSM repo
+
+```sh
+git clone https://github.com/lidofinance/community-staking-module
+cd community-staking-module
+```
+
+Execute the command in the CSM module repository
+
+```sh
+forge build --force
+```
+Copy CSModule.json
+
+```sh
+cp community-staking-module/out/CSModule.sol/CSModule.json ./artifacts/CSMModule.json
+```
+
+Execute the ABI preparation command
+
+```sh
+yarn prepare:csm
+```
+
 ## E2E tests
 
-`$ yarn test:e2e`
+`$ yarn test:e2e:docker`
 
 ## Environment variable
 

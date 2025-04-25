@@ -19,6 +19,7 @@ import { RegistryOptions } from './interfaces/module.interface';
 import { chunk } from '@lido-nestjs/utils';
 import { RegistryKeyBatchFetchService } from '../fetch/key-batch.fetch';
 import { IsolationLevel } from '@mikro-orm/core';
+import { PrometheusService } from 'common/prometheus';
 
 @Injectable()
 export abstract class AbstractRegistryService {
@@ -33,8 +34,9 @@ export abstract class AbstractRegistryService {
 
     protected readonly operatorFetch: RegistryOperatorFetchService,
     protected readonly operatorStorage: RegistryOperatorStorageService,
-
     protected readonly entityManager: EntityManager,
+
+    protected readonly prometheusService: PrometheusService,
 
     @Optional()
     @Inject(REGISTRY_GLOBAL_OPTIONS_TOKEN)
@@ -49,6 +51,7 @@ export abstract class AbstractRegistryService {
     this.logger.log('Collected operators', {
       previousOperators: previousOperators.length,
       currentOperators: currentOperators.length,
+      moduleAddress,
     });
 
     await this.entityManager.transactional(
@@ -57,6 +60,7 @@ export abstract class AbstractRegistryService {
 
         this.logger.log('Saved data operators to the DB', {
           operators: currentOperators.length,
+          moduleAddress,
         });
 
         await this.syncUpdatedKeysWithContract(moduleAddress, previousOperators, currentOperators, blockHash);
@@ -99,20 +103,21 @@ export abstract class AbstractRegistryService {
     currentOperators: RegistryOperator[],
     blockHash: string,
   ) {
-    // TODO: disable console time after testing
-    console.time('FETCH_OPERATORS');
+    const updateTimeStart = performance.now();
+    let totalKeysAmount = 0;
     /**
-     * TODO: optimize a number of queries
      * it's possible to update keys faster by using different strategies depending on the reason for the update
      */
     for (const [currentIndex, currOperator] of currentOperators.entries()) {
       // check if the operator in the registry has changed since the last update
+
       const prevOperator = previousOperators[currentIndex] ?? null;
       const isSameOperator = compareOperators(prevOperator, currOperator);
 
+      const finalizedUsedSigningKeys = prevOperator ? prevOperator.finalizedUsedSigningKeys : null;
       // skip updating keys from 0 to `usedSigningKeys` of previous collected data
       // since the contract guarantees that these keys cannot be changed
-      const unchangedKeysMaxIndex = isSameOperator ? prevOperator.usedSigningKeys : 0;
+      const unchangedKeysMaxIndex = isSameOperator && finalizedUsedSigningKeys ? finalizedUsedSigningKeys : 0;
       // get the right border up to which the keys should be updated
       // it's different for different scenarios
       const toIndex = this.getToIndex(currOperator);
@@ -123,25 +128,49 @@ export abstract class AbstractRegistryService {
 
       const operatorIndex = currOperator.index;
       const overrides = { blockTag: { blockHash } };
-      // TODO: use feature flag
-      const result = await this.keyBatchFetch.fetch(moduleAddress, operatorIndex, fromIndex, toIndex, overrides);
+
+      const stakingLimit = currOperator.stakingLimit;
+
+      const result = await this.keyBatchFetch.fetch(
+        moduleAddress,
+        operatorIndex,
+        stakingLimit,
+        fromIndex,
+        toIndex,
+        overrides,
+      );
 
       const operatorKeys = result.filter((key) => key);
 
-      this.logger.log('Keys fetched', {
+      const operatorKeysCount = operatorKeys.length;
+      totalKeysAmount += operatorKeysCount;
+
+      const logMeta = {
         operatorIndex,
         fromIndex,
         toIndex,
-        operatorKeys: operatorKeys.length,
+        operatorKeys: operatorKeysCount,
         fetchedKeys: result.length,
-      });
+        stakingModuleAddress: moduleAddress,
+      };
 
-      await this.saveKeys(operatorKeys);
+      if (operatorKeysCount > 0) {
+        this.logger.log('Keys fetched', logMeta);
+        await this.saveKeys(operatorKeys);
+        this.logger.log('Keys saved', { operatorIndex, stakingModuleAddress: moduleAddress });
+      }
 
-      this.logger.log('Keys saved', { operatorIndex });
+      if (operatorKeysCount === 0) {
+        this.logger.log('No keys fetched', logMeta);
+      }
     }
 
-    console.timeEnd('FETCH_OPERATORS');
+    const updateTimeEnd = performance.now();
+    const updateTime = Math.ceil(updateTimeEnd - updateTimeStart) / 1000;
+
+    this.prometheusService.updateDurationByModule.labels(moduleAddress, totalKeysAmount.toString()).observe(updateTime);
+
+    this.logger.log('Update statistic', { stakingModuleAddress: moduleAddress, time: updateTime, totalKeysAmount });
   }
 
   /** storage */

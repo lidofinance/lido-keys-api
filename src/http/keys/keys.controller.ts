@@ -10,12 +10,15 @@ import {
   HttpStatus,
   NotFoundException,
   Res,
+  LoggerService,
+  Inject,
 } from '@nestjs/common';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import type { FastifyReply } from 'fastify';
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
 import { KeyListResponse } from './entities';
-import { Key, KeyQuery } from '../common/entities';
+import { Key, KeyQueryWithAddress } from '../common/entities';
 import { KeysFindBody } from '../common/entities/pubkeys';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import * as JSONStream from 'jsonstream';
@@ -25,7 +28,11 @@ import { IsolationLevel } from '@mikro-orm/core';
 @Controller('keys')
 @ApiTags('keys')
 export class KeysController {
-  constructor(protected readonly keysService: KeysService, protected readonly entityManager: EntityManager) {}
+  constructor(
+    @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
+    protected readonly keysService: KeysService,
+    protected readonly entityManager: EntityManager,
+  ) {}
 
   @Version('1')
   @Get()
@@ -40,7 +47,7 @@ export class KeysController {
     type: KeyListResponse,
   })
   @ApiOperation({ summary: 'Get list of all keys in stream' })
-  async get(@Query() filters: KeyQuery, @Res() reply: FastifyReply) {
+  async get(@Query() filters: KeyQueryWithAddress, @Res() reply: FastifyReply) {
     // Because the real execution of generators occurs in the controller's method, that's why we moved the transaction here
     await this.entityManager.transactional(
       async () => {
@@ -48,7 +55,7 @@ export class KeysController {
 
         const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
         reply.type('application/json').send(jsonStream);
-        // TODO: is it necessary to check the error? or 'finally' is ok?
+
         try {
           for (const keysGenerator of keysGenerators) {
             for await (const key of keysGenerator) {
@@ -56,8 +63,14 @@ export class KeysController {
               jsonStream.write(keyReponse);
             }
           }
-        } finally {
+
           jsonStream.end();
+        } catch (streamError) {
+          // Handle the error during streaming.
+          this.logger.log('keys streaming error', streamError);
+          // destroy method closes the stream without ']' and corrupt the result
+          // https://github.com/dominictarr/through/blob/master/index.js#L78
+          jsonStream.destroy();
         }
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
@@ -101,7 +114,7 @@ export class KeysController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Staking Router module keys.',
+    description: 'Staking Router module keys',
     type: KeyListResponse,
   })
   @ApiOperation({ summary: 'Get list of found keys in DB from pubkey list' })

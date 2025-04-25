@@ -10,7 +10,10 @@ import {
   HttpStatus,
   Res,
   HttpCode,
+  LoggerService,
+  Inject,
 } from '@nestjs/common';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
@@ -27,12 +30,13 @@ import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
 @ApiTags('sr-module-keys')
 export class SRModulesKeysController {
   constructor(
+    @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
     protected readonly srModulesKeysService: SRModulesKeysService,
     protected readonly entityManager: EntityManager,
   ) {}
 
   @Version('1')
-  @ApiOperation({ summary: 'Get keys for all modules grouped by staking router module.' })
+  @ApiOperation({ summary: 'Get keys for all modules grouped by staking router module' })
   @ApiResponse({
     status: 200,
     description:
@@ -50,7 +54,7 @@ export class SRModulesKeysController {
   }
 
   @Version('1')
-  @ApiOperation({ summary: 'Staking router module keys.' })
+  @ApiOperation({ summary: 'Staking router module keys' })
   @ApiResponse({
     status: 200,
     description: 'List of all modules supported in API',
@@ -69,7 +73,7 @@ export class SRModulesKeysController {
   @ApiParam({
     name: 'module_id',
     type: String,
-    description: 'Staking router module_id or contract address.',
+    description: 'Staking router module_id or contract address',
   })
   @Get(':module_id/keys')
   async getModuleKeys(
@@ -95,11 +99,16 @@ export class SRModulesKeysController {
         try {
           for await (const key of keysGenerator) {
             const keyReponse = new Key(key);
-
             jsonStream.write(keyReponse);
           }
-        } finally {
+
           jsonStream.end();
+        } catch (streamError) {
+          // Handle the error during streaming.
+          this.logger.error('module-keys streaming error', streamError);
+          // destroy method closes the stream without ']' and corrupt the result
+          // https://github.com/dominictarr/through/blob/master/index.js#L78
+          jsonStream.destroy();
         }
       },
       { isolationLevel: IsolationLevel.REPEATABLE_READ },
@@ -109,10 +118,10 @@ export class SRModulesKeysController {
   @Version('1')
   @Post(':module_id/keys/find')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get list of found staking router module keys in db from pubkey list.' })
+  @ApiOperation({ summary: 'Get list of found staking router module keys in db from pubkey list' })
   @ApiResponse({
     status: 200,
-    description: 'Staking Router module keys.',
+    description: 'Staking Router module keys',
     type: SRModuleKeyListResponse,
   })
   @ApiResponse({
@@ -128,7 +137,7 @@ export class SRModulesKeysController {
   @ApiParam({
     name: 'module_id',
     type: String,
-    description: 'Staking router module_id or contract address.',
+    description: 'Staking router module_id or contract address',
   })
   getModuleKeysByPubkeys(@Param('module_id', ModuleIdPipe) module_id: string | number, @Body() keys: KeysFindBody) {
     return this.srModulesKeysService.getModuleKeysByPubKeys(module_id, keys.pubkeys);

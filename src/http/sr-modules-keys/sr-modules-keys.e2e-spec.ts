@@ -8,7 +8,6 @@ import {
   RegistryStorageService,
 } from '../../common/registry';
 import { MikroORM } from '@mikro-orm/core';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
 
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
@@ -22,6 +21,8 @@ import { curatedModule, dvtModule, keys } from '../db.fixtures';
 import { dvtModuleResp, curatedModuleResp } from '../module.fixture';
 import { curatedModuleKeysResponse, dvtModuleKeysResponse } from '../keys.fixtures';
 import { elMeta } from '../el-meta.fixture';
+import { DatabaseE2ETestingModule } from 'app';
+import { CSMKeyRegistryService } from 'common/registry-csm';
 
 describe('SRModulesKeysController (e2e)', () => {
   let app: INestApplication;
@@ -62,18 +63,26 @@ describe('SRModulesKeysController (e2e)', () => {
     }
   }
 
+  @Global()
+  @Module({
+    imports: [RegistryStorageModule],
+    providers: [CSMKeyRegistryService],
+    exports: [CSMKeyRegistryService, RegistryStorageModule],
+  })
+  class CSMKeyRegistryModule {}
+
+  class CSMKeysRegistryServiceMock {
+    async update(moduleAddress, blockHash) {
+      return;
+    }
+  }
+
   beforeAll(async () => {
     const imports = [
-      //  sqlite3 only supports serializable transactions, ignoring the isolation level param
-      // TODO: use postgres
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
+      DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule,
+      CSMKeyRegistryModule,
       StakingRouterModule,
     ];
 
@@ -82,6 +91,8 @@ describe('SRModulesKeysController (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
       .overrideProvider(KeyRegistryService)
       .useClass(KeysRegistryServiceMock)
+      .overrideProvider(CSMKeyRegistryService)
+      .useClass(CSMKeysRegistryServiceMock)
       .compile();
 
     elMetaStorageService = moduleRef.get(ElMetaStorageService);
@@ -90,7 +101,8 @@ describe('SRModulesKeysController (e2e)', () => {
     registryStorage = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
 
     app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
     app.enableVersioning({ type: VersioningType.URI });
@@ -114,8 +126,8 @@ describe('SRModulesKeysController (e2e)', () => {
         // lets save keys
         await keysStorageService.save(keys);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -133,6 +145,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -172,6 +185,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -191,6 +205,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -208,6 +223,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -242,7 +258,7 @@ describe('SRModulesKeysController (e2e)', () => {
       });
 
       it('Should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/keys`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
@@ -258,8 +274,8 @@ describe('SRModulesKeysController (e2e)', () => {
         // lets save keys
         await keysStorageService.save(keys);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -284,6 +300,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -304,6 +321,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -332,7 +350,7 @@ describe('SRModulesKeysController (e2e)', () => {
       });
 
       it('Should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(dvtModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
         const resp = await request(app.getHttpServer())
           .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
           .set('Content-Type', 'application/json')
@@ -351,8 +369,8 @@ describe('SRModulesKeysController (e2e)', () => {
         // lets save keys
         await keysStorageService.save(keys);
         // lets save modules
-        await moduleStorageService.upsert(dvtModule, 1);
-        await moduleStorageService.upsert(curatedModule, 1);
+        await moduleStorageService.upsert(dvtModule, 1, '');
+        await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
       afterAll(async () => {
@@ -369,6 +387,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -409,6 +428,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -433,6 +453,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -450,6 +471,7 @@ describe('SRModulesKeysController (e2e)', () => {
             blockNumber: elMeta.number,
             blockHash: elMeta.hash,
             timestamp: elMeta.timestamp,
+            lastChangedBlockHash: elMeta.lastChangedBlockHash,
           },
         });
       });
@@ -464,14 +486,7 @@ describe('SRModulesKeysController (e2e)', () => {
       });
 
       it('Should return too early response if there are no meta', async () => {
-        await moduleStorageService.upsert(dvtModule, 1);
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`);
-        expect(resp.status).toEqual(425);
-        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
-      });
-
-      it('Should return too early response if there are no modules', async () => {
-        await elMetaStorageService.update(elMeta);
+        await moduleStorageService.upsert(dvtModule, 1, '');
         const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });

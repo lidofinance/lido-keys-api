@@ -2,7 +2,7 @@ import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/co
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { KeyListResponse } from './entities';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
-import { ELBlockSnapshot, Key, KeyQuery } from '../common/entities';
+import { ELBlockSnapshot, Key, KeyQueryWithAddress } from '../common/entities';
 import { IsolationLevel } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
 import { RegistryKey } from 'common/registry';
@@ -16,9 +16,11 @@ export class KeysService {
   ) {}
 
   async get(
-    filters: KeyQuery,
+    filters: KeyQueryWithAddress,
   ): Promise<{ keysGenerators: AsyncGenerator<Key>[]; meta: { elBlockSnapshot: ELBlockSnapshot } }> {
-    const { stakingModules, elBlockSnapshot } = await this.stakingRouterService.getStakingModulesAndMeta();
+    const { stakingModules, elBlockSnapshot } = await this.stakingRouterService.getStakingModulesAndMeta(
+      filters.moduleAddresses,
+    );
     const keysGenerators: AsyncGenerator<Key>[] = [];
 
     for (const module of stakingModules) {

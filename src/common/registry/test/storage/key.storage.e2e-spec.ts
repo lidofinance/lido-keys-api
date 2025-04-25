@@ -1,11 +1,10 @@
 import { Test } from '@nestjs/testing';
 import { MikroORM, QueryOrder } from '@mikro-orm/core';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { key } from '../fixtures/key.fixture';
 import { RegistryStorageModule, RegistryStorageService, RegistryKeyStorageService } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
-import { mikroORMConfig } from '../testing.utils';
 import * as dotenv from 'dotenv';
+import { DatabaseE2ETestingModule } from 'app';
 
 dotenv.config();
 
@@ -19,14 +18,15 @@ describe('Keys', () => {
   const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
 
   beforeEach(async () => {
-    const imports = [MikroOrmModule.forRoot(mikroORMConfig), RegistryStorageModule.forFeature()];
+    const imports = [DatabaseE2ETestingModule.forRoot(), RegistryStorageModule.forFeature()];
 
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     storageService = moduleRef.get(RegistryKeyStorageService);
     registryService = moduleRef.get(RegistryStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
   });
 
   afterEach(async () => {
@@ -35,8 +35,8 @@ describe('Keys', () => {
 
   test('find', async () => {
     const keys = [
-      { operatorIndex: 1, index: 1, moduleAddress: address, ...key },
-      { operatorIndex: 1, index: 2, moduleAddress: address, ...key },
+      { operatorIndex: 1, index: 1, moduleAddress: address, ...key, vetted: true },
+      { operatorIndex: 1, index: 2, moduleAddress: address, ...key, vetted: true },
     ];
 
     await expect(storageService.findAll(address)).resolves.toEqual([]);
@@ -48,8 +48,8 @@ describe('Keys', () => {
 
   test('find by index', async () => {
     const keys = [
-      { operatorIndex: 1, index: 1, moduleAddress: address, ...key },
-      { operatorIndex: 1, index: 2, moduleAddress: address, ...key },
+      { operatorIndex: 1, index: 1, moduleAddress: address, ...key, vetted: true },
+      { operatorIndex: 1, index: 2, moduleAddress: address, ...key, vetted: true },
     ];
 
     await expect(storageService.findAll(address)).resolves.toEqual([]);
@@ -59,7 +59,7 @@ describe('Keys', () => {
   });
 
   test('find by pubkey', async () => {
-    const keys = [{ operatorIndex: 1, index: 1, moduleAddress: address, ...key }];
+    const keys = [{ operatorIndex: 1, index: 1, moduleAddress: address, ...key, vetted: true }];
 
     await expect(storageService.findByPubkey(address, key.key)).resolves.toEqual([]);
     await storageService.save(keys);
@@ -67,7 +67,7 @@ describe('Keys', () => {
   });
 
   test('find by signature', async () => {
-    const keys = [{ operatorIndex: 1, index: 1, moduleAddress: address, ...key }];
+    const keys = [{ operatorIndex: 1, index: 1, moduleAddress: address, ...key, vetted: true }];
 
     await expect(storageService.findBySignature(address, key.depositSignature)).resolves.toEqual([]);
     await storageService.save(keys);
@@ -76,8 +76,8 @@ describe('Keys', () => {
 
   test('find by operator', async () => {
     const keys = [
-      { operatorIndex: 1, index: 1, moduleAddress: address, ...key },
-      { operatorIndex: 1, index: 2, moduleAddress: address, ...key },
+      { operatorIndex: 1, index: 1, moduleAddress: address, ...key, vetted: true },
+      { operatorIndex: 1, index: 2, moduleAddress: address, ...key, vetted: true },
     ];
 
     await expect(storageService.findAll(address)).resolves.toEqual([]);
@@ -86,7 +86,7 @@ describe('Keys', () => {
   });
 
   test('save one key', async () => {
-    const registryKey = { operatorIndex: 1, index: 1, moduleAddress: address, ...key };
+    const registryKey = { operatorIndex: 1, index: 1, moduleAddress: address, ...key, vetted: true };
 
     await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.saveOne(registryKey);
@@ -95,8 +95,8 @@ describe('Keys', () => {
 
   test('save keys', async () => {
     const keys = [
-      { operatorIndex: 1, index: 1, moduleAddress: address, ...key },
-      { operatorIndex: 1, index: 2, moduleAddress: address, ...key },
+      { operatorIndex: 1, index: 1, moduleAddress: address, ...key, vetted: true },
+      { operatorIndex: 1, index: 2, moduleAddress: address, ...key, vetted: true },
     ];
 
     await expect(storageService.findAll(address)).resolves.toEqual([]);
@@ -105,7 +105,7 @@ describe('Keys', () => {
   });
 
   test('remove one key', async () => {
-    const registryKey = { operatorIndex: 1, index: 1, moduleAddress: address, ...key };
+    const registryKey = { operatorIndex: 1, index: 1, moduleAddress: address, ...key, vetted: true };
 
     await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.saveOne(registryKey);
@@ -116,8 +116,8 @@ describe('Keys', () => {
 
   test('remove all keys', async () => {
     const keys = [
-      { operatorIndex: 1, index: 1, moduleAddress: address, ...key },
-      { operatorIndex: 1, index: 2, moduleAddress: address, ...key },
+      { operatorIndex: 1, index: 1, moduleAddress: address, ...key, vetted: true },
+      { operatorIndex: 1, index: 2, moduleAddress: address, ...key, vetted: true },
     ];
 
     await expect(storageService.findAll(address)).resolves.toEqual([]);

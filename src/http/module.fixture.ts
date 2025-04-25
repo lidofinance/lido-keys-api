@@ -17,6 +17,7 @@ export const curatedModuleResp: StakingModuleResponse = {
   nonce: 1,
   exitedValidatorsCount: 0,
   active: true,
+  lastChangedBlockHash: '',
 };
 
 export const dvtModuleAddressWithChecksum = '0x0165878A594ca255338adfa4d48449f69242Eb8F';
@@ -35,4 +36,5 @@ export const dvtModuleResp: StakingModuleResponse = {
   nonce: 1,
   exitedValidatorsCount: 0,
   active: true,
+  lastChangedBlockHash: '',
 };

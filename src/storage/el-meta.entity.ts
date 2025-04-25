@@ -11,6 +11,7 @@ export class ElMetaEntity {
     this.blockNumber = meta.blockNumber;
     this.blockHash = meta.blockHash.toLocaleLowerCase();
     this.timestamp = meta.timestamp;
+    this.lastChangedBlockHash = meta.lastChangedBlockHash;
   }
 
   @PrimaryKey()
@@ -22,4 +23,7 @@ export class ElMetaEntity {
 
   @Property()
   timestamp: number;
+
+  @Property({ length: BLOCK_HASH_LEN })
+  lastChangedBlockHash: string;
 }

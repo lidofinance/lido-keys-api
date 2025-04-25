@@ -19,12 +19,17 @@ export const registryServiceMock = (
   { keys, operators }: Payload,
 ) => {
   const fetchBatchKey = moduleRef.get(RegistryKeyBatchFetchService);
-  jest
+  const fetchSigningKeysInBatchesMock = jest
     .spyOn(fetchBatchKey, 'fetchSigningKeysInBatches')
-    .mockImplementation(async (moduleAddress, operatorIndex, fromIndex, totalAmount) => {
+    .mockImplementation(async (moduleAddress, operatorIndex, stakingLimit, fromIndex, totalAmount) => {
       return findKeys(keys, operatorIndex, fromIndex, totalAmount);
     });
 
   const operatorFetch = moduleRef.get(RegistryOperatorFetchService);
-  jest.spyOn(operatorFetch, 'fetch').mockImplementation(async () => operators);
+  const operatorsMock = jest.spyOn(operatorFetch, 'fetch').mockImplementation(async () => operators);
+
+  return () => {
+    fetchSigningKeysInBatchesMock.mockReset();
+    operatorsMock.mockReset();
+  };
 };
