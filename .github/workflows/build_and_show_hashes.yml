@@ -81,3 +81,6 @@ jobs:
           echo "commit hash: $(git rev-parse HEAD)"
           echo "tar sha256 for image is ${{ steps.hash.outputs.sha256 }}"
           echo "image digest is ${{ steps.digest.outputs.digest }}"
+          echo "➤ **Commit Hash:** \`$(git rev-parse HEAD)\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "➤ **tar SHA256:** \`${{ steps.hash.outputs.sha256 }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "➤ **Image Digest:** \`${{ steps.digest.outputs.digest }}\`" >> "$GITHUB_STEP_SUMMARY"
