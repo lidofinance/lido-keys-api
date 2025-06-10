@@ -78,5 +78,6 @@ jobs:
 
       - name: Report summary
         run: |
+          echo "commit hash: $(git rev-parse HEAD)"
           echo "tar sha256 for image is ${{ steps.hash.outputs.sha256 }}"
           echo "image digest is ${{ steps.digest.outputs.digest }}"
