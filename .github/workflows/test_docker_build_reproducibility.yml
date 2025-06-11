@@ -101,8 +101,8 @@ jobs:
           name: rebuild-image-tar
           path: image.tar
 
-  reproducability:
-    name: Check reproducability
+  reproducibility:
+    name: Check reproducibility
     runs-on: ubuntu-latest
     needs:
       - build
