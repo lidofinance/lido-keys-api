@@ -1,4 +1,4 @@
-import { Controller, Get, Version, Param, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Version, Param, HttpStatus, NotFoundException, ParseIntPipe } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } from '@nestjs/swagger';
 import {
   GroupedByModuleOperatorListResponse,
@@ -6,9 +6,9 @@ import {
   SRModuleOperatorResponse,
 } from './entities';
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
-import { OperatorId } from '../common/entities/operator-id';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
+import { OperatorId } from 'http/common/entities';
 
 @Controller('/')
 @ApiTags('operators')

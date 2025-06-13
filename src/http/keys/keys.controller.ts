@@ -24,6 +24,7 @@ import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import * as JSONStream from 'jsonstream';
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
+import { Pubkey } from 'http/common/entities/pubkey';
 
 @Controller('keys')
 @ApiTags('keys')
@@ -99,9 +100,8 @@ export class KeysController {
     type: KeyListResponse,
   })
   @ApiOperation({ summary: 'Get detailed information about pubkey' })
-  // TODO: add check that pubkey has a right pattern
-  getByPubkey(@Param('pubkey') pubkey: string) {
-    return this.keysService.getByPubkey(pubkey);
+  getByPubkey(@Param() data: Pubkey) {
+    return this.keysService.getByPubkey(data.pubkey);
   }
 
   @Version('1')
@@ -119,7 +119,6 @@ export class KeysController {
   })
   @ApiOperation({ summary: 'Get list of found keys in DB from pubkey list' })
   getByPubkeys(@Body() keys: KeysFindBody) {
-    // TODO: add check that pubkey has a right pattern
     return this.keysService.getByPubkeys(keys.pubkeys);
   }
 }

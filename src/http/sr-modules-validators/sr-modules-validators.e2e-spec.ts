@@ -43,6 +43,7 @@ import {
 } from '../consensus.fixtures';
 import { DatabaseE2ETestingModule } from 'app';
 import { CSMKeyRegistryService } from 'common/registry-csm';
+import { AddressZero } from '@ethersproject/constants';
 
 describe('SRModulesValidatorsController (e2e)', () => {
   let app: INestApplication;
@@ -173,146 +174,162 @@ describe('SRModulesValidatorsController (e2e)', () => {
         await cleanDB();
       });
 
-      it("Should return 10% validators by default for 'dvt' module when 'operator' is set to 'one'", async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer()).get(
-          `/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`,
-        );
+      describe('percent and amount validation', () => {
+        it("Should return 10% validators by default for 'dvt' module when 'operator' is set to 'one'", async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`,
+          );
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(1);
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp10percent));
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(1);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp10percent));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it("Should return 100% validators for 'dvt' module when 'operator' is set to 'one'", async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
-          .query({ percent: 100 });
+        it("Should return 100% validators for 'dvt' module when 'operator' is set to 'one'", async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
+            .query({ percent: 100 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(10);
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp100percent));
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(10);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp100percent));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it("Should prioritize 'percent' over 'max_amount' when both are provided in the query", async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
-          .query({ percent: 20, max_amount: 5 });
+        it("Should prioritize 'percent' over 'max_amount' when both are provided in the query", async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
+            .query({ percent: 20, max_amount: 5 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(2);
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp20percent));
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(2);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp20percent));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it('Should return 5 validators when max_amount is 5', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
-          .query({ max_amount: 5 });
+        it('Should return 5 validators when max_amount is 5', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
+            .query({ max_amount: 5 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(5);
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp5maxAmount));
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(5);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp5maxAmount));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it('Should return 100% validators when max_amount exceeds the total validator amount', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
-          .query({ max_amount: 100 });
+        it('Should return 100% validators when max_amount exceeds the total validator amount', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
+            .query({ max_amount: 100 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(10);
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp100percent));
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(10);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp100percent));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it('Should return 100% validators when percent exceeds the total validator amount', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
-          .query({ percent: 200 });
+        it('Should return 100% validators when percent exceeds the total validator amount', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
+            .query({ percent: 200 });
 
-        // sometime get 400
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(10);
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp100percent));
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          // sometime get 400
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(10);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp100percent));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it('Should return empty list of validators when percent equal to 0', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
-          .query({ percent: 0 });
+        it('Should return empty list of validators when percent equal to 0', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
+            .query({ percent: 0 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(0);
-        expect(resp.body.data).toEqual([]);
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(0);
+          expect(resp.body.data).toEqual([]);
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it('Should return empty list of validators when max_amount equal to 0', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
-          .query({ percent: 0 });
+        it('Should return empty list of validators when max_amount equal to 0', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
+            .query({ percent: 0 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(0);
-        expect(resp.body.data).toEqual([]);
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(0);
+          expect(resp.body.data).toEqual([]);
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it('Should return 400 error if percent or max_amount are negative', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
-          .query({ percent: -1, max_amount: -1 });
+        it('Should return 400 error if percent or max_amount are negative', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
+            .query({ percent: -1, max_amount: -1 });
 
-        expect(resp.status).toEqual(400);
-        expect(resp.body.message).toEqual(
-          expect.arrayContaining(['max_amount must not be less than 0', 'percent must not be less than 0']),
-        );
-      });
+          expect(resp.status).toEqual(400);
+          expect(resp.body.message).toEqual(
+            expect.arrayContaining(['max_amount must not be less than 0', 'percent must not be less than 0']),
+          );
+        });
 
-      it('Should return 400 error if percent or max_amount is not number', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
-          .query({ max_amount: 'dfsdfds', percent: 'sdsdfsf' });
+        it('Should return 400 error if percent or max_amount is not number', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
+            .query({ max_amount: 'dfsdfds', percent: 'sdsdfsf' });
 
-        expect(resp.status).toEqual(400);
-        expect(resp.body.message).toEqual(
-          expect.arrayContaining([
-            'max_amount must not be less than 0',
-            'max_amount must be an integer number',
-            'percent must not be less than 0',
-            'percent must be an integer number',
-          ]),
-        );
+          expect(resp.status).toEqual(400);
+          expect(resp.body.message).toEqual(
+            expect.arrayContaining([
+              'max_amount must not be less than 0',
+              'max_amount must be an integer number',
+              'percent must not be less than 0',
+              'percent must be an integer number',
+            ]),
+          );
+        });
+
+        it('Should return 10% validators by default if percent or max_amount are not set', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
+            .query({ max_amount: '', percent: '' });
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(1);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp10percent));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
+        });
       });
 
       it("Should return a 500 error if 'el_meta' is older than 'cl_meta'", async () => {
@@ -330,28 +347,132 @@ describe('SRModulesValidatorsController (e2e)', () => {
         });
       });
 
-      it('Should return a 404 error if the requested module does not exist', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/777/validators/validator-exits-to-prepare/1`);
+      describe('validate module id', () => {
+        it('Should return a 404 error if the requested module does not exist', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer()).get(
+            '/v1/modules/777/validators/validator-exits-to-prepare/1',
+          );
 
-        expect(resp.status).toEqual(404);
-        expect(resp.body).toEqual({
-          error: 'Not Found',
-          message: 'Module with moduleId 777 is not supported',
-          statusCode: 404,
+          expect(resp.status).toEqual(404);
+          expect(resp.body).toEqual({
+            error: 'Not Found',
+            message: 'Module with moduleId 777 is not supported',
+            statusCode: 404,
+          });
+        });
+
+        it('should return 400 error if module_id is not a contract address or number', async () => {
+          const resp = await request(app.getHttpServer()).get(
+            '/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/validators/validator-exits-to-prepare/1',
+          );
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
+
+        it('should return 400 error if module_id is not set', async () => {
+          const resp = await request(app.getHttpServer()).get('/v1/modules//validators/validator-exits-to-prepare/1');
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
+
+        it('should return 400 error if module_id is negative value', async () => {
+          const resp = await request(app.getHttpServer()).get('/v1/modules/-1/validators/validator-exits-to-prepare/1');
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should return 400 error if module_id zero address', async () => {
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${AddressZero}/validators/validator-exits-to-prepare/1`,
+          );
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id cannot be the zero address'],
+            statusCode: 400,
+          });
         });
       });
 
-      it("Should return empty list if operator doesn't exist", async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer()).get(
-          `/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/777`,
-        );
+      describe('validate operator_id', () => {
+        it("Should return empty list if operator doesn't exist", async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/777`,
+          );
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data).toEqual([]);
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data).toEqual([]);
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
+        });
+
+        it('Should return 400 error if operator was not set', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/`,
+          );
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body.message).toEqual(
+            expect.arrayContaining([
+              'operator_id should not be null or undefined',
+              'operator_id must not be less than 0',
+              'operator_id must be an integer number',
+            ]),
+          );
+        });
+
+        it('should return 400 error if operator_id is not a number', async () => {
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/sfsfsf`,
+          );
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operator_id must not be less than 0', 'operator_id must be an integer number'],
+            statusCode: 400,
+          });
+        });
+
+        it('should return 400 error if operator_id is negative value', async () => {
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/-1`,
+          );
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operator_id must not be less than 0'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should return 400 error if operator_id is a float', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1.2`)
+            .query({ operatorIndex: 1.5 });
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operator_id must be an integer number'],
+            statusCode: 400,
+          });
         });
       });
     });
@@ -390,145 +511,161 @@ describe('SRModulesValidatorsController (e2e)', () => {
         await cleanDB();
       });
 
-      it("Should return 10% validators by default for 'dvt' module when 'operator' is set to 'one'", async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer()).get(
-          `/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`,
-        );
+      describe('percent and amount validation', () => {
+        it("Should return 10% validators by default for 'dvt' module when 'operator' is set to 'one'", async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`,
+          );
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(1);
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages10percent));
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(1);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages10percent));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it("Should return 100% validators for 'dvt' module when 'operator' is set to 'one'", async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
-          .query({ percent: 100 });
+        it("Should return 100% validators for 'dvt' module when 'operator' is set to 'one'", async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
+            .query({ percent: 100 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(10);
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages100percent));
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(10);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages100percent));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it("Should prioritize 'percent' over 'max_amount' when both are provided in the query", async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
-          .query({ percent: 20, max_amount: 5 });
+        it("Should prioritize 'percent' over 'max_amount' when both are provided in the query", async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
+            .query({ percent: 20, max_amount: 5 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(2);
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages20percent));
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(2);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages20percent));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it('Should return 5 validators when max_amount is 5', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
-          .query({ max_amount: 5 });
+        it('Should return 5 validators when max_amount is 5', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
+            .query({ max_amount: 5 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(5);
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages5maxAmount));
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(5);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages5maxAmount));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it('Should return 100% validators when max_amount exceeds the total validator amount', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
-          .query({ max_amount: 100 });
+        it('Should return 100% validators when max_amount exceeds the total validator amount', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
+            .query({ max_amount: 100 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(10);
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages100percent));
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(10);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages100percent));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it('Should return 100% validators when percent exceeds the total validator amount', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
-          .query({ percent: 200 });
+        it('Should return 100% validators when percent exceeds the total validator amount', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
+            .query({ percent: 200 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(10);
-        expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages100percent));
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(10);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages100percent));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it('Should return empty list of validators when percent equal to 0', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
-          .query({ percent: 0 });
+        it('Should return empty list of validators when percent equal to 0', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
+            .query({ percent: 0 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(0);
-        expect(resp.body.data).toEqual([]);
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(0);
+          expect(resp.body.data).toEqual([]);
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it('Should return empty list of validators when max_amount equal to 0', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
-          .query({ percent: 0 });
+        it('Should return empty list of validators when max_amount equal to 0', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
+            .query({ percent: 0 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.length).toEqual(0);
-        expect(resp.body.data).toEqual([]);
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(0);
+          expect(resp.body.data).toEqual([]);
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
         });
-      });
 
-      it('Should return 400 error if percent or max_amount are negative', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
-          .query({ percent: -1, max_amount: -1 });
+        it('Should return 400 error if percent or max_amount are negative', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
+            .query({ percent: -1, max_amount: -1 });
 
-        expect(resp.status).toEqual(400);
-        expect(resp.body.message).toEqual(
-          expect.arrayContaining(['max_amount must not be less than 0', 'percent must not be less than 0']),
-        );
-      });
+          expect(resp.status).toEqual(400);
+          expect(resp.body.message).toEqual(
+            expect.arrayContaining(['max_amount must not be less than 0', 'percent must not be less than 0']),
+          );
+        });
 
-      it('Should return 400 error if percent or max_amount is not number', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
-          .query({ max_amount: 'dfsdfds', percent: 'sdsdfsf' });
+        it('Should return 400 error if percent or max_amount is not number', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
+            .query({ max_amount: 'dfsdfds', percent: 'sdsdfsf' });
 
-        expect(resp.status).toEqual(400);
-        expect(resp.body.message).toEqual(
-          expect.arrayContaining([
-            'max_amount must not be less than 0',
-            'max_amount must be an integer number',
-            'percent must not be less than 0',
-            'percent must be an integer number',
-          ]),
-        );
+          expect(resp.status).toEqual(400);
+          expect(resp.body.message).toEqual(
+            expect.arrayContaining([
+              'max_amount must not be less than 0',
+              'max_amount must be an integer number',
+              'percent must not be less than 0',
+              'percent must be an integer number',
+            ]),
+          );
+        });
+
+        it('Should return 10% validators by default if percent or max_amount are not set', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
+            .query({ max_amount: '', percent: '' });
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(1);
+          expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneRespExitMessages10percent));
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
+        });
       });
 
       it("Should return a 500 error if 'el_meta' is older than 'cl_meta'", async () => {
@@ -546,30 +683,136 @@ describe('SRModulesValidatorsController (e2e)', () => {
         });
       });
 
-      it('Should return a 404 error if the requested module does not exist', async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer()).get(
-          `/v1/modules/777/validators/generate-unsigned-exit-messages/1`,
-        );
+      describe('validate module id', () => {
+        it('Should return a 404 error if the requested module does not exist', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/777/validators/generate-unsigned-exit-messages/1`,
+          );
 
-        expect(resp.status).toEqual(404);
-        expect(resp.body).toEqual({
-          error: 'Not Found',
-          message: 'Module with moduleId 777 is not supported',
-          statusCode: 404,
+          expect(resp.status).toEqual(404);
+          expect(resp.body).toEqual({
+            error: 'Not Found',
+            message: 'Module with moduleId 777 is not supported',
+            statusCode: 404,
+          });
+        });
+
+        it('should return 400 error if module_id is not a contract address or number', async () => {
+          const resp = await request(app.getHttpServer()).get(
+            '/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/validators/generate-unsigned-exit-messages/1',
+          );
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
+
+        it('should return 400 error if module_id is not set', async () => {
+          const resp = await request(app.getHttpServer()).get(
+            '/v1/modules//validators/generate-unsigned-exit-messages/1',
+          );
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
+
+        it('should return 400 error if module_id is negative value', async () => {
+          const resp = await request(app.getHttpServer()).get(
+            '/v1/modules/-1/validators/generate-unsigned-exit-messages/1',
+          );
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should return 400 error if module_id zero address', async () => {
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${AddressZero}/validators/generate-unsigned-exit-messages/1`,
+          );
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id cannot be the zero address'],
+            statusCode: 400,
+          });
         });
       });
 
-      it("Should return empty list if operator doesn't exist", async () => {
-        await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
-        const resp = await request(app.getHttpServer()).get(
-          `/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/777`,
-        );
+      describe('validate operator id', () => {
+        it("Should return empty list if operator doesn't exist", async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/777`,
+          );
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data).toEqual([]);
-        expect(resp.body.meta).toEqual({
-          clBlockSnapshot: consensusMetaResp,
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data).toEqual([]);
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
+        });
+
+        it('Should return 400 error if operator was not set', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/`,
+          );
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body.message).toEqual(
+            expect.arrayContaining([
+              'operator_id should not be null or undefined',
+              'operator_id must not be less than 0',
+              'operator_id must be an integer number',
+            ]),
+          );
+        });
+
+        it('should return 400 error if operator_id is not a number', async () => {
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/sfsfsf`,
+          );
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operator_id must not be less than 0', 'operator_id must be an integer number'],
+            statusCode: 400,
+          });
+        });
+
+        it('should return 400 error if operator_id is negative value', async () => {
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/-1`,
+          );
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operator_id must not be less than 0'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should return 400 error if operator_id is a float', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1.2`)
+            .query({ operatorIndex: 1.5 });
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operator_id must be an integer number'],
+            statusCode: 400,
+          });
         });
       });
     });
