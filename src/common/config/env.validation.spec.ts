@@ -437,9 +437,18 @@ describe('Environment validation', () => {
 
   describe('DB_PASSWORD and DB_PASSWORD_FILE', () => {
     it('should pass with valid DB_PASSWORD only', () => {
-      const result = runValidation({ ...required_configs, DB_PASSWORD_FILE: '/path/to/secret.txt' });
+      const result = runValidation({ ...required_configs });
       expect(result.DB_PASSWORD).toBe('postgres');
-      expect(result.DB_PASSWORD_FILE).toBe('/path/to/secret.txt');
+    });
+
+    it('should pass with valid DB_PASSWORD and empty DB_PASSWORD_FILE', () => {
+      // we validate DB_PASSWORD_FILE only if DB_PASSWORD is not set
+      const config = {
+        ...required_configs,
+        DB_PASSWORD_FILE: '',
+      };
+
+      expect(runValidation(config).DB_PASSWORD_FILE).toBe('');
     });
 
     it('should pass with valid DB_PASSWORD_FILE only', () => {
@@ -491,6 +500,12 @@ describe('Environment validation', () => {
       expect(() => runValidation(config)).toThrow('process.exit');
       expect(errorOutput).toMatch(/property DB_PASSWORD has failed the following constraints: isNotEmpty/);
       expect(errorOutput).toMatch(/property DB_PASSWORD_FILE has failed the following constraints: isNotEmpty/);
+    });
+
+    it('should pass with both valid DB_PASSWORD and DB_PASSWORD_FILE', () => {
+      const result = runValidation({ ...required_configs, DB_PASSWORD_FILE: '/path/to/secret.txt' });
+      expect(result.DB_PASSWORD).toBe('postgres');
+      expect(result.DB_PASSWORD_FILE).toBe('/path/to/secret.txt');
     });
   });
 
