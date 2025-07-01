@@ -21,7 +21,10 @@ import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-
 const toNumber =
   ({ defaultValue }) =>
   ({ value }) => {
-    if (value === '' || value == null) return defaultValue;
+    if (value === '' || value == null) {
+      return defaultValue;
+    }
+
     return Number(value);
   };
 
@@ -140,13 +143,12 @@ export class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  DB_PASSWORD!: string;
+  DB_PASSWORD?: string;
 
   @ValidateIf((e) => !e.DB_PASSWORD)
-  @IsString()
   @IsNotEmpty()
-  DB_PASSWORD_FILE!: string;
+  @IsString()
+  DB_PASSWORD_FILE?: string;
 
   @IsNotEmpty()
   @IsString()
