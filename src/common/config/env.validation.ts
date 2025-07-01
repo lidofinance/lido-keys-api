@@ -29,7 +29,7 @@ const toNumber =
   };
 
 const toBoolean = ({ defaultValue }) => {
-  return function({ value }) {
+  return function ({ value }) {
     if (value == null || value === '') {
       return defaultValue;
     }
@@ -54,8 +54,8 @@ const toBoolean = ({ defaultValue }) => {
       default:
         return value;
     }
-  }
-}
+  };
+};
 
 const toArrayOfUrls = (url: string | null): string[] => {
   if (url == null || url === '') {
@@ -117,11 +117,14 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   @IsArray()
   @ArrayMinSize(1)
-  @IsUrl({
-    require_protocol: true
-  }, {
-    each: true,
-  })
+  @IsUrl(
+    {
+      require_protocol: true,
+    },
+    {
+      each: true,
+    },
+  )
   @Transform(({ value }) => toArrayOfUrls(value))
   PROVIDERS_URLS!: NonEmptyArray<string>;
 
@@ -186,11 +189,14 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   @IsArray()
   @ArrayMinSize(1)
-  @IsUrl({
-    require_protocol: true,
-  }, {
-    each: true,
-  })
+  @IsUrl(
+    {
+      require_protocol: true,
+    },
+    {
+      each: true,
+    },
+  )
   @Transform(({ value }) => toArrayOfUrls(value))
   CL_API_URLS: string[] = [];
 
