@@ -9,7 +9,6 @@ export class ModuleIdPipe implements PipeTransform<string, string | number> {
     if (isAddress(trimmedValue)) {
       const normalized = trimmedValue.toLowerCase();
 
-      // Optional: reject zero address
       if (normalized === AddressZero) {
         throw new BadRequestException(['module_id cannot be the zero address']);
       }
