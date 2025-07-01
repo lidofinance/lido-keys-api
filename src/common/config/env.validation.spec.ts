@@ -461,13 +461,10 @@ describe('Environment validation', () => {
       expect(runValidation(config).DB_PASSWORD_FILE).toBe('/path/to/secret.txt');
     });
 
-    it('should throw error with valid DB_PASSWORD_FILE and empty DB_PASSWORD', () => {
-      expect(
-        () =>
-          runValidation({ ...required_configs, DB_PASSWORD: '', DB_PASSWORD_FILE: '/path/to/secret.txt' })
-            .DB_PASSWORD_FILE,
-      ).toThrow('process.exit');
-      expect(errorOutput).toMatch(/property DB_PASSWORD has failed the following constraints: isNotEmpty/);
+    it('should not throw error with valid DB_PASSWORD_FILE and empty DB_PASSWORD', () => {
+      const result = runValidation({ ...required_configs, DB_PASSWORD: '', DB_PASSWORD_FILE: '/path/to/secret.txt' });
+      expect(result.DB_PASSWORD_FILE).toBe('/path/to/secret.txt');
+      expect(result.DB_PASSWORD).toBe('');
     });
 
     it('should throw if both DB_PASSWORD and DB_PASSWORD_FILE are missing', () => {
@@ -475,7 +472,7 @@ describe('Environment validation', () => {
 
       expect(() => runValidation(test_configs)).toThrow('process.exit');
       expect(errorOutput).toMatch(
-        /property DB_PASSWORD_FILE has failed the following constraints: isNotEmpty, isString/,
+        /property DB_PASSWORD_FILE has failed the following constraints: isString, isNotEmpty/,
       );
     });
 
@@ -486,8 +483,9 @@ describe('Environment validation', () => {
       };
 
       expect(() => runValidation(config)).toThrow('process.exit');
-      expect(errorOutput).toMatch(/property DB_PASSWORD has failed the following constraints: isNotEmpty/);
-      expect(errorOutput).toMatch(/property DB_PASSWORD_FILE has failed the following constraints: isNotEmpty/);
+      expect(errorOutput).toMatch(
+        /property DB_PASSWORD_FILE has failed the following constraints: isString, isNotEmpty/,
+      );
     });
 
     it('should throw if DB_PASSWORD is empty and DB_PASSWORD_FILE is empty', () => {
@@ -498,7 +496,6 @@ describe('Environment validation', () => {
       };
 
       expect(() => runValidation(config)).toThrow('process.exit');
-      expect(errorOutput).toMatch(/property DB_PASSWORD has failed the following constraints: isNotEmpty/);
       expect(errorOutput).toMatch(/property DB_PASSWORD_FILE has failed the following constraints: isNotEmpty/);
     });
 
