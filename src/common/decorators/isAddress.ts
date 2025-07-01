@@ -5,14 +5,14 @@ import {
   ValidationArguments,
   ValidationOptions,
 } from 'class-validator';
-import { isAddress } from 'ethers/lib/utils';
+import { isAddress as isAddressValidation } from 'ethers/lib/utils';
 
 @ValidatorConstraint({ name: 'IsAddressConstraint', async: false })
 export class IsAddressConstraint implements ValidatorConstraintInterface {
   validate(value: any, args: ValidationArguments): boolean {
     const [isEach] = args.constraints as [boolean];
 
-    const isValid = (val: any): boolean => typeof val === 'string' && isAddress(val);
+    const isValid = (val: any): boolean => typeof val === 'string' && isAddressValidation(val);
 
     if (isEach && Array.isArray(value)) {
       return value.every(isValid);

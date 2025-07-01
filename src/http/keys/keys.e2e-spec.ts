@@ -279,25 +279,6 @@ describe('KeyController (e2e)', () => {
             statusCode: 400,
           });
         });
-
-        //   const resp = await request(app.getHttpServer())
-        //     .get(`/v1/modules/${dvtModule.moduleId}/operators/keys`)
-        //     .query({ operatorIndex: 0 });
-
-        //   expect(resp.status).toEqual(200);
-        //   expect(resp.body.data.operators).toEqual([]);
-        //   expect(resp.body.data.keys).toEqual([]);
-        //   expect(resp.body.data.module).toEqual(dvtModuleResp);
-        //   expect(resp.body.meta).toEqual({
-        //     elBlockSnapshot: {
-        //       blockNumber: elMeta.number,
-        //       blockHash: elMeta.hash,
-        //       timestamp: elMeta.timestamp,
-        //       lastChangedBlockHash: elMeta.lastChangedBlockHash,
-        //     },
-        //   });
-        // });
-
         it('Should not filter by operatorIndex if operatorIndex provided as empty string', async () => {
           const resp = await request(app.getHttpServer()).get('/v1/keys').query({ operatorIndex: '' });
 
