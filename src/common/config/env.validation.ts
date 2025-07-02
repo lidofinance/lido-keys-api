@@ -1,4 +1,4 @@
-import { plainToClass, Transform } from 'class-transformer';
+import { plainToInstance, Transform } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
@@ -28,8 +28,9 @@ const toNumber =
     return Number(value);
   };
 
-const toBoolean = ({ defaultValue }) => {
-  return function ({ value }) {
+const toBoolean =
+  ({ defaultValue }) =>
+  ({ value }) => {
     if (value == null || value === '') {
       return defaultValue;
     }
@@ -55,14 +56,13 @@ const toBoolean = ({ defaultValue }) => {
         return value;
     }
   };
-};
 
-const toArrayOfUrls = (url: string | null): string[] => {
-  if (url == null || url === '') {
+const toArrayOfUrls = ({ value }): string[] => {
+  if (value == null || value === '') {
     return [];
   }
 
-  return url.split(',').map((str) => str.trim().replace(/\/$/, ''));
+  return value.split(',').map((str) => str.trim().replace(/\/$/, ''));
 };
 
 export class EnvironmentVariables {
@@ -125,12 +125,12 @@ export class EnvironmentVariables {
       each: true,
     },
   )
-  @Transform(({ value }) => toArrayOfUrls(value))
+  @Transform(toArrayOfUrls)
   PROVIDERS_URLS!: NonEmptyArray<string>;
 
   @IsNotEmpty()
   @IsEnum(Chain)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(toNumber({ defaultValue: undefined }))
   CHAIN_ID!: Chain;
 
   @IsNotEmpty()
@@ -158,7 +158,7 @@ export class EnvironmentVariables {
   @IsInt()
   @Min(1025)
   @Max(65535)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(toNumber({ defaultValue: undefined }))
   DB_PORT!: number;
 
   @IsOptional()
@@ -197,7 +197,7 @@ export class EnvironmentVariables {
       each: true,
     },
   )
-  @Transform(({ value }) => toArrayOfUrls(value))
+  @Transform(toArrayOfUrls)
   CL_API_URLS: string[] = [];
 
   @IsOptional()
@@ -233,7 +233,7 @@ export function validate(config: Record<string, unknown>) {
     return config;
   }
 
-  const validatedConfig = plainToClass(EnvironmentVariables, config);
+  const validatedConfig = plainToInstance(EnvironmentVariables, config);
 
   const validatorOptions = { skipMissingProperties: false };
   const errors = validateSync(validatedConfig, validatorOptions);
