@@ -1,6 +1,19 @@
 import { writeFileSync, rmSync } from 'fs';
+import { Module } from '@nestjs/common';
+import { ConfigModule as ConfigModuleSource } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule, ConfigService } from 'common/config';
+import { ConfigService } from 'common/config';
+
+@Module({
+  imports: [
+    ConfigModuleSource.forRoot({
+      ignoreEnvFile: true,
+    }),
+  ],
+  providers: [ConfigService],
+  exports: [ConfigService],
+})
+export class ConfigModule {}
 
 describe('Config module', () => {
   let configService: ConfigService;
