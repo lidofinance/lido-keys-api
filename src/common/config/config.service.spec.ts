@@ -114,16 +114,16 @@ describe('Config module', () => {
     });
 
     it('should return the value of `DB_PASSWORD` env variable as is if it is specified and ignore any value of `DB_PASSWORD_FILE` env variable', () => {
-      process.env.DB_PASSWORD = 'mypassword';
+      process.env.DB_PASSWORD = 'dummy_password';
 
       process.env.DB_PASSWORD_FILE = undefined;
-      expect(configService.get('DB_PASSWORD')).toBe('mypassword');
+      expect(configService.get('DB_PASSWORD')).toBe('dummy_password');
 
       process.env.DB_PASSWORD_FILE = '';
-      expect(configService.get('DB_PASSWORD')).toBe('mypassword');
+      expect(configService.get('DB_PASSWORD')).toBe('dummy_password');
 
       process.env.DB_PASSWORD_FILE = '/path/to/secret.txt';
-      expect(configService.get('DB_PASSWORD')).toBe('mypassword');
+      expect(configService.get('DB_PASSWORD')).toBe('dummy_password');
       expect(() => configService.get('DB_PASSWORD')).not.toThrow(
         new Error('Failed to load ENV variable from the DB_PASSWORD_FILE'),
       );

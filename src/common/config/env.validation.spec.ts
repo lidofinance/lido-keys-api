@@ -12,7 +12,7 @@ describe('Environment validation', () => {
     DB_PORT: 5432,
     DB_HOST: 'localhost',
     DB_USER: 'postgres',
-    DB_PASSWORD: 'postgres',
+    DB_PASSWORD: 'dummy_password',
     DB_NAME: 'test',
     VALIDATOR_REGISTRY_ENABLE: false,
   };
@@ -438,7 +438,7 @@ describe('Environment validation', () => {
   describe('DB_PASSWORD and DB_PASSWORD_FILE', () => {
     it('should pass with valid DB_PASSWORD only', () => {
       const result = runValidation({ ...required_configs });
-      expect(result.DB_PASSWORD).toBe('postgres');
+      expect(result.DB_PASSWORD).toBe('dummy_password');
     });
 
     it('should pass with valid DB_PASSWORD and empty DB_PASSWORD_FILE', () => {
@@ -514,7 +514,7 @@ describe('Environment validation', () => {
 
     it('should pass with both valid DB_PASSWORD and DB_PASSWORD_FILE', () => {
       const result = runValidation({ ...required_configs, DB_PASSWORD_FILE: '/path/to/secret.txt' });
-      expect(result.DB_PASSWORD).toBe('postgres');
+      expect(result.DB_PASSWORD).toBe('dummy_password');
       expect(result.DB_PASSWORD_FILE).toBe('/path/to/secret.txt');
     });
   });
