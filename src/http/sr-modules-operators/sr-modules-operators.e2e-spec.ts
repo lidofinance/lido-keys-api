@@ -24,6 +24,7 @@ import { dvtModuleResp, curatedModuleResp } from '../module.fixture';
 import { dvtOperatorsResp, curatedOperatorsResp } from '../operator.fixtures';
 import { DatabaseE2ETestingModule } from 'app';
 import { CSMKeyRegistryService } from 'common/registry-csm';
+import { AddressZero } from '@ethersproject/constants';
 
 describe('SRModuleOperatorsController (e2e)', () => {
   let app: INestApplication;
@@ -137,7 +138,6 @@ describe('SRModuleOperatorsController (e2e)', () => {
       });
 
       it('should return all operators for request without filters', async () => {
-        // Get all operators without filters
         const resp = await request(app.getHttpServer()).get('/v1/operators');
 
         expect(resp.status).toEqual(200);
@@ -193,63 +193,122 @@ describe('SRModuleOperatorsController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return all operators that satisfy the request', async () => {
-        // Get all operators without filters
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators`);
+      describe('validate module id', () => {
+        it('should return all operators by module id', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators`);
 
-        const respByContractAddress = await request(app.getHttpServer()).get(
-          `/v1/modules/${dvtModule.stakingModuleAddress}/operators`,
-        );
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.operators).toEqual(expect.arrayContaining(dvtOperatorsResp));
 
-        expect(resp.body).toEqual(respByContractAddress.body);
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.operators).toBeDefined();
-        expect(resp.body.data.operators).toEqual(expect.arrayContaining(dvtOperatorsResp));
+          const resp2 = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}/operators`);
 
-        expect(resp.body.meta).toEqual({
-          elBlockSnapshot: {
-            blockNumber: elMeta.number,
-            blockHash: elMeta.hash,
-            timestamp: elMeta.timestamp,
-            lastChangedBlockHash: elMeta.lastChangedBlockHash,
-          },
+          expect(resp2.status).toEqual(200);
+          expect(resp2.body.data.operators).toEqual(expect.arrayContaining(curatedOperatorsResp));
+
+          expect(resp2.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
         });
 
-        const resp2 = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}/operators`);
+        it('should return all operators by module address', async () => {
+          const resp = await request(app.getHttpServer()).get(
+            `/v1/modules/${dvtModule.stakingModuleAddress}/operators`,
+          );
 
-        expect(resp2.status).toEqual(200);
-        expect(resp2.body.data.operators).toEqual(expect.arrayContaining(curatedOperatorsResp));
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.operators).toBeDefined();
+          expect(resp.body.data.operators).toEqual(expect.arrayContaining(dvtOperatorsResp));
 
-        expect(resp2.body.meta).toEqual({
-          elBlockSnapshot: {
-            blockNumber: elMeta.number,
-            blockHash: elMeta.hash,
-            timestamp: elMeta.timestamp,
-            lastChangedBlockHash: elMeta.lastChangedBlockHash,
-          },
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
+
+          const resp2 = await request(app.getHttpServer()).get(
+            `/v1/modules/${curatedModule.stakingModuleAddress}/operators`,
+          );
+
+          expect(resp2.status).toEqual(200);
+          expect(resp2.body.data.operators).toEqual(expect.arrayContaining(curatedOperatorsResp));
+
+          expect(resp2.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
         });
-      });
 
-      it('should return 404 if module was not found', async () => {
-        // Get all operators without filters
-        const resp = await request(app.getHttpServer()).get('/v1/modules/777/operators');
+        it('should return 404 if module was not found', async () => {
+          // Get all operators without filters
+          const resp = await request(app.getHttpServer()).get('/v1/modules/777/operators');
 
-        expect(resp.status).toEqual(404);
-        expect(resp.body).toEqual({
-          error: 'Not Found',
-          message: 'Module with moduleId 777 is not supported',
-          statusCode: 404,
+          expect(resp.status).toEqual(404);
+          expect(resp.body).toEqual({
+            error: 'Not Found',
+            message: 'Module with moduleId 777 is not supported',
+            statusCode: 404,
+          });
         });
-      });
 
-      it('should return 400 error if module_id is not a contract address or number', async () => {
-        const resp = await request(app.getHttpServer()).get('/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/operators');
-        expect(resp.status).toEqual(400);
-        expect(resp.body).toEqual({
-          error: 'Bad Request',
-          message: ['module_id must be a contract address or numeric value'],
-          statusCode: 400,
+        it('should return 400 error if module_id is not a contract address or number', async () => {
+          const resp = await request(app.getHttpServer()).get('/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/operators');
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
+
+        it('should return 400 error if module_id is not set', async () => {
+          const resp = await request(app.getHttpServer()).get('/v1/modules//operators');
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
+
+        it('should return 400 error if module_id is negative value', async () => {
+          const resp = await request(app.getHttpServer()).get('/v1/modules/-1/operators');
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should return 400 error if module_id zero address', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/${AddressZero}/operators`);
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id cannot be the zero address'],
+            statusCode: 400,
+          });
         });
       });
     });
@@ -310,43 +369,101 @@ describe('SRModuleOperatorsController (e2e)', () => {
         });
       });
 
-      it('should return 404 if operator was not found', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/777`);
-        expect(resp.status).toEqual(404);
-        expect(resp.body).toEqual({
-          error: 'Not Found',
-          message: 'Operator with index 777 is not found for module with moduleId 2',
-          statusCode: 404,
+      describe('validate module_id', () => {
+        it('should return 404 if module was not found', async () => {
+          const resp = await request(app.getHttpServer()).get('/v1/modules/777/operators/1');
+          expect(resp.status).toEqual(404);
+          expect(resp.body).toEqual({
+            error: 'Not Found',
+            message: 'Module with moduleId 777 is not supported',
+            statusCode: 404,
+          });
+        });
+
+        it('should return 400 error if module_id is not a contract address or number', async () => {
+          const resp = await request(app.getHttpServer()).get('/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/operators/1');
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
+
+        it('should return 400 error if module_id is not set', async () => {
+          const resp = await request(app.getHttpServer()).get('/v1/modules//operators/1');
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should return 400 error if module_id is zero address', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/${AddressZero}/operators/1`);
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id cannot be the zero address'],
+            statusCode: 400,
+          });
+        });
+
+        it('should return 400 error if module_id is negative value', async () => {
+          const resp = await request(app.getHttpServer()).get('/v1/modules/-1/operators/1');
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
         });
       });
 
-      it('should return 404 if module was not found', async () => {
-        const resp = await request(app.getHttpServer()).get('/v1/modules/777/operators/1');
-        expect(resp.status).toEqual(404);
-        expect(resp.body).toEqual({
-          error: 'Not Found',
-          message: 'Module with moduleId 777 is not supported',
-          statusCode: 404,
+      describe('validate operatorIndex', () => {
+        it('should return 404 if operator was not found', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/777`);
+          expect(resp.status).toEqual(404);
+          expect(resp.body).toEqual({
+            error: 'Not Found',
+            message: 'Operator with index 777 is not found for module with moduleId 2',
+            statusCode: 404,
+          });
         });
-      });
 
-      it('should return 400 error if operator_id is not a number', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/somenumber`);
-        expect(resp.status).toEqual(400);
-        expect(resp.body).toEqual({
-          error: 'Bad Request',
-          message: ['operator_id must not be less than 0', 'operator_id must be an integer number'],
-          statusCode: 400,
+        it('should return 400 error if operator_id is not a number', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/somenumber`);
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operator_id must not be less than 0', 'operator_id must be an integer number'],
+            statusCode: 400,
+          });
         });
-      });
 
-      it('should return 400 error if module_id is not a contract address or number', async () => {
-        const resp = await request(app.getHttpServer()).get('/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/operators/1');
-        expect(resp.status).toEqual(400);
-        expect(resp.body).toEqual({
-          error: 'Bad Request',
-          message: ['module_id must be a contract address or numeric value'],
-          statusCode: 400,
+        it('should return 400 error if operator_id is negative number', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/-1`);
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operator_id must not be less than 0'],
+            statusCode: 400,
+          });
+        });
+
+        it('should return 400 error if operator_id is not set', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/`);
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: [
+              'operator_id should not be null or undefined',
+              'operator_id must not be less than 0',
+              'operator_id must be an integer number',
+            ],
+            statusCode: 400,
+          });
         });
       });
     });
