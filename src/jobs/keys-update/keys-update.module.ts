@@ -6,6 +6,7 @@ import { StakingRouterFetchModule } from 'staking-router-modules/contracts';
 import { ExecutionProviderModule } from 'common/execution-provider';
 import { StorageModule } from 'storage/storage.module';
 import { PrometheusModule } from 'common/prometheus';
+import { StakingModuleUpdaterService } from './staking-module-updater.service';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { PrometheusModule } from 'common/prometheus';
     StorageModule,
     PrometheusModule,
   ],
-  providers: [KeysUpdateService],
-  exports: [KeysUpdateService],
+  providers: [KeysUpdateService, StakingModuleUpdaterService],
+  exports: [KeysUpdateService, StakingModuleUpdaterService],
 })
 export class KeysUpdateModule {}

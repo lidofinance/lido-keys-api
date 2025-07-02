@@ -11,7 +11,7 @@ module.exports = {
     node: true,
     jest: true,
   },
-  ignorePatterns: ['.eslintrc.js', 'chronix.config.ts', 'chronix-init.js'],
+  ignorePatterns: ['.eslintrc.js', 'chronix.config.ts', 'scripts'],
   rules: {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',

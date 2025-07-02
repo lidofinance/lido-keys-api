@@ -217,6 +217,15 @@ export class EnvironmentVariables {
   @IsPositive()
   @Transform(toNumber({ defaultValue: 1100 }))
   KEYS_FETCH_BATCH_SIZE = 1100;
+
+  @IsOptional()
+  @IsPositive()
+  @Transform(({ value }) => parseInt(value, 10))
+  STREAM_TIMEOUT = 60_000;
+
+  @IsOptional()
+  @IsString()
+  LIDO_LOCATOR_DEVNET_ADDRESS = '';
 }
 
 export function validate(config: Record<string, unknown>) {

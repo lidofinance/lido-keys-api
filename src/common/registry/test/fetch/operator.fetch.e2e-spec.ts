@@ -4,6 +4,7 @@ import { isAddress } from '@ethersproject/address';
 import { RegistryFetchModule, RegistryOperatorFetchService } from '../../';
 import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as dotenv from 'dotenv';
+import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 dotenv.config();
 
@@ -18,7 +19,10 @@ describe('Operators', () => {
   let fetchService: RegistryOperatorFetchService;
 
   beforeEach(async () => {
-    const imports = [RegistryFetchModule.forFeature({ provider })];
+    const imports = [
+      RegistryFetchModule.forFeature({ provider }),
+      LoggerModule.forRoot({ transports: [nullTransport()] }),
+    ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     fetchService = moduleRef.get(RegistryOperatorFetchService);
   });
@@ -30,7 +34,10 @@ describe('Operators', () => {
   });
 
   test('fetch one operator', async () => {
-    const operator = await fetchService.fetchOne(address, 0);
+    const block = await provider.getBlock('latest');
+    const operator = await fetchService.fetchOne(address, 0, {
+      blockTag: block.hash,
+    });
 
     expect(operator).toBeInstanceOf(Object);
     expect(typeof operator.active).toBe('boolean');
@@ -47,8 +54,9 @@ describe('Operators', () => {
   });
 
   test('fetch all operators', async () => {
+    const block = await provider.getBlock('latest');
     const operators = await fetchService.fetch(address, 0, -1, {
-      blockTag: 9641262,
+      blockTag: block.hash,
     });
 
     expect(operators).toBeInstanceOf(Array);
@@ -56,7 +64,10 @@ describe('Operators', () => {
   }, 30_000);
 
   test('fetch multiply operators', async () => {
-    const operators = await fetchService.fetch(address, 1, 3);
+    const block = await provider.getBlock('latest');
+    const operators = await fetchService.fetch(address, 1, 3, {
+      blockTag: block.hash,
+    });
 
     expect(operators).toBeInstanceOf(Array);
     expect(operators.length).toBe(2);

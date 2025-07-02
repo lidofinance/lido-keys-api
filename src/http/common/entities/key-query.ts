@@ -38,3 +38,11 @@ export class KeyQuery {
   @IsOptional()
   operatorIndex?: number;
 }
+
+export class KeyQueryWithAddress extends KeyQuery {
+  @ApiProperty({ isArray: true, type: String, required: false, description: 'Module address list' })
+  @Transform(({ value }) => (Array.isArray(value) ? value : Array(value)))
+  @Transform(({ value }) => value.map((v) => v.toLowerCase()))
+  @IsOptional()
+  moduleAddresses!: string[];
+}

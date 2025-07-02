@@ -4,16 +4,16 @@ import { ExitValidator } from './exit-validator';
 
 export class ExitValidatorListResponse {
   @ApiProperty({
+    type: () => [ExitValidator],
     required: true,
     description: 'N oldest validators for current epoch when voluntary exit can be processed',
-    type: () => [ExitValidator],
   })
   data!: ExitValidator[];
 
   @ApiProperty({
-    nullable: true,
-    description: 'Meta for voluntary exit endpoints',
     type: () => CLMeta,
+    required: true,
+    description: 'Meta for voluntary exit endpoints',
   })
   meta!: CLMeta;
 }

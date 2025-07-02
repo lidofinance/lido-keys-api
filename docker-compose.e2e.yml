@@ -1,0 +1,38 @@
+version: '3.7'
+
+services:
+  e2e_pgdb:
+    container_name: e2e_pgdb
+    image: postgres:14-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=node_operator_keys_service_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    expose:
+      - 5432:5432
+    volumes:
+      - ./.volumes/pgdata-${CHAIN_ID}/:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  e2e_keys_api:
+    container_name: e2e_keys_api
+    build:
+      context: ./
+      dockerfile: Dockerfile.e2e
+    environment:
+      - NODE_ENV=production
+      - DB_NAME=node_operator_keys_service_db
+      - DB_PORT=5432
+      - DB_HOST=e2e_pgdb
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      e2e_pgdb:
+        condition: service_healthy
+    links:
+      - e2e_pgdb

@@ -16,10 +16,10 @@ export class SRModulesOperatorsController {
   constructor(protected readonly srModulesOperators: SRModulesOperatorsService) {}
 
   @Version('1')
-  @ApiOperation({ summary: 'Get operators for all modules grouped by staking router module.' })
+  @ApiOperation({ summary: 'Get operators for all modules grouped by staking router module' })
   @ApiResponse({
     status: 200,
-    description: 'Operators for all modules grouped by staking router module.',
+    description: 'Operators for all modules grouped by staking router module',
     type: () => GroupedByModuleOperatorListResponse,
   })
   @ApiResponse({
@@ -33,7 +33,7 @@ export class SRModulesOperatorsController {
   }
 
   @Version('1')
-  @ApiOperation({ summary: 'Staking router module operators.' })
+  @ApiOperation({ summary: 'Staking router module operators' })
   @ApiResponse({
     status: 200,
     description: 'List of all SR module operators',
@@ -52,7 +52,7 @@ export class SRModulesOperatorsController {
   @ApiParam({
     name: 'module_id',
     type: String,
-    description: 'Staking router module_id or contract address.',
+    description: 'Staking router module_id or contract address',
   })
   @Get('modules/:module_id/operators')
   getModuleOperators(@Param('module_id', ModuleIdPipe) module_id: string | number) {
@@ -60,7 +60,7 @@ export class SRModulesOperatorsController {
   }
 
   @Version('1')
-  @ApiOperation({ summary: 'Staking router module operator.' })
+  @ApiOperation({ summary: 'Staking router module operator' })
   @ApiResponse({
     status: 200,
     description: 'SR module operator',
@@ -79,11 +79,10 @@ export class SRModulesOperatorsController {
   @ApiParam({
     name: 'module_id',
     type: String,
-    description: 'Staking router module_id or contract address.',
+    description: 'Staking router module_id or contract address',
   })
   @Get('modules/:module_id/operators/:operator_id')
   getModuleOperator(@Param('module_id', ModuleIdPipe) module_id: string | number, @Param() operator: OperatorId) {
-    console.log(module_id, typeof module_id);
     return this.srModulesOperators.getModuleOperator(module_id, operator.operator_id);
   }
 }

@@ -7,13 +7,14 @@ import { HealthModule } from '../common/health';
 import { AppService } from './app.service';
 import { ExecutionProviderModule } from '../common/execution-provider';
 import { ConsensusProviderModule } from '../common/consensus-provider';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
 import { KeyRegistryModule } from 'common/registry';
 import { StakingRouterModule } from 'staking-router-modules';
 import { KeysUpdateModule } from 'jobs/keys-update';
+import { DatabaseE2ETestingModule } from './database-e2e-testing.module';
+import { CSMKeyRegistryModule } from 'common/registry-csm';
 
 @Module({
   imports: [
@@ -22,15 +23,16 @@ import { KeysUpdateModule } from 'jobs/keys-update';
     ConfigModule,
     ExecutionProviderModule,
     ConsensusProviderModule,
-    MikroOrmModule.forRoot({
-      dbName: ':memory:',
-      type: 'sqlite',
-      allowGlobalContext: true,
-      entities: ['./**/*.entity.ts'],
-    }),
+    DatabaseE2ETestingModule.forRoot(),
     LoggerModule.forRoot({ transports: [nullTransport()] }),
     ScheduleModule.forRoot(),
     KeyRegistryModule.forRootAsync({
+      inject: [SimpleFallbackJsonRpcBatchProvider],
+      async useFactory(provider) {
+        return { provider };
+      },
+    }),
+    CSMKeyRegistryModule.forRootAsync({
       inject: [SimpleFallbackJsonRpcBatchProvider],
       async useFactory(provider) {
         return { provider };

@@ -37,8 +37,7 @@ export class CuratedModuleService implements StakingModuleInterface {
   }
 
   public async getCurrentNonce(moduleAddress: string, blockHash: string): Promise<number> {
-    const nonce = await this.keyRegistryService.getStakingModuleNonce(moduleAddress, blockHash);
-    return nonce;
+    return await this.keyRegistryService.getStakingModuleNonce(moduleAddress, blockHash);
   }
 
   public async getKeys(moduleAddress: string, filters: KeysFilter): Promise<RegistryKey[]> {
@@ -54,38 +53,57 @@ export class CuratedModuleService implements StakingModuleInterface {
     // we store keys of modules with the same impl at the same table
     where['moduleAddress'] = moduleAddress;
 
-    const keys = await this.keyStorageService.find(where);
-
-    return keys;
+    return await this.keyStorageService.find(where);
   }
 
-  public async *getKeysStream(moduleAddress: string, filters: KeysFilter): AsyncGenerator<RegistryKey> {
+  public async *getKeysStream(
+    moduleAddress: string,
+    filters: KeysFilter,
+  ): AsyncGenerator<RegistryKey, void, undefined> {
     const where = {};
     if (filters.operatorIndex != undefined) {
-      where['operatorIndex'] = filters.operatorIndex;
+      where['operator_index'] = filters.operatorIndex;
     }
 
     if (filters.used != undefined) {
       where['used'] = filters.used;
     }
 
-    where['moduleAddress'] = moduleAddress;
+    where['module_address'] = moduleAddress;
 
-    const batchSize = 10000;
-    let offset = 0;
+    yield* this.keyStorageService.findAsStream(where, [
+      'index',
+      'operator_index as operatorIndex',
+      'key',
+      'deposit_signature as depositSignature',
+      'used',
+      'module_address as moduleAddress',
+      'vetted',
+    ]);
+  }
 
-    while (true) {
-      const chunk = await this.keyStorageService.find(where, { limit: batchSize, offset });
-      if (chunk.length === 0) {
-        break;
-      }
-
-      offset += batchSize;
-
-      for (const record of chunk) {
-        yield record;
-      }
+  public async *getOperatorsStream(
+    moduleAddress: string,
+    filters?: OperatorsFilter,
+  ): AsyncGenerator<RegistryOperator, void, undefined> {
+    const where = {};
+    if (filters?.index != undefined) {
+      where['index'] = filters.index;
     }
+    // we store operators of modules with the same impl at the same table
+    where['module_address'] = moduleAddress;
+
+    yield* this.operatorStorageService.findAsStream(where, [
+      'index',
+      'active',
+      'name',
+      'reward_address as rewardAddress',
+      'staking_limit as stakingLimit',
+      'stopped_validators as stoppedValidators',
+      'total_signing_keys as totalSigningKeys',
+      'used_signing_keys as usedSigningKeys',
+      'module_address as moduleAddress',
+    ]);
   }
 
   public async getKeysByPubKeys(moduleAddress: string, pubKeys: string[]): Promise<RegistryKey[]> {

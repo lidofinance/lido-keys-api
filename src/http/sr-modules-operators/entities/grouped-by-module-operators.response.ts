@@ -4,14 +4,16 @@ import { OperatorListAndSRModule } from './sr-module-operators.response';
 
 export class GroupedByModuleOperatorListResponse {
   @ApiProperty({
-    description: 'Operators for all modules grouped by staking router module',
     type: () => [OperatorListAndSRModule],
+    required: true,
+    description: 'Operators for all modules grouped by staking router module',
   })
   data!: OperatorListAndSRModule[];
 
   @ApiProperty({
-    nullable: true,
     type: () => ELMeta,
+    required: true,
+    description: 'Meta',
   })
   meta!: ELMeta;
 }

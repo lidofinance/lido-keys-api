@@ -10,10 +10,12 @@ import { curatedModuleAddressWithCheckSum, dvtModuleAddressWithChecksum } from '
 
 export const dvtOperatorsResp: Operator[] = [operatorOneDvt, operatorTwoDvt].map((op) => ({
   ...op,
+  finalizedUsedSigningKeys: undefined,
   moduleAddress: dvtModuleAddressWithChecksum,
 }));
 
 export const curatedOperatorsResp: Operator[] = [operatorOneCurated, operatorTwoCurated].map((op) => ({
   ...op,
+  finalizedUsedSigningKeys: undefined,
   moduleAddress: curatedModuleAddressWithCheckSum,
 }));

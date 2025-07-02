@@ -11,7 +11,7 @@ export class SRModulesController {
   constructor(protected readonly srModulesService: SRModulesService) {}
 
   @Version('1')
-  @ApiOperation({ summary: 'Get list of modules supported in API.' })
+  @ApiOperation({ summary: 'Get list of modules supported in API' })
   @ApiResponse({
     status: 200,
     description: 'List of all modules supported in API',
@@ -28,10 +28,10 @@ export class SRModulesController {
   }
 
   @Version('1')
-  @ApiOperation({ summary: 'Get detailed information about staking router module.' })
+  @ApiOperation({ summary: 'Get detailed information about staking router module' })
   @ApiResponse({
     status: 200,
-    description: 'Staking router module detailed information.',
+    description: 'Staking router module detailed information',
     type: SRModuleResponse,
   })
   @ApiResponse({
@@ -48,7 +48,7 @@ export class SRModulesController {
   @ApiParam({
     name: 'module_id',
     type: String,
-    description: 'Staking router module_id or contract address.',
+    description: 'Staking router module_id or contract address',
   })
   getModule(@Param('module_id', ModuleIdPipe) module_id: string | number) {
     return this.srModulesService.getModule(module_id);

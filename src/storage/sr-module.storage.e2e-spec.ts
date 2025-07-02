@@ -1,31 +1,24 @@
 import { Test } from '@nestjs/testing';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { StorageModule } from './storage.module';
 import { SRModuleStorageService } from './sr-module.storage';
 import { MikroORM } from '@mikro-orm/core';
 import { curatedModule, dvtModule, updatedCuratedModule } from '../http/db.fixtures';
+import { DatabaseE2ETestingModule } from 'app';
 
 describe('Staking Module Storage', () => {
   let srModuleStorageService: SRModuleStorageService;
   let mikroOrm: MikroORM;
 
   beforeEach(async () => {
-    const imports = [
-      MikroOrmModule.forRoot({
-        dbName: ':memory:',
-        type: 'sqlite',
-        allowGlobalContext: true,
-        entities: ['./**/*.entity.ts'],
-      }),
-      StorageModule,
-    ];
+    const imports = [DatabaseE2ETestingModule.forRoot(), StorageModule];
 
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     srModuleStorageService = moduleRef.get(SRModuleStorageService);
     mikroOrm = moduleRef.get(MikroORM);
 
     const generator = mikroOrm.getSchemaGenerator();
-    await generator.updateSchema();
+    await generator.refreshDatabase();
+    await generator.clearDatabase();
   });
 
   afterEach(async () => {
@@ -35,7 +28,7 @@ describe('Staking Module Storage', () => {
 
   test('add new module in empty database', async () => {
     const nonce = 1;
-    await srModuleStorageService.upsert(curatedModule, nonce);
+    await srModuleStorageService.upsert(curatedModule, nonce, '');
     const updatesStakingModules0 = await srModuleStorageService.findAll();
     const stakingModule0 = updatesStakingModules0[0];
 
@@ -56,7 +49,7 @@ describe('Staking Module Storage', () => {
     expect(stakingModule0.active).toEqual(curatedModule.active);
 
     const dvtNonce = 2;
-    await srModuleStorageService.upsert(dvtModule, dvtNonce);
+    await srModuleStorageService.upsert(dvtModule, dvtNonce, '');
     const updatesStakingModules1 = await srModuleStorageService.findAll();
     expect(updatesStakingModules1.length).toEqual(2);
     const stakingModule1 = updatesStakingModules1[1];
@@ -78,7 +71,7 @@ describe('Staking Module Storage', () => {
 
   test('update existing module', async () => {
     const nonce = 1;
-    await srModuleStorageService.upsert(curatedModule, nonce);
+    await srModuleStorageService.upsert(curatedModule, nonce, '');
     const initialStakingModules = await srModuleStorageService.findAll();
     const initialStakingModulesAmount = initialStakingModules.length;
     const stakingModule0 = initialStakingModules[0];
@@ -99,7 +92,7 @@ describe('Staking Module Storage', () => {
     expect(stakingModule0.active).toEqual(curatedModule.active);
 
     const updatedNonce = 12;
-    await srModuleStorageService.upsert(updatedCuratedModule, updatedNonce);
+    await srModuleStorageService.upsert(updatedCuratedModule, updatedNonce, '');
 
     const updatedStakingModules = await srModuleStorageService.findAll();
     const updatedStakingModulesAmount = updatedStakingModules.length;
@@ -129,8 +122,8 @@ describe('Staking Module Storage', () => {
 
   test('check search by contract address', async () => {
     const nonce = 1;
-    await srModuleStorageService.upsert(curatedModule, nonce);
-    await srModuleStorageService.upsert(dvtModule, nonce);
+    await srModuleStorageService.upsert(curatedModule, nonce, '');
+    await srModuleStorageService.upsert(dvtModule, nonce, '');
     const curatedModuleDb = await srModuleStorageService.findOneByContractAddress(curatedModule.stakingModuleAddress);
     const dvtModuleDb = await srModuleStorageService.findOneByContractAddress(dvtModule.stakingModuleAddress);
 
@@ -143,6 +136,7 @@ describe('Staking Module Storage', () => {
     await srModuleStorageService.upsert(
       { ...curatedModule, stakingModuleAddress: '0xDC64A140AA3E981100A9BECA4E685F962F0CF6C9' },
       nonce,
+      '',
     );
     const stakingModuleNull = await srModuleStorageService.findOneByContractAddress(
       '0xDC64A140AA3E981100A9BECA4E685F962F0CF6C9',
