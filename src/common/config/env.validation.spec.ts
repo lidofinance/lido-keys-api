@@ -228,7 +228,7 @@ describe('Environment validation', () => {
   });
 
   describe('DB_PORT', () => {
-    it('should throw if DB_PORT is missign', () => {
+    it('should throw if DB_PORT is missing', () => {
       const { DB_PORT, ...test_configs } = required_configs;
       expect(() => runValidation({ ...test_configs })).toThrow('process.exit');
       expect(errorOutput).toMatch(/property DB_PORT has failed the following constraints: max, min, isInt, isNotEmpty/);
@@ -449,6 +449,7 @@ describe('Environment validation', () => {
       };
 
       expect(runValidation(config).DB_PASSWORD_FILE).toBe('');
+      expect(runValidation(config).DB_PASSWORD).toBe(required_configs.DB_PASSWORD);
     });
 
     it('should pass with valid DB_PASSWORD_FILE only', () => {
@@ -492,6 +493,18 @@ describe('Environment validation', () => {
       const config = {
         ...required_configs,
         DB_PASSWORD: '',
+        DB_PASSWORD_FILE: '',
+      };
+
+      expect(() => runValidation(config)).toThrow('process.exit');
+      expect(errorOutput).toMatch(/property DB_PASSWORD_FILE has failed the following constraints: isNotEmpty/);
+    });
+
+    it('should throw if DB_PASSWORD is missing and DB_PASSWORD_FILE is empty', () => {
+      const { DB_PASSWORD, ...test_configs } = required_configs;
+
+      const config = {
+        ...test_configs,
         DB_PASSWORD_FILE: '',
       };
 
