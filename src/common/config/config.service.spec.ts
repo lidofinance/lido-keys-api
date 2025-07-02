@@ -1,3 +1,4 @@
+import { writeFileSync, rmSync } from 'fs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule, ConfigService } from 'common/config';
 
@@ -63,13 +64,14 @@ describe('Config module', () => {
       expect(errorOutput).toMatch(/DB_PASSWORD or DB_PASSWORD_FILE environments are not provided\./);
     });
 
-    it('should try to read the password from the path provided in the `DB_PASSWORD_FILE` env variable, if `DB_PASSWORD_FILE` value is set and `DB_PASSWORD` env variable is not set', () => {
+    it('should read the password from file with the path provided in the `DB_PASSWORD_FILE` env variable, if `DB_PASSWORD_FILE` value is set and `DB_PASSWORD` env variable is not set', () => {
+      const path = 'secret.txt';
       process.env.DB_PASSWORD = undefined;
-      process.env.DB_PASSWORD_FILE = '/path/to/secret.txt';
+      process.env.DB_PASSWORD_FILE = path;
 
-      expect(() => configService.get('DB_PASSWORD')).toThrow(
-        new Error('Failed to load ENV variable from the DB_PASSWORD_FILE'),
-      );
+      writeFileSync(path, 'mypassword');
+      expect(configService.get('DB_PASSWORD')).toBe('mypassword');
+      rmSync(path);
     });
 
     it('should throw error if `DB_PASSWORD` is an empty string and `DB_PASSWORD_FILE` env variable is not set', () => {
@@ -88,13 +90,14 @@ describe('Config module', () => {
       expect(errorOutput).toMatch(/DB_PASSWORD or DB_PASSWORD_FILE environments are not provided\./);
     });
 
-    it('should try to read the password from the path provided in the `DB_PASSWORD_FILE` env variable, if `DB_PASSWORD_FILE` value is set and `DB_PASSWORD` is an empty string', () => {
+    it('should read the password from file with the path provided in the `DB_PASSWORD_FILE` env variable, if `DB_PASSWORD_FILE` value is set and `DB_PASSWORD` is an empty string', () => {
+      const path = 'secret.txt';
       process.env.DB_PASSWORD = '';
-      process.env.DB_PASSWORD_FILE = '/path/to/secret.txt';
+      process.env.DB_PASSWORD_FILE = path;
 
-      expect(() => configService.get('DB_PASSWORD')).toThrow(
-        new Error('Failed to load ENV variable from the DB_PASSWORD_FILE'),
-      );
+      writeFileSync(path, 'mypassword');
+      expect(configService.get('DB_PASSWORD')).toBe('mypassword');
+      rmSync(path);
     });
 
     it('should return the value of `DB_PASSWORD` env variable as is if it is specified and ignore any value of `DB_PASSWORD_FILE` env variable', () => {
