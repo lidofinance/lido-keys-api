@@ -11,7 +11,7 @@ import {
   LoggerService,
   Inject,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { SRModuleOperatorsKeysResponse, SRModulesOperatorsKeysStreamResponse } from './entities';
 import { KeyQuery, Key } from 'http/common/entities/';
 import { SRModulesOperatorsKeysService } from './sr-modules-operators-keys.service';
@@ -34,7 +34,7 @@ export class SRModulesOperatorsKeysController {
   @Version('1')
   @ApiOperation({ summary: 'Staking router module operators' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'List of all SR module operators',
     type: SRModuleOperatorsKeysResponse,
   })
@@ -43,7 +43,7 @@ export class SRModulesOperatorsKeysController {
     description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
-  @ApiNotFoundResponse({
+  @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Provided module is not supported',
     type: NotFoundException,
@@ -104,7 +104,7 @@ export class SRModulesOperatorsKeysController {
   @Version('2')
   @ApiOperation({ summary: 'Comprehensive stream for staking router modules, operators and their keys' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'Stream of all SR modules, operators and keys',
     type: SRModulesOperatorsKeysStreamResponse,
     isArray: true,
