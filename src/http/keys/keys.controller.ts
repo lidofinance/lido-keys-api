@@ -25,6 +25,7 @@ import * as JSONStream from 'jsonstream';
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
 import { Pubkey } from 'http/common/entities/pubkey';
+import { SkipCache } from 'common/decorators/skipCache';
 
 @Controller('keys')
 @ApiTags('keys')
@@ -37,6 +38,7 @@ export class KeysController {
 
   @Version('1')
   @Get()
+  @SkipCache()
   @ApiResponse({
     status: 425,
     description: "Meta is null, maybe data hasn't been written in db yet",
