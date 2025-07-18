@@ -21,6 +21,7 @@ import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
 import { ModuleIdPipe } from 'http/common/pipeline/module-id-pipe';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
+import { SkipCache } from 'common/decorators/skipCache';
 
 @Controller('/modules')
 @ApiTags('operators-keys')
@@ -32,6 +33,7 @@ export class SRModulesOperatorsKeysController {
   ) {}
 
   @Version('1')
+  @SkipCache()
   @ApiOperation({ summary: 'Staking router module operators' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -102,6 +104,7 @@ export class SRModulesOperatorsKeysController {
   }
 
   @Version('2')
+  @SkipCache()
   @ApiOperation({ summary: 'Comprehensive stream for staking router modules, operators and their keys' })
   @ApiResponse({
     status: HttpStatus.OK,

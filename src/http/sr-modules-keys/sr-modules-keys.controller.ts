@@ -25,6 +25,7 @@ import { EntityManager } from '@mikro-orm/knex';
 import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
 import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
+import { SkipCache } from 'common/decorators/skipCache';
 
 @Controller('modules')
 @ApiTags('sr-module-keys')
@@ -55,6 +56,7 @@ export class SRModulesKeysController {
 
   @Version('1')
   @ApiOperation({ summary: 'Staking router module keys' })
+  @SkipCache()
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'List of all modules supported in API',
