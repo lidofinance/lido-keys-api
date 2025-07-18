@@ -14,7 +14,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
-import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModuleKeyListResponse, GroupedByModuleKeyListResponse } from './entities';
 import { SRModulesKeysService } from './sr-modules-keys.service';
 import { KeyQuery, Key } from '../common/entities/';
@@ -38,7 +38,7 @@ export class SRModulesKeysController {
   @Version('1')
   @ApiOperation({ summary: 'Get keys for all modules grouped by staking router module' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description:
       'Keys for all modules are grouped by the staking router module. Receiving results from this endpoint may take some time, so please use it carefully.',
     type: GroupedByModuleKeyListResponse,
@@ -56,7 +56,7 @@ export class SRModulesKeysController {
   @Version('1')
   @ApiOperation({ summary: 'Staking router module keys' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'List of all modules supported in API',
     type: SRModuleKeyListResponse,
   })
@@ -65,7 +65,7 @@ export class SRModulesKeysController {
     description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
-  @ApiNotFoundResponse({
+  @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Provided module is not supported',
     type: NotFoundException,
@@ -120,7 +120,7 @@ export class SRModulesKeysController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get list of found staking router module keys in db from pubkey list' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'Staking Router module keys',
     type: SRModuleKeyListResponse,
   })
@@ -129,7 +129,7 @@ export class SRModulesKeysController {
     description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
-  @ApiNotFoundResponse({
+  @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Provided module is not supported',
     type: NotFoundException,

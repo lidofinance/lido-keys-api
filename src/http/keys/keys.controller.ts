@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import type { FastifyReply } from 'fastify';
-import { ApiNotFoundResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { KeysService } from './keys.service';
 import { KeyListResponse } from './entities';
 import { Key, KeyQueryWithAddress } from '../common/entities';
@@ -89,7 +89,7 @@ export class KeysController {
     description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
-  @ApiNotFoundResponse({
+  @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Provided pubkey was not found',
     type: NotFoundException,

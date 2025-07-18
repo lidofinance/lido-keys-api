@@ -82,6 +82,7 @@ export class EnvironmentVariables {
   @IsString()
   CORS_WHITELIST_REGEXP = '';
 
+  // value in seconds
   @IsOptional()
   @IsInt()
   @IsPositive()

@@ -1,5 +1,6 @@
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { CacheInterceptor, MiddlewareConsumer, Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 import { HEALTH_URL } from '../common/health';
 import { METRICS_URL } from '../common/prometheus';
