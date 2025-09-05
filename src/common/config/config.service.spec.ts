@@ -114,6 +114,7 @@ describe('Config module', () => {
     });
 
     it('should return the value of `DB_PASSWORD` env variable as is if it is specified and ignore any value of `DB_PASSWORD_FILE` env variable', () => {
+      // nosemgrep: semgrep.detected-generic-secrets -- test-only non-secret value
       process.env.DB_PASSWORD = 'mypassword';
 
       process.env.DB_PASSWORD_FILE = undefined;

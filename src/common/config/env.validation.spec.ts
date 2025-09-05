@@ -12,6 +12,7 @@ describe('Environment validation', () => {
     DB_PORT: 5432,
     DB_HOST: 'localhost',
     DB_USER: 'postgres',
+    // nosemgrep: semgrep.detected-generic-secrets -- test-only non-secret value
     DB_PASSWORD: 'postgres',
     DB_NAME: 'test',
     VALIDATOR_REGISTRY_ENABLE: false,
@@ -463,7 +464,12 @@ describe('Environment validation', () => {
     });
 
     it('should not throw error with valid DB_PASSWORD_FILE and empty DB_PASSWORD', () => {
-      const result = runValidation({ ...required_configs, DB_PASSWORD: '', DB_PASSWORD_FILE: '/path/to/secret.txt' });
+      const result = runValidation({
+        ...required_configs,
+        DB_PASSWORD: '',
+        // nosemgrep: semgrep.detected-generic-secrets -- test-only non-secret value
+        DB_PASSWORD_FILE: '/path/to/secret.txt',
+      });
       expect(result.DB_PASSWORD_FILE).toBe('/path/to/secret.txt');
       expect(result.DB_PASSWORD).toBe('');
     });
