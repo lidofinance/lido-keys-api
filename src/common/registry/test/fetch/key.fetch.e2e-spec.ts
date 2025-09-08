@@ -18,8 +18,8 @@ describe('Keys', () => {
 
   let fetchService: RegistryKeyFetchService;
 
-  const operatorIndex = 17;
-  const stakingLimit = 500;
+  const operatorIndex = 0;
+  const fakeStakingLimit = 500;
 
   beforeEach(async () => {
     const imports = [
@@ -31,8 +31,9 @@ describe('Keys', () => {
   });
 
   test('fetch one key', async () => {
-    const stakingLimit = 100;
-    const key = await fetchService.fetchOne(address, operatorIndex, stakingLimit, 0, { blockTag: 1488022 });
+    const block = await provider.getBlock('latest');
+    const overrides = { blockTag: block.hash };
+    const key = await fetchService.fetchOne(address, operatorIndex, fakeStakingLimit, 0, overrides);
 
     expect(key).toBeInstanceOf(Object);
 
@@ -44,18 +45,17 @@ describe('Keys', () => {
   });
 
   test('fetch operator keys', async () => {
-    const stakingLimit = 100;
-    const keys = await fetchService.fetch(address, operatorIndex, stakingLimit, 0, 3, {
-      blockTag: 1488022,
-    });
+    const block = await provider.getBlock('latest');
+    const overrides = { blockTag: block.hash };
+    const keys = await fetchService.fetch(address, operatorIndex, fakeStakingLimit, 0, 3, overrides);
     expect(keys).toBeInstanceOf(Array);
     expect(keys.length).toBe(3);
   }, 15_000);
 
   test('fetch several keys', async () => {
-    const keys = await fetchService.fetch(address, operatorIndex, stakingLimit, 0, 2, {
-      blockTag: 1488022,
-    });
+    const block = await provider.getBlock('latest');
+    const overrides = { blockTag: block.hash };
+    const keys = await fetchService.fetch(address, operatorIndex, fakeStakingLimit, 0, 2, overrides);
 
     expect(keys).toBeInstanceOf(Array);
     expect(keys.length).toBe(2);

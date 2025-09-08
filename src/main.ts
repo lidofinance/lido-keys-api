@@ -9,8 +9,6 @@ import { ConfigService } from './common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
 import { MikroORM } from '@mikro-orm/core';
 
-// need also filter query params
-// forbidUnknownValues: true
 export const validationOpt = { transform: true };
 
 async function bootstrap() {

@@ -1,5 +1,5 @@
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { CacheInterceptor, MiddlewareConsumer, Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 
 import { HEALTH_URL } from '../common/health';
 import { METRICS_URL } from '../common/prometheus';
@@ -15,6 +15,7 @@ import { SRModulesKeysModule } from './sr-modules-keys';
 import { SRModulesOperatorsModule } from './sr-modules-operators';
 import { SRModulesOperatorsKeysModule } from './sr-modules-operators-keys';
 import { StatusModule } from './status';
+import { CustomCacheInterceptor } from './common/cache/cache.service';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { StatusModule } from './status';
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerBehindProxyGuard },
-    { provide: APP_INTERCEPTOR, useClass: CacheInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: CustomCacheInterceptor },
   ],
 })
 export class HTTPModule {

@@ -8,14 +8,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import {
-  ApiInternalServerErrorResponse,
-  ApiNotFoundResponse,
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SRModulesValidatorsService } from './sr-modules-validators.service';
 import { ValidatorsQuery } from './entities/query';
 import { ExitPresignMessageListResponse, ExitValidatorListResponse } from './entities';
@@ -32,7 +25,7 @@ export class SRModulesValidatorsController {
   @Get(':module_id/validators/validator-exits-to-prepare/:operator_id')
   @ApiOperation({ summary: 'Get list of N oldest lido validators' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'N oldest lido validators for operator',
     type: ExitValidatorListResponse,
   })
@@ -41,12 +34,12 @@ export class SRModulesValidatorsController {
     description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
-  @ApiNotFoundResponse({
+  @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Provided module or operator are not supported',
     type: NotFoundException,
   })
-  @ApiInternalServerErrorResponse({
+  @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Disabled endpoint/ Last Execution Layer block number in our database older than last Consensus Layer',
     type: InternalServerErrorException,
@@ -68,7 +61,7 @@ export class SRModulesValidatorsController {
   @Get(':module_id/validators/generate-unsigned-exit-messages/:operator_id')
   @ApiOperation({ summary: 'Get list of exit messages for N oldest lido validators' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'Exit messages for N oldest lido validators of operator',
     type: ExitPresignMessageListResponse,
   })
@@ -77,12 +70,12 @@ export class SRModulesValidatorsController {
     description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
-  @ApiNotFoundResponse({
+  @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Provided module or operator are not supported',
     type: NotFoundException,
   })
-  @ApiInternalServerErrorResponse({
+  @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Disabled endpoint/ Last Execution Layer block number in our database older than last Consensus Layer',
     type: InternalServerErrorException,
