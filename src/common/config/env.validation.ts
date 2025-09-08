@@ -132,6 +132,7 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   @IsEnum(Chain)
   @Transform(toNumber({ defaultValue: undefined }))
+  @ValidateIf((e) => e.IS_DEVNET_MODE === false)
   CHAIN_ID!: Chain;
 
   @IsNotEmpty()
@@ -223,6 +224,11 @@ export class EnvironmentVariables {
   @IsPositive()
   @Transform(({ value }) => parseInt(value, 10))
   STREAM_TIMEOUT = 60_000;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(toBoolean({ defaultValue: false }))
+  IS_DEVNET_MODE = false;
 
   @IsOptional()
   @IsString()
