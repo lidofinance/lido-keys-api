@@ -40,7 +40,7 @@ jobs:
           fi
 
           if ! git rev-parse --verify "${COMMIT_INPUT}^{commit}" >/dev/null 2>&1; then
-          echo "Input does not resolve to a commit object."; exit 3
+          echo "Commit hash does not resolve to a valid commit object."; exit 3
           fi
 
           git fetch --quiet origin "+refs/heads/main:refs/remotes/origin/main"
