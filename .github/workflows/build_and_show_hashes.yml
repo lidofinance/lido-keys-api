@@ -21,6 +21,12 @@ jobs:
     outputs:
       commit_sha: ${{ steps.out.outputs.commit_sha }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
       - name: Check commit SHA format
         id: out
         env:
