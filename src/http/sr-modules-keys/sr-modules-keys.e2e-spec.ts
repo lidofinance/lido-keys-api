@@ -23,6 +23,7 @@ import { curatedModuleKeysResponse, dvtModuleKeysResponse } from '../keys.fixtur
 import { elMeta } from '../el-meta.fixture';
 import { DatabaseE2ETestingModule } from 'app';
 import { CSMKeyRegistryService } from 'common/registry-csm';
+import { AddressZero } from '@ethersproject/constants';
 
 describe('SRModulesKeysController (e2e)', () => {
   let app: INestApplication;
@@ -134,117 +135,260 @@ describe('SRModulesKeysController (e2e)', () => {
         await cleanDB();
       });
 
-      it('Should return all keys for request without filters', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/keys`);
+      describe('without filters', () => {
+        it('Should return all keys for request without filters', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/keys`);
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeysResponse));
-        expect(resp.body.data.module).toEqual(dvtModuleResp);
-        expect(resp.body.meta).toEqual({
-          elBlockSnapshot: {
-            blockNumber: elMeta.number,
-            blockHash: elMeta.hash,
-            timestamp: elMeta.timestamp,
-            lastChangedBlockHash: elMeta.lastChangedBlockHash,
-          },
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeysResponse));
+          expect(resp.body.data.module).toEqual(dvtModuleResp);
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
+        });
+
+        it('Should return all keys if query parameters provided as empty strings', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/keys`)
+            .query({ used: '', operatorIndex: '' });
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeysResponse));
+          expect(resp.body.data.module).toEqual(dvtModuleResp);
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
         });
       });
 
-      it('Should return 400 error if operatorIndex is not a number', async () => {
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/keys`)
-          .query({ used: false, operatorIndex: 'one' });
-        expect(resp.status).toEqual(400);
-        expect(resp.body).toEqual({
-          error: 'Bad Request',
-          message: ['operatorIndex must not be less than 0', 'operatorIndex must be an integer number'],
-          statusCode: 400,
+      describe('validate used filters', () => {
+        it('Should return 400 error if used is integer value', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/keys`)
+            .query({ used: 0, operatorIndex: 2 });
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['used must be a boolean value'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should return 400 error if used is wrong string value', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/keys`)
+            .query({ used: 'something', operatorIndex: 2 });
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['used must be a boolean value'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should ignore used filter, if used provided as empty string', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/keys`)
+            .query({ used: '', operatorIndex: 1 });
+
+          const res = dvtModuleKeysResponse.filter((key) => key.operatorIndex === 1);
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.keys).toEqual(expect.arrayContaining(res));
+          expect(resp.body.data.module).toEqual(dvtModuleResp);
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
+        });
+
+        it('Should return 400 error if used is the string "undefined"', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/keys`)
+            .query({ used: 'undefined' });
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['used must be a boolean value'],
+            statusCode: 400,
+          });
         });
       });
 
-      it('Should return 400 error if used is not a boolean value', async () => {
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/keys`)
-          .query({ used: 0, operatorIndex: 2 });
-        expect(resp.status).toEqual(400);
-        expect(resp.body).toEqual({ error: 'Bad Request', message: ['used must be a boolean value'], statusCode: 400 });
-      });
+      describe('validate operatorIndex filters', () => {
+        it('Should return 400 error if operatorIndex is not a number', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/keys`)
+            .query({ used: false, operatorIndex: 'one' });
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operatorIndex must not be less than 0', 'operatorIndex must be an integer number'],
+            statusCode: 400,
+          });
+        });
 
-      it('Should return used keys for operator one', async () => {
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/keys`)
-          .query({ used: true, operatorIndex: 1 });
+        it('Should not filter by operatorIndex if operatorIndex provided as empty string', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/keys`)
+            .query({ used: false, operatorIndex: '' });
 
-        const expectedKeys = dvtModuleKeysResponse.filter((key) => key.used && key.operatorIndex == 1);
+          const expectedKeys = dvtModuleKeysResponse.filter((key) => !key.used);
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.keys).toEqual(expect.arrayContaining(expectedKeys));
-        expect(resp.body.data.module).toEqual(dvtModuleResp);
-        expect(resp.body.meta).toEqual({
-          elBlockSnapshot: {
-            blockNumber: elMeta.number,
-            blockHash: elMeta.hash,
-            timestamp: elMeta.timestamp,
-            lastChangedBlockHash: elMeta.lastChangedBlockHash,
-          },
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.keys).toEqual(expect.arrayContaining(expectedKeys));
+          expect(resp.body.data.module).toEqual(dvtModuleResp);
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
+        });
+
+        it('Should return 400 error if operatorIndex is a float', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/keys`)
+            .query({ operatorIndex: 1.5 });
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operatorIndex must be an integer number'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should return 400 error if operatorIndex is negative', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/keys`)
+            .query({ operatorIndex: -1 });
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operatorIndex must not be less than 0'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should return empty keys list for non-existent operator', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/keys`)
+            .query({ operatorIndex: 777 });
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.keys).toEqual([]);
+          expect(resp.body.data.module).toEqual(dvtModuleResp);
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
         });
       });
 
-      it('Should return unused keys for operator one', async () => {
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/keys`)
-          .query({ used: false, operatorIndex: 1 });
+      describe('validate module id', () => {
+        it('Should return 400 error if module_id is not a contract address or number', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/keys`);
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
 
-        const expectedKeys = dvtModuleKeysResponse.filter((key) => !key.used && key.operatorIndex == 1);
+        it('Should return 400 error if module_id is not set', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules//keys`);
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.keys).toEqual(expect.arrayContaining(expectedKeys));
-        expect(resp.body.data.module).toEqual(dvtModuleResp);
-        expect(resp.body.meta).toEqual({
-          elBlockSnapshot: {
-            blockNumber: elMeta.number,
-            blockHash: elMeta.hash,
-            timestamp: elMeta.timestamp,
-            lastChangedBlockHash: elMeta.lastChangedBlockHash,
-          },
+        it("Should return 404 if module doesn't exist", async () => {
+          const resp = await request(app.getHttpServer()).get('/v1/modules/777/keys');
+          expect(resp.status).toEqual(404);
+          expect(resp.body).toEqual({
+            error: 'Not Found',
+            message: 'Module with moduleId 777 is not supported',
+            statusCode: 404,
+          });
+        });
+
+        it('Should return 400 error if module_id is not set', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/${AddressZero}/keys`);
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id cannot be the zero address'],
+            statusCode: 400,
+          });
         });
       });
 
-      it('Should return empty keys list for non-existent operator', async () => {
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/${dvtModule.moduleId}/keys`)
-          .query({ operatorIndex: 777 });
+      describe('combined used + operatorIndex filters', () => {
+        it('Should return used keys for operator one', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/keys`)
+            .query({ used: true, operatorIndex: 1 });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.keys).toEqual([]);
-        expect(resp.body.data.module).toEqual(dvtModuleResp);
-        expect(resp.body.meta).toEqual({
-          elBlockSnapshot: {
-            blockNumber: elMeta.number,
-            blockHash: elMeta.hash,
-            timestamp: elMeta.timestamp,
-            lastChangedBlockHash: elMeta.lastChangedBlockHash,
-          },
+          const expectedKeys = dvtModuleKeysResponse.filter((key) => key.used && key.operatorIndex == 1);
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.keys).toEqual(expect.arrayContaining(expectedKeys));
+          expect(resp.body.data.module).toEqual(dvtModuleResp);
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
         });
-      });
 
-      it("Should return 404 if module doesn't exist", async () => {
-        const resp = await request(app.getHttpServer()).get('/v1/modules/777/keys');
-        expect(resp.status).toEqual(404);
-        expect(resp.body).toEqual({
-          error: 'Not Found',
-          message: 'Module with moduleId 777 is not supported',
-          statusCode: 404,
-        });
-      });
+        it('Should return unused keys for operator one', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/keys`)
+            .query({ used: false, operatorIndex: 1 });
 
-      it('Should return 400 error if module_id is not a contract address or number', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/keys`);
-        expect(resp.status).toEqual(400);
-        expect(resp.body).toEqual({
-          error: 'Bad Request',
-          message: ['module_id must be a contract address or numeric value'],
-          statusCode: 400,
+          const expectedKeys = dvtModuleKeysResponse.filter((key) => !key.used && key.operatorIndex == 1);
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.keys).toEqual(expect.arrayContaining(expectedKeys));
+          expect(resp.body.data.module).toEqual(dvtModuleResp);
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
         });
       });
     });
@@ -282,61 +426,130 @@ describe('SRModulesKeysController (e2e)', () => {
         await cleanDB();
       });
 
-      it('Should return all keys that satisfy the request', async () => {
-        const pubkeys = [dvtModuleKeysResponse[0].key, dvtModuleKeysResponse[1].key];
+      describe('validate module id', () => {
+        it('Should return 400 error if module_id is not a contract address or number', async () => {
+          const pubkeys = [dvtModuleKeysResponse[0].key, dvtModuleKeysResponse[1].key];
 
-        const resp = await request(app.getHttpServer())
-          .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
-          .set('Content-Type', 'application/json')
-          .send({ pubkeys });
+          const resp = await request(app.getHttpServer())
+            .post(`/v1/modules/sjdnsjkfsjkbfsjdfbdjfb/keys/find`)
+            .send({ pubkeys });
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.keys).toEqual(
-          expect.arrayContaining([dvtModuleKeysResponse[0], dvtModuleKeysResponse[1]]),
-        );
-        expect(resp.body.data.module).toEqual(dvtModuleResp);
-        expect(resp.body.meta).toEqual({
-          elBlockSnapshot: {
-            blockNumber: elMeta.number,
-            blockHash: elMeta.hash,
-            timestamp: elMeta.timestamp,
-            lastChangedBlockHash: elMeta.lastChangedBlockHash,
-          },
+        it('Should return 400 error if module_id is not set', async () => {
+          const pubkeys = [dvtModuleKeysResponse[0].key, dvtModuleKeysResponse[1].key];
+
+          const resp = await request(app.getHttpServer()).post(`/v1/modules//keys/find`).send({ pubkeys });
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id must be a contract address or numeric value'],
+            statusCode: 400,
+          });
+        });
+
+        it("Should return 404 if module doesn't exist", async () => {
+          const pubkeys = [dvtModuleKeysResponse[0].key, dvtModuleKeysResponse[1].key];
+
+          const resp = await request(app.getHttpServer()).post('/v1/modules/777/keys/find').send({ pubkeys });
+          expect(resp.status).toEqual(404);
+          expect(resp.body).toEqual({
+            error: 'Not Found',
+            message: 'Module with moduleId 777 is not supported',
+            statusCode: 404,
+          });
+        });
+
+        it('Should return 400 error if module_id is not set', async () => {
+          const pubkeys = [dvtModuleKeysResponse[0].key, dvtModuleKeysResponse[1].key];
+          const resp = await request(app.getHttpServer())
+            .post(`/v1/modules/${AddressZero}/keys/find`)
+            .send({ pubkeys });
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['module_id cannot be the zero address'],
+            statusCode: 400,
+          });
         });
       });
 
-      it('Should return an empty list if no keys satisfy the request', async () => {
-        const pubkeys = ['somerandomkey'];
+      describe('validate pubkeys', () => {
+        it('Should return all keys that satisfy the request', async () => {
+          const pubkeys = [dvtModuleKeysResponse[0].key, dvtModuleKeysResponse[1].key];
 
-        const resp = await request(app.getHttpServer())
-          .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
-          .set('Content-Type', 'application/json')
-          .send({ pubkeys });
+          const resp = await request(app.getHttpServer())
+            .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
+            .set('Content-Type', 'application/json')
+            .send({ pubkeys });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data.keys).toEqual([]);
-        expect(resp.body.data.module).toEqual(dvtModuleResp);
-        expect(resp.body.meta).toEqual({
-          elBlockSnapshot: {
-            blockNumber: elMeta.number,
-            blockHash: elMeta.hash,
-            timestamp: elMeta.timestamp,
-            lastChangedBlockHash: elMeta.lastChangedBlockHash,
-          },
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.keys).toEqual(
+            expect.arrayContaining([dvtModuleKeysResponse[0], dvtModuleKeysResponse[1]]),
+          );
+          expect(resp.body.data.module).toEqual(dvtModuleResp);
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
         });
-      });
 
-      it('Should return validation error if pubkeys list was not provided', async () => {
-        const resp = await request(app.getHttpServer())
-          .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
-          .set('Content-Type', 'application/json')
-          .send({ pubkeys: [] });
+        it('Should return an empty list if no keys satisfy the request', async () => {
+          const pubkeys = [curatedModuleKeysResponse[0].key];
 
-        expect(resp.status).toEqual(400);
-        expect(resp.body).toEqual({
-          error: 'Bad Request',
-          message: ['pubkeys must contain at least 1 elements'],
-          statusCode: 400,
+          const resp = await request(app.getHttpServer())
+            .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
+            .set('Content-Type', 'application/json')
+            .send({ pubkeys });
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.keys).toEqual([]);
+          expect(resp.body.data.module).toEqual(dvtModuleResp);
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
+        });
+
+        it('Should return 400 error if pubkeys list was not provided', async () => {
+          const resp = await request(app.getHttpServer())
+            .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
+            .set('Content-Type', 'application/json')
+            .send({ pubkeys: [] });
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['pubkeys must contain at least 1 elements'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should return 400 error if pubkeys list contains not only string values', async () => {
+          const resp = await request(app.getHttpServer())
+            .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
+            .set('Content-Type', 'application/json')
+            .send({ pubkeys: [3, 'sdsdsd'] });
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['Each pubkey must be a valid 0x-prefixed 48-byte hex string'],
+            statusCode: 400,
+          });
         });
       });
     });
@@ -354,7 +567,7 @@ describe('SRModulesKeysController (e2e)', () => {
         const resp = await request(app.getHttpServer())
           .post(`/v1/modules/${dvtModule.moduleId}/keys/find`)
           .set('Content-Type', 'application/json')
-          .send({ pubkeys: ['somerandomkey'] });
+          .send({ pubkeys: [dvtModuleKeysResponse[0].key] });
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
@@ -377,102 +590,206 @@ describe('SRModulesKeysController (e2e)', () => {
         await cleanDB();
       });
 
-      it('Should return all keys for request without filters', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`);
+      describe('without filters', () => {
+        it('Should return all keys for request without filters', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`);
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data).toEqual(expect.arrayContaining(keysByModules));
-        expect(resp.body.meta).toEqual({
-          elBlockSnapshot: {
-            blockNumber: elMeta.number,
-            blockHash: elMeta.hash,
-            timestamp: elMeta.timestamp,
-            lastChangedBlockHash: elMeta.lastChangedBlockHash,
-          },
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data).toEqual(expect.arrayContaining(keysByModules));
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
+        });
+
+        it('Should return all keys if query parameters provided as empty strings', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/keys`)
+            .query({ used: '', operatorIndex: '' });
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data).toEqual(expect.arrayContaining(keysByModules));
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
         });
       });
 
-      it('Should return 400 error if operatorIndex is not a number', async () => {
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/keys`)
-          .query({ used: false, operatorIndex: 'one' });
-        expect(resp.status).toEqual(400);
-        expect(resp.body).toEqual({
-          error: 'Bad Request',
-          message: ['operatorIndex must not be less than 0', 'operatorIndex must be an integer number'],
-          statusCode: 400,
+      describe('validate operatorIndex filters', () => {
+        it('Should return 400 error if operatorIndex is not a number', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/keys`)
+            .query({ used: false, operatorIndex: 'one' });
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operatorIndex must not be less than 0', 'operatorIndex must be an integer number'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should return used keys for operator one', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/keys`)
+            .query({ used: true, operatorIndex: 1 });
+
+          const expectedKeysDvt = dvtModuleKeysResponse.filter((key) => key.used && key.operatorIndex == 1);
+          const expectedKeysCurated = curatedModuleKeysResponse.filter((key) => key.used && key.operatorIndex == 1);
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data).toEqual(
+            expect.arrayContaining([
+              { keys: expectedKeysDvt, module: dvtModuleResp },
+              { keys: expectedKeysCurated, module: curatedModuleResp },
+            ]),
+          );
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
+        });
+
+        it('Should return unused keys for operator one', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/keys`)
+            .query({ used: false, operatorIndex: 1 });
+
+          const expectedKeysDvt = dvtModuleKeysResponse.filter((key) => !key.used && key.operatorIndex == 1);
+          const expectedKeysCurated = curatedModuleKeysResponse.filter((key) => !key.used && key.operatorIndex == 1);
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data).toEqual(
+            expect.arrayContaining([
+              { keys: expectedKeysDvt, module: dvtModuleResp },
+              { keys: expectedKeysCurated, module: curatedModuleResp },
+            ]),
+          );
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
+        });
+
+        it('Should not filter by operatorIndex if operatorIndex provided as empty string', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ operatorIndex: '' });
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data).toEqual(expect.arrayContaining(keysByModules));
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
+        });
+
+        it('Should return empty keys lists for non-existent operator', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ operatorIndex: 777 });
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data).toEqual([
+            { keys: [], module: dvtModuleResp },
+            { keys: [], module: curatedModuleResp },
+          ]);
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
+        });
+
+        it('Should return 400 error if operatorIndex is a float', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ operatorIndex: 1.5 });
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operatorIndex must be an integer number'],
+            statusCode: 400,
+          });
+        });
+
+        it('Should return 400 error if operatorIndex is negative', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ operatorIndex: -1 });
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['operatorIndex must not be less than 0'],
+            statusCode: 400,
+          });
         });
       });
 
-      it('Should return 400 error if used is not a boolean value', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ used: 0, operatorIndex: 2 });
-        expect(resp.status).toEqual(400);
-        expect(resp.body).toEqual({ error: 'Bad Request', message: ['used must be a boolean value'], statusCode: 400 });
-      });
-
-      it('Should return used keys for operator one', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ used: true, operatorIndex: 1 });
-
-        const expectedKeysDvt = dvtModuleKeysResponse.filter((key) => key.used && key.operatorIndex == 1);
-        const expectedKeysCurated = curatedModuleKeysResponse.filter((key) => key.used && key.operatorIndex == 1);
-
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data).toEqual(
-          expect.arrayContaining([
-            { keys: expectedKeysDvt, module: dvtModuleResp },
-            { keys: expectedKeysCurated, module: curatedModuleResp },
-          ]),
-        );
-        expect(resp.body.meta).toEqual({
-          elBlockSnapshot: {
-            blockNumber: elMeta.number,
-            blockHash: elMeta.hash,
-            timestamp: elMeta.timestamp,
-            lastChangedBlockHash: elMeta.lastChangedBlockHash,
-          },
+      describe('validate used filters', () => {
+        it('Should return 400 error if used is not a boolean value', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ used: 0, operatorIndex: 2 });
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['used must be a boolean value'],
+            statusCode: 400,
+          });
         });
-      });
 
-      it('Should return unused keys for operator one', async () => {
-        const resp = await request(app.getHttpServer())
-          .get(`/v1/modules/keys`)
-          .query({ used: false, operatorIndex: 1 });
-
-        const expectedKeysDvt = dvtModuleKeysResponse.filter((key) => !key.used && key.operatorIndex == 1);
-        const expectedKeysCurated = curatedModuleKeysResponse.filter((key) => !key.used && key.operatorIndex == 1);
-
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data).toEqual(
-          expect.arrayContaining([
-            { keys: expectedKeysDvt, module: dvtModuleResp },
-            { keys: expectedKeysCurated, module: curatedModuleResp },
-          ]),
-        );
-        expect(resp.body.meta).toEqual({
-          elBlockSnapshot: {
-            blockNumber: elMeta.number,
-            blockHash: elMeta.hash,
-            timestamp: elMeta.timestamp,
-            lastChangedBlockHash: elMeta.lastChangedBlockHash,
-          },
+        it('Should return 400 error if used is wrong string value', async () => {
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/keys`)
+            .query({ used: 'something', operatorIndex: 2 });
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['used must be a boolean value'],
+            statusCode: 400,
+          });
         });
-      });
 
-      it('Should return empty keys lists for non-existent operator', async () => {
-        const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ operatorIndex: 777 });
+        it('Should ignore used filter, if used provided as empty string', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ used: '' });
 
-        expect(resp.status).toEqual(200);
-        expect(resp.body.data).toEqual([
-          { keys: [], module: dvtModuleResp },
-          { keys: [], module: curatedModuleResp },
-        ]);
-        expect(resp.body.meta).toEqual({
-          elBlockSnapshot: {
-            blockNumber: elMeta.number,
-            blockHash: elMeta.hash,
-            timestamp: elMeta.timestamp,
-            lastChangedBlockHash: elMeta.lastChangedBlockHash,
-          },
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data).toEqual(expect.arrayContaining(keysByModules));
+          expect(resp.body.meta).toEqual({
+            elBlockSnapshot: {
+              blockNumber: elMeta.number,
+              blockHash: elMeta.hash,
+              timestamp: elMeta.timestamp,
+              lastChangedBlockHash: elMeta.lastChangedBlockHash,
+            },
+          });
+        });
+
+        it('Should return 400 error if used is the string "undefined"', async () => {
+          const resp = await request(app.getHttpServer()).get(`/v1/modules/keys`).query({ used: 'undefined' });
+
+          expect(resp.status).toEqual(400);
+          expect(resp.body).toEqual({
+            error: 'Bad Request',
+            message: ['used must be a boolean value'],
+            statusCode: 400,
+          });
         });
       });
     });

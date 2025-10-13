@@ -1,21 +1,16 @@
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { IsInt, IsBoolean, IsOptional, Min } from 'class-validator';
+import { IsAddress } from 'common/decorators/isAddress';
 
-const toBoolean = (value, propertyName: string): boolean => {
-  if (value === 'true') {
-    return true;
-  }
-
-  if (value == 'false') {
-    return false;
-  }
-
-  throw new BadRequestException([`${propertyName.toLocaleLowerCase()} must be a boolean value`]);
+const toBoolean = (value: any, propertyName: string): boolean | undefined => {
+  if (value === '') return undefined;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  throw new BadRequestException([`${propertyName.toLowerCase()} must be a boolean value`]);
 };
 
-// TODO: use it in staking-module-service
 export class KeyQuery {
   @ApiProperty({
     required: false,
@@ -32,9 +27,9 @@ export class KeyQuery {
     description:
       'Filter for operator with specified index. If this value is not specified endpoint will return keys for all operators.',
   })
+  @Transform(({ value }) => (value === '' ? undefined : Number(value)))
   @IsInt()
   @Min(0)
-  @Type(() => Number)
   @IsOptional()
   operatorIndex?: number;
 }
@@ -43,6 +38,7 @@ export class KeyQueryWithAddress extends KeyQuery {
   @ApiProperty({ isArray: true, type: String, required: false, description: 'Module address list' })
   @Transform(({ value }) => (Array.isArray(value) ? value : Array(value)))
   @Transform(({ value }) => value.map((v) => v.toLowerCase()))
+  @IsAddress({ each: true })
   @IsOptional()
   moduleAddresses!: string[];
 }

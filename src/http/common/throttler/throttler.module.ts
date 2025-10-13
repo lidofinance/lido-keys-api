@@ -5,7 +5,8 @@ export const ThrottlerModule = ThrottlerModuleSource.forRootAsync({
   imports: [ConfigModule],
   inject: [ConfigService],
   useFactory: async (configService: ConfigService) => ({
-    ttl: configService.get('GLOBAL_THROTTLE_TTL'),
-    limit: configService.get('GLOBAL_THROTTLE_LIMIT'),
+    throttlers: [
+      { ttl: configService.get('GLOBAL_THROTTLE_TTL') * 1000, limit: configService.get('GLOBAL_THROTTLE_LIMIT') },
+    ],
   }),
 });

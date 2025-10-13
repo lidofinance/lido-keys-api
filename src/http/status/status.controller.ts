@@ -1,4 +1,4 @@
-import { Controller, Get, Version } from '@nestjs/common';
+import { Controller, Get, Version, HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Status } from './entities';
 import { StatusService } from './status.service';
@@ -11,7 +11,7 @@ export class StatusController {
   @Version('1')
   @ApiOperation({ summary: 'Get status of Keys API' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'Keys API status',
     type: () => Status,
   })

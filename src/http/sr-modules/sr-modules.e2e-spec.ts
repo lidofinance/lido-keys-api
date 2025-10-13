@@ -20,6 +20,7 @@ import { elMeta } from '../el-meta.fixture';
 import { curatedModule, dvtModule } from '../db.fixtures';
 import { DatabaseE2ETestingModule } from 'app';
 import { CSMKeyRegistryService } from 'common/registry-csm';
+import { AddressZero } from '@ethersproject/constants';
 
 describe('SRModulesController (e2e)', () => {
   let app: INestApplication;
@@ -215,6 +216,26 @@ describe('SRModulesController (e2e)', () => {
         expect(resp.body).toEqual({
           error: 'Bad Request',
           message: ['module_id must be a contract address or numeric value'],
+          statusCode: 400,
+        });
+      });
+
+      it('Should return 400 error if module_id is not set', async () => {
+        const resp = await request(app.getHttpServer()).get('/v1/modules/');
+        expect(resp.status).toEqual(400);
+        expect(resp.body).toEqual({
+          error: 'Bad Request',
+          message: ['module_id must be a contract address or numeric value'],
+          statusCode: 400,
+        });
+      });
+
+      it('Should return 400 error if module_id is not set', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${AddressZero}`);
+        expect(resp.status).toEqual(400);
+        expect(resp.body).toEqual({
+          error: 'Bad Request',
+          message: ['module_id cannot be the zero address'],
           statusCode: 400,
         });
       });

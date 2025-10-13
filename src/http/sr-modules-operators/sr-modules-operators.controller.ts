@@ -1,14 +1,14 @@
 import { Controller, Get, Version, Param, HttpStatus, NotFoundException } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiNotFoundResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import {
   GroupedByModuleOperatorListResponse,
   SRModuleOperatorListResponse,
   SRModuleOperatorResponse,
 } from './entities';
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
-import { OperatorId } from '../common/entities/operator-id';
 import { TooEarlyResponse } from '../common/entities/http-exceptions';
 import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
+import { OperatorId } from 'http/common/entities';
 
 @Controller('/')
 @ApiTags('operators')
@@ -18,7 +18,7 @@ export class SRModulesOperatorsController {
   @Version('1')
   @ApiOperation({ summary: 'Get operators for all modules grouped by staking router module' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'Operators for all modules grouped by staking router module',
     type: () => GroupedByModuleOperatorListResponse,
   })
@@ -35,7 +35,7 @@ export class SRModulesOperatorsController {
   @Version('1')
   @ApiOperation({ summary: 'Staking router module operators' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'List of all SR module operators',
     type: SRModuleOperatorListResponse,
   })
@@ -44,7 +44,7 @@ export class SRModulesOperatorsController {
     description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
-  @ApiNotFoundResponse({
+  @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Provided module is not supported',
     type: NotFoundException,
@@ -62,7 +62,7 @@ export class SRModulesOperatorsController {
   @Version('1')
   @ApiOperation({ summary: 'Staking router module operator' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'SR module operator',
     type: SRModuleOperatorResponse,
   })
@@ -71,7 +71,7 @@ export class SRModulesOperatorsController {
     description: "Meta is null, maybe data hasn't been written in db yet",
     type: TooEarlyResponse,
   })
-  @ApiNotFoundResponse({
+  @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Provided module or operator are not supported',
     type: NotFoundException,
