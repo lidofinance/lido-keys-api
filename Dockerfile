@@ -1,6 +1,4 @@
-FROM node:18.14.2-alpine3.16 as building
-
-RUN apk add --no-cache git=2.36.6-r0
+FROM node:20-alpine AS building
 
 WORKDIR /app
 
@@ -11,7 +9,7 @@ COPY ./src ./src
 RUN yarn install --frozen-lockfile --non-interactive && yarn cache clean && yarn typechain
 RUN yarn build
 
-FROM node:18.14.0-alpine3.17
+FROM node:20-alpine
 
 WORKDIR /app
 
