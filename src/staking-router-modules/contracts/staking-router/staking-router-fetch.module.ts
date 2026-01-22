@@ -4,15 +4,16 @@ import { StakingModuleInterfaceModule } from '../staking-module-interface';
 import { LidoLocatorModule } from '../lido-locator/lido-locator.module';
 import { StakingRouterContractModule } from '@lido-nestjs/contracts';
 import { ExecutionProvider } from '../../../common/execution-provider';
+import { ConfigService } from 'common/config';
 
 @Module({
   imports: [
     StakingModuleInterfaceModule,
     LidoLocatorModule,
     StakingRouterContractModule.forRootAsync({
-      inject: [ExecutionProvider],
-      async useFactory(provider) {
-        return { provider };
+      inject: [ExecutionProvider, ConfigService],
+      async useFactory(provider, configService: ConfigService) {
+        return { provider, address: configService.get('STAKING_ROUTER_DEVNET_ADDRESS') };
       },
     }),
   ],
