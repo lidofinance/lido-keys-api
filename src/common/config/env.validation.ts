@@ -132,6 +132,7 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   @IsEnum(Chain)
   @Transform(toNumber({ defaultValue: undefined }))
+  @ValidateIf((e) => e.IS_DEVNET_MODE === false)
   CHAIN_ID!: Chain;
 
   @IsNotEmpty()
@@ -225,8 +226,25 @@ export class EnvironmentVariables {
   STREAM_TIMEOUT = 60_000;
 
   @IsOptional()
+  @IsBoolean()
+  @Transform(toBoolean({ defaultValue: false }))
+  IS_DEVNET_MODE = false;
+
+  @IsOptional()
   @IsString()
   LIDO_LOCATOR_DEVNET_ADDRESS = '';
+
+  @IsOptional()
+  @IsString()
+  CURATED_MODULE_DEVNET_ADDRESS = '';
+
+  @IsOptional()
+  @IsString()
+  CSM_MODULE_DEVNET_ADDRESS = '';
+
+  @IsOptional()
+  @IsString()
+  STAKING_ROUTER_DEVNET_ADDRESS = '';
 }
 
 export function validate(config: Record<string, unknown>) {
