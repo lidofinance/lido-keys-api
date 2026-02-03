@@ -7,6 +7,11 @@ import { LidoLocatorService } from '../lido-locator';
 import { BlockTag } from '../interfaces';
 import { StakingRouter, STAKING_ROUTER_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
 
+// TODO: Remove this workaround after the module type is fixed in the contract
+const MODULE_TYPE_OVERRIDES: Record<string, STAKING_MODULE_TYPE> = {
+  '0x4d0c08f829a39456f30cbc4e41efe595fe7c4b6d': STAKING_MODULE_TYPE.CURATED_ONCHAIN_V2_TYPE,
+};
+
 @Injectable()
 export class StakingRouterFetchService {
   constructor(
@@ -48,10 +53,22 @@ export class StakingRouterFetchService {
           });
         }
 
-        const stakingModuleType = (await this.stakingModuleInterface.getType(
+        const addressLower = stakingModule.stakingModuleAddress.toLowerCase();
+
+        // Get type from contract, but allow override for misconfigured modules
+        let stakingModuleType = (await this.stakingModuleInterface.getType(
           stakingModule.stakingModuleAddress,
           blockTag,
         )) as STAKING_MODULE_TYPE;
+
+        if (MODULE_TYPE_OVERRIDES[addressLower]) {
+          this.logger.warn('Overriding staking module type', {
+            stakingModuleAddress: addressLower,
+            originalType: stakingModuleType,
+            overriddenType: MODULE_TYPE_OVERRIDES[addressLower],
+          });
+          stakingModuleType = MODULE_TYPE_OVERRIDES[addressLower];
+        }
 
         if (!stakingModuleTypeSet.has(stakingModuleType)) {
           this.logger.error(new Error(`Staking Module type ${stakingModuleType} is unknown`));
@@ -60,7 +77,7 @@ export class StakingRouterFetchService {
 
         return {
           moduleId: stakingModule.id,
-          stakingModuleAddress: stakingModule.stakingModuleAddress.toLowerCase(),
+          stakingModuleAddress: addressLower,
           moduleFee: stakingModule.stakingModuleFee,
           treasuryFee: stakingModule.treasuryFee,
           targetShare: stakingModule.targetShare,
