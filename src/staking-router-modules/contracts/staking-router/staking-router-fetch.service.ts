@@ -71,6 +71,8 @@ export class StakingRouterFetchService {
           lastDepositBlock: stakingModule.lastDepositBlock.toNumber(),
           exitedValidatorsCount: stakingModule.exitedValidatorsCount.toNumber(),
           active: isActive,
+          withdrawalCredentialsType:
+            (stakingModule as unknown as { withdrawalCredentialsType?: number }).withdrawalCredentialsType ?? 1,
         };
       }),
     );

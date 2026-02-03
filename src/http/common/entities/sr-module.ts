@@ -17,6 +17,7 @@ export class StakingModuleResponse implements Omit<SrModuleEntity, 'id' | 'modul
     this.lastDepositBlock = stakingModule.lastDepositBlock;
     this.exitedValidatorsCount = stakingModule.exitedValidatorsCount;
     this.active = stakingModule.active;
+    this.withdrawalCredentialsType = stakingModule.withdrawalCredentialsType;
     this.lastChangedBlockHash = stakingModule.lastChangedBlockHash;
   }
 
@@ -99,6 +100,13 @@ export class StakingModuleResponse implements Omit<SrModuleEntity, 'id' | 'modul
     description: 'Module activation status',
   })
   active: boolean;
+
+  @ApiProperty({
+    required: true,
+    description: 'Withdrawal credentials type: 1 (BLS) or 2 (execution layer)',
+    enum: [1, 2],
+  })
+  withdrawalCredentialsType: number;
 
   @ApiProperty({
     required: true,

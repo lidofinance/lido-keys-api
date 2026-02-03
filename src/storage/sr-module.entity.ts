@@ -20,6 +20,7 @@ export class SrModuleEntity implements StakingModule {
     this.exitedValidatorsCount = srModule.exitedValidatorsCount;
     this.type = srModule.type;
     this.active = srModule.active;
+    this.withdrawalCredentialsType = srModule.withdrawalCredentialsType;
     this.nonce = nonce;
     this.lastChangedBlockHash = lastChangedBlockHash;
   }
@@ -78,6 +79,10 @@ export class SrModuleEntity implements StakingModule {
   // is module active
   @Property()
   active: boolean;
+
+  // withdrawal credentials type: 1 (BLS) or 2 (execution layer)
+  @Property()
+  withdrawalCredentialsType: number;
 
   // nonce value
   @Property()

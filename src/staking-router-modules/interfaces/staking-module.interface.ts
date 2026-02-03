@@ -53,6 +53,10 @@ export interface StakingModule {
    * Is module active
    */
   active: boolean;
+  /**
+   * Withdrawal credentials type: 1 (BLS) or 2 (execution layer)
+   */
+  withdrawalCredentialsType: number;
 }
 
 export interface StakingModuleInterface {
