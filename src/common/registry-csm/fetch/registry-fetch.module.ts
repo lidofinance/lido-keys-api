@@ -1,5 +1,4 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { LidoContractModule, RegistryContractModule } from '@lido-nestjs/contracts';
 import {
   RegistryFetchModuleSyncOptions,
   RegistryFetchModuleAsyncOptions,
@@ -37,51 +36,20 @@ export class RegistryFetchModule {
   static forFeature(options?: RegistryFetchModuleSyncOptions): DynamicModule {
     return {
       module: RegistryFetchModule,
-      imports: [
-        ...(options?.imports || []),
-        LidoContractModule.forFeature({
-          address: options?.lidoAddress,
-          provider: options?.provider,
-        }),
-        RegistryContractModule.forFeature({
-          address: options?.registryAddress,
-          provider: options?.provider,
-        }),
-      ],
+      imports: [...(options?.imports || [])],
       providers: [
         {
           provide: REGISTRY_FETCH_OPTIONS_TOKEN,
           useValue: options?.keysBatchSize ? { keysBatchSize: options.keysBatchSize } : {},
         },
       ],
-      exports: [LidoContractModule, RegistryContractModule],
     };
   }
 
   public static forFeatureAsync(options: RegistryFetchModuleAsyncOptions): DynamicModule {
     return {
       module: RegistryFetchModule,
-      imports: [
-        ...(options.imports || []),
-        LidoContractModule.forFeatureAsync({
-          async useFactory(...args) {
-            const config = await options.useFactory(...args);
-            const { provider, lidoAddress } = config;
-
-            return { provider, address: lidoAddress };
-          },
-          inject: options.inject,
-        }),
-        RegistryContractModule.forFeatureAsync({
-          async useFactory(...args) {
-            const config = await options.useFactory(...args);
-            const { provider, registryAddress } = config;
-
-            return { provider, address: registryAddress };
-          },
-          inject: options.inject,
-        }),
-      ],
+      imports: [...(options.imports || [])],
       providers: [
         {
           provide: REGISTRY_FETCH_OPTIONS_TOKEN,
@@ -89,7 +57,6 @@ export class RegistryFetchModule {
           inject: options.inject,
         },
       ],
-      exports: [LidoContractModule, RegistryContractModule],
     };
   }
 }

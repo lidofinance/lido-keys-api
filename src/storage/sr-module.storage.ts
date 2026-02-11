@@ -50,6 +50,7 @@ export class SRModuleStorageService {
       existingModule.lastDepositBlock = srModule.lastDepositBlock;
       existingModule.exitedValidatorsCount = srModule.exitedValidatorsCount;
       existingModule.active = srModule.active;
+      // existingModule.withdrawalCredentialsType = srModule.withdrawalCredentialsType;
       existingModule.nonce = nonce;
       existingModule.lastChangedBlockHash = lastChangedBlockHash;
     }

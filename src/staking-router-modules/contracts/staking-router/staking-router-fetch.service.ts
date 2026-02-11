@@ -5,7 +5,8 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingModuleInterfaceService } from '../staking-module-interface';
 import { LidoLocatorService } from '../lido-locator';
 import { BlockTag } from '../interfaces';
-import { StakingRouter, STAKING_ROUTER_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
+import { StakingRouter } from 'generated';
+import { STAKING_ROUTER_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
 
 @Injectable()
 export class StakingRouterFetchService {
@@ -13,12 +14,9 @@ export class StakingRouterFetchService {
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly stakingModuleInterface: StakingModuleInterfaceService,
     protected readonly lidoLocatorService: LidoLocatorService,
-    @Inject(STAKING_ROUTER_CONTRACT_TOKEN) protected readonly contract: StakingRouter,
+    @Inject(STAKING_ROUTER_CONTRACT_TOKEN)
+    protected readonly connectStakingRouter: ContractFactoryFn<StakingRouter>,
   ) {}
-
-  private getContract(contractAddress: string) {
-    return this.contract.attach(contractAddress);
-  }
 
   /**
    *
@@ -29,8 +27,8 @@ export class StakingRouterFetchService {
 
     this.logger.log('Staking router module address', stakingRouterAddress);
 
-    const srContract = this.getContract(stakingRouterAddress);
-    const modules = await srContract.getStakingModules({ blockTag } as any);
+    const contract = this.connectStakingRouter(stakingRouterAddress);
+    const modules = await contract.getStakingModules({ blockTag } as any);
 
     this.logger.log('Fetched staking modules', { stakingModules: modules.length });
 
@@ -63,7 +61,7 @@ export class StakingRouterFetchService {
           stakingModuleAddress: stakingModule.stakingModuleAddress.toLowerCase(),
           moduleFee: stakingModule.stakingModuleFee,
           treasuryFee: stakingModule.treasuryFee,
-          targetShare: stakingModule.targetShare,
+          targetShare: stakingModule.stakeShareLimit,
           status: stakingModule.status,
           name: stakingModule.name,
           type: stakingModuleType,
@@ -71,8 +69,7 @@ export class StakingRouterFetchService {
           lastDepositBlock: stakingModule.lastDepositBlock.toNumber(),
           exitedValidatorsCount: stakingModule.exitedValidatorsCount.toNumber(),
           active: isActive,
-          withdrawalCredentialsType:
-            (stakingModule as unknown as { withdrawalCredentialsType?: number }).withdrawalCredentialsType ?? 1,
+          // withdrawalCredentialsType: stakingModule.withdrawalCredentialsType,
         };
       }),
     );

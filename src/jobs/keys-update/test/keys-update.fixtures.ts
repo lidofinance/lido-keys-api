@@ -13,7 +13,7 @@ export const stakingModuleFixture: StakingModule = {
   exitedValidatorsCount: 10,
   type: 'curated',
   active: true,
-  withdrawalCredentialsType: 1,
+  // withdrawalCredentialsType: 1,
 };
 
 export const stakingModuleFixtures: StakingModule[] = [
@@ -31,6 +31,6 @@ export const stakingModuleFixtures: StakingModule[] = [
     exitedValidatorsCount: 5,
     type: 'dvt',
     active: false,
-    withdrawalCredentialsType: 1,
+    // withdrawalCredentialsType: 1,
   },
 ];

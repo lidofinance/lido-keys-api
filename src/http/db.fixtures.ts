@@ -17,7 +17,7 @@ export const curatedModule: StakingModule = {
   lastDepositBlock: 9,
   exitedValidatorsCount: 0,
   active: true,
-  withdrawalCredentialsType: 1,
+  // withdrawalCredentialsType: 1,
 };
 
 export const dvtModule: StakingModule = {
@@ -33,7 +33,7 @@ export const dvtModule: StakingModule = {
   lastDepositBlock: 10,
   exitedValidatorsCount: 0,
   active: true,
-  withdrawalCredentialsType: 1,
+  // withdrawalCredentialsType: 1,
 };
 
 export const updatedCuratedModule: StakingModule = {
@@ -49,7 +49,7 @@ export const updatedCuratedModule: StakingModule = {
   lastDepositBlock: 10,
   exitedValidatorsCount: 1,
   active: false,
-  withdrawalCredentialsType: 1,
+  // withdrawalCredentialsType: 1,
 };
 export const srModules = [curatedModule, dvtModule];
 

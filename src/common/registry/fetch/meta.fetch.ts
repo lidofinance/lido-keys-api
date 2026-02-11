@@ -1,19 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Inject, Injectable } from '@nestjs/common';
 import { CallOverrides } from './interfaces/overrides.interface';
-import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
+import { Registry } from 'generated';
+import { REGISTRY_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
 
 @Injectable()
 export class RegistryMetaFetchService {
-  constructor(@Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry) {}
-
-  private getContract(moduleAddress: string) {
-    return this.contract.attach(moduleAddress);
-  }
+  constructor(@Inject(REGISTRY_CONTRACT_TOKEN) private connectRegistry: ContractFactoryFn<Registry>) {}
 
   /** Fetches nonce from staking module contract */
   public async fetchStakingModuleNonce(moduleAddress: string, overrides: CallOverrides = {}): Promise<number> {
-    const bigNumber = await this.getContract(moduleAddress).getNonce(overrides as any);
+    const bigNumber = await this.connectRegistry(moduleAddress).getNonce(overrides as any);
     return bigNumber.toNumber();
   }
 }

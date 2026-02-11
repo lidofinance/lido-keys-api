@@ -54,9 +54,9 @@ export interface StakingModule {
    */
   active: boolean;
   /**
-   * Withdrawal credentials type: 1 (BLS) or 2 (execution layer)
+   * Withdrawal credentials type: 1 (0x01 legacy withdrawal credentials) or 2 (compounding withdrawal credentials type)
    */
-  withdrawalCredentialsType: number;
+  // withdrawalCredentialsType: number;
 }
 
 export interface StakingModuleInterface {
