@@ -17,7 +17,7 @@ export const curatedModuleResp: StakingModuleResponse = {
   nonce: 1,
   exitedValidatorsCount: 0,
   active: true,
-  // withdrawalCredentialsType: 1,
+  withdrawalCredentialsType: 1,
   lastChangedBlockHash: '',
 };
 
@@ -37,6 +37,6 @@ export const dvtModuleResp: StakingModuleResponse = {
   nonce: 1,
   exitedValidatorsCount: 0,
   active: true,
-  // withdrawalCredentialsType: 1,
+  withdrawalCredentialsType: 1,
   lastChangedBlockHash: '',
 };

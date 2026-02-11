@@ -56,7 +56,7 @@ export interface StakingModule {
   /**
    * Withdrawal credentials type: 1 (0x01 legacy withdrawal credentials) or 2 (compounding withdrawal credentials type)
    */
-  // withdrawalCredentialsType: number;
+  withdrawalCredentialsType: number;
 }
 
 export interface StakingModuleInterface {

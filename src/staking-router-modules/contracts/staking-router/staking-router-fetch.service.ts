@@ -30,7 +30,7 @@ export class StakingRouterFetchService {
     const contract = this.connectStakingRouter(stakingRouterAddress);
     const modules = await contract.getStakingModules({ blockTag } as any);
 
-    this.logger.log('Fetched staking modules', { stakingModules: modules.length });
+    this.logger.log('Fetched staking modules', { stakingModules: modules.length, log: modules });
 
     const stakingModuleTypeSet = new Set(Object.values(STAKING_MODULE_TYPE));
 
@@ -69,7 +69,7 @@ export class StakingRouterFetchService {
           lastDepositBlock: stakingModule.lastDepositBlock.toNumber(),
           exitedValidatorsCount: stakingModule.exitedValidatorsCount.toNumber(),
           active: isActive,
-          // withdrawalCredentialsType: stakingModule.withdrawalCredentialsType,
+          withdrawalCredentialsType: stakingModule.withdrawalCredentialsType,
         };
       }),
     );

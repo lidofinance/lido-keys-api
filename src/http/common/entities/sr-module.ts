@@ -17,7 +17,7 @@ export class StakingModuleResponse implements Omit<SrModuleEntity, 'id' | 'modul
     this.lastDepositBlock = stakingModule.lastDepositBlock;
     this.exitedValidatorsCount = stakingModule.exitedValidatorsCount;
     this.active = stakingModule.active;
-    // this.withdrawalCredentialsType = stakingModule.withdrawalCredentialsType;
+    this.withdrawalCredentialsType = stakingModule.withdrawalCredentialsType;
     this.lastChangedBlockHash = stakingModule.lastChangedBlockHash;
   }
 
@@ -107,11 +107,11 @@ export class StakingModuleResponse implements Omit<SrModuleEntity, 'id' | 'modul
   })
   lastChangedBlockHash: string;
 
-  // @ApiProperty({
-  //   required: true,
-  //   description:
-  //     'Withdrawal credentials type: 1 (0x01 legacy withdrawal credentials) or 2 (compounding withdrawal credentials type)',
-  //   enum: [1, 2],
-  // })
-  // withdrawalCredentialsType: number;
+  @ApiProperty({
+    required: true,
+    description:
+      'Withdrawal credentials type: 1 (0x01 legacy withdrawal credentials) or 2 (compounding withdrawal credentials type)',
+    enum: [1, 2],
+  })
+  withdrawalCredentialsType: number;
 }
