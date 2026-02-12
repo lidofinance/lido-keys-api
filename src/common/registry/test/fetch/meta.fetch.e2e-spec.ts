@@ -1,12 +1,12 @@
 import { Global, Module } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { JsonRpcBatchProvider } from '@ethersproject/providers';
-import { Registry__factory, StakingRouter__factory } from 'generated';
+import { LidoLocator__factory, Registry__factory, StakingRouter__factory } from 'generated';
 import { REGISTRY_CONTRACT_TOKEN } from 'common/contracts';
 import { RegistryFetchModule, RegistryMetaFetchService } from '../../';
-import { LIDO_LOCATOR_CONTRACT_ADDRESSES, LidoLocator__factory } from '@lido-nestjs/contracts';
+import { LIDO_LOCATOR_CONTRACT_ADDRESSES } from 'common/contracts';
 import * as dotenv from 'dotenv';
 import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
+import { JsonRpcBatchProvider } from '@ethersproject/providers';
 
 dotenv.config();
 
