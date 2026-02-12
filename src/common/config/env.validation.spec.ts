@@ -163,29 +163,59 @@ describe('Environment validation', () => {
     it('should throw if CHAIN_ID is missing', () => {
       const { CHAIN_ID, ...test_configs } = required_configs;
       expect(() => runValidation({ ...test_configs })).toThrow('process.exit');
-      expect(errorOutput).toMatch(/property CHAIN_ID has failed the following constraints: isEnum, isNotEmpty/);
+      expect(errorOutput).toMatch(/property CHAIN_ID has failed the following constraints: isInt, isNotEmpty/);
     });
 
     it('should throw if CHAIN_ID is an empty string', () => {
       expect(() => runValidation({ ...required_configs, CHAIN_ID: '' })).toThrow('process.exit');
-      expect(errorOutput).toMatch(/property CHAIN_ID has failed the following constraints: isEnum/);
+      expect(errorOutput).toMatch(/property CHAIN_ID has failed the following constraints: isInt/);
     });
 
-    it('should parse a valid enum value from string', () => {
+    it('should parse a valid chain id from string', () => {
       expect(runValidation({ ...required_configs, CHAIN_ID: '1' }).CHAIN_ID).toBe(1);
-      expect(runValidation({ ...required_configs, CHAIN_ID: '5' }).CHAIN_ID).toBe(5);
-      expect(runValidation({ ...required_configs, CHAIN_ID: '17000' }).CHAIN_ID).toBe(17000);
       expect(runValidation({ ...required_configs, CHAIN_ID: '560048' }).CHAIN_ID).toBe(560048);
+    });
+
+    it('should accept any valid integer chain id', () => {
+      expect(
+        runValidation({
+          ...required_configs,
+          CHAIN_ID: '999',
+          LIDO_LOCATOR_DEVNET_ADDRESS: '0x1234567890abcdef',
+        }).CHAIN_ID,
+      ).toBe(999);
     });
 
     it('should throw on non-integer string', () => {
       expect(() => runValidation({ ...required_configs, CHAIN_ID: 'abc' })).toThrow('process.exit');
-      expect(errorOutput).toMatch(/property CHAIN_ID has failed the following constraints: isEnum/);
+      expect(errorOutput).toMatch(/property CHAIN_ID has failed the following constraints: isInt/);
+    });
+  });
+
+  describe('LIDO_LOCATOR_DEVNET_ADDRESS', () => {
+    it('should not be required when CHAIN_ID is Mainnet', () => {
+      expect(() => runValidation({ ...required_configs, CHAIN_ID: 1 })).not.toThrow();
     });
 
-    it('should throw if CHAIN_ID is a number not in the Chain enum', () => {
-      expect(() => runValidation({ ...required_configs, CHAIN_ID: '999' })).toThrow('process.exit');
-      expect(errorOutput).toMatch(/property CHAIN_ID has failed the following constraints: isEnum/);
+    it('should not be required when CHAIN_ID is Hoodi', () => {
+      expect(() => runValidation({ ...required_configs, CHAIN_ID: 560048 })).not.toThrow();
+    });
+
+    it('should be required when CHAIN_ID is not a known chain', () => {
+      expect(() => runValidation({ ...required_configs, CHAIN_ID: 999 })).toThrow('process.exit');
+      expect(errorOutput).toMatch(
+        /property LIDO_LOCATOR_DEVNET_ADDRESS has failed the following constraints: isNotEmpty/,
+      );
+    });
+
+    it('should pass when CHAIN_ID is unknown and LIDO_LOCATOR_DEVNET_ADDRESS is set', () => {
+      expect(
+        runValidation({
+          ...required_configs,
+          CHAIN_ID: 999,
+          LIDO_LOCATOR_DEVNET_ADDRESS: '0x1234567890abcdef',
+        }).LIDO_LOCATOR_DEVNET_ADDRESS,
+      ).toBe('0x1234567890abcdef');
     });
   });
 
