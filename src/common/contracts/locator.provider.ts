@@ -7,7 +7,6 @@ import { LIDO_LOCATOR_CONTRACT_TOKEN } from './tokens';
 
 export const LIDO_LOCATOR_CONTRACT_ADDRESSES: Partial<Record<Chain, string>> = {
   [Chain.Mainnet]: '0xC1d0b3DE6792Bf6b4b37EccdcC24e45978Cfd2Eb',
-  [Chain.Sepolia]: '0x8f6254332f69557A72b0DA2D5F0Bc07d4CA991E7',
   [Chain.Hoodi]: '0xe2EF9536DAAAEBFf5b1c130957AB3E80056b06D8',
 };
 
