@@ -1,6 +1,12 @@
 import { validate } from './env.validation';
 import { EnvironmentVariables } from './env.validation';
 
+function omit<T extends Record<K, any>, K extends string>(obj: T, ...keys: K[]): Omit<T, K> {
+  const result = { ...obj };
+  keys.forEach((key) => delete result[key]);
+  return result;
+}
+
 describe('Environment validation', () => {
   const runValidation = (partial: Partial<Record<keyof EnvironmentVariables, any>>) => {
     return validate(partial as Record<string, unknown>);
@@ -80,8 +86,7 @@ describe('Environment validation', () => {
 
   describe('PROVIDERS_URLS', () => {
     it('should throw if missing', () => {
-      const { PROVIDERS_URLS, ...test_configs } = required_configs;
-      expect(() => runValidation({ ...test_configs })).toThrow('process.exit');
+      expect(() => runValidation(omit(required_configs, 'PROVIDERS_URLS'))).toThrow('process.exit');
       expect(errorOutput).toMatch(
         /property PROVIDERS_URLS has failed the following constraints: isUrl, arrayMinSize, isArray, isNotEmpty/,
       );
@@ -161,8 +166,7 @@ describe('Environment validation', () => {
 
   describe('CHAIN_ID', () => {
     it('should throw if CHAIN_ID is missing', () => {
-      const { CHAIN_ID, ...test_configs } = required_configs;
-      expect(() => runValidation({ ...test_configs })).toThrow('process.exit');
+      expect(() => runValidation(omit(required_configs, 'CHAIN_ID'))).toThrow('process.exit');
       expect(errorOutput).toMatch(/property CHAIN_ID has failed the following constraints: isInt, isNotEmpty/);
     });
 
@@ -221,8 +225,7 @@ describe('Environment validation', () => {
 
   describe('DB_HOST', () => {
     it('should throw if DB_HOST is missing', () => {
-      const { DB_HOST, ...test_configs } = required_configs;
-      expect(() => runValidation({ ...test_configs })).toThrow('process.exit');
+      expect(() => runValidation(omit(required_configs, 'DB_HOST'))).toThrow('process.exit');
       expect(errorOutput).toMatch(/property DB_HOST has failed the following constraints: isString, isNotEmpty/);
     });
 
@@ -234,8 +237,7 @@ describe('Environment validation', () => {
 
   describe('DB_USER', () => {
     it('should throw if DB_HOST is missing', () => {
-      const { DB_USER, ...test_configs } = required_configs;
-      expect(() => runValidation({ ...test_configs })).toThrow('process.exit');
+      expect(() => runValidation(omit(required_configs, 'DB_USER'))).toThrow('process.exit');
       expect(errorOutput).toMatch(/property DB_USER has failed the following constraints: isString, isNotEmpty/);
     });
 
@@ -247,8 +249,7 @@ describe('Environment validation', () => {
 
   describe('DB_NAME', () => {
     it('should throw if DB_NAME is missing', () => {
-      const { DB_NAME, ...test_configs } = required_configs;
-      expect(() => runValidation({ ...test_configs })).toThrow('process.exit');
+      expect(() => runValidation(omit(required_configs, 'DB_NAME'))).toThrow('process.exit');
       expect(errorOutput).toMatch(/property DB_NAME has failed the following constraints: isString, isNotEmpty/);
     });
 
@@ -260,8 +261,7 @@ describe('Environment validation', () => {
 
   describe('DB_PORT', () => {
     it('should throw if DB_PORT is missing', () => {
-      const { DB_PORT, ...test_configs } = required_configs;
-      expect(() => runValidation({ ...test_configs })).toThrow('process.exit');
+      expect(() => runValidation(omit(required_configs, 'DB_PORT'))).toThrow('process.exit');
       expect(errorOutput).toMatch(/property DB_PORT has failed the following constraints: max, min, isInt, isNotEmpty/);
     });
 
@@ -484,9 +484,8 @@ describe('Environment validation', () => {
     });
 
     it('should pass with valid DB_PASSWORD_FILE only', () => {
-      const { DB_PASSWORD, ...test_configs } = required_configs;
       const config = {
-        ...test_configs,
+        ...omit(required_configs, 'DB_PASSWORD'),
         DB_PASSWORD_FILE: '/path/to/secret.txt',
       };
 
@@ -505,9 +504,7 @@ describe('Environment validation', () => {
     });
 
     it('should throw if both DB_PASSWORD and DB_PASSWORD_FILE are missing', () => {
-      const { DB_PASSWORD, ...test_configs } = required_configs;
-
-      expect(() => runValidation(test_configs)).toThrow('process.exit');
+      expect(() => runValidation(omit(required_configs, 'DB_PASSWORD'))).toThrow('process.exit');
       expect(errorOutput).toMatch(
         /property DB_PASSWORD_FILE has failed the following constraints: isString, isNotEmpty/,
       );
@@ -537,10 +534,8 @@ describe('Environment validation', () => {
     });
 
     it('should throw if DB_PASSWORD is missing and DB_PASSWORD_FILE is empty', () => {
-      const { DB_PASSWORD, ...test_configs } = required_configs;
-
       const config = {
-        ...test_configs,
+        ...omit(required_configs, 'DB_PASSWORD'),
         DB_PASSWORD_FILE: '',
       };
 
@@ -695,8 +690,12 @@ describe('Environment validation', () => {
 
   describe('VALIDATOR_REGISTRY_ENABLE', () => {
     it('should default to true if missing', () => {
-      const { VALIDATOR_REGISTRY_ENABLE, ...test_configs } = required_configs;
-      expect(runValidation({ ...test_configs, CL_API_URLS: 'http://test.com' }).VALIDATOR_REGISTRY_ENABLE).toBe(true);
+      expect(
+        runValidation({
+          ...omit(required_configs, 'VALIDATOR_REGISTRY_ENABLE'),
+          CL_API_URLS: 'http://test.com',
+        }).VALIDATOR_REGISTRY_ENABLE,
+      ).toBe(true);
     });
 
     it('should default to true if empty string', () => {
