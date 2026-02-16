@@ -1,14 +1,12 @@
 import { Test } from '@nestjs/testing';
 import { operator } from '../fixtures/operator.fixture';
 import { RegistryOperatorStorageService, RegistryOperator, RegistryOperatorRepository } from '../../';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
-import * as streamUtils from '../../utils/stream.utils';
-import { DEFAULT_STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE } from '../../../registry/storage/constants';
+import * as streamUtils from 'common/registry/utils/stream.utils';
+import { DEFAULT_STREAM_TIMEOUT, STREAM_OPERATORS_TIMEOUT_MESSAGE } from 'common/registry/storage/constants';
 import { ConfigModule, ConfigService } from 'common/config';
 
 describe('Operators', () => {
-  const CHAIN_ID = process.env.CHAIN_ID || 1;
-  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
+  const address = '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5 ';
   const registryOperator = { index: 1, moduleAddress: address, ...operator };
 
   async function* findOperatorsAsStream() {

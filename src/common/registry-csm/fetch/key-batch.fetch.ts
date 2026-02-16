@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
+import { Csm } from 'generated';
+import { CSM_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { KeyBatchRecord, RegistryKey } from './interfaces/key.interface';
 import { RegistryOperatorFetchService } from './operator.fetch';
@@ -7,20 +8,14 @@ import { KEYS_BATCH_SIZE, KEYS_LENGTH, SIGNATURE_LENGTH } from './key-batch.cons
 import { RegistryFetchOptions, REGISTRY_FETCH_OPTIONS_TOKEN } from './interfaces/module.interface';
 import { splitHex } from './utils/split-hex';
 import { makeBatches } from './utils/batches';
-import { Csm__factory } from 'generated';
 
 @Injectable()
 export class RegistryKeyBatchFetchService {
   constructor(
     protected readonly operatorsService: RegistryOperatorFetchService,
-    @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
+    @Inject(CSM_CONTRACT_TOKEN) private connectCsm: ContractFactoryFn<Csm>,
     @Inject(REGISTRY_FETCH_OPTIONS_TOKEN) private options: RegistryFetchOptions,
   ) {}
-
-  private getContract(moduleAddress: string) {
-    // TODO: pass provider instead this.contract.provider
-    return Csm__factory.connect(moduleAddress, this.contract.provider);
-  }
 
   protected unformattedSignaturesToArray(unformattedSignatures: string) {
     return splitHex(unformattedSignatures, SIGNATURE_LENGTH);
@@ -112,7 +107,7 @@ export class RegistryKeyBatchFetchService {
     const batches = makeBatches(defaultBatchSize, defaultOffset, totalAmount);
 
     const promises = batches.map(async ({ offset, batchSize }) => {
-      const keys = await this.getContract(moduleAddress).getSigningKeysWithSignatures(
+      const keys = await this.connectCsm(moduleAddress).getSigningKeysWithSignatures(
         operatorIndex,
         offset,
         batchSize,

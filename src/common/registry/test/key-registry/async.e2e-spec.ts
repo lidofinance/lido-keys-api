@@ -1,17 +1,21 @@
-import { ModuleMetadata } from '@nestjs/common';
+import { Global, Module, ModuleMetadata } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
-import { getNetwork } from '@ethersproject/networks';
-import { getDefaultProvider } from '@ethersproject/providers';
+import { REGISTRY_CONTRACT_TOKEN } from 'common/contracts';
 import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../..';
 import { MikroORM } from '@mikro-orm/core';
 import { DatabaseE2ETestingModule } from 'app';
 import { PrometheusModule } from 'common/prometheus';
 
 describe('Async module initializing', () => {
-  const provider = getDefaultProvider('mainnet');
+  const mockConnectRegistry = jest.fn();
 
-  jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
+  @Global()
+  @Module({
+    providers: [{ provide: REGISTRY_CONTRACT_TOKEN, useValue: mockConnectRegistry }],
+    exports: [REGISTRY_CONTRACT_TOKEN],
+  })
+  class MockContractsModule {}
 
   const testModules = async (imports: ModuleMetadata['imports']) => {
     const moduleRef = await Test.createTestingModule({ imports }).compile();
@@ -28,11 +32,12 @@ describe('Async module initializing', () => {
 
   test('forRootAsync', async () => {
     await testModules([
+      MockContractsModule,
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forRootAsync({
         async useFactory() {
-          return { provider, subscribeInterval: '*/12 * * * * *' };
+          return { subscribeInterval: '*/12 * * * * *' };
         },
       }),
       PrometheusModule,
@@ -41,11 +46,12 @@ describe('Async module initializing', () => {
 
   test('forFeatureAsync', async () => {
     await testModules([
+      MockContractsModule,
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeatureAsync({
         async useFactory() {
-          return { provider, subscribeInterval: '*/12 * * * * *' };
+          return { subscribeInterval: '*/12 * * * * *' };
         },
       }),
       PrometheusModule,

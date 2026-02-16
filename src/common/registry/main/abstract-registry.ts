@@ -3,7 +3,6 @@ import { EntityManager } from '@mikro-orm/knex';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 
 import { RegistryMetaFetchService } from '../fetch/meta.fetch';
-import { RegistryKeyFetchService } from '../fetch/key.fetch';
 import { RegistryOperatorFetchService } from '../fetch/operator.fetch';
 
 import { RegistryKeyStorageService } from '../storage/key.storage';
@@ -28,7 +27,7 @@ export abstract class AbstractRegistryService {
 
     protected readonly metaFetch: RegistryMetaFetchService,
 
-    protected readonly keyFetch: RegistryKeyFetchService,
+    // protected readonly keyFetch: RegistryKeyFetchService,
     protected readonly keyBatchFetch: RegistryKeyBatchFetchService,
     protected readonly keyStorage: RegistryKeyStorageService,
 

@@ -1,7 +1,10 @@
+import { Global, Module } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
+import { LidoLocator__factory, Registry__factory, StakingRouter__factory } from 'generated';
+import { REGISTRY_CONTRACT_TOKEN } from 'common/contracts';
 import { RegistryFetchModule, RegistryKeyBatchFetchService } from '../../';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { LIDO_LOCATOR_CONTRACT_ADDRESSES } from 'common/contracts';
 import * as dotenv from 'dotenv';
 import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
@@ -13,13 +16,33 @@ describe('Fetch keys in batch', () => {
     console.error("CHAIN_ID wasn't provides");
     process.exit(1);
   }
-  const address = REGISTRY_CONTRACT_ADDRESSES[process.env.CHAIN_ID];
+  const chainId = process.env.CHAIN_ID as any; // keyof typeof LIDO_LOCATOR_CONTRACT_ADDRESSES;
 
+  let address: string;
   let fetchService: RegistryKeyBatchFetchService;
+
+  const connectRegistry = (addr: string) => Registry__factory.connect(addr, provider);
+
+  @Global()
+  @Module({
+    providers: [{ provide: REGISTRY_CONTRACT_TOKEN, useValue: connectRegistry }],
+    exports: [REGISTRY_CONTRACT_TOKEN],
+  })
+  class MockContractsModule {}
+
+  beforeAll(async () => {
+    const locatorAddress = LIDO_LOCATOR_CONTRACT_ADDRESSES[chainId];
+    const locator = LidoLocator__factory.connect(locatorAddress, provider);
+    const stakingRouterAddress = await locator.stakingRouter();
+    const stakingRouter = StakingRouter__factory.connect(stakingRouterAddress, provider);
+    const modules = await stakingRouter.getStakingModules();
+    address = modules[0].stakingModuleAddress.toLowerCase();
+  }, 30_000);
 
   beforeEach(async () => {
     const imports = [
-      RegistryFetchModule.forFeature({ provider }),
+      MockContractsModule,
+      RegistryFetchModule.forFeature(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
     ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
@@ -56,5 +79,5 @@ describe('Fetch keys in batch', () => {
     expect(keys[2].moduleAddress).toBe(address);
     expect(keys[2].used).toBe(true);
     expect(keys[2].vetted).toBe(true);
-  });
+  }, 30_000);
 });

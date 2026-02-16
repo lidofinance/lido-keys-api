@@ -2,7 +2,6 @@
 import { TestingModule } from '@nestjs/testing';
 import { RegistryKeyBatchFetchService, RegistryOperatorFetchService } from '..';
 import { RegistryKey, RegistryOperator } from '..';
-import { JsonRpcBatchProvider } from '@ethersproject/providers';
 
 const findKeys = (keys: RegistryKey[], operatorIndex: number, fromIndex = 0, totalAmount: number) => {
   return keys.filter((key) => key.operatorIndex === operatorIndex && key.index >= fromIndex).slice(0, totalAmount);
@@ -13,11 +12,7 @@ type Payload = {
   operators: RegistryOperator[];
 };
 
-export const registryServiceMock = (
-  moduleRef: TestingModule,
-  provider: JsonRpcBatchProvider,
-  { keys, operators }: Payload,
-) => {
+export const registryServiceMock = (moduleRef: TestingModule, { keys, operators }: Payload) => {
   const fetchBatchKey = moduleRef.get(RegistryKeyBatchFetchService);
   const fetchSigningKeysInBatchesMock = jest
     .spyOn(fetchBatchKey, 'fetchSigningKeysInBatches')

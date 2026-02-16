@@ -21,7 +21,7 @@ export class IsAddressConstraint implements ValidatorConstraintInterface {
     return isValid(value);
   }
 
-  defaultMessage(args: ValidationArguments) {
+  defaultMessage() {
     return `Each value must be a valid address`;
   }
 }

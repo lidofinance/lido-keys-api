@@ -1,5 +1,7 @@
+import { Global, Module } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { Registry__factory, REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { Registry__factory } from 'generated';
+import { REGISTRY_CONTRACT_TOKEN } from 'common/contracts';
 import { getNetwork } from '@ethersproject/networks';
 import { Interface } from '@ethersproject/abi';
 import { getDefaultProvider } from '@ethersproject/providers';
@@ -9,8 +11,7 @@ import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 describe('Keys', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
-  const CHAIN_ID = process.env.CHAIN_ID || 1;
-  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
+  const address = '0x' + '55'.repeat(20);
   let fetchService: RegistryKeyBatchFetchService;
 
   const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');
@@ -20,9 +21,19 @@ describe('Keys', () => {
   const operatorIndex = 0;
   const stakingLimit = 100;
 
+  const connectRegistry = (addr: string) => Registry__factory.connect(addr, provider);
+
+  @Global()
+  @Module({
+    providers: [{ provide: REGISTRY_CONTRACT_TOKEN, useValue: connectRegistry }],
+    exports: [REGISTRY_CONTRACT_TOKEN],
+  })
+  class MockContractsModule {}
+
   beforeEach(async () => {
     const imports = [
-      RegistryFetchModule.forFeature({ provider }),
+      MockContractsModule,
+      RegistryFetchModule.forFeature(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
     ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
