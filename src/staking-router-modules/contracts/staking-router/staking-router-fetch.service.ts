@@ -8,6 +8,10 @@ import { BlockTag } from '../interfaces';
 import { StakingRouter } from 'generated';
 import { STAKING_ROUTER_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
 
+// TODO: remove after SR v3 voting, use withdrawalCredentialsType from contract directly
+const SR_VERSION = 4;
+const DEFAULT_WITHDRAWAL_CREDENTIALS_TYPE = 1;
+
 @Injectable()
 export class StakingRouterFetchService {
   constructor(
@@ -28,6 +32,11 @@ export class StakingRouterFetchService {
     this.logger.log('Staking router module address', stakingRouterAddress);
 
     const contract = this.connectStakingRouter(stakingRouterAddress);
+
+    const contractVersion = await contract.getContractVersion({ blockTag } as any);
+
+    this.logger.log('Staking router contract version', { contractVersion: contractVersion.toNumber() });
+
     const modules = await contract.getStakingModules({ blockTag } as any);
 
     this.logger.log('Fetched staking modules', { stakingModules: modules.length, log: modules });
@@ -56,6 +65,12 @@ export class StakingRouterFetchService {
           process.exit(1);
         }
 
+        // TODO: remove after SR v3 voting, always use stakingModule.withdrawalCredentialsType
+        const withdrawalCredentialsType =
+          contractVersion.toNumber() >= SR_VERSION
+            ? stakingModule.withdrawalCredentialsType
+            : DEFAULT_WITHDRAWAL_CREDENTIALS_TYPE;
+
         return {
           moduleId: stakingModule.id,
           stakingModuleAddress: stakingModule.stakingModuleAddress.toLowerCase(),
@@ -69,7 +84,7 @@ export class StakingRouterFetchService {
           lastDepositBlock: stakingModule.lastDepositBlock.toNumber(),
           exitedValidatorsCount: stakingModule.exitedValidatorsCount.toNumber(),
           active: isActive,
-          withdrawalCredentialsType: stakingModule.withdrawalCredentialsType,
+          withdrawalCredentialsType,
         };
       }),
     );
