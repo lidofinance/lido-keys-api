@@ -1,17 +1,21 @@
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
-import { ModuleMetadata } from '@nestjs/common';
-import { getNetwork } from '@ethersproject/networks';
-import { getDefaultProvider, Provider } from '@ethersproject/providers';
+import { Global, Module, ModuleMetadata } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../../index';
+import { REGISTRY_CONTRACT_TOKEN } from 'common/contracts';
+import { KeyRegistryModule, KeyRegistryService, RegistryStorageService } from 'common/registry';
 import { MikroORM } from '@mikro-orm/core';
 import { DatabaseE2ETestingModule } from 'app';
 import { PrometheusModule } from 'common/prometheus';
 
 describe('Sync module initializing', () => {
-  const provider = getDefaultProvider('mainnet');
+  const mockConnectRegistry = jest.fn();
 
-  jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
+  @Global()
+  @Module({
+    providers: [{ provide: REGISTRY_CONTRACT_TOKEN, useValue: mockConnectRegistry }],
+    exports: [REGISTRY_CONTRACT_TOKEN],
+  })
+  class MockContractsModule {}
 
   const testModules = async (metadata: ModuleMetadata) => {
     const moduleRef = await Test.createTestingModule(metadata).compile();
@@ -28,10 +32,10 @@ describe('Sync module initializing', () => {
 
   test('forRoot', async () => {
     const imports = [
+      MockContractsModule,
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forRoot({
-        provider,
         subscribeInterval: '*/12 * * * * *',
       }),
       PrometheusModule,
@@ -41,30 +45,14 @@ describe('Sync module initializing', () => {
 
   test('forFeature', async () => {
     const imports = [
+      MockContractsModule,
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       KeyRegistryModule.forFeature({
-        provider,
         subscribeInterval: '*/12 * * * * *',
       }),
       PrometheusModule,
     ];
     await testModules({ imports });
-  });
-
-  test('forFeature + global provider', async () => {
-    const imports = [
-      DatabaseE2ETestingModule.forRoot(),
-      LoggerModule.forRoot({ transports: [nullTransport()] }),
-      KeyRegistryModule.forFeature(),
-      PrometheusModule,
-    ];
-
-    const metadata = {
-      imports,
-      providers: [{ provide: Provider, useValue: provider }],
-    };
-
-    await testModules(metadata);
   });
 });

@@ -21,7 +21,7 @@ export class IsPubkeyConstraint implements ValidatorConstraintInterface {
     return isValid(value);
   }
 
-  defaultMessage(args: ValidationArguments) {
+  defaultMessage() {
     return `Each pubkey must be a valid 0x-prefixed 48-byte hex string`;
   }
 }

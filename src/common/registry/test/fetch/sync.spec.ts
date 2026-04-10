@@ -1,17 +1,26 @@
-import { ModuleMetadata } from '@nestjs/common';
+import { Global, Module, ModuleMetadata } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getNetwork } from '@ethersproject/networks';
-import { hexZeroPad } from '@ethersproject/bytes';
-import { getDefaultProvider, Provider } from '@ethersproject/providers';
-import { RegistryFetchModule, RegistryFetchService } from '../../';
-import { LIDO_CONTRACT_TOKEN, Lido } from '@lido-nestjs/contracts';
-import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
+import { getDefaultProvider } from '@ethersproject/providers';
+import { RegistryFetchModule, RegistryFetchService } from 'common/registry';
+import { REGISTRY_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
+import { Registry } from 'generated';
 import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 describe('Sync module initializing', () => {
   const provider = getDefaultProvider(process.env.PROVIDERS_URLS);
 
   jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
+
+  const mockConnectRegistry: ContractFactoryFn<Registry> = (address: string) =>
+    ({ address, provider } as unknown as Registry);
+
+  @Global()
+  @Module({
+    providers: [{ provide: REGISTRY_CONTRACT_TOKEN, useValue: mockConnectRegistry }],
+    exports: [REGISTRY_CONTRACT_TOKEN],
+  })
+  class MockContractsModule {}
 
   const testModules = async (metadata: ModuleMetadata) => {
     const moduleRef = await Test.createTestingModule(metadata).compile();
@@ -23,7 +32,8 @@ describe('Sync module initializing', () => {
 
   test('forRoot', async () => {
     const imports = [
-      RegistryFetchModule.forRoot({ provider }),
+      MockContractsModule,
+      RegistryFetchModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
     ];
     await testModules({ imports });
@@ -31,40 +41,10 @@ describe('Sync module initializing', () => {
 
   test('forFeature', async () => {
     const imports = [
-      RegistryFetchModule.forFeature({ provider }),
+      MockContractsModule,
+      RegistryFetchModule.forFeature(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
     ];
     await testModules({ imports });
-  });
-
-  test('forFeature global provider', async () => {
-    const imports = [RegistryFetchModule.forFeature(), LoggerModule.forRoot({ transports: [nullTransport()] })];
-    const metadata = {
-      imports,
-      providers: [{ provide: Provider, useValue: provider }],
-    };
-    await testModules(metadata);
-  });
-
-  test('forFeature addresses', async () => {
-    const lidoAddress = hexZeroPad('0x01', 20);
-    const registryAddress = hexZeroPad('0x02', 20);
-
-    const imports = [
-      RegistryFetchModule.forFeature({
-        provider,
-        lidoAddress,
-        registryAddress,
-      }),
-      LoggerModule.forRoot({ transports: [nullTransport()] }),
-    ];
-
-    const moduleRef = await testModules({ imports });
-
-    const lidoContract: Lido = moduleRef.get(LIDO_CONTRACT_TOKEN);
-    expect(lidoContract.address).toBe(lidoAddress);
-
-    const registryContract: Registry = moduleRef.get(REGISTRY_CONTRACT_TOKEN);
-    expect(registryContract.address).toBe(registryAddress);
   });
 });

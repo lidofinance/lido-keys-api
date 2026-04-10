@@ -394,7 +394,7 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@ethersproject/abi@5.7.0", "@ethersproject/abi@^5.5.0", "@ethersproject/abi@^5.7.0":
+"@ethersproject/abi@5.7.0", "@ethersproject/abi@^5.7.0":
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/@ethersproject/abi/-/abi-5.7.0.tgz#b3f3e045bbbeed1af3947335c247ad625a44e449"
   integrity sha512-351ktp42TiRcYB3H1OP8yajPeAQstMW/yCFokj/AthP9bLHzQFPlOrxOcwYEDkUAICmOHljvN4K39OMTMUa9RA==
@@ -1174,16 +1174,6 @@
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/@lido-nestjs/constants/-/constants-5.3.0.tgz#a257d9aff873bc10c8be940541405342f82e610e"
   integrity sha512-8lW8DPmZ1t4t8tOs7E4eqPlWCjhN9poe3q81DtG/Nt0+AMWzx4zTmeap0DGHdeMC4QPB3vRdjb2i3E+B4aJbgA==
-
-"@lido-nestjs/contracts@9.7.0":
-  version "9.7.0"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/contracts/-/contracts-9.7.0.tgz#bdfa4e224b1f62bdc87c3492c3803911cf178966"
-  integrity sha512-RAZkK2PsvdHujjRA7s6g6iV4I7Z4iz767YCRghUtObgCg7yC7G88FVUegejbJtKq6lKEEpsoezR4LPtWcfIwoQ==
-  dependencies:
-    "@ethersproject/abi" "^5.5.0"
-    "@ethersproject/providers" "^5.5.3"
-    "@lido-nestjs/constants" "5.3.0"
-    ethers "^5.5.4"
 
 "@lido-nestjs/di@1.0.1":
   version "1.0.1"

@@ -2,24 +2,19 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { rangePromise } from '@lido-nestjs/utils';
-import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
+import { Csm } from 'generated';
+import { CSM_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
-import { Csm__factory } from 'generated';
 import { utils } from 'ethers';
 
 @Injectable()
 export class RegistryOperatorFetchService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
-    @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
+    @Inject(CSM_CONTRACT_TOKEN) private connectCsm: ContractFactoryFn<Csm>,
   ) {}
-
-  private getContract(moduleAddress: string) {
-    // TODO: pass provider instead this.contract.provider
-    return Csm__factory.connect(moduleAddress, this.contract.provider);
-  }
 
   /**
    * Exits early if relevant events are found, as they are used only as indicators for an update.
@@ -29,7 +24,7 @@ export class RegistryOperatorFetchService {
       return [];
     }
 
-    const events = await this.getContract(moduleAddress).provider.getLogs({
+    const events = await this.connectCsm(moduleAddress).provider.getLogs({
       topics: [
         [
           // KECCAK256 hash of the text bytes
@@ -56,7 +51,7 @@ export class RegistryOperatorFetchService {
 
   /** fetches number of operators */
   public async count(moduleAddress: string, overrides: CallOverrides = {}): Promise<number> {
-    const bigNumber = await this.getContract(moduleAddress).getNodeOperatorsCount(overrides as any);
+    const bigNumber = await this.connectCsm(moduleAddress).getNodeOperatorsCount(overrides as any);
     return bigNumber.toNumber();
   }
 
@@ -67,7 +62,7 @@ export class RegistryOperatorFetchService {
    * @returns used signing keys count, if error happened returns 0 (because of range error)
    */
   public async getFinalizedNodeOperatorUsedSigningKeys(moduleAddress: string, operatorIndex: number): Promise<number> {
-    const contract = this.getContract(moduleAddress);
+    const contract = this.connectCsm(moduleAddress);
     try {
       const { totalDepositedKeys } = await contract.getNodeOperator(operatorIndex, {
         blockTag: this.getFinalizedBlockTag(),
@@ -89,7 +84,7 @@ export class RegistryOperatorFetchService {
     operatorIndex: number,
     overrides: CallOverrides = {},
   ): Promise<RegistryOperator> {
-    const contract = this.getContract(moduleAddress);
+    const contract = this.connectCsm(moduleAddress);
 
     const operator = await contract.getNodeOperator(operatorIndex, overrides as any);
     const { rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys, totalVettedKeys } = operator;

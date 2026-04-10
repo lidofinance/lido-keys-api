@@ -18,6 +18,7 @@ export class StakingModuleUpdaterService {
     protected readonly executionProvider: ExecutionProviderService,
     protected readonly srModulesStorage: SRModuleStorageService,
   ) {}
+
   public async updateStakingModules(updaterPayload: UpdaterPayload): Promise<void> {
     const { prevElMeta, currElMeta, contractModules } = updaterPayload;
     const prevBlockHash = prevElMeta?.blockHash;
@@ -44,7 +45,7 @@ export class StakingModuleUpdaterService {
 
       this.logger.log(`Nonce previous value: ${prevNonce}, nonce current value: ${currNonce}`);
 
-      if (!prevBlockHash) {
+      if (!prevBlockHash || !moduleInStorage) {
         this.logger.log('No past state found, start updating', { stakingModuleAddress, currentBlockHash });
 
         await this.updateStakingModule(
@@ -132,7 +133,9 @@ export class StakingModuleUpdaterService {
         continue;
       }
 
-      this.logger.log('No changes have been detected in the module, update is not required', {
+      await this.srModulesStorage.upsert(contractModule, moduleInStorage.nonce, moduleInStorage.lastChangedBlockHash);
+
+      this.logger.log('No changes have been detected in the module, module metadata updated', {
         stakingModuleAddress,
         currentBlockHash,
         prevLastChangedBlockHash,

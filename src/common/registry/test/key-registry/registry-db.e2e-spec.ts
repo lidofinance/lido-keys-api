@@ -1,7 +1,6 @@
+import { Global, Module } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
-import { getNetwork } from '@ethersproject/networks';
-import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import {
   KeyRegistryModule,
   KeyRegistryService,
@@ -12,16 +11,28 @@ import {
 import { keys, operators } from '../fixtures/db.fixture';
 import { clearDb, compareTestKeysAndOperators } from '../testing.utils';
 import { MikroORM } from '@mikro-orm/core';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import { DatabaseE2ETestingModule } from 'app';
+import { REGISTRY_CONTRACT_TOKEN } from 'common/contracts';
+import { CSM_CONTRACT_TOKEN } from 'common/contracts';
 import { CSMKeyRegistryModule } from 'common/registry-csm';
 import { PrometheusModule } from 'common/prometheus';
 
-describe('Registry', () => {
-  const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
-  const CHAIN_ID = process.env.CHAIN_ID || 1;
-  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
+const address = '0x' + 'aa'.repeat(20);
 
+const mockConnectRegistry = jest.fn();
+const mockConnectCsm = jest.fn();
+
+@Global()
+@Module({
+  providers: [
+    { provide: REGISTRY_CONTRACT_TOKEN, useValue: mockConnectRegistry },
+    { provide: CSM_CONTRACT_TOKEN, useValue: mockConnectCsm },
+  ],
+  exports: [REGISTRY_CONTRACT_TOKEN, CSM_CONTRACT_TOKEN],
+})
+class MockContractsModule {}
+
+describe('Registry', () => {
   const keysWithModuleAddress = keys.map((key) => {
     return { ...key, moduleAddress: address };
   });
@@ -37,16 +48,13 @@ describe('Registry', () => {
   let operatorStorageService: RegistryOperatorStorageService;
   let mikroOrm: MikroORM;
 
-  const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');
-
-  jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
-
   beforeEach(async () => {
     const imports = [
+      MockContractsModule,
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
-      KeyRegistryModule.forFeature({ provider }),
-      CSMKeyRegistryModule.forFeature({ provider }),
+      KeyRegistryModule.forFeature(),
+      CSMKeyRegistryModule.forFeature(),
       PrometheusModule,
     ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
@@ -62,12 +70,10 @@ describe('Registry', () => {
     await generator.clearDatabase();
 
     await keyStorageService.save(keysWithModuleAddress);
-
     await operatorStorageService.save(operatorsWithModuleAddress);
   });
 
   afterEach(async () => {
-    mockCall.mockReset();
     await clearDb(mikroOrm);
     await registryStorageService.onModuleDestroy();
   });

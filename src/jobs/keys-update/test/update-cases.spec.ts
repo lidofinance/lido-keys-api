@@ -204,4 +204,61 @@ describe('update cases', () => {
     expect(mockElUpdate).toBeCalledTimes(1);
     expect(mockElUpdate).toHaveBeenCalledWith(expect.objectContaining({ lastChangedBlockHash: '0x2' }));
   });
+
+  it('Module metadata updated when no conditions triggered', async () => {
+    const moduleInStorageMock = {
+      nonce: 1,
+      lastChangedBlockHash: '0xPREV',
+      withdrawalCredentialsType: 1,
+    };
+
+    jest.spyOn(sRModuleStorageService, 'findOneById').mockResolvedValue(moduleInStorageMock as any);
+
+    jest.spyOn(stakingRouterService, 'getStakingRouterModuleImpl').mockReturnValue({
+      getCurrentNonce: jest.fn().mockResolvedValue(1),
+      operatorsWereChanged: jest.fn().mockResolvedValue(false),
+    } as any);
+
+    jest
+      .spyOn(executionProviderService, 'getFullBlock')
+      .mockResolvedValueOnce({ number: 3, hash: '0x3', timestamp: 1, parentHash: '0x2' } as any)
+      .mockResolvedValueOnce({ number: 2, hash: '0x2', timestamp: 1, parentHash: '0x1' } as any);
+
+    const mockUpdateStakingModule = jest.spyOn(updaterService, 'updateStakingModule');
+    const mockUpsert = jest.spyOn(sRModuleStorageService, 'upsert');
+    const mockElUpdate = jest.spyOn(elMetaStorageService, 'update').mockImplementation();
+
+    const contractModuleWithNewWCType = { ...stakingModuleFixture, withdrawalCredentialsType: 2 };
+
+    await updaterService.updateStakingModules({
+      currElMeta: { number: 3, hash: '0x3', timestamp: 1 },
+      prevElMeta: { blockNumber: 2, blockHash: '0x2', timestamp: 1, lastChangedBlockHash: '0xPREV' },
+      contractModules: [contractModuleWithNewWCType],
+    });
+
+    expect(mockUpdateStakingModule).not.toHaveBeenCalled();
+    expect(mockUpsert).toHaveBeenCalledWith(contractModuleWithNewWCType, 1, '0xPREV');
+    expect(mockElUpdate).toHaveBeenCalledWith(expect.objectContaining({ lastChangedBlockHash: '0xPREV' }));
+  });
+
+  it('New module not in storage triggers full update', async () => {
+    jest.spyOn(sRModuleStorageService, 'findOneById').mockResolvedValue(null);
+
+    const mockUpdate = jest
+      .spyOn(updaterService, 'updateStakingModule')
+      .mockImplementation(async (updaterState: UpdaterState, _a, _b, _c, _d, currBh: string) => {
+        updaterState.lastChangedBlockHash = currBh;
+      });
+    const mockElUpdate = jest.spyOn(elMetaStorageService, 'update').mockImplementation();
+
+    await updaterService.updateStakingModules({
+      currElMeta: { number: 3, hash: '0x3', timestamp: 1 },
+      prevElMeta: { blockNumber: 2, blockHash: '0x2', timestamp: 1, lastChangedBlockHash: '0xPREV' },
+      contractModules: [stakingModuleFixture],
+    });
+
+    expect(mockUpdate).toHaveBeenCalledTimes(1);
+    expect(loggerService.log.mock.calls[1][0]).toBe('No past state found, start updating');
+    expect(mockElUpdate).toHaveBeenCalledWith(expect.objectContaining({ lastChangedBlockHash: '0x3' }));
+  });
 });

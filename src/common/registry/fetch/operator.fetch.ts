@@ -2,7 +2,8 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { rangePromise } from '@lido-nestjs/utils';
-import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
+import { Registry } from 'generated';
+import { REGISTRY_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
@@ -11,12 +12,8 @@ import { utils } from 'ethers';
 export class RegistryOperatorFetchService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
-    @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
+    @Inject(REGISTRY_CONTRACT_TOKEN) private connectRegistry: ContractFactoryFn<Registry>,
   ) {}
-
-  private getContract(moduleAddress: string) {
-    return this.contract.attach(moduleAddress);
-  }
 
   /**
    * Exits early if relevant events are found, as they are used only as indicators for an update.
@@ -26,7 +23,7 @@ export class RegistryOperatorFetchService {
       return [];
     }
 
-    const contract = await this.getContract(moduleAddress);
+    const contract = this.connectRegistry(moduleAddress);
 
     // https://github.com/lidofinance/core/blob/master/contracts/0.4.24/nos/NodeOperatorsRegistry.sol#L39
     // https://docs.ethers.org/v5/api/providers/provider/#Provider-getLogs
@@ -62,7 +59,7 @@ export class RegistryOperatorFetchService {
 
   /** fetches number of operators */
   public async count(moduleAddress: string, overrides: CallOverrides = {}): Promise<number> {
-    const bigNumber = await this.getContract(moduleAddress).getNodeOperatorsCount(overrides as any);
+    const bigNumber = await this.connectRegistry(moduleAddress).getNodeOperatorsCount(overrides as any);
     return bigNumber.toNumber();
   }
 
@@ -74,7 +71,7 @@ export class RegistryOperatorFetchService {
    */
   public async getFinalizedNodeOperatorUsedSigningKeys(moduleAddress: string, operatorIndex: number): Promise<number> {
     const fullInfo = true;
-    const contract = this.getContract(moduleAddress);
+    const contract = this.connectRegistry(moduleAddress);
     try {
       const { totalDepositedValidators } = await contract.getNodeOperator(operatorIndex, fullInfo, {
         blockTag: this.getFinalizedBlockTag(),
@@ -97,7 +94,7 @@ export class RegistryOperatorFetchService {
     overrides: CallOverrides = {},
   ): Promise<RegistryOperator> {
     const fullInfo = true;
-    const contract = this.getContract(moduleAddress);
+    const contract = this.connectRegistry(moduleAddress);
 
     const operator = await contract.getNodeOperator(operatorIndex, fullInfo, overrides as any);
 

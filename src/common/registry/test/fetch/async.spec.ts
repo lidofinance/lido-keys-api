@@ -1,9 +1,11 @@
-import { DynamicModule, Injectable, Module } from '@nestjs/common';
+import { DynamicModule, Global, Injectable, Module } from '@nestjs/common';
 import { ModuleMetadata } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getNetwork } from '@ethersproject/networks';
 import { getDefaultProvider, BaseProvider } from '@ethersproject/providers';
-import { RegistryFetchModule, RegistryFetchService } from '../../';
+import { RegistryFetchModule, RegistryFetchService } from 'common/registry';
+import { Registry__factory } from 'generated';
+import { REGISTRY_CONTRACT_TOKEN } from 'common/contracts';
 import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 @Injectable()
@@ -15,9 +17,20 @@ class TestService {
     jest.spyOn(this.provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
   }
 }
+
+@Global()
 @Module({
-  providers: [TestService],
-  exports: [TestService],
+  providers: [
+    TestService,
+    {
+      provide: REGISTRY_CONTRACT_TOKEN,
+      useFactory: (testService: TestService) => {
+        return (address: string) => Registry__factory.connect(address, testService.provider);
+      },
+      inject: [TestService],
+    },
+  ],
+  exports: [TestService, REGISTRY_CONTRACT_TOKEN],
 })
 class TestModule {
   static forRoot(): DynamicModule {
@@ -41,10 +54,9 @@ describe('Async module initializing', () => {
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       TestModule.forRoot(),
       RegistryFetchModule.forRootAsync({
-        async useFactory(testService: TestService) {
-          return { provider: testService.provider };
+        async useFactory() {
+          return {};
         },
-        inject: [TestService],
       }),
     ]);
   });
@@ -54,10 +66,9 @@ describe('Async module initializing', () => {
       LoggerModule.forRoot({ transports: [nullTransport()] }),
       TestModule.forRoot(),
       RegistryFetchModule.forFeatureAsync({
-        async useFactory(testService: TestService) {
-          return { provider: testService.provider };
+        async useFactory() {
+          return {};
         },
-        inject: [TestService],
       }),
     ]);
   });

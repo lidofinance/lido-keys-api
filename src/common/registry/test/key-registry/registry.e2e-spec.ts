@@ -1,35 +1,39 @@
+import { Global, Module } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
-import { getNetwork } from '@ethersproject/networks';
-import { JsonRpcBatchProvider } from '@ethersproject/providers';
 import { key } from '../fixtures/key.fixture';
 import { RegistryKeyStorageService, KeyRegistryModule, KeyRegistryService, RegistryStorageService } from '../..';
 import { MikroORM } from '@mikro-orm/core';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
+import { REGISTRY_CONTRACT_TOKEN } from 'common/contracts';
 import { DatabaseE2ETestingModule } from 'app';
 import { PrometheusModule } from 'common/prometheus';
 
+const address = '0x' + 'aa'.repeat(20);
+
+const mockConnectRegistry = jest.fn();
+
+@Global()
+@Module({
+  providers: [{ provide: REGISTRY_CONTRACT_TOKEN, useValue: mockConnectRegistry }],
+  exports: [REGISTRY_CONTRACT_TOKEN],
+})
+class MockContractsModule {}
+
 describe('Key', () => {
-  const CHAIN_ID = process.env.CHAIN_ID || 1;
-  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
-  const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
-  let validatorService: KeyRegistryService;
+  let registryService: KeyRegistryService;
   let keyStorage: RegistryKeyStorageService;
   let storageService: RegistryStorageService;
 
-  const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');
-
-  jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
-
   beforeEach(async () => {
     const imports = [
+      MockContractsModule,
       DatabaseE2ETestingModule.forRoot(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
-      KeyRegistryModule.forFeature({ provider }),
+      KeyRegistryModule.forFeature(),
       PrometheusModule,
     ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
-    validatorService = moduleRef.get(KeyRegistryService);
+    registryService = moduleRef.get(KeyRegistryService);
     keyStorage = moduleRef.get(RegistryKeyStorageService);
     storageService = moduleRef.get(RegistryStorageService);
 
@@ -39,27 +43,26 @@ describe('Key', () => {
   });
 
   afterEach(async () => {
-    mockCall.mockReset();
     await storageService.onModuleDestroy();
   });
 
   test('getToIndex', async () => {
     const expected = 10;
 
-    expect(validatorService.getToIndex({ totalSigningKeys: expected } as any)).toBe(expected);
+    expect(registryService.getToIndex({ totalSigningKeys: expected } as any)).toBe(expected);
   });
 
   test('getModuleKeysFromStorage', async () => {
     const expected = [{ index: 0, operatorIndex: 0, moduleAddress: address, ...key, used: false, vetted: true }];
     jest.spyOn(keyStorage, 'findAll').mockImplementation(async () => expected);
 
-    await expect(validatorService.getModuleKeysFromStorage(address)).resolves.toBe(expected);
+    await expect(registryService.getModuleKeysFromStorage(address)).resolves.toBe(expected);
   });
 
   test('getUsedKeysFromStorage', async () => {
     const expected = [{ index: 0, operatorIndex: 0, moduleAddress: address, ...key, used: true, vetted: true }];
     jest.spyOn(keyStorage, 'findUsed').mockImplementation(async () => expected);
 
-    await expect(validatorService.getUsedKeysFromStorage(address)).resolves.toBe(expected);
+    await expect(registryService.getUsedKeysFromStorage(address)).resolves.toBe(expected);
   });
 });
