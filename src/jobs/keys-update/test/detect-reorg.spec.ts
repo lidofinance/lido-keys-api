@@ -4,6 +4,7 @@ import { ExecutionProviderService } from 'common/execution-provider';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 import { ElMetaStorageService } from 'storage/el-meta.storage';
 import { SRModuleStorageService } from 'storage/sr-module.storage';
+import { ModuleTypeRegistry } from 'common/registry-csm/fetch/operator-name-resolver';
 import { UpdaterState } from '../keys-update.interfaces';
 import { StakingModuleUpdaterService } from '../staking-module-updater.service';
 
@@ -49,6 +50,7 @@ describe('detect reorg', () => {
             upsert: jest.fn(),
           },
         },
+        ModuleTypeRegistry,
         StakingModuleUpdaterService,
       ],
     }).compile();
