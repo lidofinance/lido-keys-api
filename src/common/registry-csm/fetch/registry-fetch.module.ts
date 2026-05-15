@@ -8,6 +8,7 @@ import { RegistryOperatorFetchService } from './operator.fetch';
 import { RegistryMetaFetchService } from './meta.fetch';
 import { RegistryKeyBatchFetchService } from './key-batch.fetch';
 import { RegistryFetchService } from './registry-fetch.service';
+import { ModuleTypeRegistry } from './operator-name-resolver';
 
 @Module({
   providers: [
@@ -15,8 +16,15 @@ import { RegistryFetchService } from './registry-fetch.service';
     RegistryOperatorFetchService,
     RegistryMetaFetchService,
     RegistryKeyBatchFetchService,
+    ModuleTypeRegistry,
   ],
-  exports: [RegistryFetchService, RegistryOperatorFetchService, RegistryMetaFetchService, RegistryKeyBatchFetchService],
+  exports: [
+    RegistryFetchService,
+    RegistryOperatorFetchService,
+    RegistryMetaFetchService,
+    RegistryKeyBatchFetchService,
+    ModuleTypeRegistry,
+  ],
 })
 export class RegistryFetchModule {
   static forRoot(options?: RegistryFetchModuleSyncOptions): DynamicModule {

@@ -1,0 +1,506 @@
+[
+  {
+    "inputs": [{ "internalType": "address", "name": "module", "type": "address" }],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  { "inputs": [], "name": "AccessControlBadConfirmation", "type": "error" },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "account", "type": "address" },
+      { "internalType": "bytes32", "name": "neededRole", "type": "bytes32" }
+    ],
+    "name": "AccessControlUnauthorizedAccount",
+    "type": "error"
+  },
+  { "inputs": [], "name": "AlreadyUsedAsExternalOperator", "type": "error" },
+  { "inputs": [], "name": "InvalidBondCurveWeight", "type": "error" },
+  { "inputs": [], "name": "InvalidExternalOperatorDataEntry", "type": "error" },
+  { "inputs": [], "name": "InvalidInitialization", "type": "error" },
+  { "inputs": [], "name": "InvalidOperatorGroup", "type": "error" },
+  { "inputs": [], "name": "InvalidOperatorGroupId", "type": "error" },
+  { "inputs": [], "name": "InvalidSubNodeOperatorShares", "type": "error" },
+  { "inputs": [], "name": "ModuleAddressNotCached", "type": "error" },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" }],
+    "name": "NodeOperatorAlreadyInGroup",
+    "type": "error"
+  },
+  { "inputs": [], "name": "NodeOperatorDoesNotExist", "type": "error" },
+  { "inputs": [], "name": "NotInitializing", "type": "error" },
+  { "inputs": [], "name": "OperatorDescriptionTooLong", "type": "error" },
+  { "inputs": [], "name": "OperatorNameTooLong", "type": "error" },
+  { "inputs": [], "name": "OwnerEditsRestricted", "type": "error" },
+  { "inputs": [], "name": "SameBondCurveWeight", "type": "error" },
+  { "inputs": [], "name": "SenderIsNotEligible", "type": "error" },
+  { "inputs": [], "name": "ZeroAdminAddress", "type": "error" },
+  { "inputs": [], "name": "ZeroModuleAddress", "type": "error" },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "curveId", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "weight", "type": "uint256" }
+    ],
+    "name": "BondCurveWeightSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [{ "indexed": false, "internalType": "uint64", "name": "version", "type": "uint64" }],
+    "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "oldWeight", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "newWeight", "type": "uint256" }
+    ],
+    "name": "NodeOperatorEffectiveWeightChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [{ "indexed": true, "internalType": "uint256", "name": "groupId", "type": "uint256" }],
+    "name": "OperatorGroupCleared",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "groupId", "type": "uint256" },
+      {
+        "components": [
+          {
+            "components": [
+              { "internalType": "uint64", "name": "nodeOperatorId", "type": "uint64" },
+              { "internalType": "uint16", "name": "share", "type": "uint16" }
+            ],
+            "internalType": "struct IMetaRegistry.SubNodeOperator[]",
+            "name": "subNodeOperators",
+            "type": "tuple[]"
+          },
+          {
+            "components": [{ "internalType": "bytes", "name": "data", "type": "bytes" }],
+            "internalType": "struct IMetaRegistry.ExternalOperator[]",
+            "name": "externalOperators",
+            "type": "tuple[]"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct IMetaRegistry.OperatorGroup",
+        "name": "groupInfo",
+        "type": "tuple"
+      }
+    ],
+    "name": "OperatorGroupCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "groupId", "type": "uint256" },
+      {
+        "components": [
+          {
+            "components": [
+              { "internalType": "uint64", "name": "nodeOperatorId", "type": "uint64" },
+              { "internalType": "uint16", "name": "share", "type": "uint16" }
+            ],
+            "internalType": "struct IMetaRegistry.SubNodeOperator[]",
+            "name": "subNodeOperators",
+            "type": "tuple[]"
+          },
+          {
+            "components": [{ "internalType": "bytes", "name": "data", "type": "bytes" }],
+            "internalType": "struct IMetaRegistry.ExternalOperator[]",
+            "name": "externalOperators",
+            "type": "tuple[]"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct IMetaRegistry.OperatorGroup",
+        "name": "groupInfo",
+        "type": "tuple"
+      }
+    ],
+    "name": "OperatorGroupUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" },
+      {
+        "components": [
+          { "internalType": "string", "name": "name", "type": "string" },
+          { "internalType": "string", "name": "description", "type": "string" },
+          { "internalType": "bool", "name": "ownerEditsRestricted", "type": "bool" }
+        ],
+        "indexed": false,
+        "internalType": "struct OperatorMetadata",
+        "name": "metadata",
+        "type": "tuple"
+      }
+    ],
+    "name": "OperatorMetadataSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "bytes32", "name": "role", "type": "bytes32" },
+      { "indexed": true, "internalType": "bytes32", "name": "previousAdminRole", "type": "bytes32" },
+      { "indexed": true, "internalType": "bytes32", "name": "newAdminRole", "type": "bytes32" }
+    ],
+    "name": "RoleAdminChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "bytes32", "name": "role", "type": "bytes32" },
+      { "indexed": true, "internalType": "address", "name": "account", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "sender", "type": "address" }
+    ],
+    "name": "RoleGranted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "bytes32", "name": "role", "type": "bytes32" },
+      { "indexed": true, "internalType": "address", "name": "account", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "sender", "type": "address" }
+    ],
+    "name": "RoleRevoked",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "ACCOUNTING",
+    "outputs": [{ "internalType": "contract IAccounting", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "DEFAULT_ADMIN_ROLE",
+    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MANAGE_OPERATOR_GROUPS_ROLE",
+    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MODULE",
+    "outputs": [{ "internalType": "contract ICuratedModule", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "NO_GROUP_ID",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "SET_BOND_CURVE_WEIGHT_ROLE",
+    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "SET_OPERATOR_INFO_ROLE",
+    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "STAKING_ROUTER",
+    "outputs": [{ "internalType": "contract IStakingRouter", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "groupId", "type": "uint256" },
+      {
+        "components": [
+          {
+            "components": [
+              { "internalType": "uint64", "name": "nodeOperatorId", "type": "uint64" },
+              { "internalType": "uint16", "name": "share", "type": "uint16" }
+            ],
+            "internalType": "struct IMetaRegistry.SubNodeOperator[]",
+            "name": "subNodeOperators",
+            "type": "tuple[]"
+          },
+          {
+            "components": [{ "internalType": "bytes", "name": "data", "type": "bytes" }],
+            "internalType": "struct IMetaRegistry.ExternalOperator[]",
+            "name": "externalOperators",
+            "type": "tuple[]"
+          }
+        ],
+        "internalType": "struct IMetaRegistry.OperatorGroup",
+        "name": "groupInfo",
+        "type": "tuple"
+      }
+    ],
+    "name": "createOrUpdateOperatorGroup",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "curveId", "type": "uint256" }],
+    "name": "getBondCurveWeight",
+    "outputs": [{ "internalType": "uint256", "name": "weight", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [{ "internalType": "bytes", "name": "data", "type": "bytes" }],
+        "internalType": "struct IMetaRegistry.ExternalOperator",
+        "name": "op",
+        "type": "tuple"
+      }
+    ],
+    "name": "getExternalOperatorGroupId",
+    "outputs": [{ "internalType": "uint256", "name": "operatorGroupId", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" }],
+    "name": "getNodeOperatorGroupId",
+    "outputs": [{ "internalType": "uint256", "name": "operatorGroupId", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "noId", "type": "uint256" }],
+    "name": "getNodeOperatorWeight",
+    "outputs": [{ "internalType": "uint256", "name": "weight", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "noId", "type": "uint256" }],
+    "name": "getNodeOperatorWeightAndExternalStake",
+    "outputs": [
+      { "internalType": "uint256", "name": "weight", "type": "uint256" },
+      { "internalType": "uint256", "name": "externalStake", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "groupId", "type": "uint256" }],
+    "name": "getOperatorGroup",
+    "outputs": [
+      {
+        "components": [
+          {
+            "components": [
+              { "internalType": "uint64", "name": "nodeOperatorId", "type": "uint64" },
+              { "internalType": "uint16", "name": "share", "type": "uint16" }
+            ],
+            "internalType": "struct IMetaRegistry.SubNodeOperator[]",
+            "name": "subNodeOperators",
+            "type": "tuple[]"
+          },
+          {
+            "components": [{ "internalType": "bytes", "name": "data", "type": "bytes" }],
+            "internalType": "struct IMetaRegistry.ExternalOperator[]",
+            "name": "externalOperators",
+            "type": "tuple[]"
+          }
+        ],
+        "internalType": "struct IMetaRegistry.OperatorGroup",
+        "name": "groupInfo",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getOperatorGroupsCount",
+    "outputs": [{ "internalType": "uint256", "name": "count", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" }],
+    "name": "getOperatorMetadata",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "string", "name": "name", "type": "string" },
+          { "internalType": "string", "name": "description", "type": "string" },
+          { "internalType": "bool", "name": "ownerEditsRestricted", "type": "bool" }
+        ],
+        "internalType": "struct OperatorMetadata",
+        "name": "metadata",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256[]", "name": "nodeOperatorIds", "type": "uint256[]" }],
+    "name": "getOperatorWeights",
+    "outputs": [{ "internalType": "uint256[]", "name": "operatorWeights", "type": "uint256[]" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "role", "type": "bytes32" }],
+    "name": "getRoleAdmin",
+    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
+      { "internalType": "uint256", "name": "index", "type": "uint256" }
+    ],
+    "name": "getRoleMember",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "role", "type": "bytes32" }],
+    "name": "getRoleMemberCount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "role", "type": "bytes32" }],
+    "name": "getRoleMembers",
+    "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
+      { "internalType": "address", "name": "account", "type": "address" }
+    ],
+    "name": "grantRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
+      { "internalType": "address", "name": "account", "type": "address" }
+    ],
+    "name": "hasRole",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "admin", "type": "address" }],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" }],
+    "name": "refreshOperatorWeight",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
+      { "internalType": "address", "name": "callerConfirmation", "type": "address" }
+    ],
+    "name": "renounceRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
+      { "internalType": "address", "name": "account", "type": "address" }
+    ],
+    "name": "revokeRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "curveId", "type": "uint256" },
+      { "internalType": "uint256", "name": "weight", "type": "uint256" }
+    ],
+    "name": "setBondCurveWeight",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" },
+      {
+        "components": [
+          { "internalType": "string", "name": "name", "type": "string" },
+          { "internalType": "string", "name": "description", "type": "string" },
+          { "internalType": "bool", "name": "ownerEditsRestricted", "type": "bool" }
+        ],
+        "internalType": "struct OperatorMetadata",
+        "name": "metadata",
+        "type": "tuple"
+      }
+    ],
+    "name": "setOperatorMetadataAsAdmin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" },
+      { "internalType": "string", "name": "name", "type": "string" },
+      { "internalType": "string", "name": "description", "type": "string" }
+    ],
+    "name": "setOperatorMetadataAsOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" }],
+    "name": "supportsInterface",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
