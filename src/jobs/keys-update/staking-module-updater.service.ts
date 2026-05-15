@@ -6,7 +6,7 @@ import { ElMetaStorageService } from 'storage/el-meta.storage';
 import { ExecutionProviderService } from 'common/execution-provider';
 import { SRModuleStorageService } from 'storage/sr-module.storage';
 import { StakingModule, StakingModuleInterface } from 'staking-router-modules/interfaces/staking-module.interface';
-import { ModuleTypeRegistry } from 'common/registry-csm/fetch/operator-name-resolver';
+import { ModuleTypeRegistry } from 'common/module-type-registry';
 import { UpdaterPayload, UpdaterState } from './keys-update.interfaces';
 import { MAX_BLOCKS_OVERLAP } from './keys-update.constants';
 

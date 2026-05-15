@@ -7,11 +7,8 @@ import { CSM_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
-import {
-  ModuleTypeRegistry,
-  OPERATOR_NAME_RESOLVERS_TOKEN,
-  OperatorNameResolversConfig,
-} from './operator-name-resolver';
+import { OPERATOR_NAME_RESOLVERS_TOKEN, OperatorNameResolversConfig } from './operator-name-resolver';
+import { ModuleTypeRegistry } from 'common/module-type-registry';
 import { utils } from 'ethers';
 
 @Injectable()

@@ -8,7 +8,12 @@ import { RegistryOperatorFetchService } from './operator.fetch';
 import { RegistryMetaFetchService } from './meta.fetch';
 import { RegistryKeyBatchFetchService } from './key-batch.fetch';
 import { RegistryFetchService } from './registry-fetch.service';
-import { ModuleTypeRegistry } from './operator-name-resolver';
+import {
+  CsmStaticNameResolver,
+  MetaRegistryNameResolver,
+  OPERATOR_NAME_RESOLVERS_TOKEN,
+  OperatorNameResolversConfig,
+} from './operator-name-resolver';
 
 @Module({
   providers: [
@@ -16,14 +21,28 @@ import { ModuleTypeRegistry } from './operator-name-resolver';
     RegistryOperatorFetchService,
     RegistryMetaFetchService,
     RegistryKeyBatchFetchService,
-    ModuleTypeRegistry,
+    CsmStaticNameResolver,
+    MetaRegistryNameResolver,
+    {
+      provide: OPERATOR_NAME_RESOLVERS_TOKEN,
+      useFactory: (
+        csm: CsmStaticNameResolver,
+        meta: MetaRegistryNameResolver,
+      ): OperatorNameResolversConfig => ({
+        // Keys match values of STAKING_MODULE_TYPE enum in staking-router-modules/constants.ts.
+        // String literals are used here to avoid cross-layer import of the enum into common/.
+        'community-onchain-v1': csm,
+        'curated-onchain-v2': meta,
+      }),
+      inject: [CsmStaticNameResolver, MetaRegistryNameResolver],
+    },
   ],
   exports: [
     RegistryFetchService,
     RegistryOperatorFetchService,
     RegistryMetaFetchService,
     RegistryKeyBatchFetchService,
-    ModuleTypeRegistry,
+    OPERATOR_NAME_RESOLVERS_TOKEN,
   ],
 })
 export class RegistryFetchModule {

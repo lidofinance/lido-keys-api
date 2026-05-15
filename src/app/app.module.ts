@@ -18,6 +18,7 @@ import { KeyRegistryModule } from '../common/registry';
 import { StakingRouterModule } from '../staking-router-modules';
 import { CSMKeyRegistryModule } from 'common/registry-csm';
 import { ContractsModule } from '../common/contracts';
+import { ModuleTypeRegistryModule } from '../common/module-type-registry';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ContractsModule } from '../common/contracts';
     ConfigModule,
     ExecutionProviderModule,
     ContractsModule,
+    ModuleTypeRegistryModule,
     ConsensusProviderModule,
     MikroOrmModule.forRootAsync({
       async useFactory(configService: ConfigService) {

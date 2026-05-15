@@ -4,7 +4,7 @@ import { ExecutionProviderService } from 'common/execution-provider';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 import { ElMetaStorageService } from 'storage/el-meta.storage';
 import { SRModuleStorageService } from 'storage/sr-module.storage';
-import { ModuleTypeRegistry } from 'common/registry-csm/fetch/operator-name-resolver';
+import { ModuleTypeRegistry } from 'common/module-type-registry';
 import { stakingModuleFixture, stakingModuleFixtures } from './keys-update.fixtures';
 import { StakingModuleUpdaterService } from '../staking-module-updater.service';
 import { UpdaterState } from '../keys-update.interfaces';
