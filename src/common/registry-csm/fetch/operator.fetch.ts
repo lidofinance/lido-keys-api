@@ -7,6 +7,8 @@ import { CSM_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
+import { OPERATOR_NAME_RESOLVERS_TOKEN, OperatorNameResolversConfig } from './operator-name-resolver';
+import { ModuleTypeRegistry } from 'common/module-type-registry';
 import { utils } from 'ethers';
 
 @Injectable()
@@ -14,7 +16,42 @@ export class RegistryOperatorFetchService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
     @Inject(CSM_CONTRACT_TOKEN) private connectCsm: ContractFactoryFn<Csm>,
+    @Inject(OPERATOR_NAME_RESOLVERS_TOKEN) private resolvers: OperatorNameResolversConfig,
+    private readonly moduleTypeRegistry: ModuleTypeRegistry,
   ) {}
+
+  private async resolveOperatorName(
+    moduleAddress: string,
+    operatorIndex: number,
+    overrides: CallOverrides,
+  ): Promise<string> {
+    const type = this.moduleTypeRegistry.get(moduleAddress);
+    if (!type) {
+      this.logger.error('Module type is not warmed up in ModuleTypeRegistry', {
+        moduleAddress,
+        operatorIndex,
+      });
+      throw new Error(
+        `ModuleTypeRegistry has no entry for ${moduleAddress}. ` +
+          `It must be populated before calling operator fetch.`,
+      );
+    }
+
+    const resolver = this.resolvers[type];
+    if (!resolver) {
+      this.logger.error('No operator name resolver configured for module type', {
+        moduleAddress,
+        moduleType: type,
+        supportedTypes: Object.keys(this.resolvers),
+      });
+      throw new Error(
+        `No operator name resolver for module type "${type}" at ${moduleAddress}. ` +
+          `CSM operator fetch supports only COMMUNITY_ONCHAIN_V1 and CURATED_ONCHAIN_V2.`,
+      );
+    }
+
+    return resolver.resolve(moduleAddress, operatorIndex, overrides);
+  }
 
   /**
    * Exits early if relevant events are found, as they are used only as indicators for an update.
@@ -95,11 +132,12 @@ export class RegistryOperatorFetchService {
     const active = true;
 
     const finalizedUsedSigningKeys = await this.getFinalizedNodeOperatorUsedSigningKeys(moduleAddress, operatorIndex);
+    const name = await this.resolveOperatorName(moduleAddress, operatorIndex, overrides);
 
     return {
       index: operatorIndex,
       active,
-      name: `CSM Operator ${operatorIndex}`,
+      name,
       rewardAddress,
       stakingLimit: totalVettedKeys,
       stoppedValidators: totalExitedKeys,

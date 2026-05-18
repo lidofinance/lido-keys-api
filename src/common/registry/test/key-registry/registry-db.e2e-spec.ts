@@ -13,22 +13,27 @@ import { clearDb, compareTestKeysAndOperators } from '../testing.utils';
 import { MikroORM } from '@mikro-orm/core';
 import { DatabaseE2ETestingModule } from 'app';
 import { REGISTRY_CONTRACT_TOKEN } from 'common/contracts';
-import { CSM_CONTRACT_TOKEN } from 'common/contracts';
+import { CSM_CONTRACT_TOKEN, CMV2_CONTRACT_TOKEN, META_REGISTRY_CONTRACT_TOKEN } from 'common/contracts';
 import { CSMKeyRegistryModule } from 'common/registry-csm';
 import { PrometheusModule } from 'common/prometheus';
+import { ModuleTypeRegistryModule } from 'common/module-type-registry';
 
 const address = '0x' + 'aa'.repeat(20);
 
 const mockConnectRegistry = jest.fn();
 const mockConnectCsm = jest.fn();
+const mockConnectCmv2 = jest.fn();
+const mockConnectMetaRegistry = jest.fn();
 
 @Global()
 @Module({
   providers: [
     { provide: REGISTRY_CONTRACT_TOKEN, useValue: mockConnectRegistry },
     { provide: CSM_CONTRACT_TOKEN, useValue: mockConnectCsm },
+    { provide: CMV2_CONTRACT_TOKEN, useValue: mockConnectCmv2 },
+    { provide: META_REGISTRY_CONTRACT_TOKEN, useValue: mockConnectMetaRegistry },
   ],
-  exports: [REGISTRY_CONTRACT_TOKEN, CSM_CONTRACT_TOKEN],
+  exports: [REGISTRY_CONTRACT_TOKEN, CSM_CONTRACT_TOKEN, CMV2_CONTRACT_TOKEN, META_REGISTRY_CONTRACT_TOKEN],
 })
 class MockContractsModule {}
 
@@ -56,6 +61,7 @@ describe('Registry', () => {
       KeyRegistryModule.forFeature(),
       CSMKeyRegistryModule.forFeature(),
       PrometheusModule,
+      ModuleTypeRegistryModule,
     ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
     registryService = moduleRef.get(KeyRegistryService);
