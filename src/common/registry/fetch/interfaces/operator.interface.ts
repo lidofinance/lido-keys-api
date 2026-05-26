@@ -9,4 +9,5 @@ export interface RegistryOperator {
   usedSigningKeys: number;
   moduleAddress: string;
   finalizedUsedSigningKeys: number;
+  depositableValidatorsCount: number;
 }

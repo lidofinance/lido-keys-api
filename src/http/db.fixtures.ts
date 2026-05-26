@@ -259,6 +259,7 @@ export const operatorOneCurated: RegistryOperator = {
   totalSigningKeys: 3,
   moduleAddress: curatedModule.stakingModuleAddress,
   finalizedUsedSigningKeys: 2,
+  depositableValidatorsCount: 1,
 };
 
 export const operatorTwoCurated: RegistryOperator = {
@@ -272,6 +273,7 @@ export const operatorTwoCurated: RegistryOperator = {
   totalSigningKeys: 3,
   moduleAddress: curatedModule.stakingModuleAddress,
   finalizedUsedSigningKeys: 2,
+  depositableValidatorsCount: 1,
 };
 
 export const operatorOneDvt: RegistryOperator = {
@@ -285,6 +287,7 @@ export const operatorOneDvt: RegistryOperator = {
   totalSigningKeys: 3,
   moduleAddress: dvtModule.stakingModuleAddress,
   finalizedUsedSigningKeys: 2,
+  depositableValidatorsCount: 1,
 };
 
 export const operatorTwoDvt: RegistryOperator = {
@@ -298,6 +301,7 @@ export const operatorTwoDvt: RegistryOperator = {
   totalSigningKeys: 3,
   moduleAddress: dvtModule.stakingModuleAddress,
   finalizedUsedSigningKeys: 2,
+  depositableValidatorsCount: 1,
 };
 
 export const operators = [operatorOneCurated, operatorTwoCurated, operatorOneDvt, operatorTwoDvt];

@@ -123,16 +123,19 @@ export class RegistryOperatorFetchService {
   ): Promise<RegistryOperator> {
     const contract = this.connectCsm(moduleAddress);
 
-    const operator = await contract.getNodeOperator(operatorIndex, overrides as any);
+    const [operator, summary, finalizedUsedSigningKeys, name] = await Promise.all([
+      contract.getNodeOperator(operatorIndex, overrides as any),
+      contract.getNodeOperatorSummary(operatorIndex, overrides as any),
+      this.getFinalizedNodeOperatorUsedSigningKeys(moduleAddress, operatorIndex),
+      this.resolveOperatorName(moduleAddress, operatorIndex, overrides),
+    ]);
+
     const { rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys, totalVettedKeys } = operator;
 
     // There is no concept of "active/inactive" operator in CSM.
     // The method `getNodeOperatorIsActive` only checks if the operator's ID exists (ID < count).
     // We fetch operators with IDs < count, so here we can just set `active` to true.
     const active = true;
-
-    const finalizedUsedSigningKeys = await this.getFinalizedNodeOperatorUsedSigningKeys(moduleAddress, operatorIndex);
-    const name = await this.resolveOperatorName(moduleAddress, operatorIndex, overrides);
 
     return {
       index: operatorIndex,
@@ -145,6 +148,7 @@ export class RegistryOperatorFetchService {
       usedSigningKeys: totalDepositedKeys,
       moduleAddress,
       finalizedUsedSigningKeys,
+      depositableValidatorsCount: summary.depositableValidatorsCount.toNumber(),
     };
   }
 
