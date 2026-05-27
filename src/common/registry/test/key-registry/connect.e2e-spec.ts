@@ -97,6 +97,7 @@ describe('Registry', () => {
         usedSigningKeys: op.totalDepositedValidators.toNumber(),
         moduleAddress: address,
         finalizedUsedSigningKeys: op.totalDepositedValidators.toNumber(),
+        depositableValidatorsCount: 0,
       });
     }
 
