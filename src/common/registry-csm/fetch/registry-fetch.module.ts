@@ -25,10 +25,7 @@ import {
     MetaRegistryNameResolver,
     {
       provide: OPERATOR_NAME_RESOLVERS_TOKEN,
-      useFactory: (
-        csm: CsmStaticNameResolver,
-        meta: MetaRegistryNameResolver,
-      ): OperatorNameResolversConfig => ({
+      useFactory: (csm: CsmStaticNameResolver, meta: MetaRegistryNameResolver): OperatorNameResolversConfig => ({
         // Keys match values of STAKING_MODULE_TYPE enum in staking-router-modules/constants.ts.
         // String literals are used here to avoid cross-layer import of the enum into common/.
         'community-onchain-v1': csm,

@@ -83,7 +83,9 @@ export class KeysUpdateService {
 
     this.updateDeadlineTimer = setTimeout(async () => {
       const error = new KeyOutdatedError(
-        `There were no keys update more than ${this.UPDATE_KEYS_TIMEOUT_MS / (1000 * 60)} minutes`,
+        `There were no keys update more than ${
+          this.UPDATE_KEYS_TIMEOUT_MS / (1000 * 60)
+        } minutes. Last processed block: ${this.lastBlockNumber}.`,
         this.lastBlockNumber,
       );
       this.logger.error(error);

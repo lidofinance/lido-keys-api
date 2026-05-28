@@ -27,10 +27,9 @@ export class RegistryOperatorFetchService {
   ): Promise<string> {
     const type = this.moduleTypeRegistry.get(moduleAddress);
     if (!type) {
-      this.logger.error('Module type is not warmed up in ModuleTypeRegistry', {
-        moduleAddress,
-        operatorIndex,
-      });
+      this.logger.error(
+        `Type for module ${moduleAddress} is not warmed up in ModuleTypeRegistry. Requested operator index: ${operatorIndex}.`,
+      );
       throw new Error(
         `ModuleTypeRegistry has no entry for ${moduleAddress}. ` +
           `It must be populated before calling operator fetch.`,
@@ -39,11 +38,11 @@ export class RegistryOperatorFetchService {
 
     const resolver = this.resolvers[type];
     if (!resolver) {
-      this.logger.error('No operator name resolver configured for module type', {
-        moduleAddress,
-        moduleType: type,
-        supportedTypes: Object.keys(this.resolvers),
-      });
+      this.logger.error(
+        `No operator name resolver configured for type ${type} of module ${moduleAddress}. Supported types: ${Object.keys(
+          this.resolvers,
+        ).join(', ')}.`,
+      );
       throw new Error(
         `No operator name resolver for module type "${type}" at ${moduleAddress}. ` +
           `CSM operator fetch supports only COMMUNITY_ONCHAIN_V1 and CURATED_ONCHAIN_V2.`,
