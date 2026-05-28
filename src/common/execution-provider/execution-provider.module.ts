@@ -1,4 +1,5 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, LoggerService, Module } from '@nestjs/common';
+import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { FallbackProviderModule } from '@lido-nestjs/execution';
 import { PrometheusService } from '../prometheus';
 import { ConfigService } from '../config';
@@ -8,7 +9,7 @@ import { ExecutionProviderService } from './execution-provider.service';
 @Module({
   imports: [
     FallbackProviderModule.forRootAsync({
-      async useFactory(configService: ConfigService, prometheusService: PrometheusService) {
+      async useFactory(configService: ConfigService, logger: LoggerService, prometheusService: PrometheusService) {
         return {
           urls: configService.get('PROVIDERS_URLS'),
           network: configService.get('CHAIN_ID'),
@@ -27,6 +28,8 @@ import { ExecutionProviderService } from './execution-provider.service';
                 endTimer({ result: 'success' });
                 return result;
               } catch (error) {
+                logger.error('Execution provider error');
+                logger.error(error);
                 endTimer({ result: 'error' });
                 throw error;
               } finally {
@@ -36,7 +39,7 @@ import { ExecutionProviderService } from './execution-provider.service';
           ],
         };
       },
-      inject: [ConfigService, PrometheusService],
+      inject: [ConfigService, LOGGER_PROVIDER, PrometheusService],
     }),
   ],
   providers: [ExecutionProviderService],
