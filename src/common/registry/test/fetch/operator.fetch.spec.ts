@@ -28,7 +28,10 @@ describe('Operators', () => {
   const respondByMethod = (data: string, address: string) => {
     const selector = data.slice(0, 10);
     if (selector === getNodeOperatorSelector) {
-      return registryIface.encodeFunctionResult('getNodeOperator', operatorFields({ ...operator, moduleAddress: address }));
+      return registryIface.encodeFunctionResult(
+        'getNodeOperator',
+        operatorFields({ ...operator, moduleAddress: address }),
+      );
     }
     if (selector === getNodeOperatorSummarySelector) {
       return registryIface.encodeFunctionResult('getNodeOperatorSummary', operatorSummaryFields(operatorSummary));

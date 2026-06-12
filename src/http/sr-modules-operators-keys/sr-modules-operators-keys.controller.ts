@@ -93,7 +93,8 @@ export class SRModulesOperatorsKeysController {
           jsonStream.end();
         } catch (streamError) {
           // Handle the error during streaming.
-          this.logger.error('operators-keys streaming error', streamError);
+          this.logger.error('operators-keys streaming error');
+          this.logger.error(streamError);
           // destroy method closes the stream without ']' and corrupt the result
           // https://github.com/dominictarr/through/blob/master/index.js#L78
           jsonStream.destroy();
@@ -134,13 +135,8 @@ export class SRModulesOperatorsKeysController {
 
           jsonStream.end();
         } catch (error) {
-          if (error instanceof Error) {
-            const message = error.message;
-            const stack = error.stack;
-            this.logger.error(`modules-operators-keys error: ${message}`, stack);
-          } else {
-            this.logger.error('modules-operators-keys unknown error');
-          }
+          this.logger.error('modules-operators-keys error');
+          this.logger.error(error);
 
           jsonStream.destroy();
         }

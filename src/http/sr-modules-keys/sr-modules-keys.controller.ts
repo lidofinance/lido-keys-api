@@ -107,7 +107,8 @@ export class SRModulesKeysController {
           jsonStream.end();
         } catch (streamError) {
           // Handle the error during streaming.
-          this.logger.error('module-keys streaming error', streamError);
+          this.logger.error('module-keys streaming error');
+          this.logger.error(streamError);
           // destroy method closes the stream without ']' and corrupt the result
           // https://github.com/dominictarr/through/blob/master/index.js#L78
           jsonStream.destroy();
