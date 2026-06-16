@@ -35,6 +35,12 @@ jobs:
         run: yarn lint
       - name: Run tests
         run: yarn test
+        env:
+          DB_NAME: node_operator_keys_service_db
+          DB_PORT: 5432
+          DB_HOST: localhost
+          DB_USER: postgres
+          DB_PASSWORD: postgres
       - name: Run E2E tests
         run: yarn test:e2e
         env:

@@ -7,8 +7,7 @@ import { SRModuleRepository } from './sr-module.repository';
 export class SRModuleStorageService {
   constructor(private readonly repository: SRModuleRepository) {}
 
-  /** find key by index */
-  async findOneById(moduleId: number): Promise<SrModuleEntity | null> {
+  async findOneByModuleId(moduleId: number): Promise<SrModuleEntity | null> {
     return await this.repository.findOne({ moduleId });
   }
 

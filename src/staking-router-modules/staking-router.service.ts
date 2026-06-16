@@ -43,7 +43,7 @@ export class StakingRouterService {
       return await this.srModulesStorage.findOneByContractAddress(moduleId);
     }
 
-    return await this.srModulesStorage.findOneById(moduleId);
+    return await this.srModulesStorage.findOneByModuleId(moduleId);
   }
 
   public getStakingRouterModuleImpl(moduleType: string): StakingModuleInterface {

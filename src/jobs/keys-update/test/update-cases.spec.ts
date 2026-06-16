@@ -12,7 +12,7 @@ import { UpdaterState } from '../keys-update.interfaces';
 describe('update cases', () => {
   let updaterService: StakingModuleUpdaterService;
   let stakingRouterService: StakingRouterService;
-  let sRModuleStorageService: SRModuleStorageService;
+  let srModuleStorageService: SRModuleStorageService;
   let elMetaStorageService: ElMetaStorageService;
   let loggerService: { log: jest.Mock<any, any> };
   let executionProviderService: ExecutionProviderService;
@@ -51,7 +51,7 @@ describe('update cases', () => {
         {
           provide: SRModuleStorageService,
           useValue: {
-            findOneById: jest.fn(),
+            findOneByModuleId: jest.fn(),
             upsert: jest.fn(),
           },
         },
@@ -62,7 +62,7 @@ describe('update cases', () => {
 
     updaterService = module.get<StakingModuleUpdaterService>(StakingModuleUpdaterService);
     stakingRouterService = module.get<StakingRouterService>(StakingRouterService);
-    sRModuleStorageService = module.get<SRModuleStorageService>(SRModuleStorageService);
+    srModuleStorageService = module.get<SRModuleStorageService>(SRModuleStorageService);
     executionProviderService = module.get<ExecutionProviderService>(ExecutionProviderService);
     elMetaStorageService = module.get<ElMetaStorageService>(ElMetaStorageService);
     loggerService = module.get(LOGGER_PROVIDER);
@@ -128,7 +128,7 @@ describe('update cases', () => {
         } as any),
     );
 
-    jest.spyOn(sRModuleStorageService, 'findOneById').mockImplementation(
+    jest.spyOn(srModuleStorageService, 'findOneByModuleId').mockImplementation(
       () =>
         ({
           nonce: 0,
@@ -155,7 +155,7 @@ describe('update cases', () => {
         updaterState.lastChangedBlockHash = currBh;
       });
     const mockElUpdate = jest.spyOn(elMetaStorageService, 'update').mockImplementation();
-    jest.spyOn(sRModuleStorageService, 'findOneById').mockImplementation(
+    jest.spyOn(srModuleStorageService, 'findOneByModuleId').mockImplementation(
       () =>
         ({
           nonce: 1,
@@ -181,7 +181,7 @@ describe('update cases', () => {
         updaterState.lastChangedBlockHash = currBh;
       });
     const mockElUpdate = jest.spyOn(elMetaStorageService, 'update').mockImplementation();
-    jest.spyOn(sRModuleStorageService, 'findOneById').mockImplementation(
+    jest.spyOn(srModuleStorageService, 'findOneByModuleId').mockImplementation(
       () =>
         ({
           nonce: 1,
