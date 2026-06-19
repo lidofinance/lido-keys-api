@@ -14,6 +14,7 @@ export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKey
     this.index = operator.index;
     this.active = operator.active;
     this.moduleAddress = addressToChecksum(operator.moduleAddress);
+    this.depositableValidatorsCount = operator.depositableValidatorsCount;
   }
 
   @ApiProperty({
@@ -69,4 +70,10 @@ export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKey
     description: 'Module address',
   })
   moduleAddress: string;
+
+  @ApiProperty({
+    required: true,
+    description: 'Number of validators that are ready for deposit',
+  })
+  depositableValidatorsCount: number;
 }

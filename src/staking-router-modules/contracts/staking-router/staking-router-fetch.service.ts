@@ -5,7 +5,12 @@ import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingModuleInterfaceService } from '../staking-module-interface';
 import { LidoLocatorService } from '../lido-locator';
 import { BlockTag } from '../interfaces';
-import { StakingRouter, STAKING_ROUTER_CONTRACT_TOKEN } from '@lido-nestjs/contracts';
+import { StakingRouter } from 'generated';
+import { STAKING_ROUTER_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
+
+// TODO: remove after SR v3 voting, use withdrawalCredentialsType from contract directly
+const SR_VERSION = 4;
+const DEFAULT_WITHDRAWAL_CREDENTIALS_TYPE = 1;
 
 @Injectable()
 export class StakingRouterFetchService {
@@ -13,12 +18,9 @@ export class StakingRouterFetchService {
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected readonly stakingModuleInterface: StakingModuleInterfaceService,
     protected readonly lidoLocatorService: LidoLocatorService,
-    @Inject(STAKING_ROUTER_CONTRACT_TOKEN) protected readonly contract: StakingRouter,
+    @Inject(STAKING_ROUTER_CONTRACT_TOKEN)
+    protected readonly connectStakingRouter: ContractFactoryFn<StakingRouter>,
   ) {}
-
-  private getContract(contractAddress: string) {
-    return this.contract.attach(contractAddress);
-  }
 
   /**
    *
@@ -29,10 +31,15 @@ export class StakingRouterFetchService {
 
     this.logger.log('Staking router module address', stakingRouterAddress);
 
-    const srContract = this.getContract(stakingRouterAddress);
-    const modules = await srContract.getStakingModules({ blockTag } as any);
+    const contract = this.connectStakingRouter(stakingRouterAddress);
 
-    this.logger.log('Fetched staking modules', { stakingModules: modules.length });
+    const contractVersion = await contract.getContractVersion({ blockTag } as any);
+
+    this.logger.log('Staking router contract version', { contractVersion: contractVersion.toNumber() });
+
+    const modules = await contract.getStakingModules({ blockTag } as any);
+
+    this.logger.log('Fetched staking modules', { stakingModules: modules.length, log: modules });
 
     const stakingModuleTypeSet = new Set(Object.values(STAKING_MODULE_TYPE));
 
@@ -58,12 +65,18 @@ export class StakingRouterFetchService {
           process.exit(1);
         }
 
+        // TODO: remove after SR v3 voting, always use stakingModule.withdrawalCredentialsType
+        const withdrawalCredentialsType =
+          contractVersion.toNumber() >= SR_VERSION
+            ? stakingModule.withdrawalCredentialsType
+            : DEFAULT_WITHDRAWAL_CREDENTIALS_TYPE;
+
         return {
           moduleId: stakingModule.id,
           stakingModuleAddress: stakingModule.stakingModuleAddress.toLowerCase(),
           moduleFee: stakingModule.stakingModuleFee,
           treasuryFee: stakingModule.treasuryFee,
-          targetShare: stakingModule.targetShare,
+          targetShare: stakingModule.stakeShareLimit,
           status: stakingModule.status,
           name: stakingModule.name,
           type: stakingModuleType,
@@ -71,6 +84,7 @@ export class StakingRouterFetchService {
           lastDepositBlock: stakingModule.lastDepositBlock.toNumber(),
           exitedValidatorsCount: stakingModule.exitedValidatorsCount.toNumber(),
           active: isActive,
+          withdrawalCredentialsType,
         };
       }),
     );

@@ -14,10 +14,11 @@ import { ScheduleModule } from '@nestjs/schedule';
 import config from '../mikro-orm.config';
 import { ValidatorsModule } from '../validators';
 import { LoggerModule } from '@lido-nestjs/logger';
-import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
 import { KeyRegistryModule } from '../common/registry';
 import { StakingRouterModule } from '../staking-router-modules';
 import { CSMKeyRegistryModule } from 'common/registry-csm';
+import { ContractsModule } from '../common/contracts';
+import { ModuleTypeRegistryModule } from '../common/module-type-registry';
 
 @Module({
   imports: [
@@ -26,6 +27,8 @@ import { CSMKeyRegistryModule } from 'common/registry-csm';
     LoggerModule,
     ConfigModule,
     ExecutionProviderModule,
+    ContractsModule,
+    ModuleTypeRegistryModule,
     ConsensusProviderModule,
     MikroOrmModule.forRootAsync({
       async useFactory(configService: ConfigService) {
@@ -47,15 +50,15 @@ import { CSMKeyRegistryModule } from 'common/registry-csm';
     }),
     ScheduleModule.forRoot(),
     KeyRegistryModule.forRootAsync({
-      inject: [SimpleFallbackJsonRpcBatchProvider, ConfigService],
-      async useFactory(provider: SimpleFallbackJsonRpcBatchProvider, configService: ConfigService) {
-        return { provider, keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE') };
+      inject: [ConfigService],
+      async useFactory(configService: ConfigService) {
+        return { keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE') };
       },
     }),
     CSMKeyRegistryModule.forRootAsync({
-      inject: [SimpleFallbackJsonRpcBatchProvider, ConfigService],
-      async useFactory(provider: SimpleFallbackJsonRpcBatchProvider, configService: ConfigService) {
-        return { provider, keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE') };
+      inject: [ConfigService],
+      async useFactory(configService: ConfigService) {
+        return { keysBatchSize: configService.get('KEYS_FETCH_BATCH_SIZE') };
       },
     }),
     StakingRouterModule,

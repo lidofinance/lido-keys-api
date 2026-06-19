@@ -130,9 +130,9 @@ export class EnvironmentVariables {
   PROVIDERS_URLS!: NonEmptyArray<string>;
 
   @IsNotEmpty()
-  @IsEnum(Chain)
+  @IsInt()
   @Transform(toNumber({ defaultValue: undefined }))
-  CHAIN_ID!: Chain;
+  CHAIN_ID!: number;
 
   @IsNotEmpty()
   @IsString()
@@ -224,7 +224,8 @@ export class EnvironmentVariables {
   @Transform(({ value }) => parseInt(value, 10))
   STREAM_TIMEOUT = 60_000;
 
-  @IsOptional()
+  @ValidateIf((e) => e.CHAIN_ID !== Chain.Mainnet && e.CHAIN_ID !== Chain.Hoodi)
+  @IsNotEmpty()
   @IsString()
   LIDO_LOCATOR_DEVNET_ADDRESS = '';
 }

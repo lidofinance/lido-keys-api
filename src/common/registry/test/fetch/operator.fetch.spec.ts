@@ -1,25 +1,55 @@
+import { Global, Module } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { REGISTRY_CONTRACT_ADDRESSES, Registry__factory } from '@lido-nestjs/contracts';
+import { Registry__factory } from 'generated';
+import { REGISTRY_CONTRACT_TOKEN } from 'common/contracts';
 import { getNetwork } from '@ethersproject/networks';
 import { Interface } from '@ethersproject/abi';
 import { JsonRpcBatchProvider } from '@ethersproject/providers';
-import { operator, operatorFields } from '../fixtures/operator.fixture';
+import { operator, operatorFields, operatorSummary, operatorSummaryFields } from '../fixtures/operator.fixture';
 import { RegistryFetchModule, RegistryOperatorFetchService } from '../../';
 import { LoggerModule, nullTransport } from '@lido-nestjs/logger';
 
 describe('Operators', () => {
   const provider = new JsonRpcBatchProvider(process.env.PROVIDERS_URLS);
   let fetchService: RegistryOperatorFetchService;
-  const CHAIN_ID = process.env.CHAIN_ID || 1;
-  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
+  const address = '0x' + '55'.repeat(20);
 
   const mockCall = jest.spyOn(provider, 'call').mockImplementation(async () => '');
 
   jest.spyOn(provider, 'detectNetwork').mockImplementation(async () => getNetwork('mainnet'));
 
+  const connectRegistry = (addr: string) => Registry__factory.connect(addr, provider);
+
+  const registryIface = new Interface(Registry__factory.abi);
+  const getNodeOperatorSelector = registryIface.getSighash('getNodeOperator');
+  const getNodeOperatorSummarySelector = registryIface.getSighash('getNodeOperatorSummary');
+  const getNodeOperatorsCountSelector = registryIface.getSighash('getNodeOperatorsCount');
+
+  const respondByMethod = (data: string, address: string) => {
+    const selector = data.slice(0, 10);
+    if (selector === getNodeOperatorSelector) {
+      return registryIface.encodeFunctionResult(
+        'getNodeOperator',
+        operatorFields({ ...operator, moduleAddress: address }),
+      );
+    }
+    if (selector === getNodeOperatorSummarySelector) {
+      return registryIface.encodeFunctionResult('getNodeOperatorSummary', operatorSummaryFields(operatorSummary));
+    }
+    throw new Error(`unexpected selector ${selector}`);
+  };
+
+  @Global()
+  @Module({
+    providers: [{ provide: REGISTRY_CONTRACT_TOKEN, useValue: connectRegistry }],
+    exports: [REGISTRY_CONTRACT_TOKEN],
+  })
+  class MockContractsModule {}
+
   beforeEach(async () => {
     const imports = [
-      RegistryFetchModule.forFeature({ provider }),
+      MockContractsModule,
+      RegistryFetchModule.forFeature(),
       LoggerModule.forRoot({ transports: [nullTransport()] }),
     ];
     const moduleRef = await Test.createTestingModule({ imports }).compile();
@@ -33,8 +63,7 @@ describe('Operators', () => {
   test('count', async () => {
     const expected = 2;
     mockCall.mockImplementation(async () => {
-      const iface = new Interface(Registry__factory.abi);
-      return iface.encodeFunctionResult('getNodeOperatorsCount', [expected]);
+      return registryIface.encodeFunctionResult('getNodeOperatorsCount', [expected]);
     });
     const result = await fetchService.count(address);
 
@@ -45,47 +74,41 @@ describe('Operators', () => {
   test('fetchOne', async () => {
     const expected = { index: 1, moduleAddress: address, ...operator };
 
-    mockCall.mockImplementation(async () => {
-      const iface = new Interface(Registry__factory.abi);
-      return iface.encodeFunctionResult('getNodeOperator', operatorFields({ ...operator, moduleAddress: address }));
-    });
+    mockCall.mockImplementation(async (tx) => respondByMethod((tx as any).data, address));
     const result = await fetchService.fetchOne(address, expected.index);
 
     expect(result).toEqual(expected);
-    expect(mockCall).toBeCalledTimes(2);
+    // getNodeOperator + getNodeOperatorSummary + getNodeOperator(finalized)
+    expect(mockCall).toBeCalledTimes(3);
   });
 
   test('fetch', async () => {
     const expectedFirst = { index: 1, moduleAddress: address, ...operator };
     const expectedSecond = { index: 2, moduleAddress: address, ...operator };
 
-    mockCall.mockImplementation(async () => {
-      const iface = new Interface(Registry__factory.abi);
-      return iface.encodeFunctionResult('getNodeOperator', operatorFields({ ...operator, moduleAddress: address }));
-    });
+    mockCall.mockImplementation(async (tx) => respondByMethod((tx as any).data, address));
     const result = await fetchService.fetch(address, expectedFirst.index, expectedSecond.index + 1);
 
     expect(result).toEqual([expectedFirst, expectedSecond]);
-    expect(mockCall).toBeCalledTimes(4);
+    // 2 operators × (getNodeOperator + getNodeOperatorSummary + getNodeOperator(finalized))
+    expect(mockCall).toBeCalledTimes(6);
   });
 
   test('fetch all', async () => {
     const expected = { index: 0, moduleAddress: address, ...operator };
 
-    mockCall
-      .mockImplementationOnce(async () => {
-        const iface = new Interface(Registry__factory.abi);
-        return iface.encodeFunctionResult('getNodeOperatorsCount', [1]);
-      })
-      .mockImplementation(async () => {
-        const iface = new Interface(Registry__factory.abi);
-        operator['moduleAddress'] = address;
-        return iface.encodeFunctionResult('getNodeOperator', operatorFields(operator));
-      });
+    mockCall.mockImplementation(async (tx) => {
+      const data = (tx as any).data as string;
+      if (data.slice(0, 10) === getNodeOperatorsCountSelector) {
+        return registryIface.encodeFunctionResult('getNodeOperatorsCount', [1]);
+      }
+      return respondByMethod(data, address);
+    });
     const result = await fetchService.fetch(address);
 
     expect(result).toEqual([expected]);
-    expect(mockCall).toBeCalledTimes(3);
+    // getNodeOperatorsCount + getNodeOperator + getNodeOperatorSummary + getNodeOperator(finalized)
+    expect(mockCall).toBeCalledTimes(4);
   });
 
   test('fetch. fromIndex > toIndex', async () => {

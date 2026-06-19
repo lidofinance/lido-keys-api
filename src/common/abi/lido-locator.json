@@ -1,0 +1,11 @@
+[
+  {
+    "inputs": [],
+    "name": "stakingRouter",
+    "outputs": [
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

@@ -18,6 +18,7 @@ export class RegistryOperator {
     this.usedSigningKeys = operator.usedSigningKeys;
     this.moduleAddress = operator.moduleAddress;
     this.finalizedUsedSigningKeys = operator.finalizedUsedSigningKeys;
+    this.depositableValidatorsCount = operator.depositableValidatorsCount;
   }
 
   @PrimaryKey()
@@ -50,4 +51,7 @@ export class RegistryOperator {
 
   @Property()
   finalizedUsedSigningKeys!: number;
+
+  @Property()
+  depositableValidatorsCount!: number;
 }

@@ -77,7 +77,9 @@ export class ValidatorsUpdateService {
 
     this.updateDeadlineTimer = setTimeout(async () => {
       const error = new ValidatorsOutdatedError(
-        `There were no validators update more than ${this.UPDATE_VALIDATORS_TIMEOUT_MS / (60 * 1000)} minutes`,
+        `There were no validators update more than ${
+          this.UPDATE_VALIDATORS_TIMEOUT_MS / (60 * 1000)
+        } minutes. Last processed block: ${this.lastBlockNumber}.`,
         this.lastBlockNumber,
       );
       this.logger.error(error);

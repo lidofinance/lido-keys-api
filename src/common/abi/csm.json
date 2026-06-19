@@ -1,0 +1,87 @@
+[
+  {
+    "inputs": [{ "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" }],
+    "name": "getNodeOperator",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint32", "name": "totalAddedKeys", "type": "uint32" },
+          { "internalType": "uint32", "name": "totalWithdrawnKeys", "type": "uint32" },
+          { "internalType": "uint32", "name": "totalDepositedKeys", "type": "uint32" },
+          { "internalType": "uint32", "name": "totalVettedKeys", "type": "uint32" },
+          { "internalType": "uint32", "name": "stuckValidatorsCount", "type": "uint32" },
+          { "internalType": "uint32", "name": "depositableValidatorsCount", "type": "uint32" },
+          { "internalType": "uint32", "name": "targetLimit", "type": "uint32" },
+          { "internalType": "uint8", "name": "targetLimitMode", "type": "uint8" },
+          { "internalType": "uint32", "name": "totalExitedKeys", "type": "uint32" },
+          { "internalType": "uint32", "name": "enqueuedCount", "type": "uint32" },
+          { "internalType": "address", "name": "managerAddress", "type": "address" },
+          { "internalType": "address", "name": "proposedManagerAddress", "type": "address" },
+          { "internalType": "address", "name": "rewardAddress", "type": "address" },
+          { "internalType": "address", "name": "proposedRewardAddress", "type": "address" },
+          { "internalType": "bool", "name": "extendedManagerPermissions", "type": "bool" },
+          { "internalType": "bool", "name": "usedPriorityQueue", "type": "bool" }
+        ],
+        "internalType": "struct NodeOperator",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" }],
+    "name": "getNodeOperatorSummary",
+    "outputs": [
+      { "internalType": "uint256", "name": "targetLimitMode", "type": "uint256" },
+      { "internalType": "uint256", "name": "targetValidatorsCount", "type": "uint256" },
+      { "internalType": "uint256", "name": "stuckValidatorsCount", "type": "uint256" },
+      { "internalType": "uint256", "name": "refundedValidatorsCount", "type": "uint256" },
+      { "internalType": "uint256", "name": "stuckPenaltyEndTimestamp", "type": "uint256" },
+      { "internalType": "uint256", "name": "totalExitedValidators", "type": "uint256" },
+      { "internalType": "uint256", "name": "totalDepositedValidators", "type": "uint256" },
+      { "internalType": "uint256", "name": "depositableValidatorsCount", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getNodeOperatorsCount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getNonce",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" },
+      { "internalType": "uint256", "name": "startIndex", "type": "uint256" },
+      { "internalType": "uint256", "name": "keysCount", "type": "uint256" }
+    ],
+    "name": "getSigningKeysWithSignatures",
+    "outputs": [
+      { "internalType": "bytes", "name": "keys", "type": "bytes" },
+      { "internalType": "bytes", "name": "signatures", "type": "bytes" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "oldAddress", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "newAddress", "type": "address" }
+    ],
+    "name": "NodeOperatorRewardAddressChanged",
+    "type": "event"
+  }
+]

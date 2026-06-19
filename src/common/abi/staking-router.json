@@ -1,0 +1,40 @@
+[
+  {
+    "inputs": [],
+    "name": "getContractVersion",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getStakingModules",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint24", "name": "id", "type": "uint24" },
+          { "internalType": "address", "name": "stakingModuleAddress", "type": "address" },
+          { "internalType": "uint16", "name": "stakingModuleFee", "type": "uint16" },
+          { "internalType": "uint16", "name": "treasuryFee", "type": "uint16" },
+          { "internalType": "uint16", "name": "stakeShareLimit", "type": "uint16" },
+          { "internalType": "uint8", "name": "status", "type": "uint8" },
+          { "internalType": "string", "name": "name", "type": "string" },
+          { "internalType": "uint64", "name": "lastDepositAt", "type": "uint64" },
+          { "internalType": "uint256", "name": "lastDepositBlock", "type": "uint256" },
+          { "internalType": "uint256", "name": "exitedValidatorsCount", "type": "uint256" },
+          { "internalType": "uint16", "name": "priorityExitShareThreshold", "type": "uint16" },
+          { "internalType": "uint64", "name": "maxDepositsPerBlock", "type": "uint64" },
+          { "internalType": "uint64", "name": "minDepositBlockDistance", "type": "uint64" },
+          { "internalType": "uint8", "name": "withdrawalCredentialsType", "type": "uint8" }
+        ],
+        "internalType": "struct StakingModule[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

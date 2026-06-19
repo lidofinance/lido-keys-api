@@ -1,0 +1,20 @@
+[
+  {
+    "inputs": [{ "internalType": "uint256", "name": "nodeOperatorId", "type": "uint256" }],
+    "name": "getOperatorMetadata",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "string", "name": "name", "type": "string" },
+          { "internalType": "string", "name": "description", "type": "string" },
+          { "internalType": "bool", "name": "ownerEditsRestricted", "type": "bool" }
+        ],
+        "internalType": "struct OperatorMetadata",
+        "name": "metadata",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

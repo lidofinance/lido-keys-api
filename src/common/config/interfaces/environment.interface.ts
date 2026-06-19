@@ -20,7 +20,5 @@ export enum LogFormat {
 
 export enum Chain {
   Mainnet = 1,
-  Goerli = 5,
-  Holesky = 17000,
   Hoodi = 560048,
 }

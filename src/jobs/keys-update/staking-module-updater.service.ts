@@ -6,6 +6,7 @@ import { ElMetaStorageService } from 'storage/el-meta.storage';
 import { ExecutionProviderService } from 'common/execution-provider';
 import { SRModuleStorageService } from 'storage/sr-module.storage';
 import { StakingModule, StakingModuleInterface } from 'staking-router-modules/interfaces/staking-module.interface';
+import { ModuleTypeRegistry } from 'common/module-type-registry';
 import { UpdaterPayload, UpdaterState } from './keys-update.interfaces';
 import { MAX_BLOCKS_OVERLAP } from './keys-update.constants';
 
@@ -17,7 +18,9 @@ export class StakingModuleUpdaterService {
     protected readonly elMetaStorage: ElMetaStorageService,
     protected readonly executionProvider: ExecutionProviderService,
     protected readonly srModulesStorage: SRModuleStorageService,
+    protected readonly moduleTypeRegistry: ModuleTypeRegistry,
   ) {}
+
   public async updateStakingModules(updaterPayload: UpdaterPayload): Promise<void> {
     const { prevElMeta, currElMeta, contractModules } = updaterPayload;
     const prevBlockHash = prevElMeta?.blockHash;
@@ -34,6 +37,9 @@ export class StakingModuleUpdaterService {
     for (const contractModule of contractModules) {
       const { stakingModuleAddress } = contractModule;
 
+      // Cache moduleAddress -> type so downstream CSM operator fetch can pick the right name resolver
+      this.moduleTypeRegistry.set(stakingModuleAddress, contractModule.type);
+
       // Find implementation for staking module
       const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(contractModule.type);
       // Read current nonce from contract
@@ -44,7 +50,7 @@ export class StakingModuleUpdaterService {
 
       this.logger.log(`Nonce previous value: ${prevNonce}, nonce current value: ${currNonce}`);
 
-      if (!prevBlockHash) {
+      if (!prevBlockHash || !moduleInStorage) {
         this.logger.log('No past state found, start updating', { stakingModuleAddress, currentBlockHash });
 
         await this.updateStakingModule(
@@ -132,7 +138,9 @@ export class StakingModuleUpdaterService {
         continue;
       }
 
-      this.logger.log('No changes have been detected in the module, update is not required', {
+      await this.srModulesStorage.upsert(contractModule, moduleInStorage.nonce, moduleInStorage.lastChangedBlockHash);
+
+      this.logger.log('No changes have been detected in the module, module metadata updated', {
         stakingModuleAddress,
         currentBlockHash,
         prevLastChangedBlockHash,

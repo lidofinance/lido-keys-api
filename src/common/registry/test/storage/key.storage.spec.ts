@@ -1,14 +1,12 @@
 import { Test } from '@nestjs/testing';
 import { key } from '../fixtures/key.fixture';
 import { RegistryKeyStorageService, RegistryKey, RegistryKeyRepository } from '../../';
-import { REGISTRY_CONTRACT_ADDRESSES } from '@lido-nestjs/contracts';
 import * as streamUtils from '../../utils/stream.utils';
 import { STREAM_KEYS_TIMEOUT_MESSAGE, DEFAULT_STREAM_TIMEOUT } from '../../../registry/storage/constants';
 import { ConfigModule, ConfigService } from 'common/config';
 
 describe('Keys', () => {
-  const CHAIN_ID = process.env.CHAIN_ID || 1;
-  const address = REGISTRY_CONTRACT_ADDRESSES[CHAIN_ID];
+  const address = '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5';
   const registryKey = { index: 1, operatorIndex: 1, moduleAddress: address, ...key, vetted: true };
 
   async function* findKeysAsStream() {

@@ -1,0 +1,94 @@
+[
+  {
+    "inputs": [
+      { "name": "_nodeOperatorId", "type": "uint256" },
+      { "name": "_offset", "type": "uint256" },
+      { "name": "_limit", "type": "uint256" }
+    ],
+    "name": "getSigningKeys",
+    "outputs": [
+      { "name": "pubkeys", "type": "bytes" },
+      { "name": "signatures", "type": "bytes" },
+      { "name": "used", "type": "bool[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "name": "_nodeOperatorId", "type": "uint256" },
+      { "name": "_fullInfo", "type": "bool" }
+    ],
+    "name": "getNodeOperator",
+    "outputs": [
+      { "name": "active", "type": "bool" },
+      { "name": "name", "type": "string" },
+      { "name": "rewardAddress", "type": "address" },
+      { "name": "totalVettedValidators", "type": "uint64" },
+      { "name": "totalExitedValidators", "type": "uint64" },
+      { "name": "totalAddedValidators", "type": "uint64" },
+      { "name": "totalDepositedValidators", "type": "uint64" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getNodeOperatorsCount",
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "name": "_nodeOperatorId", "type": "uint256" }],
+    "name": "getNodeOperatorSummary",
+    "outputs": [
+      { "name": "targetLimitMode", "type": "uint256" },
+      { "name": "targetValidatorsCount", "type": "uint256" },
+      { "name": "stuckValidatorsCount", "type": "uint256" },
+      { "name": "refundedValidatorsCount", "type": "uint256" },
+      { "name": "stuckPenaltyEndTimestamp", "type": "uint256" },
+      { "name": "totalExitedValidators", "type": "uint256" },
+      { "name": "totalDepositedValidators", "type": "uint256" },
+      { "name": "depositableValidatorsCount", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getNonce",
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": false, "name": "nodeOperatorId", "type": "uint256" },
+      { "indexed": false, "name": "name", "type": "string" },
+      { "indexed": false, "name": "rewardAddress", "type": "address" },
+      { "indexed": false, "name": "stakingLimit", "type": "uint64" }
+    ],
+    "name": "NodeOperatorAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "name": "nodeOperatorId", "type": "uint256" },
+      { "indexed": false, "name": "name", "type": "string" }
+    ],
+    "name": "NodeOperatorNameSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "name": "nodeOperatorId", "type": "uint256" },
+      { "indexed": false, "name": "rewardAddress", "type": "address" }
+    ],
+    "name": "NodeOperatorRewardAddressSet",
+    "type": "event"
+  }
+]

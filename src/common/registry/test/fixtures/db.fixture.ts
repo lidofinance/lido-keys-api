@@ -16,6 +16,7 @@ export const operators = [
     totalSigningKeys: 3,
     usedSigningKeys: 3,
     finalizedUsedSigningKeys: 3,
+    depositableValidatorsCount: 0,
   },
   {
     index: 1,
@@ -27,6 +28,7 @@ export const operators = [
     totalSigningKeys: 3,
     usedSigningKeys: 3,
     finalizedUsedSigningKeys: 3,
+    depositableValidatorsCount: 0,
   },
 ];
 
@@ -109,6 +111,7 @@ export const newOperator = {
   totalSigningKeys: 3,
   usedSigningKeys: 3,
   finalizedUsedSigningKeys: 3,
+  depositableValidatorsCount: 0,
 };
 
 export const operatorWithDefaultsRecords = {
@@ -121,4 +124,5 @@ export const operatorWithDefaultsRecords = {
   totalSigningKeys: 0,
   usedSigningKeys: 0,
   finalizedUsedSigningKeys: 0,
+  depositableValidatorsCount: 0,
 };

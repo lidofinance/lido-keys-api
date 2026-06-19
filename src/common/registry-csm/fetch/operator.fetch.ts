@@ -2,23 +2,54 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { rangePromise } from '@lido-nestjs/utils';
-import { REGISTRY_CONTRACT_TOKEN, Registry } from '@lido-nestjs/contracts';
+import { Csm } from 'generated';
+import { CSM_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
-import { Csm__factory } from 'generated';
+import { OPERATOR_NAME_RESOLVERS_TOKEN, OperatorNameResolversConfig } from './operator-name-resolver';
+import { ModuleTypeRegistry } from 'common/module-type-registry';
 import { utils } from 'ethers';
 
 @Injectable()
 export class RegistryOperatorFetchService {
   constructor(
     @Inject(LOGGER_PROVIDER) protected logger: LoggerService,
-    @Inject(REGISTRY_CONTRACT_TOKEN) private contract: Registry,
+    @Inject(CSM_CONTRACT_TOKEN) private connectCsm: ContractFactoryFn<Csm>,
+    @Inject(OPERATOR_NAME_RESOLVERS_TOKEN) private resolvers: OperatorNameResolversConfig,
+    private readonly moduleTypeRegistry: ModuleTypeRegistry,
   ) {}
 
-  private getContract(moduleAddress: string) {
-    // TODO: pass provider instead this.contract.provider
-    return Csm__factory.connect(moduleAddress, this.contract.provider);
+  private async resolveOperatorName(
+    moduleAddress: string,
+    operatorIndex: number,
+    overrides: CallOverrides,
+  ): Promise<string> {
+    const type = this.moduleTypeRegistry.get(moduleAddress);
+    if (!type) {
+      this.logger.error(
+        `Type for module ${moduleAddress} is not warmed up in ModuleTypeRegistry. Requested operator index: ${operatorIndex}.`,
+      );
+      throw new Error(
+        `ModuleTypeRegistry has no entry for ${moduleAddress}. ` +
+          `It must be populated before calling operator fetch.`,
+      );
+    }
+
+    const resolver = this.resolvers[type];
+    if (!resolver) {
+      this.logger.error(
+        `No operator name resolver configured for type ${type} of module ${moduleAddress}. Supported types: ${Object.keys(
+          this.resolvers,
+        ).join(', ')}.`,
+      );
+      throw new Error(
+        `No operator name resolver for module type "${type}" at ${moduleAddress}. ` +
+          `CSM operator fetch supports only COMMUNITY_ONCHAIN_V1 and CURATED_ONCHAIN_V2.`,
+      );
+    }
+
+    return resolver.resolve(moduleAddress, operatorIndex, overrides);
   }
 
   /**
@@ -29,7 +60,7 @@ export class RegistryOperatorFetchService {
       return [];
     }
 
-    const events = await this.getContract(moduleAddress).provider.getLogs({
+    const events = await this.connectCsm(moduleAddress).provider.getLogs({
       topics: [
         [
           // KECCAK256 hash of the text bytes
@@ -56,7 +87,7 @@ export class RegistryOperatorFetchService {
 
   /** fetches number of operators */
   public async count(moduleAddress: string, overrides: CallOverrides = {}): Promise<number> {
-    const bigNumber = await this.getContract(moduleAddress).getNodeOperatorsCount(overrides as any);
+    const bigNumber = await this.connectCsm(moduleAddress).getNodeOperatorsCount(overrides as any);
     return bigNumber.toNumber();
   }
 
@@ -67,7 +98,7 @@ export class RegistryOperatorFetchService {
    * @returns used signing keys count, if error happened returns 0 (because of range error)
    */
   public async getFinalizedNodeOperatorUsedSigningKeys(moduleAddress: string, operatorIndex: number): Promise<number> {
-    const contract = this.getContract(moduleAddress);
+    const contract = this.connectCsm(moduleAddress);
     try {
       const { totalDepositedKeys } = await contract.getNodeOperator(operatorIndex, {
         blockTag: this.getFinalizedBlockTag(),
@@ -89,9 +120,15 @@ export class RegistryOperatorFetchService {
     operatorIndex: number,
     overrides: CallOverrides = {},
   ): Promise<RegistryOperator> {
-    const contract = this.getContract(moduleAddress);
+    const contract = this.connectCsm(moduleAddress);
 
-    const operator = await contract.getNodeOperator(operatorIndex, overrides as any);
+    const [operator, summary, finalizedUsedSigningKeys, name] = await Promise.all([
+      contract.getNodeOperator(operatorIndex, overrides as any),
+      contract.getNodeOperatorSummary(operatorIndex, overrides as any),
+      this.getFinalizedNodeOperatorUsedSigningKeys(moduleAddress, operatorIndex),
+      this.resolveOperatorName(moduleAddress, operatorIndex, overrides),
+    ]);
+
     const { rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys, totalVettedKeys } = operator;
 
     // There is no concept of "active/inactive" operator in CSM.
@@ -99,12 +136,10 @@ export class RegistryOperatorFetchService {
     // We fetch operators with IDs < count, so here we can just set `active` to true.
     const active = true;
 
-    const finalizedUsedSigningKeys = await this.getFinalizedNodeOperatorUsedSigningKeys(moduleAddress, operatorIndex);
-
     return {
       index: operatorIndex,
       active,
-      name: `CSM Operator ${operatorIndex}`,
+      name,
       rewardAddress,
       stakingLimit: totalVettedKeys,
       stoppedValidators: totalExitedKeys,
@@ -112,6 +147,7 @@ export class RegistryOperatorFetchService {
       usedSigningKeys: totalDepositedKeys,
       moduleAddress,
       finalizedUsedSigningKeys,
+      depositableValidatorsCount: summary.depositableValidatorsCount.toNumber(),
     };
   }
 

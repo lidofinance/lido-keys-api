@@ -6,8 +6,9 @@ import { Provider } from '@ethersproject/providers';
 export const REGISTRY_FETCH_OPTIONS_TOKEN = Symbol('registryFetchOptionsToken');
 
 export interface RegistryFetchOptions {
+  /** @deprecated Contracts now come from global ContractsModule */
   registryAddress?: string;
-  lidoAddress?: string;
+  /** @deprecated Contracts now come from global ContractsModule */
   provider?: Provider | Signer;
   keysBatchSize?: number;
 }
