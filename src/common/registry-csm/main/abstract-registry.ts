@@ -124,7 +124,11 @@ export abstract class AbstractRegistryService {
       // Repair a database written by an affected version: a `used = false` key below the pointer means
       // the pointer ran ahead of the data, so re-read the operator from index 0. No network — uses the map above.
       const lowestUnusedKeyIndex = lowestUnusedKeyIndexes.get(currOperator.index);
-      if (unchangedKeysMaxIndex > 0 && lowestUnusedKeyIndex !== undefined && lowestUnusedKeyIndex < unchangedKeysMaxIndex) {
+      if (
+        unchangedKeysMaxIndex > 0 &&
+        lowestUnusedKeyIndex !== undefined &&
+        lowestUnusedKeyIndex < unchangedKeysMaxIndex
+      ) {
         this.logger.warn('Sync pointer invariant is broken, re-reading all operator keys', {
           stakingModuleAddress: moduleAddress,
           operatorIndex: currOperator.index,
