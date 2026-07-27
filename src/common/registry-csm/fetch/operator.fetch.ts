@@ -61,6 +61,7 @@ export class RegistryOperatorFetchService {
     }
 
     const events = await this.connectCsm(moduleAddress).provider.getLogs({
+      address: moduleAddress,
       topics: [
         [
           // KECCAK256 hash of the text bytes
@@ -122,7 +123,7 @@ export class RegistryOperatorFetchService {
   ): Promise<RegistryOperator> {
     const contract = this.connectCsm(moduleAddress);
 
-    const [operator, summary, finalizedUsedSigningKeys, name] = await Promise.all([
+    const [operator, summary, rawFinalizedUsedSigningKeys, name] = await Promise.all([
       contract.getNodeOperator(operatorIndex, overrides as any),
       contract.getNodeOperatorSummary(operatorIndex, overrides as any),
       this.getFinalizedNodeOperatorUsedSigningKeys(moduleAddress, operatorIndex),
@@ -135,6 +136,10 @@ export class RegistryOperatorFetchService {
     // The method `getNodeOperatorIsActive` only checks if the operator's ID exists (ID < count).
     // We fetch operators with IDs < count, so here we can just set `active` to true.
     const active = true;
+
+    // min(finalized, deposited count at the latest block fixed at the cycle start) guarantees that
+    // in the next cycle there will be no frozen keys with a wrong `used` flag.
+    const finalizedUsedSigningKeys = Math.min(rawFinalizedUsedSigningKeys, totalDepositedKeys);
 
     return {
       index: operatorIndex,

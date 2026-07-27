@@ -31,6 +31,7 @@ export class RegistryOperatorFetchService {
     // and that requests which are too broad may get dropped as they require too many resources to execute the query.
 
     const events = await contract.provider.getLogs({
+      address: moduleAddress,
       topics: [
         // KECCAK256 hash of the text bytes
         [
@@ -96,7 +97,7 @@ export class RegistryOperatorFetchService {
     const fullInfo = true;
     const contract = this.connectRegistry(moduleAddress);
 
-    const [operator, summary, finalizedUsedSigningKeys] = await Promise.all([
+    const [operator, summary, rawFinalizedUsedSigningKeys] = await Promise.all([
       contract.getNodeOperator(operatorIndex, fullInfo, overrides as any),
       contract.getNodeOperatorSummary(operatorIndex, overrides as any),
       this.getFinalizedNodeOperatorUsedSigningKeys(moduleAddress, operatorIndex),
@@ -111,6 +112,10 @@ export class RegistryOperatorFetchService {
       totalAddedValidators,
       totalDepositedValidators,
     } = operator;
+
+    // min(finalized, deposited count at the latest block fixed at the cycle start) guarantees that
+    // in the next cycle there will be no frozen keys with a wrong `used` flag.
+    const finalizedUsedSigningKeys = Math.min(rawFinalizedUsedSigningKeys, totalDepositedValidators.toNumber());
 
     return {
       index: operatorIndex,

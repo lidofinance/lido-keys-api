@@ -82,6 +82,49 @@ describe('Operators', () => {
     expect(mockCall).toBeCalledTimes(3);
   });
 
+  // `getNodeOperator` is read at the anchor block, the finalized deposited count at the floating
+  // `finalized` tag. When the anchor is older than the finality delay, `finalized` can be ahead of it.
+  const respondByBlockTag = (
+    data: string,
+    depositedAtAnchor: number,
+    depositedAtFinalized: number,
+    blockTag: unknown,
+  ) => {
+    const selector = data.slice(0, 10);
+    if (selector === getNodeOperatorSummarySelector) {
+      return registryIface.encodeFunctionResult('getNodeOperatorSummary', operatorSummaryFields(operatorSummary));
+    }
+    if (selector === getNodeOperatorSelector) {
+      const deposited = blockTag === 'finalized' ? depositedAtFinalized : depositedAtAnchor;
+      return registryIface.encodeFunctionResult(
+        'getNodeOperator',
+        operatorFields({ ...operator, totalSigningKeys: 40, usedSigningKeys: deposited }),
+      );
+    }
+    throw new Error(`unexpected selector ${selector}`);
+  };
+
+  test('fetchOne does not let finalizedUsedSigningKeys exceed the anchor block deposited count', async () => {
+    // anchor: 19 deposited; `finalized` already sees 20 (one deposit finalized after the anchor was fixed)
+    mockCall.mockImplementation(async (tx, blockTag) => respondByBlockTag((tx as any).data, 19, 20, blockTag));
+
+    const result = await fetchService.fetchOne(address, 1);
+
+    expect(result.usedSigningKeys).toBe(19);
+    expect(result.finalizedUsedSigningKeys).toBe(19);
+    expect(result.finalizedUsedSigningKeys).toBeLessThanOrEqual(result.usedSigningKeys);
+  });
+
+  test('fetchOne keeps finalizedUsedSigningKeys when finalized is behind the anchor', async () => {
+    // normal case: anchor sees 20, `finalized` still 19 → pointer stays 19, untouched
+    mockCall.mockImplementation(async (tx, blockTag) => respondByBlockTag((tx as any).data, 20, 19, blockTag));
+
+    const result = await fetchService.fetchOne(address, 1);
+
+    expect(result.usedSigningKeys).toBe(20);
+    expect(result.finalizedUsedSigningKeys).toBe(19);
+  });
+
   test('fetch', async () => {
     const expectedFirst = { index: 1, moduleAddress: address, ...operator };
     const expectedSecond = { index: 2, moduleAddress: address, ...operator };
