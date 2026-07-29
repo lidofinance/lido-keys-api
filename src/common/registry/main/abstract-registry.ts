@@ -108,9 +108,6 @@ export abstract class AbstractRegistryService {
     /**
      * it's possible to update keys faster by using different strategies depending on the reason for the update
      */
-    // Collected once per module (one aggregated query), reused for every operator below.
-    const usedKeyStats = await this.keyStorage.getUsedKeysStatsPerOperator(moduleAddress);
-
     for (const [currentIndex, currOperator] of currentOperators.entries()) {
       // check if the operator in the registry has changed since the last update
 
@@ -120,29 +117,8 @@ export abstract class AbstractRegistryService {
       const finalizedUsedSigningKeys = prevOperator ? prevOperator.finalizedUsedSigningKeys : null;
       // skip updating keys from 0 to `usedSigningKeys` of previous collected data
       // since the contract guarantees that these keys cannot be changed
-      let unchangedKeysMaxIndex = isSameOperator && finalizedUsedSigningKeys ? finalizedUsedSigningKeys : 0;
+      const unchangedKeysMaxIndex = isSameOperator && finalizedUsedSigningKeys ? finalizedUsedSigningKeys : 0;
 
-      // Repair a database written by an affected version. The incremental sync skips keys below the
-      // cursor, trusting [0, cursor) is a complete deposited prefix. Verify it from stored data: the
-      // used keys must be a gap-free prefix (usedCount === maxUsed + 1, that reaches the cursor
-      // (maxUsed + 1 >= cursor). A shortfall means a key below the
-      // cursor is unused OR missing entirely, so the pointer ran ahead of the data — re-read from 0.
-      if (unchangedKeysMaxIndex > 0) {
-        const stats = usedKeyStats.get(currOperator.index);
-        const isStateCorrect =
-          stats !== undefined && stats.usedCount === stats.maxUsed + 1 && stats.maxUsed + 1 >= unchangedKeysMaxIndex;
-
-        if (!isStateCorrect) {
-          this.logger.warn('Sync pointer invariant is broken, re-reading all operator keys', {
-            stakingModuleAddress: moduleAddress,
-            operatorIndex: currOperator.index,
-            finalizedUsedSigningKeys: unchangedKeysMaxIndex,
-            usedKeysCount: stats?.usedCount ?? 0,
-            maxUsedKeyIndex: stats?.maxUsed ?? -1,
-          });
-          unchangedKeysMaxIndex = 0;
-        }
-      }
       // get the right border up to which the keys should be updated
       // it's different for different scenarios
       const toIndex = this.getToIndex(currOperator);

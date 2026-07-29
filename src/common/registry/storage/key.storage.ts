@@ -54,43 +54,6 @@ export class RegistryKeyStorageService {
     return await this.repository.find({ operatorIndex, moduleAddress });
   }
 
-  /**
-   * For every operator of the module returns aggregates over its `used = true` keys: the lowest and
-   * highest used index and how many used keys are stored.
-   *
-   * The incremental sync skips keys below the operator's finalized cursor, trusting that [0, cursor)
-   * is a complete deposited prefix. These aggregates let the caller verify that from stored data
-   * without re-reading it: a healthy prefix is gap-free (`usedCount === maxUsed + 1`) and reaches the
-   * cursor (`maxUsed + 1 >= cursor`). One aggregated query per module — operators with no used keys
-   * are simply absent from the map.
-   */
-  async getUsedKeysStatsPerOperator(
-    moduleAddress: string,
-  ): Promise<Map<number, { minUsed: number; maxUsed: number; usedCount: number }>> {
-    const rows: Array<{ operator_index: number; min_used: number; max_used: number; used_count: number | string }> =
-      await this.repository
-        .createQueryBuilder()
-        .where({ moduleAddress, used: true })
-        .getKnexQuery()
-        .clearSelect()
-        .groupBy('operator_index')
-        .select('operator_index')
-        .min({ min_used: 'index' })
-        .max({ max_used: 'index' })
-        .count({ used_count: '*' });
-
-    const stats = new Map<number, { minUsed: number; maxUsed: number; usedCount: number }>();
-    for (const row of rows) {
-      stats.set(Number(row.operator_index), {
-        minUsed: Number(row.min_used),
-        maxUsed: Number(row.max_used),
-        usedCount: Number(row.used_count),
-      });
-    }
-
-    return stats;
-  }
-
   /** number of keys marked `used = true` (deposited) stored for the module */
   async countUsedKeys(moduleAddress: string): Promise<number> {
     return await this.repository.count({ moduleAddress, used: true });

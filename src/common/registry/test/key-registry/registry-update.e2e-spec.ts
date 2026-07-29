@@ -7,7 +7,6 @@ import {
   RegistryStorageService,
   RegistryKeyStorageService,
   RegistryOperatorStorageService,
-  RegistryKeyBatchFetchService,
 } from 'common/registry';
 import { keys, newKey, operators } from '../fixtures/db.fixture';
 import { clone, compareTestKeysAndOperators, compareTestKeys, compareTestOperators, clearDb } from '../testing.utils';
@@ -167,24 +166,19 @@ describe('Registry update', () => {
 });
 
 describe('Reorg detection', () => {
-  const loggerWarn = jest.fn();
-
   let registryService: KeyRegistryService;
   let registryStorageService: RegistryStorageService;
-  let keyStorageService: RegistryKeyStorageService;
-  let operatorStorageService: RegistryOperatorStorageService;
   let moduleRef: TestingModule;
   let mikroOrm: MikroORM;
 
   beforeEach(async () => {
-    loggerWarn.mockClear();
     const imports = [
       MockContractsModule,
       DatabaseE2ETestingModule.forRoot(),
       MockLoggerModule.forRoot({
         log: jest.fn(),
         error: jest.fn(),
-        warn: loggerWarn,
+        warn: jest.fn(),
       }),
       KeyRegistryModule.forFeature(),
       PrometheusModule,
@@ -195,8 +189,6 @@ describe('Reorg detection', () => {
     }).compile();
     registryService = moduleRef.get(KeyRegistryService);
     registryStorageService = moduleRef.get(RegistryStorageService);
-    keyStorageService = moduleRef.get(RegistryKeyStorageService);
-    operatorStorageService = moduleRef.get(RegistryOperatorStorageService);
     mikroOrm = moduleRef.get(MikroORM);
     const generator = mikroOrm.getSchemaGenerator();
     await generator.refreshDatabase();
@@ -256,163 +248,6 @@ describe('Reorg detection', () => {
       keys: keysWithModuleAddress,
       operators: operatorsWithModuleAddress,
     });
-  });
-
-  test('a used=false key below the pointer forces a full re-read that repairs it', async () => {
-    // pointer sits past every key of the operator
-    const finalizedUsedSigningKeys = 3;
-
-    const operatorsWithModuleAddress = operators.map((operator) => {
-      return { ...operator, moduleAddress: address, finalizedUsedSigningKeys };
-    });
-
-    // seed the DB as an affected version would leave it: operator 0's key at index 1 is
-    // deposited on-chain but frozen with used=false below the sync pointer
-    const poisonedKeys = keys.map((key) => {
-      return { ...key, moduleAddress: address };
-    });
-    const frozenKey = poisonedKeys.find(({ operatorIndex, index }) => operatorIndex === 0 && index === 1);
-    if (!frozenKey) throw new Error('fixture changed: operator 0 key at index 1 is missing');
-    frozenKey.used = false;
-
-    await operatorStorageService.save(operatorsWithModuleAddress);
-    await keyStorageService.save(poisonedKeys);
-
-    // the contract returns the correct picture — every key below the pointer is used
-    const correctKeys = keys.map((key) => {
-      return { ...key, moduleAddress: address };
-    });
-
-    registryServiceMock(moduleRef, {
-      keys: correctKeys,
-      operators: operatorsWithModuleAddress,
-    });
-
-    await registryService.update(address, blockHash);
-
-    // exactly one invariant warning, and it names the poisoned operator 0 — the healthy operator 1
-    // (every key used up to its pointer) never trips the guard
-    const invariantWarnings = loggerWarn.mock.calls.filter(
-      ([message]) => message === 'Sync pointer invariant is broken, re-reading all operator keys',
-    );
-    expect(invariantWarnings).toHaveLength(1);
-    expect(invariantWarnings[0][1]).toMatchObject({ operatorIndex: 0, usedKeysCount: 2, maxUsedKeyIndex: 2 });
-
-    // operator 0 was re-read from index 0 (full repair); operator 1 kept its incremental read
-    const keyFetchCalls = (
-      moduleRef.get(RegistryKeyBatchFetchService).fetchSigningKeysInBatches as jest.Mock
-    ).mock.calls.map(([, operatorIndex, , fromIndex]) => ({ operatorIndex, fromIndex }));
-    expect(keyFetchCalls).toContainEqual({ operatorIndex: 0, fromIndex: 0 });
-    expect(keyFetchCalls).not.toContainEqual({ operatorIndex: 1, fromIndex: 0 });
-
-    // ...so the frozen key is repaired and the DB matches the contract
-    await compareTestKeysAndOperators(address, registryService, {
-      keys: correctKeys,
-      operators: operatorsWithModuleAddress,
-    });
-  });
-
-  test('unused keys at or above the pointer do not force a full re-read from index 0', async () => {
-    // the everyday state of an operator: keys below the pointer are deposited (used), while
-    // vetted-but-not-yet-deposited keys sit at or above the pointer with used=false
-    const finalizedUsedSigningKeys = 2;
-
-    const operatorsWithModuleAddress = operators.map((operator) => {
-      return { ...operator, moduleAddress: address, finalizedUsedSigningKeys };
-    });
-
-    // key at index 2 (== pointer) is vetted but not deposited yet — a legitimate used=false
-    const healthyKeys = keys.map((key) => {
-      return key.index >= finalizedUsedSigningKeys
-        ? { ...key, moduleAddress: address, used: false }
-        : { ...key, moduleAddress: address };
-    });
-
-    await operatorStorageService.save(operatorsWithModuleAddress);
-    await keyStorageService.save(healthyKeys);
-
-    // the contract agrees — those keys are still not deposited
-    registryServiceMock(moduleRef, {
-      keys: healthyKeys,
-      operators: operatorsWithModuleAddress,
-    });
-
-    await registryService.update(address, blockHash);
-
-    // an unused key at or above the pointer is normal, so the guard must stay silent
-    expect(loggerWarn).not.toHaveBeenCalledWith(
-      'Sync pointer invariant is broken, re-reading all operator keys',
-      expect.anything(),
-    );
-
-    // ...and the database is left exactly as it was
-    await compareTestKeysAndOperators(address, registryService, {
-      keys: healthyKeys,
-      operators: operatorsWithModuleAddress,
-    });
-  });
-
-  test('a missing deposited key below the pointer forces a full re-read that recreates it', async () => {
-    // operator 0 is poisoned, operator 1 is healthy — both on-chain have 5 deposited keys, all used
-    const finalizedUsedSigningKeys = 5;
-    const operatorsWithModuleAddress = [0, 1].map((index) => ({
-      ...operators[index],
-      moduleAddress: address,
-      totalSigningKeys: 5,
-      usedSigningKeys: 5,
-      finalizedUsedSigningKeys,
-    }));
-
-    const buildKey = (operatorIndex: number, index: number) => ({
-      operatorIndex,
-      index,
-      key: keys[0].key,
-      depositSignature: keys[0].depositSignature,
-      used: true,
-      vetted: true,
-      moduleAddress: address,
-    });
-
-    // seed the DB as an affected version left it: for operator 0 the pointer is 5, but only keys [0, 2)
-    // were ever fetched — indices [2, 5) are ABSENT (a hole below the pointer), not merely used=false.
-    // operator 1 is intact: all five keys are present and used, so its prefix reaches the pointer.
-    const legacyKeys = [buildKey(0, 0), buildKey(0, 1), ...[0, 1, 2, 3, 4].map((i) => buildKey(1, i))];
-    const contractKeys = [0, 1].flatMap((op) => [0, 1, 2, 3, 4].map((i) => buildKey(op, i)));
-
-    await operatorStorageService.save(operatorsWithModuleAddress);
-    await keyStorageService.save(legacyKeys);
-
-    registryServiceMock(moduleRef, {
-      keys: contractKeys,
-      operators: operatorsWithModuleAddress,
-    });
-
-    await registryService.update(address, blockHash);
-
-    // exactly one invariant warning: operator 0's used prefix (2 keys, up to index 1) does not reach
-    // its pointer (5). The healthy operator 1 never trips the guard.
-    const invariantWarnings = loggerWarn.mock.calls.filter(
-      ([message]) => message === 'Sync pointer invariant is broken, re-reading all operator keys',
-    );
-    expect(invariantWarnings).toHaveLength(1);
-    expect(invariantWarnings[0][1]).toMatchObject({ operatorIndex: 0, usedKeysCount: 2, maxUsedKeyIndex: 1 });
-
-    // operator 0 was re-read from index 0 (recreating the hole); operator 1 kept its incremental read
-    const keyFetchCalls = (
-      moduleRef.get(RegistryKeyBatchFetchService).fetchSigningKeysInBatches as jest.Mock
-    ).mock.calls.map(([, operatorIndex, , fromIndex]) => ({ operatorIndex, fromIndex }));
-    expect(keyFetchCalls).toContainEqual({ operatorIndex: 0, fromIndex: 0 });
-    expect(keyFetchCalls).not.toContainEqual({ operatorIndex: 1, fromIndex: 0 });
-
-    // ...and the absent keys [2, 5) are re-read from the contract and stored as used
-    const storedIndexes = (await keyStorageService.findAll(address))
-      .filter(({ operatorIndex }) => operatorIndex === 0)
-      .map(({ index }) => index)
-      .sort((a, b) => a - b);
-    expect(storedIndexes).toEqual([0, 1, 2, 3, 4]);
-    expect((await keyStorageService.findUsed(address)).filter(({ operatorIndex }) => operatorIndex === 0).length).toBe(
-      5,
-    );
   });
 });
 
@@ -515,9 +350,6 @@ describe('Finalized pointer race (contract-driven, real DB)', () => {
   })
   class RpcMockContractsModule {}
 
-  const loggerWarn = jest.fn();
-  const invariantBroken = 'Sync pointer invariant is broken, re-reading all operator keys';
-
   let registryService: KeyRegistryService;
   let registryStorageService: RegistryStorageService;
   let keyStorageService: RegistryKeyStorageService;
@@ -525,13 +357,12 @@ describe('Finalized pointer race (contract-driven, real DB)', () => {
 
   beforeEach(async () => {
     finalizedBlock = AFTER_FINALIZATION_BLOCK;
-    loggerWarn.mockClear();
     mockCall.mockImplementation(respond);
 
     const imports = [
       RpcMockContractsModule,
       DatabaseE2ETestingModule.forRoot(),
-      MockLoggerModule.forRoot({ log: jest.fn(), error: jest.fn(), warn: loggerWarn }),
+      MockLoggerModule.forRoot({ log: jest.fn(), error: jest.fn(), warn: jest.fn() }),
       KeyRegistryModule.forFeature(),
       PrometheusModule,
     ];
@@ -569,9 +400,6 @@ describe('Finalized pointer race (contract-driven, real DB)', () => {
     const victimAfterN = await keyStorageService.findOneByIndex(address, 0, VICTIM_INDEX);
     expect(victimAfterN?.used).toBe(false);
 
-    // the clamp alone kept the invariant intact, so the guard never had to fire
-    expect(loggerWarn).not.toHaveBeenCalledWith(invariantBroken, expect.anything());
-
     // ── cycle N+1: the anchor has advanced past the deposit ──
     await registryService.update(address, hashOf(AFTER_FINALIZATION_BLOCK));
     mikroOrm.em.clear(); // new cycle = fresh context in prod; drop the identity map so reads hit the DB
@@ -583,8 +411,5 @@ describe('Finalized pointer race (contract-driven, real DB)', () => {
     const usedKeys = await keyStorageService.findUsed(address);
     expect(usedKeys.length).toBe(DEPOSITED_AT_FINALIZED);
     expect(usedKeys.map((key) => key.index)).toContain(VICTIM_INDEX);
-
-    // still no guard involvement across the whole run — the clamp handled the race on its own
-    expect(loggerWarn).not.toHaveBeenCalledWith(invariantBroken, expect.anything());
   });
 });
