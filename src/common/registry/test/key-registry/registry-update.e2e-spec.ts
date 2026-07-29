@@ -410,7 +410,9 @@ describe('Reorg detection', () => {
       .map(({ index }) => index)
       .sort((a, b) => a - b);
     expect(storedIndexes).toEqual([0, 1, 2, 3, 4]);
-    expect((await keyStorageService.findUsed(address)).filter(({ operatorIndex }) => operatorIndex === 0).length).toBe(5);
+    expect((await keyStorageService.findUsed(address)).filter(({ operatorIndex }) => operatorIndex === 0).length).toBe(
+      5,
+    );
   });
 });
 
