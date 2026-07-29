@@ -137,4 +137,36 @@ describe('Keys', () => {
     await storageService.removeAll();
     await expect(storageService.findAll(address)).resolves.toEqual([]);
   });
+
+  test('getUsedKeysStatsPerOperator aggregates used keys per operator', async () => {
+    const mk = (operatorIndex: number, index: number, used: boolean) => ({
+      operatorIndex,
+      index,
+      moduleAddress: address,
+      ...key,
+      used,
+      vetted: true,
+    });
+
+    await storageService.save([
+      // operator 1: used prefix [0, 3), one unused above it
+      mk(1, 0, true),
+      mk(1, 1, true),
+      mk(1, 2, true),
+      mk(1, 3, false),
+      // operator 2: used prefix [0, 2), one unused above it
+      mk(2, 0, true),
+      mk(2, 1, true),
+      mk(2, 2, false),
+      // operator 3: no used keys at all
+      mk(3, 0, false),
+    ]);
+
+    const stats = await storageService.getUsedKeysStatsPerOperator(address);
+
+    expect(stats.get(1)).toEqual({ minUsed: 0, maxUsed: 2, usedCount: 3 });
+    expect(stats.get(2)).toEqual({ minUsed: 0, maxUsed: 1, usedCount: 2 });
+    // an operator with no used keys does not appear in the map
+    expect(stats.has(3)).toBe(false);
+  });
 });

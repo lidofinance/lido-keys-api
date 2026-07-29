@@ -105,11 +105,12 @@ export abstract class AbstractRegistryService {
     const updateTimeStart = performance.now();
     let totalKeysAmount = 0;
 
-    // Collected once per module (a single query), reused for every operator below.
-    const lowestUnusedKeyIndexes = await this.keyStorage.findLowestUnusedKeyIndexPerOperator(moduleAddress);
     /**
      * it's possible to update keys faster by using different strategies depending on the reason for the update
      */
+    // Collected once per module (one aggregated query), reused for every operator below.
+    const usedKeyStats = await this.keyStorage.getUsedKeysStatsPerOperator(moduleAddress);
+
     for (const [currentIndex, currOperator] of currentOperators.entries()) {
       // check if the operator in the registry has changed since the last update
 
@@ -121,21 +122,26 @@ export abstract class AbstractRegistryService {
       // since the contract guarantees that these keys cannot be changed
       let unchangedKeysMaxIndex = isSameOperator && finalizedUsedSigningKeys ? finalizedUsedSigningKeys : 0;
 
-      // Repair a database written by an affected version: a `used = false` key below the pointer means
-      // the pointer ran ahead of the data, so re-read the operator from index 0. No network — uses the map above.
-      const lowestUnusedKeyIndex = lowestUnusedKeyIndexes.get(currOperator.index);
-      if (
-        unchangedKeysMaxIndex > 0 &&
-        lowestUnusedKeyIndex !== undefined &&
-        lowestUnusedKeyIndex < unchangedKeysMaxIndex
-      ) {
-        this.logger.warn('Sync pointer invariant is broken, re-reading all operator keys', {
-          stakingModuleAddress: moduleAddress,
-          operatorIndex: currOperator.index,
-          finalizedUsedSigningKeys: unchangedKeysMaxIndex,
-          lowestUnusedKeyIndex,
-        });
-        unchangedKeysMaxIndex = 0;
+      // Repair a database written by an affected version. The incremental sync skips keys below the
+      // cursor, trusting [0, cursor) is a complete deposited prefix. Verify it from stored data: the
+      // used keys must be a gap-free prefix (usedCount === maxUsed + 1, that reaches the cursor
+      // (maxUsed + 1 >= cursor). A shortfall means a key below the
+      // cursor is unused OR missing entirely, so the pointer ran ahead of the data — re-read from 0.
+      if (unchangedKeysMaxIndex > 0) {
+        const stats = usedKeyStats.get(currOperator.index);
+        const isStateCorrect =
+          stats !== undefined && stats.usedCount === stats.maxUsed + 1 && stats.maxUsed + 1 >= unchangedKeysMaxIndex;
+
+        if (!isStateCorrect) {
+          this.logger.warn('Sync pointer invariant is broken, re-reading all operator keys', {
+            stakingModuleAddress: moduleAddress,
+            operatorIndex: currOperator.index,
+            finalizedUsedSigningKeys: unchangedKeysMaxIndex,
+            usedKeysCount: stats?.usedCount ?? 0,
+            maxUsedKeyIndex: stats?.maxUsed ?? -1,
+          });
+          unchangedKeysMaxIndex = 0;
+        }
       }
       // get the right border up to which the keys should be updated
       // it's different for different scenarios

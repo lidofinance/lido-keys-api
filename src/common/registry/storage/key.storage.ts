@@ -55,26 +55,40 @@ export class RegistryKeyStorageService {
   }
 
   /**
-   * For every operator of the module returns the lowest key index still marked `used = false`.
+   * For every operator of the module returns aggregates over its `used = true` keys: the lowest and
+   * highest used index and how many used keys are stored.
    *
-   * The incremental sync trusts the invariant "every key below the operator's sync pointer is used"
-   * and never re-reads keys below it, so an unused index below the pointer means the invariant is
-   * broken and the pointer cannot be trusted. Selects index columns only — no pubkeys or signatures
-   * are loaded.
+   * The incremental sync skips keys below the operator's finalized cursor, trusting that [0, cursor)
+   * is a complete deposited prefix. These aggregates let the caller verify that from stored data
+   * without re-reading it: a healthy prefix is gap-free (`usedCount === maxUsed + 1`) and reaches the
+   * cursor (`maxUsed + 1 >= cursor`). One aggregated query per module — operators with no used keys
+   * are simply absent from the map.
    */
-  async findLowestUnusedKeyIndexPerOperator(moduleAddress: string): Promise<Map<number, number>> {
-    const unusedKeys = await this.repository.find(
-      { moduleAddress, used: false },
-      { fields: ['index', 'operatorIndex', 'moduleAddress'] },
-    );
+  async getUsedKeysStatsPerOperator(
+    moduleAddress: string,
+  ): Promise<Map<number, { minUsed: number; maxUsed: number; usedCount: number }>> {
+    const rows: Array<{ operator_index: number; min_used: number; max_used: number; used_count: number | string }> =
+      await this.repository
+        .createQueryBuilder()
+        .where({ moduleAddress, used: true })
+        .getKnexQuery()
+        .clearSelect()
+        .groupBy('operator_index')
+        .select('operator_index')
+        .min({ min_used: 'index' })
+        .max({ max_used: 'index' })
+        .count({ used_count: '*' });
 
-    const lowestUnusedByOperator = new Map<number, number>();
-    for (const { operatorIndex, index } of unusedKeys) {
-      const known = lowestUnusedByOperator.get(operatorIndex);
-      if (known === undefined || index < known) lowestUnusedByOperator.set(operatorIndex, index);
+    const stats = new Map<number, { minUsed: number; maxUsed: number; usedCount: number }>();
+    for (const row of rows) {
+      stats.set(Number(row.operator_index), {
+        minUsed: Number(row.min_used),
+        maxUsed: Number(row.max_used),
+        usedCount: Number(row.used_count),
+      });
     }
 
-    return lowestUnusedByOperator;
+    return stats;
   }
 
   /** number of keys marked `used = true` (deposited) stored for the module */
