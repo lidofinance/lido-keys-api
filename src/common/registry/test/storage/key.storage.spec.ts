@@ -119,30 +119,6 @@ describe('Keys', () => {
     expect(mockRegistryKeyRepository.find).toBeCalledTimes(1);
   });
 
-  test('findLowestUnusedKeyIndexPerOperator returns the lowest unused index per operator', async () => {
-    mockRegistryKeyRepository.find.mockResolvedValueOnce([
-      { operatorIndex: 1, index: 5 },
-      { operatorIndex: 1, index: 2 },
-      { operatorIndex: 2, index: 4 },
-      { operatorIndex: 1, index: 3 },
-    ]);
-
-    await expect(storageService.findLowestUnusedKeyIndexPerOperator(address)).resolves.toEqual(
-      new Map([
-        [1, 2],
-        [2, 4],
-      ]),
-    );
-    expect(mockRegistryKeyRepository.find).toBeCalledWith(
-      { moduleAddress: address, used: false },
-      { fields: ['index', 'operatorIndex', 'moduleAddress'] },
-    );
-  });
-
-  test('findLowestUnusedKeyIndexPerOperator returns an empty map when nothing is unused', async () => {
-    await expect(storageService.findLowestUnusedKeyIndexPerOperator(address)).resolves.toEqual(new Map());
-  });
-
   test('countUsedKeys', async () => {
     mockRegistryKeyRepository.count.mockResolvedValueOnce(42);
     await expect(storageService.countUsedKeys(address)).resolves.toEqual(42);

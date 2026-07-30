@@ -108,9 +108,6 @@ export abstract class AbstractRegistryService {
     const updateTimeStart = performance.now();
     let totalKeysAmount = 0;
 
-    // Collected once per module (a single query), reused for every operator below.
-    const lowestUnusedKeyIndexes = await this.keyStorage.findLowestUnusedKeyIndexPerOperator(moduleAddress);
-
     for (const [currentIndex, currOperator] of currentOperators.entries()) {
       // check if the operator in the registry has changed since the last update
       const prevOperator = previousOperators[currentIndex] ?? null;
@@ -119,24 +116,8 @@ export abstract class AbstractRegistryService {
       const finalizedUsedSigningKeys = prevOperator ? prevOperator.finalizedUsedSigningKeys : null;
       // skip updating keys from 0 to `usedSigningKeys` of previous collected data
       // since the contract guarantees that these keys cannot be changed
-      let unchangedKeysMaxIndex = isSameOperator && finalizedUsedSigningKeys ? finalizedUsedSigningKeys : 0;
+      const unchangedKeysMaxIndex = isSameOperator && finalizedUsedSigningKeys ? finalizedUsedSigningKeys : 0;
 
-      // Repair a database written by an affected version: a `used = false` key below the pointer means
-      // the pointer ran ahead of the data, so re-read the operator from index 0. No network — uses the map above.
-      const lowestUnusedKeyIndex = lowestUnusedKeyIndexes.get(currOperator.index);
-      if (
-        unchangedKeysMaxIndex > 0 &&
-        lowestUnusedKeyIndex !== undefined &&
-        lowestUnusedKeyIndex < unchangedKeysMaxIndex
-      ) {
-        this.logger.warn('Sync pointer invariant is broken, re-reading all operator keys', {
-          stakingModuleAddress: moduleAddress,
-          operatorIndex: currOperator.index,
-          finalizedUsedSigningKeys: unchangedKeysMaxIndex,
-          lowestUnusedKeyIndex,
-        });
-        unchangedKeysMaxIndex = 0;
-      }
       // get the right border up to which the keys should be updated
       // it's different for different scenarios
       const toIndex = this.getToIndex(currOperator);

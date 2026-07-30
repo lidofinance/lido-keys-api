@@ -54,29 +54,6 @@ export class RegistryKeyStorageService {
     return await this.repository.find({ operatorIndex, moduleAddress });
   }
 
-  /**
-   * For every operator of the module returns the lowest key index still marked `used = false`.
-   *
-   * The incremental sync trusts the invariant "every key below the operator's sync pointer is used"
-   * and never re-reads keys below it, so an unused index below the pointer means the invariant is
-   * broken and the pointer cannot be trusted. Selects index columns only — no pubkeys or signatures
-   * are loaded.
-   */
-  async findLowestUnusedKeyIndexPerOperator(moduleAddress: string): Promise<Map<number, number>> {
-    const unusedKeys = await this.repository.find(
-      { moduleAddress, used: false },
-      { fields: ['index', 'operatorIndex', 'moduleAddress'] },
-    );
-
-    const lowestUnusedByOperator = new Map<number, number>();
-    for (const { operatorIndex, index } of unusedKeys) {
-      const known = lowestUnusedByOperator.get(operatorIndex);
-      if (known === undefined || index < known) lowestUnusedByOperator.set(operatorIndex, index);
-    }
-
-    return lowestUnusedByOperator;
-  }
-
   /** number of keys marked `used = true` (deposited) stored for the module */
   async countUsedKeys(moduleAddress: string): Promise<number> {
     return await this.repository.count({ moduleAddress, used: true });
