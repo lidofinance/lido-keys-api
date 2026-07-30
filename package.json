@@ -4,6 +4,12 @@
   "description": "Lido Node Operators keys service",
   "author": "Lido team",
   "private": true,
+  "bin": {
+    "lido-keys-api": "dist/src/main.js"
+  },
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
   "mikro-orm": {
     "useTsNode": true,
