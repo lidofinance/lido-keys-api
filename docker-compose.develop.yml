@@ -1,0 +1,9 @@
+# Local-development overlay. Adds the variables a devnet or fork run needs,
+# so the public docker-compose.yml stays free of them.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.develop.yml up --build
+services:
+  keys_api:
+    environment:
+      - LIDO_LOCATOR_DEVNET_ADDRESS=${LIDO_LOCATOR_DEVNET_ADDRESS}
