@@ -115,6 +115,10 @@ export class EnvironmentVariables {
   @Transform(({ value }) => value || LogFormat.json)
   LOG_FORMAT: LogFormat = LogFormat.json;
 
+  @IsString()
+  @IsOptional()
+  public TRUSTED_PROXIES?: string;
+
   @IsNotEmpty()
   @IsArray()
   @ArrayMinSize(1)
