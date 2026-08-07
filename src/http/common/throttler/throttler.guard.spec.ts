@@ -36,11 +36,9 @@ describe('ThrottlerBehindProxyGuard', () => {
 
   beforeEach(async () => {
     storage = new ThrottlerStorageService();
-    guard = new ThrottlerBehindProxyGuard(
-      { throttlers: [{ ttl: TTL_MS, limit: LIMIT }] } as any,
-      storage,
-      { getAllAndOverride: () => undefined } as any,
-    );
+    guard = new ThrottlerBehindProxyGuard({ throttlers: [{ ttl: TTL_MS, limit: LIMIT }] } as any, storage, {
+      getAllAndOverride: () => undefined,
+    } as any);
     await guard.onModuleInit();
   });
 
@@ -72,6 +70,21 @@ describe('ThrottlerBehindProxyGuard', () => {
       const mappedA = await track('::ffff:10.0.0.5');
       const mappedB = await track('::ffff:10.0.0.6');
       expect(mappedA).not.toBe(mappedB);
+    });
+
+    it('does not misclassify a non-mapped IPv6 written with dotted-quad as IPv4', async () => {
+      // 2001:db8::1.2.3.4 is a real IPv6 address — the dotted-quad is just an
+      // alternate way to write the last 32 bits (0102:0304). It is NOT an
+      // IPv4-mapped address (::ffff:0:0/96), so it must be aggregated by /64,
+      // not collapsed into the IPv4 bucket 1.2.3.4 (which would collide with the
+      // real IPv4 client 1.2.3.4 and with any other ...::1.2.3.4).
+      await expect(track('2001:db8::1.2.3.4')).resolves.toBe('2001:db8::/64');
+    });
+
+    it('unwraps an IPv4-mapped IPv6 written in hex form to plain IPv4', async () => {
+      // ::ffff:0102:0304 is the hex spelling of ::ffff:1.2.3.4 — a genuine
+      // IPv4-mapped address that must unwrap to 1.2.3.4 regardless of notation.
+      await expect(track('::ffff:0102:0304')).resolves.toBe('1.2.3.4');
     });
 
     it('falls back to the raw string for unparseable input', async () => {

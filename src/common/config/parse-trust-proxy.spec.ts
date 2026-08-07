@@ -14,8 +14,9 @@ describe('parseTrustProxy', () => {
       expect(parseTrustProxy('   ')).toBe(false);
     });
 
-    it('should return false when raw is only commas and whitespace', () => {
-      expect(parseTrustProxy(' , , ')).toBe(false);
+    it('should throw when raw is only commas and whitespace', () => {
+      // strict: junk-only value must fail loudly, not silently disable trust
+      expect(() => parseTrustProxy(' , , ')).toThrow(/invalid IP\/CIDR entry ""/);
     });
   });
 
@@ -40,8 +41,8 @@ describe('parseTrustProxy', () => {
   });
 
   describe('CIDR prefix boundaries', () => {
-    it('should accept the minimum IPv4 prefix /0', () => {
-      expect(parseTrustProxy('10.0.0.0/0')).toBe('10.0.0.0/0');
+    it('should reject the IPv4 prefix /0 (proxy-addr requires a positive prefix)', () => {
+      expect(() => parseTrustProxy('10.0.0.0/0')).toThrow(/invalid IP\/CIDR entry "10\.0\.0\.0\/0"/);
     });
 
     it('should accept the maximum IPv4 prefix /32', () => {
@@ -70,6 +71,27 @@ describe('parseTrustProxy', () => {
     });
   });
 
+  // proxy-addr (used by Fastify's trustProxy) validates the prefix with /^[0-9]+$/,
+  // so these must be rejected. Number(prefix) is too lax and coerces them to valid
+  // numbers, which would let a config through here that Fastify then rejects at boot.
+  describe('CIDR prefix strictness (Fastify / proxy-addr parity)', () => {
+    it('should reject a prefix with a leading plus', () => {
+      expect(() => parseTrustProxy('10.0.0.0/+24')).toThrow(/invalid IP\/CIDR entry "10\.0\.0\.0\/\+24"/);
+    });
+
+    it('should reject a hexadecimal prefix', () => {
+      expect(() => parseTrustProxy('10.0.0.0/0x18')).toThrow(/invalid IP\/CIDR entry "10\.0\.0\.0\/0x18"/);
+    });
+
+    it('should reject an empty prefix', () => {
+      expect(() => parseTrustProxy('10.0.0.0/')).toThrow(/invalid IP\/CIDR entry "10\.0\.0\.0\/"/);
+    });
+
+    it('should reject a prefix with surrounding whitespace', () => {
+      expect(() => parseTrustProxy('10.0.0.0/ 24')).toThrow(/invalid IP\/CIDR entry "10\.0\.0\.0\/ 24"/);
+    });
+  });
+
   describe('comma-separated lists', () => {
     it('should normalize a list of valid entries', () => {
       expect(parseTrustProxy('10.0.0.1,192.168.0.0/16,::1')).toBe('10.0.0.1,192.168.0.0/16,::1');
@@ -79,9 +101,10 @@ describe('parseTrustProxy', () => {
       expect(parseTrustProxy('  10.0.0.1 ,  192.168.0.0/16  ')).toBe('10.0.0.1,192.168.0.0/16');
     });
 
-    it('should drop empty entries produced by extra commas', () => {
-      expect(parseTrustProxy('10.0.0.1,,192.168.0.1')).toBe('10.0.0.1,192.168.0.1');
-      expect(parseTrustProxy('10.0.0.1, ,192.168.0.1')).toBe('10.0.0.1,192.168.0.1');
+    it('should throw on empty entries produced by extra commas', () => {
+      // strict: an empty entry between commas is a malformed config, not a no-op
+      expect(() => parseTrustProxy('10.0.0.1,,192.168.0.1')).toThrow(/invalid IP\/CIDR entry ""/);
+      expect(() => parseTrustProxy('10.0.0.1, ,192.168.0.1')).toThrow(/invalid IP\/CIDR entry ""/);
     });
   });
 

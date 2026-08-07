@@ -36,12 +36,23 @@ export class SRModulesKeysController {
     protected readonly entityManager: EntityManager,
   ) {}
 
+  /**
+   * @deprecated Inefficient endpoint: it eagerly materializes every key of every module into a
+   * single in-memory response with no pagination or bound, so both DB reads and response size grow
+   * linearly with the total key count. Prefer the streaming, per-module endpoint
+   * `GET /modules/:module_id/keys` (getModuleKeys) instead.
+   */
   @Version('1')
-  @ApiOperation({ summary: 'Get keys for all modules grouped by staking router module' })
+  @ApiOperation({
+    summary: 'Get keys for all modules grouped by staking router module',
+    deprecated: true,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description:
-      'Keys for all modules are grouped by the staking router module. Receiving results from this endpoint may take some time, so please use it carefully.',
+      'DEPRECATED. Keys for all modules are grouped by the staking router module. This endpoint ' +
+      'materializes all keys of all modules into a single response without pagination, so it is ' +
+      'memory-heavy and slow. Use the streaming endpoint GET /modules/:module_id/keys instead.',
     type: GroupedByModuleKeyListResponse,
   })
   @ApiResponse({

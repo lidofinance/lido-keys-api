@@ -16,19 +16,36 @@ export class SRModulesKeysService {
     protected readonly entityManager: EntityManager,
   ) {}
 
+  /**
+   * @deprecated Inefficient: reads and returns all keys of all modules at once, fully materialized
+   * in memory with no pagination or result bound.
+   * The whole read is wrapped in a single REPEATABLE_READ transaction so that the returned keys and the
+   * advertised `elBlockSnapshot` come from the same DB snapshot). Prefer the streaming,
+   * per-module path {@link getModuleKeys} for new consumers.
+   */
   async getGroupedByModuleKeys(filters: KeyQuery): Promise<GroupedByModuleKeyListResponse> {
-    const { stakingModules, elBlockSnapshot }: { stakingModules: SrModuleEntity[]; elBlockSnapshot: ELBlockSnapshot } =
-      await this.stakingRouterService.getStakingModulesAndMeta();
-    const srModulesKeys: { keys: Key[]; module: StakingModuleResponse }[] = [];
+    const { srModulesKeys, elBlockSnapshot } = await this.entityManager.transactional(
+      async () => {
+        const {
+          stakingModules,
+          elBlockSnapshot,
+        }: { stakingModules: SrModuleEntity[]; elBlockSnapshot: ELBlockSnapshot } =
+          await this.stakingRouterService.getStakingModulesAndMeta();
+        const srModulesKeys: { keys: Key[]; module: StakingModuleResponse }[] = [];
 
-    for (const stakingModule of stakingModules) {
-      // read from config name of module that implement functions to fetch and store keys for type
-      const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(stakingModule.type);
-      const keys: RegistryKey[] = await moduleInstance.getKeys(stakingModule.stakingModuleAddress, filters);
-      const keysResp = keys.map((key) => new Key(key));
+        for (const stakingModule of stakingModules) {
+          // read from config name of module that implement functions to fetch and store keys for type
+          const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(stakingModule.type);
+          const keys: RegistryKey[] = await moduleInstance.getKeys(stakingModule.stakingModuleAddress, filters);
+          const keysResp = keys.map((key) => new Key(key));
 
-      srModulesKeys.push({ keys: keysResp, module: new StakingModuleResponse(stakingModule) });
-    }
+          srModulesKeys.push({ keys: keysResp, module: new StakingModuleResponse(stakingModule) });
+        }
+
+        return { srModulesKeys, elBlockSnapshot };
+      },
+      { isolationLevel: IsolationLevel.REPEATABLE_READ },
+    );
 
     return {
       data: srModulesKeys,
