@@ -104,7 +104,6 @@ export class RegistryOperatorFetchService {
     ]);
 
     const {
-      name,
       active,
       rewardAddress,
       totalVettedValidators,
@@ -112,6 +111,29 @@ export class RegistryOperatorFetchService {
       totalAddedValidators,
       totalDepositedValidators,
     } = operator;
+
+    // The operator name is free-form and validated on chain for length only, so it may contain
+    // bytes the indexer cannot process. It must never wedge the shared update loop (bug 87712):
+    let name: string;
+    try {
+      // Invalid UTF-8 makes ethers install a throwing getter that fires when the name field is read.
+      name = operator.name;
+    } catch (error) {
+      this.logger.error(
+        `Failed to read name for operator ${operatorIndex} of module ${moduleAddress}; using a placeholder.`,
+      );
+      this.logger.error(error);
+      name = `invalidName${operatorIndex}`;
+    }
+
+    // A NUL byte is valid UTF-8 (so it passes ethers) but Postgres text/varchar cannot store it:
+    // the INSERT would revert and roll back the whole update transaction. Replace it too.
+    if (name.includes(String.fromCharCode(0))) {
+      this.logger.error(
+        `Operator ${operatorIndex} of module ${moduleAddress} has a NUL byte in its name; using a placeholder.`,
+      );
+      name = `invalidName${operatorIndex}`;
+    }
 
     // min(finalized, deposited count at the latest block fixed at the cycle start) guarantees that
     // in the next cycle there will be no frozen keys with a wrong `used` flag.
