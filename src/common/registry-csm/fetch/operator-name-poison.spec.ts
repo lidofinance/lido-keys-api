@@ -13,8 +13,7 @@ const buildService = (resolve: jest.Mock) => {
 };
 
 // resolveOperatorName is private; call it directly for a unit-level assertion.
-const resolveName = (service: any, index: number): Promise<string> =>
-  service.resolveOperatorName(MODULE, index, {});
+const resolveName = (service: any, index: number): Promise<string> => service.resolveOperatorName(MODULE, index, {});
 
 /**
  * Bug 87712 (CSM path): a poisoned operator name must not escape resolveOperatorName (which would
