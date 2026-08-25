@@ -110,9 +110,8 @@ export class PrometheusService {
     help: 'Validators registry is enabled',
   });
 
-  // A gauge rather than a counter of reloads: the process exits when the file changes, so a
-  // counter would be reset by the restart it is meant to record, and the last increment before an
-  // exit is never scraped. Unprefixed, same name as in the sibling services.
+  // A gauge, not a counter: the process exits on a change, so a counter would be reset by the
+  // restart it records.
   public secretsFileMtime = this.getOrCreateMetric('Gauge', {
     prefix: false,
     name: 'secrets_file_mtime_seconds',

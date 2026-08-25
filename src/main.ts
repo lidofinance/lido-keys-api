@@ -1,5 +1,4 @@
-// First, and deliberately: it puts the secrets file into the environment, and the imports below
-// read the environment while they are being loaded. See common/secrets/bootstrap-env.
+// First: the imports below read process.env while they load.
 import { SECRETS_FILE_PATH, SECRETS_IN_FORCE, SECRETS_POLL_INTERVAL_IN_SECONDS } from './common/secrets/bootstrap-env';
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
@@ -16,8 +15,6 @@ import { SecretsWatcher, secretsFileMtimeMs } from './common/secrets';
 
 export const validationOpt = { transform: true };
 
-// How long a shutdown may take before this process stops waiting for itself. Well under any
-// termination grace period an orchestrator gives it, so the exit is always ours.
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 async function bootstrap() {
@@ -26,8 +23,6 @@ async function bootstrap() {
     new FastifyAdapter({
       trustProxy: true,
       ignoreTrailingSlash: true,
-      // Idle keep-alive connections are dropped instead of being waited out. Not the whole of the
-      // shutdown story — see the handler below — but it is what makes close() itself prompt.
       forceCloseConnections: true,
     }),
     {
@@ -52,8 +47,6 @@ async function bootstrap() {
   const logger: Logger = app.get(LOGGER_PROVIDER);
   app.useLogger(logger);
 
-  // Which of the two sources the process is running on. Nothing else in the logs says it, and
-  // "why is it still using the old endpoint" cannot be answered without it.
   const fromFile = Object.keys(SECRETS_IN_FORCE).length > 0;
   logger.log(
     fromFile
@@ -64,18 +57,14 @@ async function bootstrap() {
   const prometheusService = app.get(PrometheusService);
   prometheusService.secretsFileMtime.set(fromFile ? (secretsFileMtimeMs(SECRETS_FILE_PATH) ?? 0) / 1000 : 0);
 
-  // Nest's own signal handling is not used. It closes the application and leaves the process to
-  // exit on its own, which it never does: dependencies hold timers that outlive the application,
-  // and the orchestrator ends up killing the container at the end of the grace period instead.
-  // app.close() still runs the destroy and shutdown hooks, so the ORM closes its connection here
-  // exactly as it did under enableShutdownHooks().
+    // Not enableShutdownHooks: it leaves the process to exit on its own, and dependencies hold
+    // timers that outlive the application. close() still runs the destroy hooks.
   let shuttingDown = false;
   const shutdown = async (reason: string, code: number) => {
     if (shuttingDown) return;
     shuttingDown = true;
     logger.log(`Shutting down: ${reason}`);
 
-    // A shutdown this process asks for is bounded by nothing, so it is bounded here.
     const deadline = setTimeout(() => {
       logger.error(`Shutdown did not finish within ${SHUTDOWN_TIMEOUT_MS} ms, exiting anyway`);
       process.exit(code);
@@ -94,10 +83,7 @@ async function bootstrap() {
     process.on(signal, () => void shutdown(signal, 0));
   }
 
-  // A rotated credential has to reach the process, and on staging and production nothing outside
-  // it can restart it. So it notices and exits, and the orchestrator starts it again with the new
-  // values read the ordinary way — far less code, and far fewer failure modes, than swapping
-  // clients inside a running process.
+  // Exit rather than swap clients in a live process: the supervisor restarts it with the new values.
   if (fromFile) {
     new SecretsWatcher(SECRETS_FILE_PATH, {
       intervalInSeconds: SECRETS_POLL_INTERVAL_IN_SECONDS,
