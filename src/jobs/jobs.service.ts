@@ -30,6 +30,9 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
       );
       clearInterval(intervalUpdateValidators);
     } catch {}
+    // The keys-update deadline is a plain setTimeout, so the scheduler registry above does not
+    // know about it. Left running it keeps the event loop alive for its full hour.
+    this.keysUpdateService.clearUpdateDeadline();
   }
 
   /**
