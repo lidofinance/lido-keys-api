@@ -26,7 +26,7 @@ export class PrometheusService {
     prefix: false,
     name: 'build_info',
     help: 'Build information',
-    labelNames: ['name', 'version', 'env', 'network'],
+    labelNames: ['name', 'version', 'env', 'network', 'commit', 'branch'],
   });
 
   public elRpcRequestDuration = this.getOrCreateMetric('Histogram', {
