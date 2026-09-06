@@ -7,7 +7,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { SWAGGER_URL } from './http/common/swagger';
-import { ConfigService } from './common/config';
+import { ConfigService, VALIDATED_ENV } from './common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
 import { MikroORM } from '@mikro-orm/core';
 import { PrometheusService } from './common/prometheus';
@@ -53,12 +53,15 @@ async function bootstrap() {
       ? `Configuration: ${SECRETS_FILE_PATH} over the environment`
       : `Configuration: the environment (no secrets file at ${SECRETS_FILE_PATH})`,
   );
+  // Defaults included, unlike a dump of process.env. The logger's secrets format masks
+  // every value from configService.secrets in this line.
+  logger.log(`Effective configuration: ${JSON.stringify(VALIDATED_ENV)}`);
 
   const prometheusService = app.get(PrometheusService);
   prometheusService.secretsFileMtime.set(fromFile ? (secretsFileMtimeMs(SECRETS_FILE_PATH) ?? 0) / 1000 : 0);
 
-    // Not enableShutdownHooks: it leaves the process to exit on its own, and dependencies hold
-    // timers that outlive the application. close() still runs the destroy hooks.
+  // Not enableShutdownHooks: it leaves the process to exit on its own, and dependencies hold
+  // timers that outlive the application. close() still runs the destroy hooks.
   let shuttingDown = false;
   const shutdown = async (reason: string, code: number) => {
     if (shuttingDown) return;
