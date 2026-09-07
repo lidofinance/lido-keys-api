@@ -278,7 +278,22 @@ describe('SRModulesValidatorsController (e2e)', () => {
           await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
           const resp = await request(app.getHttpServer())
             .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
-            .query({ percent: 0 });
+            .query({ max_amount: 0 });
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(0);
+          expect(resp.body.data).toEqual([]);
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
+        });
+
+        // percent has priority over max_amount, so percent=0 wins → empty list
+        it('Should return empty list when percent is 0 even if max_amount is set', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`)
+            .query({ percent: 0, max_amount: 5 });
 
           expect(resp.status).toEqual(200);
           expect(resp.body.data.length).toEqual(0);
@@ -614,7 +629,22 @@ describe('SRModulesValidatorsController (e2e)', () => {
           await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
           const resp = await request(app.getHttpServer())
             .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
-            .query({ percent: 0 });
+            .query({ max_amount: 0 });
+
+          expect(resp.status).toEqual(200);
+          expect(resp.body.data.length).toEqual(0);
+          expect(resp.body.data).toEqual([]);
+          expect(resp.body.meta).toEqual({
+            clBlockSnapshot: consensusMetaResp,
+          });
+        });
+
+        // percent has priority over max_amount, so percent=0 wins → empty list
+        it('Should return empty list when percent is 0 even if max_amount is set', async () => {
+          await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
+          const resp = await request(app.getHttpServer())
+            .get(`/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`)
+            .query({ percent: 0, max_amount: 5 });
 
           expect(resp.status).toEqual(200);
           expect(resp.body.data.length).toEqual(0);
