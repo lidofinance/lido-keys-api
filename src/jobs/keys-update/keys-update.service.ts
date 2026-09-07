@@ -164,16 +164,42 @@ export class KeysUpdateService {
       process.exit(1);
     }
 
-    await this.entityManager.transactional(
-      async () => {
+    // The single-worker topology makes a second writer a deployment mistake (manual scale, a
+    // Terminating pod outliving its replacement) — this transaction stays correct anyway: the
+    // advisory lock serializes writers, and the re-read under it keeps a writer that fetched
+    // an older block from rolling the database backwards. READ_COMMITTED alone allows exactly
+    // that lost update.
+    const updated = await this.entityManager.transactional(
+      async (em) => {
+        const [{ locked }] = await em.execute<{ locked: boolean }[]>(
+          "select pg_try_advisory_xact_lock(hashtext('lido-keys-api:keys-update')) as locked",
+        );
+        if (!locked) {
+          this.logger.warn('Another instance is writing the keys update, skipping this cycle');
+          return false;
+        }
+
+        const metaNow = await this.elMetaStorage.get();
+        if (metaNow && metaNow.blockNumber > currElMeta.number) {
+          this.logger.warn('Another instance stored a newer block, skipping this cycle', { metaNow, currElMeta });
+          return false;
+        }
+        if (metaNow && metaNow.blockHash === currElMeta.hash) {
+          this.logger.log('Another instance stored the same block, updating is not required', { currElMeta });
+          return false;
+        }
+
         await this.stakingModuleUpdaterService.updateStakingModules({
           currElMeta,
-          prevElMeta,
+          prevElMeta: metaNow,
           contractModules,
         });
+        return true;
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
     );
+
+    if (!updated) return;
 
     return currElMeta;
   }

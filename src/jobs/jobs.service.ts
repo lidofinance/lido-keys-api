@@ -1,5 +1,6 @@
 import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
+import { ConfigService } from 'common/config';
 import { ValidatorsUpdateService } from './validators-update/validators-update.service';
 import { KeysUpdateService } from './keys-update';
 import { SchedulerRegistry } from '@nestjs/schedule';
@@ -9,6 +10,7 @@ import { PrometheusService } from 'common/prometheus';
 export class JobsService implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
+    protected readonly configService: ConfigService,
     protected readonly keysUpdateService: KeysUpdateService,
     protected readonly validatorUpdateService: ValidatorsUpdateService,
     protected readonly schedulerRegistry: SchedulerRegistry,
@@ -39,6 +41,15 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
    * Initializes jobs
    */
   protected async initialize(): Promise<void> {
+    // The role switch, not a feature switch: a read-only API replica starts no updaters and
+    // with them none of the no-progress watchdogs that exit the process.
+    if (!this.configService.get('UPDATE_JOBS_ENABLE')) {
+      this.prometheusService.updateJobsEnabled.set(0);
+      this.logger.log('Update jobs are disabled: this instance serves the API only');
+      return;
+    }
+    this.prometheusService.updateJobsEnabled.set(1);
+
     await this.keysUpdateService.initialize();
     if (this.validatorUpdateService.isDisabledRegistry()) {
       this.prometheusService.validatorsEnabled.set(0);
