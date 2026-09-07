@@ -10,6 +10,7 @@ import { SWAGGER_URL } from './http/common/swagger';
 import { ConfigService, VALIDATED_ENV } from './common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
 import { MikroORM } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/knex';
 import { PrometheusService } from './common/prometheus';
 import { SecretsWatcher, secretsFileMtimeMs } from './common/secrets';
 
@@ -37,8 +38,14 @@ async function bootstrap() {
   const corsWhitelist = configService.get('CORS_WHITELIST_REGEXP');
   const sentryDsn = configService.get('SENTRY_DSN') ?? undefined;
 
-  // migrating when starting application
-  await app.get(MikroORM).getMigrator().up();
+  // Several instances boot concurrently (API replicas and the worker) and each runs the
+  // migrator: on a fresh database two concurrent `create table` race into a pg_type unique
+  // violation. The lock serializes them; the losers find the migrations already applied.
+  const orm = app.get(MikroORM);
+  await orm.em.transactional(async (em) => {
+    await (em as EntityManager).execute("select pg_advisory_xact_lock(hashtext('lido-keys-api:migrations'))");
+    await orm.getMigrator().up();
+  });
 
   // versions
   app.enableVersioning({ type: VersioningType.URI });
