@@ -5,6 +5,7 @@ import { ConsensusProviderService } from '../common/consensus-provider';
 import { ConfigService } from '../common/config';
 import { PrometheusService } from '../common/prometheus';
 import { APP_NAME, APP_VERSION } from './app.constants';
+import { readBuildInfo } from './build-info';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -25,8 +26,9 @@ export class AppService implements OnModuleInit {
     const version = APP_VERSION;
     const name = APP_NAME;
     const network = await this.executionProviderService.getNetworkName();
-    this.prometheusService.buildInfo.labels({ env, name, version, network }).inc();
-    this.logger.log('Init app', { env, name, version });
+    const { branch, commit } = readBuildInfo();
+    this.prometheusService.buildInfo.labels({ env, name, version, network, commit, branch }).inc();
+    this.logger.log('Init app', { env, name, version, commit, branch });
   }
 
   /**

@@ -1,3 +1,5 @@
+// First: the imports below read process.env while they load.
+import { SECRETS_FILE_PATH, SECRETS_IN_FORCE, SECRETS_POLL_INTERVAL_IN_SECONDS } from './common/secrets/bootstrap-env';
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
@@ -5,11 +7,15 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { SWAGGER_URL } from './http/common/swagger';
-import { ConfigService } from './common/config';
+import { ConfigService, VALIDATED_ENV } from './common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
 import { MikroORM } from '@mikro-orm/core';
+import { PrometheusService } from './common/prometheus';
+import { SecretsWatcher, secretsFileMtimeMs } from './common/secrets';
 
 export const validationOpt = { transform: true };
+
+const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -17,6 +23,7 @@ async function bootstrap() {
     new FastifyAdapter({
       trustProxy: true,
       ignoreTrailingSlash: true,
+      forceCloseConnections: true,
     }),
     {
       bufferLogs: true,
@@ -40,9 +47,57 @@ async function bootstrap() {
   const logger: Logger = app.get(LOGGER_PROVIDER);
   app.useLogger(logger);
 
-  // enable onShutdownHooks for MikroORM to close DB connection
-  // when application exits normally
-  app.enableShutdownHooks();
+  const fromFile = Object.keys(SECRETS_IN_FORCE).length > 0;
+  logger.log(
+    fromFile
+      ? `Configuration: ${SECRETS_FILE_PATH} over the environment`
+      : `Configuration: the environment (no secrets file at ${SECRETS_FILE_PATH})`,
+  );
+  // Defaults included, unlike a dump of process.env. The logger's secrets format masks
+  // every value from configService.secrets in this line.
+  logger.log(`Effective configuration: ${JSON.stringify(VALIDATED_ENV)}`);
+
+  const prometheusService = app.get(PrometheusService);
+  prometheusService.secretsFileMtime.set(fromFile ? (secretsFileMtimeMs(SECRETS_FILE_PATH) ?? 0) / 1000 : 0);
+
+  // Not enableShutdownHooks: it leaves the process to exit on its own, and dependencies hold
+  // timers that outlive the application. close() still runs the destroy hooks.
+  let shuttingDown = false;
+  const shutdown = async (reason: string, code: number) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    logger.log(`Shutting down: ${reason}`);
+
+    const deadline = setTimeout(() => {
+      logger.error(`Shutdown did not finish within ${SHUTDOWN_TIMEOUT_MS} ms, exiting anyway`);
+      process.exit(code);
+    }, SHUTDOWN_TIMEOUT_MS);
+
+    try {
+      await app.close();
+    } catch (error) {
+      logger.error(error);
+    }
+    clearTimeout(deadline);
+    process.exit(code);
+  };
+
+  for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+    process.on(signal, () => void shutdown(signal, 0));
+  }
+
+  // Exit rather than swap clients in a live process: the supervisor restarts it with the new values.
+  if (fromFile) {
+    new SecretsWatcher(SECRETS_FILE_PATH, {
+      intervalInSeconds: SECRETS_POLL_INTERVAL_IN_SECONDS,
+      inForce: SECRETS_IN_FORCE,
+      onChange: (changed) => {
+        logger.log(`Secrets file changed (${changed.join(', ')}), exiting so the new values are read at start`);
+        void shutdown('rotated secrets', 0);
+      },
+      onError: (error) => logger.error(error),
+    }).start();
+  }
 
   // handling uncaught exceptions when application exits abnormally
   process.on('uncaughtException', async (error) => {

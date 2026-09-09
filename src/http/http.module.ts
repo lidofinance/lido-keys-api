@@ -16,6 +16,7 @@ import { SRModulesOperatorsModule } from './sr-modules-operators';
 import { SRModulesOperatorsKeysModule } from './sr-modules-operators-keys';
 import { StatusModule } from './status';
 import { CustomCacheInterceptor } from './common/cache/cache.service';
+import { CacheHeadersInterceptor } from './common/cache/cache-headers.interceptor';
 
 @Module({
   imports: [
@@ -31,6 +32,9 @@ import { CustomCacheInterceptor } from './common/cache/cache.service';
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerBehindProxyGuard },
+    // Before the response cache: a cache hit short-circuits the chain, and interceptors
+    // registered after it would never stamp the Cache-Control header on hits.
+    { provide: APP_INTERCEPTOR, useClass: CacheHeadersInterceptor },
     { provide: APP_INTERCEPTOR, useClass: CustomCacheInterceptor },
   ],
 })

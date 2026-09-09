@@ -26,7 +26,7 @@ export class PrometheusService {
     prefix: false,
     name: 'build_info',
     help: 'Build information',
-    labelNames: ['name', 'version', 'env', 'network'],
+    labelNames: ['name', 'version', 'env', 'network', 'commit', 'branch'],
   });
 
   public elRpcRequestDuration = this.getOrCreateMetric('Histogram', {
@@ -108,5 +108,13 @@ export class PrometheusService {
     prefix: true,
     name: 'validators_registry_enabled',
     help: 'Validators registry is enabled',
+  });
+
+  // A gauge, not a counter: the process exits on a change, so a counter would be reset by the
+  // restart it records.
+  public secretsFileMtime = this.getOrCreateMetric('Gauge', {
+    prefix: false,
+    name: 'secrets_file_mtime_seconds',
+    help: 'mtime of the secrets file in force, 0 when the configuration came from the environment',
   });
 }
