@@ -6,6 +6,9 @@ import { JobService } from 'common/job';
 import { ValidatorsService } from 'validators';
 import { OneAtTime } from 'common/decorators/oneAtTime';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { EntityManager } from '@mikro-orm/knex';
+import { IsolationLevel } from '@mikro-orm/core';
+import { ConsensusMeta } from '@lido-nestjs/validators-registry';
 
 export interface ValidatorsFilter {
   pubkeys: string[];
@@ -32,6 +35,7 @@ export class ValidatorsUpdateService {
     protected readonly jobService: JobService,
     protected readonly validatorsService: ValidatorsService,
     protected readonly schedulerRegistry: SchedulerRegistry,
+    protected readonly entityManager: EntityManager,
   ) {}
 
   // prometheus metrics
@@ -87,10 +91,35 @@ export class ValidatorsUpdateService {
     }, this.UPDATE_VALIDATORS_TIMEOUT_MS);
   }
 
+  // Same overlap as the keys update: the rollout starts the new pod before the old one is gone,
+  // so two writers coexist for a while. The registry's own transaction does not cover that — it
+  // reads the stored meta before opening it, and the write is delete-all plus re-insert, so a
+  // writer that fetched an older slot can throw away the newer validator set and put its own
+  // back. Under the lock that read happens inside this transaction: MikroORM carries the
+  // transaction context into the registry's entity manager, so its write nests here instead of
+  // taking a second connection, and its own `slot > previousMeta.slot` check becomes the re-read
+  // under the lock.
+  private async updateValidatorsUnderLock(): Promise<ConsensusMeta | null> {
+    return this.entityManager.transactional(
+      async (em) => {
+        const [{ locked }] = await em.execute<{ locked: boolean }[]>(
+          "select pg_try_advisory_xact_lock(hashtext('lido-keys-api:validators-update')) as locked",
+        );
+        if (!locked) {
+          this.logger.warn('Another instance is writing the validators update, skipping this cycle');
+          return null;
+        }
+
+        return this.validatorsService.updateValidators('finalized');
+      },
+      { isolationLevel: IsolationLevel.READ_COMMITTED },
+    );
+  }
+
   @OneAtTime()
   private async updateValidators() {
     await this.jobService.wrapJob({ name: 'Update validators from ValidatorsRegistry' }, async () => {
-      const meta = await this.validatorsService.updateValidators('finalized');
+      const meta = await this.updateValidatorsUnderLock();
       // meta shouldn't be null
       // if update didnt happen, meta will be fetched from db
       this.lastBlockTimestampSec = meta?.timestamp ?? this.lastBlockTimestampSec;
