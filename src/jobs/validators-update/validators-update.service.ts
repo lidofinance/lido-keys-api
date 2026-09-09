@@ -91,14 +91,8 @@ export class ValidatorsUpdateService {
     }, this.UPDATE_VALIDATORS_TIMEOUT_MS);
   }
 
-  // Same overlap as the keys update: the rollout starts the new pod before the old one is gone,
-  // so two writers coexist for a while. The registry's own transaction does not cover that — it
-  // reads the stored meta before opening it, and the write is delete-all plus re-insert, so a
-  // writer that fetched an older slot can throw away the newer validator set and put its own
-  // back. Under the lock that read happens inside this transaction: MikroORM carries the
-  // transaction context into the registry's entity manager, so its write nests here instead of
-  // taking a second connection, and its own `slot > previousMeta.slot` check becomes the re-read
-  // under the lock.
+  // `updateStream` reads the stored meta outside its own write transaction, so an older-slot writer drops a newer set
+  // unless the lock covers that read: MikroORM carries this transaction into the registry's own entity manager.
   private async updateValidatorsUnderLock(): Promise<ConsensusMeta | null> {
     return this.entityManager.transactional(
       async (em) => {

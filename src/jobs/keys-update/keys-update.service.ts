@@ -164,11 +164,8 @@ export class KeysUpdateService {
       process.exit(1);
     }
 
-    // The single-worker topology makes a second writer a deployment mistake (manual scale, a
-    // Terminating pod outliving its replacement) — this transaction stays correct anyway: the
-    // advisory lock serializes writers, and the re-read under it keeps a writer that fetched
-    // an older block from rolling the database backwards. READ_COMMITTED alone allows exactly
-    // that lost update.
+    // READ_COMMITTED alone allows a lost update — a writer holding an older block overwrites a newer one — so the
+    // meta is re-read under the lock and the cycle is skipped when it has already moved on.
     const updated = await this.entityManager.transactional(
       async (em) => {
         const [{ locked }] = await em.execute<{ locked: boolean }[]>(

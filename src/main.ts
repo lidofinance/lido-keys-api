@@ -38,9 +38,8 @@ async function bootstrap() {
   const corsWhitelist = configService.get('CORS_WHITELIST_REGEXP');
   const sentryDsn = configService.get('SENTRY_DSN') ?? undefined;
 
-  // Several instances boot concurrently (API replicas and the worker) and each runs the
-  // migrator: on a fresh database two concurrent `create table` race into a pg_type unique
-  // violation. The lock serializes them; the losers find the migrations already applied.
+  // Concurrent `migrator.up()` on a fresh database races two `create table` into a pg_type unique violation; the
+  // losers of the lock find the migrations already applied.
   const orm = app.get(MikroORM);
   await orm.em.transactional(async (em) => {
     await (em as EntityManager).execute("select pg_advisory_xact_lock(hashtext('lido-keys-api:migrations'))");
