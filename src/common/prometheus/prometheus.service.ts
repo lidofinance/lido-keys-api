@@ -110,6 +110,12 @@ export class PrometheusService {
     help: 'Validators registry is enabled',
   });
 
+  public updateJobsEnabled = this.getOrCreateMetric('Gauge', {
+    prefix: true,
+    name: 'update_jobs_enabled',
+    help: 'Update jobs run in this instance (0 = read-only API replica)',
+  });
+
   // A gauge, not a counter: the process exits on a change, so a counter would be reset by the
   // restart it records.
   public secretsFileMtime = this.getOrCreateMetric('Gauge', {

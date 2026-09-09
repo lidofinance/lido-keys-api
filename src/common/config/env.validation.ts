@@ -184,6 +184,13 @@ export class EnvironmentVariables {
 
   // Enable endpoints that use CL API for ejector
   @IsOptional()
+  // false turns this instance into a read-only API replica: neither the keys-update nor the
+  // validators-update job starts, HTTP behavior does not change. The updaters then run in a
+  // separate single-replica worker instance with this flag left on.
+  @IsBoolean()
+  @Transform(toBoolean({ defaultValue: true }))
+  UPDATE_JOBS_ENABLE = true;
+
   @IsBoolean()
   @Transform(toBoolean({ defaultValue: true }))
   VALIDATOR_REGISTRY_ENABLE = true;

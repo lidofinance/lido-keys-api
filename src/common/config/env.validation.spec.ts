@@ -847,6 +847,16 @@ describe('Environment validation', () => {
     });
   });
 
+  describe('UPDATE_JOBS_ENABLE', () => {
+    it('defaults to true', () => {
+      expect(runValidation(required_configs).UPDATE_JOBS_ENABLE).toBe(true);
+    });
+
+    it('parses false', () => {
+      expect(runValidation({ ...required_configs, UPDATE_JOBS_ENABLE: 'false' }).UPDATE_JOBS_ENABLE).toBe(false);
+    });
+  });
+
   describe('maskSecretsInValidationOutput', () => {
     const config = {
       // nosemgrep: semgrep.detected-generic-secrets -- test-only non-secret value
