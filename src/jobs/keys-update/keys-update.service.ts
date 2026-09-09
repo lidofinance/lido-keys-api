@@ -159,16 +159,39 @@ export class KeysUpdateService {
       process.exit(1);
     }
 
-    await this.entityManager.transactional(
-      async () => {
+    // READ_COMMITTED alone allows a lost update — a writer holding an older block overwrites a newer one — so the
+    // meta is re-read under the lock and the cycle is skipped when it has already moved on.
+    const updated = await this.entityManager.transactional(
+      async (em) => {
+        const [{ locked }] = await em.execute<{ locked: boolean }[]>(
+          "select pg_try_advisory_xact_lock(hashtext('lido-keys-api:keys-update')) as locked",
+        );
+        if (!locked) {
+          this.logger.warn('Another instance is writing the keys update, skipping this cycle');
+          return false;
+        }
+
+        const metaNow = await this.elMetaStorage.get();
+        if (metaNow && metaNow.blockNumber > currElMeta.number) {
+          this.logger.warn('Another instance stored a newer block, skipping this cycle', { metaNow, currElMeta });
+          return false;
+        }
+        if (metaNow && metaNow.blockHash === currElMeta.hash) {
+          this.logger.log('Another instance stored the same block, updating is not required', { currElMeta });
+          return false;
+        }
+
         await this.stakingModuleUpdaterService.updateStakingModules({
           currElMeta,
-          prevElMeta,
+          prevElMeta: metaNow,
           contractModules,
         });
+        return true;
       },
       { isolationLevel: IsolationLevel.READ_COMMITTED },
     );
+
+    if (!updated) return;
 
     return currElMeta;
   }
