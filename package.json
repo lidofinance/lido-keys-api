@@ -74,6 +74,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "ethers": "^5.5.4",
+    "ip-address": "^10.4.0",
     "jsonstream": "^1.0.3",
     "pg-query-stream": "^4.5.3",
     "prom-client": "^14.2.0",

@@ -15,7 +15,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({
-      trustProxy: true,
+      // request.ip is the raw socket peer; X-Forwarded-For is not trusted.
+      trustProxy: false,
       ignoreTrailingSlash: true,
     }),
     {

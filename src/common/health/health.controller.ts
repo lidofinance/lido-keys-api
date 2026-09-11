@@ -1,11 +1,13 @@
 import { HealthCheckService, MemoryHealthIndicator, HealthCheck } from '@nestjs/terminus';
 import { Controller, Get } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { HEALTH_URL } from './health.constants';
 import { HEAP_USED_THRESHOLD } from './constants';
 
 @Controller(HEALTH_URL)
 @ApiExcludeController()
+@SkipThrottle()
 export class HealthController {
   constructor(protected health: HealthCheckService, protected memory: MemoryHealthIndicator) {}
 
