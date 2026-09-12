@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
