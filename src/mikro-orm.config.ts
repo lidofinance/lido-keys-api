@@ -11,6 +11,7 @@ import { ConsensusValidatorEntity } from '@lido-nestjs/validators-registry';
 import { readFileSync } from 'fs';
 import { SrModuleEntity } from './storage/sr-module.entity';
 import { ElMetaEntity } from './storage/el-meta.entity';
+import { AppInfoEntity } from './storage/app-info.entity';
 import { Logger } from '@nestjs/common';
 
 dotenv.config();
@@ -126,6 +127,7 @@ const config: Options = {
     ConsensusMetaEntity,
     SrModuleEntity,
     ElMetaEntity,
+    AppInfoEntity,
   ],
   migrations: getMigrationOptions(path.join(__dirname, 'migrations'), ['@lido-nestjs/validators-registry']),
 };
