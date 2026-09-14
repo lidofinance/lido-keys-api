@@ -6,6 +6,9 @@ import { JobService } from 'common/job';
 import { ValidatorsService } from 'validators';
 import { OneAtTime } from 'common/decorators/oneAtTime';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { EntityManager } from '@mikro-orm/knex';
+import { IsolationLevel } from '@mikro-orm/core';
+import { ConsensusMeta } from '@lido-nestjs/validators-registry';
 
 export interface ValidatorsFilter {
   pubkeys: string[];
@@ -32,6 +35,7 @@ export class ValidatorsUpdateService {
     protected readonly jobService: JobService,
     protected readonly validatorsService: ValidatorsService,
     protected readonly schedulerRegistry: SchedulerRegistry,
+    protected readonly entityManager: EntityManager,
   ) {}
 
   // prometheus metrics
@@ -87,10 +91,29 @@ export class ValidatorsUpdateService {
     }, this.UPDATE_VALIDATORS_TIMEOUT_MS);
   }
 
+  // `updateStream` reads the stored meta outside its own write transaction, so an older-slot writer drops a newer set
+  // unless the lock covers that read: MikroORM carries this transaction into the registry's own entity manager.
+  private async updateValidatorsUnderLock(): Promise<ConsensusMeta | null> {
+    return this.entityManager.transactional(
+      async (em) => {
+        const [{ locked }] = await em.execute<{ locked: boolean }[]>(
+          "select pg_try_advisory_xact_lock(hashtext('lido-keys-api:validators-update')) as locked",
+        );
+        if (!locked) {
+          this.logger.warn('Another instance is writing the validators update, skipping this cycle');
+          return null;
+        }
+
+        return this.validatorsService.updateValidators('finalized');
+      },
+      { isolationLevel: IsolationLevel.READ_COMMITTED },
+    );
+  }
+
   @OneAtTime()
   private async updateValidators() {
     await this.jobService.wrapJob({ name: 'Update validators from ValidatorsRegistry' }, async () => {
-      const meta = await this.validatorsService.updateValidators('finalized');
+      const meta = await this.updateValidatorsUnderLock();
       // meta shouldn't be null
       // if update didnt happen, meta will be fetched from db
       this.lastBlockTimestampSec = meta?.timestamp ?? this.lastBlockTimestampSec;
