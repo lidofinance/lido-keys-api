@@ -71,6 +71,11 @@ export class KeysUpdateService {
     this.logger.log('Finished KeysUpdateService initialization');
   }
 
+  public clearUpdateDeadline(): void {
+    if (this.updateDeadlineTimer) clearTimeout(this.updateDeadlineTimer);
+    this.updateDeadlineTimer = undefined;
+  }
+
   private checkKeysUpdateTimeout() {
     const currTimestampSec = new Date().getTime() / 1000;
     // currTimestampSec - this.lastTimestampSec - Time since last update in seconds
