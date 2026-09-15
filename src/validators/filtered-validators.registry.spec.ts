@@ -1,5 +1,5 @@
 import { FilteredValidatorsRegistry } from './filtered-validators.registry';
-import { VALIDATORS_STATUSES_FOR_EXIT, VALIDATORS_STATUSES_TO_INGEST } from './validators.constants';
+import { VALIDATORS_STATUSES_FOR_EXIT } from './validators.constants';
 
 describe('FilteredValidatorsRegistry', () => {
   it('asks the beacon node only for the statuses it stores', async () => {
@@ -15,12 +15,6 @@ describe('FilteredValidatorsRegistry', () => {
     // getValidatorsFromConsensusStream is protected; call it directly
     await (registry as any).getValidatorsFromConsensusStream('0xabc');
 
-    expect(calls).toEqual([{ stateId: '0xabc', status: VALIDATORS_STATUSES_TO_INGEST }]);
-  });
-
-  it('stores every status the exit endpoints ask for', () => {
-    const missing = VALIDATORS_STATUSES_FOR_EXIT.filter((status) => !VALIDATORS_STATUSES_TO_INGEST.includes(status));
-
-    expect(missing).toEqual([]);
+    expect(calls).toEqual([{ stateId: '0xabc', status: VALIDATORS_STATUSES_FOR_EXIT }]);
   });
 });

@@ -1,23 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConsensusService } from '@lido-nestjs/consensus';
 import { StorageServiceInterface, ValidatorsRegistry } from '@lido-nestjs/validators-registry';
-import { VALIDATORS_STATUSES_TO_INGEST } from './validators.constants';
+import { VALIDATORS_STATUSES_FOR_EXIT } from './validators.constants';
 
 type StateValidatorsArgs = Parameters<ConsensusService['getStateValidatorsStream']>[0];
 type BeaconValidatorStatus = NonNullable<StateValidatorsArgs['status']>[number];
 
 // the enum values are the beacon API status strings, but TypeScript keeps the two types apart
-const STATUS_FILTER = VALIDATORS_STATUSES_TO_INGEST as BeaconValidatorStatus[];
+const STATUS_FILTER = VALIDATORS_STATUSES_FOR_EXIT as BeaconValidatorStatus[];
 
 /**
- * Asks the beacon node only for the statuses the API can return.
+ * Asks the beacon node only for the statuses the API can return, instead of its whole
+ * validator set (~1 GB on mainnet).
  *
- * Without the filter the node serialises its whole validator set (~1 GB on mainnet).
- * Nimbus blocks its event loop while doing that, so other REST calls queue up and
- * validator clients miss duties.
- *
- * Only `updateStream()` is filtered, which is the path the update job uses. The base
- * class `update()` still fetches every validator and is left for tests alone.
+ * Only `updateStream()` is filtered; the base class `update()` still fetches everything.
  */
 @Injectable()
 export class FilteredValidatorsRegistry extends ValidatorsRegistry {
