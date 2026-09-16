@@ -30,6 +30,9 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
       );
       clearInterval(intervalUpdateValidators);
     } catch {}
+    // A plain setTimeout, so the registry above does not know about it and it holds the event
+    // loop open for its full hour.
+    this.keysUpdateService.clearUpdateDeadline();
   }
 
   /**

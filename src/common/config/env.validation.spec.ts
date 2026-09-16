@@ -1,4 +1,4 @@
-import { validate } from './env.validation';
+import { maskSecretsInValidationOutput, validate } from './env.validation';
 import { EnvironmentVariables } from './env.validation';
 
 function omit<T extends Record<K, any>, K extends string>(obj: T, ...keys: K[]): Omit<T, K> {
@@ -844,6 +844,41 @@ describe('Environment validation', () => {
     it('should skip CL_API_URLS validation if VALIDATOR_REGISTRY_ENABLE is false', () => {
       expect(() => runValidation(required_configs)).not.toThrow();
       expect(runValidation(required_configs).VALIDATOR_REGISTRY_ENABLE).toBe(false);
+    });
+  });
+
+  describe('maskSecretsInValidationOutput', () => {
+    const config = {
+      // nosemgrep: semgrep.detected-generic-secrets -- test-only non-secret value
+      DB_PASSWORD: 'hunter2hunter2',
+      SENTRY_DSN: 'https://abc123@sentry.example.org/42',
+      PROVIDERS_URLS: 'https://el-a.example.org/keyA, https://el-b.example.org/keyB',
+      CL_API_URLS: 'https://cl.example.org/keyC',
+    };
+
+    it('masks the DB password and Sentry DSN', () => {
+      const masked = maskSecretsInValidationOutput(
+        'pw hunter2hunter2, dsn https://abc123@sentry.example.org/42',
+        config,
+      );
+      expect(masked).toBe('pw <removed>, dsn <removed>');
+    });
+
+    it('masks every entry of the provider URL lists', () => {
+      const masked = maskSecretsInValidationOutput(
+        'tried https://el-a.example.org/keyA then https://el-b.example.org/keyB then https://cl.example.org/keyC',
+        config,
+      );
+      expect(masked).toBe('tried <removed> then <removed> then <removed>');
+    });
+
+    it('leaves text without secret values untouched', () => {
+      const text = 'property CHAIN_ID has failed the following constraints: isInt';
+      expect(maskSecretsInValidationOutput(text, config)).toBe(text);
+    });
+
+    it('handles absent secret keys', () => {
+      expect(maskSecretsInValidationOutput('nothing to mask', {})).toBe('nothing to mask');
     });
   });
 });
