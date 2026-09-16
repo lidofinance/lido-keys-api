@@ -49,14 +49,10 @@ export class RegistryOperatorFetchService {
       );
     }
 
-    // The operator name is free-form and validated on chain for length only, so it may contain
-    // bytes the indexer cannot process. It must never wedge the shared update loop (bug 87712):
     let name: string;
     try {
       name = await resolver.resolve(moduleAddress, operatorIndex, overrides);
     } catch (error) {
-      // Invalid UTF-8 makes ethers install a throwing getter that fires when the name field is
-      // read (meta-registry.resolver). Fall back to a placeholder instead of rejecting.
       this.logger.error(
         `Failed to resolve name for operator ${operatorIndex} of module ${moduleAddress}; using a placeholder.`,
       );
@@ -64,8 +60,6 @@ export class RegistryOperatorFetchService {
       return `invalidName${operatorIndex}`;
     }
 
-    // A NUL byte is valid UTF-8 (so it passes ethers) but Postgres text/varchar cannot store it:
-    // the INSERT would revert and roll back the whole update transaction. Replace it too.
     if (name.includes(String.fromCharCode(0))) {
       this.logger.error(
         `Operator ${operatorIndex} of module ${moduleAddress} has a NUL byte in its name; using a placeholder.`,

@@ -8,6 +8,7 @@ import {
 import { Controller, Get } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { SkipCache } from 'common/decorators/skipCache';
+import { SkipThrottle } from '@nestjs/throttler';
 import { HEALTH_URL, HEALTH_READY_URL } from './health.constants';
 import { HEAP_USED_THRESHOLD } from './constants';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
@@ -19,6 +20,7 @@ const READY_DB_TIMEOUT_MS = 1000;
 @Controller(HEALTH_URL)
 @ApiExcludeController()
 @SkipCache()
+@SkipThrottle()
 export class HealthController {
   constructor(
     protected health: HealthCheckService,

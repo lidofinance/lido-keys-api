@@ -61,20 +61,16 @@ export class ValidatorsService {
 
     const { validators, meta } = await this.validatorsRegistry.getValidators(filter.pubkeys, where, options);
 
-    // the lower the index, the older the validator
-    // if percent is provided, we will get percent oldest validators from db
-    if (filter.percent) {
+    // the lower the index, the older the validator.
+    // check `!== undefined`, not truthiness, so that 0 means "exit none", not "not set".
+    // percent has a higher priority than max_amount (see ValidatorsQuery).
+    if (filter.percent !== undefined) {
       return { validators: this.getPercentOfValidators(validators, filter.percent), meta };
     }
 
-    if (filter.max_amount) {
+    if (filter.max_amount !== undefined) {
       const nextValidatorsToExit = validators.slice(0, filter.max_amount);
       return { validators: nextValidatorsToExit, meta };
-    }
-
-    // return default value in this case is unpredictable. so lets return []
-    if (filter.percent == 0) {
-      return { validators: [], meta };
     }
 
     return { validators, meta };

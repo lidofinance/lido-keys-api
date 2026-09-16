@@ -6,7 +6,7 @@ const bn = (n: number) => ({ toNumber: () => n } as any);
 const MODULE = '0x' + 'a'.repeat(40);
 
 // Builds a getNodeOperator() result whose `name` is defined by the given descriptor,
-// so we can make reading it throw (invalid UTF-8) or return poisoned bytes.
+// so we can make reading it throw (invalid UTF-8) or return invalid bytes.
 const buildOperator = (nameDescriptor: PropertyDescriptor) => {
   const op: any = {
     active: true,
@@ -30,12 +30,7 @@ const buildService = (operator: any) => {
   return new RegistryOperatorFetchService(logger, connectRegistry);
 };
 
-/**
- * Bug 87712 (classic registry path): a poisoned operator name must not propagate out of fetchOne
- * (which would wedge the shared update loop / break the Postgres INSERT). fetchOne must return a
- * safe placeholder instead.
- */
-describe('RegistryOperatorFetchService.fetchOne - poisoned operator name (bug 87712)', () => {
+describe('RegistryOperatorFetchService.fetchOne - invalid operator name', () => {
   it('returns a placeholder when reading the name throws (invalid UTF-8)', async () => {
     const op = buildOperator({
       get() {
@@ -54,8 +49,8 @@ describe('RegistryOperatorFetchService.fetchOne - poisoned operator name (bug 87
   });
 
   it('passes a clean name through unchanged', async () => {
-    const op = buildOperator({ value: 'Acme Node Operator' });
+    const op = buildOperator({ value: 'correct name' });
     const result = await buildService(op).fetchOne(MODULE, 9);
-    expect(result.name).toBe('Acme Node Operator');
+    expect(result.name).toBe('correct name');
   });
 });

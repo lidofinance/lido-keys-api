@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { MikroORM } from '@mikro-orm/core';
 import { operator } from '../fixtures/operator.fixture';
-import { RegistryStorageModule, RegistryStorageService, RegistryOperatorStorageService } from '../../';
+import { RegistryStorageModule, RegistryStorageService, RegistryOperatorStorageService } from '../..';
 import { DatabaseE2ETestingModule } from 'app';
 import * as dotenv from 'dotenv';
 
@@ -11,17 +11,10 @@ dotenv.config();
 // so it needs no on-chain lookup (unlike the other operator.storage e2e specs).
 const MODULE_ADDRESS = '0x' + 'a'.repeat(40);
 
-const NUL = String.fromCharCode(0); // the byte Postgres cannot store
-const SOH = String.fromCharCode(1); // a C0 control char that is NOT NUL
+const NUL = String.fromCharCode(0); // Postgres text/varchar can't store a NUL byte
+const SOH = String.fromCharCode(1); // a C0 control char other than NUL
 
-/**
- * Bug 87712 - Layer B: a curated-v2 operator name is validated on chain for length only.
- * A NUL byte is valid UTF-8, so it survives the resolver and reaches the Postgres INSERT,
- * where it breaks the wire protocol (the NUL terminates the C string carrying the statement).
- * These tests prove, against a real Postgres, exactly which byte content the operator write
- * path can and cannot store.
- */
-describe('Operator name poison - Postgres write path (bug 87712)', () => {
+describe('Invalid operator name', () => {
   let storageService: RegistryOperatorStorageService;
   let registryService: RegistryStorageService;
   let orm: MikroORM;
@@ -57,16 +50,16 @@ describe('Operator name poison - Postgres write path (bug 87712)', () => {
     await expect(storageService.findAll(MODULE_ADDRESS)).resolves.toEqual([op]);
   });
 
-  test('NUL byte in name breaks the Postgres INSERT', async () => {
+  test('a NUL byte in the name is rejected by Postgres', async () => {
     const op = buildOperator(2, `A${NUL}B`);
-    // Postgres text/varchar cannot carry a NUL byte; the driver rejects the whole statement.
-    // On the real ORM path this surfaces as the wire-protocol error "invalid message format".
+    // Postgres text/varchar can't store a NUL byte, so the insert is rejected (pg reports it as
+    // "invalid message format"). This is why the name is validated before it reaches the DB.
     await expect(storageService.saveOne(op)).rejects.toThrow(/invalid message format|null/i);
   });
 
-  test('characterization: a C0 control char (0x01) IS accepted by Postgres', async () => {
-    // Only NUL breaks the wire protocol; other control bytes are storable. This tells us the
-    // mandatory sanitizer target is the NUL byte, and that stripping other control chars is a choice.
+  test('a C0 control char (0x01) is accepted by Postgres', async () => {
+    // Other control bytes store fine — only NUL needs replacing, so we don't strip control
+    // characters in general.
     const op = buildOperator(3, `A${SOH}B`);
     await storageService.saveOne(op);
     const saved = await storageService.findAll(MODULE_ADDRESS);
@@ -74,9 +67,9 @@ describe('Operator name poison - Postgres write path (bug 87712)', () => {
     expect(saved[0].name).toBe(`A${SOH}B`);
   });
 
-  test('characterization: NUL is the ONLY valid-UTF-8 char that Postgres rejects', async () => {
-    // Everything ethers lets through is valid UTF-8. Among valid UTF-8, only U+0000 breaks the
-    // INSERT — every other "suspicious" codepoint stores fine. This bounds the sanitizer to NUL.
+  test('NUL is the only valid-UTF-8 char that Postgres rejects', async () => {
+    // ethers only yields valid UTF-8, and Postgres stores all of it except U+0000 — this is why
+    // the name check only needs to look for NUL.
     const accepted: Array<[string, string]> = [
       ['DEL U+007F', String.fromCharCode(0x7f)],
       ['C1 control U+0085', String.fromCharCode(0x85)],
