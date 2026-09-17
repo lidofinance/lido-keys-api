@@ -19,6 +19,7 @@ export class RegistryOperator {
     this.moduleAddress = operator.moduleAddress;
     this.finalizedUsedSigningKeys = operator.finalizedUsedSigningKeys;
     this.depositableValidatorsCount = operator.depositableValidatorsCount;
+    this.totalWithdrawnKeys = operator.totalWithdrawnKeys;
   }
 
   @PrimaryKey()
@@ -54,4 +55,9 @@ export class RegistryOperator {
 
   @Property()
   depositableValidatorsCount!: number;
+
+  // total number of withdrawn keys; real value (including a genuine 0) for compounding (0x02)
+  // community modules, NULL for legacy (0x01) modules that do not expose this counter on-chain
+  @Property({ nullable: true })
+  totalWithdrawnKeys?: number;
 }
