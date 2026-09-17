@@ -27,7 +27,12 @@ export const compareTestOperators = async (
   registryService: AbstractRegistryService,
   { operators }: Pick<Expected, 'operators'>,
 ) => {
-  expect(operators).toEqual(await registryService.getOperatorsFromStorage(address));
+  const stored = await registryService.getOperatorsFromStorage(address);
+  // Legacy (0x01) operators carry `totalWithdrawnKeys = null`. These curated-registry fixtures
+  // predate the field and don't model it, so drop it before the structural comparison. The field
+  // is covered separately by the compounding-operators endpoint e2e.
+  stored.forEach((operator) => delete (operator as { totalWithdrawnKeys?: number | null }).totalWithdrawnKeys);
+  expect(operators).toEqual(stored);
 };
 
 export const compareTestKeysAndOperators = async (
