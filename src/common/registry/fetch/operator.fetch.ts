@@ -147,6 +147,8 @@ export class RegistryOperatorFetchService {
       moduleAddress,
       finalizedUsedSigningKeys,
       depositableValidatorsCount: summary.depositableValidatorsCount.toNumber(),
+      // legacy (0x01) modules do not expose a withdrawn-keys counter on-chain; left undefined so the
+      // column stays NULL (a distinct "not applicable" marker, never confused with a real 0)
     };
   }
 

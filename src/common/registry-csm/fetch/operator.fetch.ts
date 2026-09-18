@@ -148,7 +148,8 @@ export class RegistryOperatorFetchService {
       this.resolveOperatorName(moduleAddress, operatorIndex, overrides),
     ]);
 
-    const { rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys, totalVettedKeys } = operator;
+    const { rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys, totalVettedKeys, totalWithdrawnKeys } =
+      operator;
 
     // There is no concept of "active/inactive" operator in CSM.
     // The method `getNodeOperatorIsActive` only checks if the operator's ID exists (ID < count).
@@ -171,6 +172,7 @@ export class RegistryOperatorFetchService {
       moduleAddress,
       finalizedUsedSigningKeys,
       depositableValidatorsCount: summary.depositableValidatorsCount.toNumber(),
+      totalWithdrawnKeys,
     };
   }
 
