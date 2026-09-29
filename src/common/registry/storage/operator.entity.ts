@@ -56,8 +56,8 @@ export class RegistryOperator {
   @Property()
   depositableValidatorsCount!: number;
 
-  // total number of withdrawn keys; real value (including a genuine 0) for compounding (0x02)
-  // community modules, NULL for legacy (0x01) modules that do not expose this counter on-chain
+  // total number of withdrawn keys; real value (including a genuine 0) for modules of the community/CSM
+  // implementation, NULL for curated (NOR) modules that do not expose this counter on-chain
   @Property({ nullable: true })
   totalWithdrawnKeys?: number;
 }

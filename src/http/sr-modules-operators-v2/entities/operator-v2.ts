@@ -3,10 +3,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { RegistryOperator } from '../../../common/registry';
 import { addressToChecksum } from '../../common/utils';
 
-// Operator view for compounding (0x02) modules.
-// Compared to `Operator` it drops `stoppedValidators` (for community modules that field
+// Operator view for modules served by the community/CSM implementation.
+// Compared to `Operator` it drops `stoppedValidators` (for these modules that field
 // only mirrors exited keys and is semantically misleading) and adds `totalWithdrawnKeys`.
-export class CompoundingOperator
+export class OperatorV2
   implements Omit<RegistryOperator, 'finalizedUsedSigningKeys' | 'stoppedValidators' | 'totalWithdrawnKeys'>
 {
   constructor(operator: RegistryOperator) {
@@ -19,9 +19,10 @@ export class CompoundingOperator
     this.active = operator.active;
     this.moduleAddress = addressToChecksum(operator.moduleAddress);
     this.depositableValidatorsCount = operator.depositableValidatorsCount;
-    // Non-null assertion is safe: this endpoint only serves compounding (0x02) operators (legacy
-    // modules are rejected with 404 upstream), and the community/CSM fetch always sets this counter.
-    // The field is optional on the shared type only because legacy (0x01) operators leave it NULL.
+    // Non-null assertion is safe: this endpoint only serves modules of the community/CSM implementation
+    // (other module types are rejected with 404 upstream), and the community/CSM fetch always sets this counter.
+    // The field is optional on the shared type only because curated (NOR) operators leave it NULL.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.totalWithdrawnKeys = operator.totalWithdrawnKeys!;
   }
 
