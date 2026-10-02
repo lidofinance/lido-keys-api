@@ -10,7 +10,7 @@ export interface RegistryOperator {
   moduleAddress: string;
   finalizedUsedSigningKeys: number;
   depositableValidatorsCount: number;
-  // total number of withdrawn keys; real value (including 0) for compounding (0x02) community modules,
-  // undefined/NULL for legacy (0x01) modules that do not expose this counter on-chain
+  // total number of withdrawn keys; real value (including 0) for modules of the community/CSM implementation,
+  // undefined/NULL for curated (NOR) modules that do not expose this counter on-chain
   totalWithdrawnKeys?: number;
 }

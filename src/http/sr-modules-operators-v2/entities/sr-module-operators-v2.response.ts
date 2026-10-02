@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { StakingModuleResponse, ELMeta } from '../../common/entities/';
-import { CompoundingOperator } from './compounding-operator';
+import { OperatorV2 } from './operator-v2';
 
-export class CompoundingOperatorListAndSRModule {
+export class OperatorListAndSRModuleV2 {
   @ApiProperty({
-    type: () => [CompoundingOperator],
+    type: () => [OperatorV2],
     required: true,
-    description: 'Operators of compounding (0x02) staking router module',
+    description: 'Operators of staking router module',
   })
-  operators!: CompoundingOperator[];
+  operators!: OperatorV2[];
 
   @ApiProperty({
     type: () => StakingModuleResponse,
@@ -18,13 +18,13 @@ export class CompoundingOperatorListAndSRModule {
   module!: StakingModuleResponse;
 }
 
-export class SRModuleCompoundingOperatorListResponse {
+export class SRModuleOperatorListResponseV2 {
   @ApiProperty({
-    type: () => CompoundingOperatorListAndSRModule,
+    type: () => OperatorListAndSRModuleV2,
     required: true,
-    description: 'Compounding staking router module operators',
+    description: 'Staking router module operators',
   })
-  data!: CompoundingOperatorListAndSRModule;
+  data!: OperatorListAndSRModuleV2;
 
   @ApiProperty({
     type: () => ELMeta,

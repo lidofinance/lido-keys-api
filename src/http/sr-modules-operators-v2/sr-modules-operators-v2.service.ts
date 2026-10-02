@@ -1,50 +1,43 @@
 import { Inject, Injectable, LoggerService, NotFoundException } from '@nestjs/common';
 import { ELBlockSnapshot, StakingModuleResponse } from '../common/entities/';
-import { SRModuleCompoundingOperatorListResponse, CompoundingOperator } from './entities';
+import { SRModuleOperatorListResponseV2, OperatorV2 } from './entities';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { StakingRouterService } from '../../staking-router-modules/staking-router.service';
 import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
 import { SrModuleEntity } from 'storage/sr-module.entity';
 import { RegistryOperator } from '../../common/registry';
-import {
-  COMPOUNDING_CAPABLE_MODULE_TYPES,
-  STAKING_MODULE_TYPE,
-  WITHDRAWAL_CREDENTIALS_TYPE,
-} from '../../staking-router-modules/constants';
+import { WITHDRAWN_KEYS_CAPABLE_MODULE_TYPES, STAKING_MODULE_TYPE } from '../../staking-router-modules/constants';
 
 @Injectable()
-export class SRModulesCompoundingOperatorsService {
+export class SRModulesOperatorsV2Service {
   constructor(
     @Inject(LOGGER_PROVIDER) protected readonly logger: LoggerService,
     protected stakingRouterService: StakingRouterService,
     protected readonly entityManager: EntityManager,
   ) {}
 
-  // A module supports the compounding operators view only when it is served by the community/CSM
-  // implementation (which exposes totalWithdrawnKeys on-chain) AND uses 0x02 withdrawal credentials.
-  private isCompoundingModule(module: SrModuleEntity): boolean {
-    return (
-      COMPOUNDING_CAPABLE_MODULE_TYPES.includes(module.type as STAKING_MODULE_TYPE) &&
-      module.withdrawalCredentialsType === WITHDRAWAL_CREDENTIALS_TYPE.COMPOUNDING
-    );
+  // A module is supported only when it is served by the community/CSM implementation,
+  // which exposes totalWithdrawnKeys on-chain regardless of the withdrawal credentials type.
+  private isSupportedModule(module: SrModuleEntity): boolean {
+    return WITHDRAWN_KEYS_CAPABLE_MODULE_TYPES.includes(module.type as STAKING_MODULE_TYPE);
   }
 
-  public async getByModule(moduleId: string | number): Promise<SRModuleCompoundingOperatorListResponse> {
+  public async getByModule(moduleId: string | number): Promise<SRModuleOperatorListResponseV2> {
     const { operators, module, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
         const { module, elBlockSnapshot }: { module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot } =
           await this.stakingRouterService.getStakingModuleAndMeta(moduleId);
 
-        if (!this.isCompoundingModule(module)) {
-          throw new NotFoundException(`Module with moduleId ${moduleId} does not support compounding operators`);
+        if (!this.isSupportedModule(module)) {
+          throw new NotFoundException(`Module with moduleId ${moduleId} is not supported by v2 operators endpoint`);
         }
 
         const moduleInstance = this.stakingRouterService.getStakingRouterModuleImpl(module.type);
 
         const operators: RegistryOperator[] = await moduleInstance.getOperators(module.stakingModuleAddress, {});
 
-        const operatorsResp = operators.map((op) => new CompoundingOperator(op));
+        const operatorsResp = operators.map((op) => new OperatorV2(op));
 
         return { operators: operatorsResp, module, elBlockSnapshot };
       },

@@ -10,7 +10,7 @@ import {
 } from '../../common/registry';
 import { MikroORM } from '@mikro-orm/core';
 import { StakingRouterModule } from '../../staking-router-modules/staking-router.module';
-import { STAKING_MODULE_TYPE, WITHDRAWAL_CREDENTIALS_TYPE } from '../../staking-router-modules/constants';
+import { STAKING_MODULE_TYPE } from '../../staking-router-modules/constants';
 import { StakingModule } from '../../staking-router-modules/interfaces/staking-module.interface';
 
 import { SRModuleStorageService } from '../../storage/sr-module.storage';
@@ -19,15 +19,15 @@ import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 
 import * as request from 'supertest';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import { SRModulesCompoundingOperatorsController } from './sr-modules-compounding-operators.controller';
-import { SRModulesCompoundingOperatorsService } from './sr-modules-compounding-operators.service';
+import { SRModulesOperatorsV2Controller } from './sr-modules-operators-v2.controller';
+import { SRModulesOperatorsV2Service } from './sr-modules-operators-v2.service';
 import { elMeta } from '../el-meta.fixture';
 import { curatedModule, operatorOneCurated, operatorTwoCurated } from '../db.fixtures';
 import { DatabaseE2ETestingModule } from 'app';
 import { CSMKeyRegistryService } from 'common/registry-csm';
 
-// A compounding (0x02) module: served by the community impl AND using compounding withdrawal credentials.
-const compoundingModule: StakingModule = {
+// CSM: served by the community impl with legacy (0x01) withdrawal credentials.
+const csmModule: StakingModule = {
   moduleId: 3,
   stakingModuleAddress: '0x0165878a594ca255338adfa4d48449f69242eb90',
   moduleFee: 100,
@@ -40,42 +40,74 @@ const compoundingModule: StakingModule = {
   lastDepositBlock: 11,
   exitedValidatorsCount: 0,
   active: true,
-  withdrawalCredentialsType: WITHDRAWAL_CREDENTIALS_TYPE.COMPOUNDING,
+  withdrawalCredentialsType: 1,
 };
 
-// Two operators of the compounding module. One has a genuine 0 withdrawn keys to prove that a real 0
-// is preserved (never conflated with the "not applicable" NULL of legacy modules).
-const compoundingOperatorOne: RegistryOperator = {
+// A curated-onchain-v2 module with compounding (0x02) withdrawal credentials, also served by the community impl.
+const cmv2Module: StakingModule = {
+  moduleId: 4,
+  stakingModuleAddress: '0xa513e6e4b8f2a923d98304ec87f64353c4d5c853',
+  moduleFee: 100,
+  treasuryFee: 100,
+  targetShare: 100,
+  status: 0,
+  name: 'curated-onchain-v2',
+  type: 'curated-onchain-v2' as STAKING_MODULE_TYPE,
+  lastDepositAt: 1691500734,
+  lastDepositBlock: 11,
+  exitedValidatorsCount: 0,
+  active: true,
+  withdrawalCredentialsType: 2,
+};
+
+// Two operators of the CSM module. One has a genuine 0 withdrawn keys to prove that a real 0
+// is preserved (never conflated with the "not applicable" NULL of curated (NOR) modules).
+const csmOperatorOne: RegistryOperator = {
   index: 1,
   active: true,
-  name: 'compounding-op-1',
+  name: 'csm-op-1',
   rewardAddress: '0x0000000000000000000000000000000000000000',
   stoppedValidators: 4,
   stakingLimit: 10,
   usedSigningKeys: 8,
   totalSigningKeys: 12,
-  moduleAddress: compoundingModule.stakingModuleAddress,
+  moduleAddress: csmModule.stakingModuleAddress,
   finalizedUsedSigningKeys: 8,
   depositableValidatorsCount: 2,
   totalWithdrawnKeys: 5,
 };
 
-const compoundingOperatorTwo: RegistryOperator = {
+const csmOperatorTwo: RegistryOperator = {
   index: 2,
   active: true,
-  name: 'compounding-op-2',
+  name: 'csm-op-2',
   rewardAddress: '0x0000000000000000000000000000000000000000',
   stoppedValidators: 0,
   stakingLimit: 6,
   usedSigningKeys: 3,
   totalSigningKeys: 6,
-  moduleAddress: compoundingModule.stakingModuleAddress,
+  moduleAddress: csmModule.stakingModuleAddress,
   finalizedUsedSigningKeys: 3,
   depositableValidatorsCount: 1,
   totalWithdrawnKeys: 0,
 };
 
-describe('SRModulesCompoundingOperatorsController (e2e)', () => {
+const cmv2Operator: RegistryOperator = {
+  index: 0,
+  active: true,
+  name: 'cmv2-op-0',
+  rewardAddress: '0x0000000000000000000000000000000000000000',
+  stoppedValidators: 0,
+  stakingLimit: 3,
+  usedSigningKeys: 2,
+  totalSigningKeys: 3,
+  moduleAddress: cmv2Module.stakingModuleAddress,
+  finalizedUsedSigningKeys: 2,
+  depositableValidatorsCount: 1,
+  totalWithdrawnKeys: 1,
+};
+
+describe('SRModulesOperatorsV2Controller (e2e)', () => {
   let app: INestApplication;
 
   let moduleStorageService: SRModuleStorageService;
@@ -126,8 +158,8 @@ describe('SRModulesCompoundingOperatorsController (e2e)', () => {
       StakingRouterModule,
     ];
 
-    const controllers = [SRModulesCompoundingOperatorsController];
-    const providers = [SRModulesCompoundingOperatorsService];
+    const controllers = [SRModulesOperatorsV2Controller];
+    const providers = [SRModulesOperatorsV2Service];
     const moduleRef = await Test.createTestingModule({ imports, controllers, providers })
       .overrideProvider(KeyRegistryService)
       .useClass(KeysRegistryServiceMock)
@@ -158,19 +190,21 @@ describe('SRModulesCompoundingOperatorsController (e2e)', () => {
     await app.close();
   });
 
-  describe('The /v2/modules/:module_id/compounding-operators request', () => {
+  describe('The /v2/modules/:module_id/operators request', () => {
     describe('api ready to work', () => {
       beforeAll(async () => {
         await elMetaStorageService.update(elMeta);
-        // Both a compounding (0x02) and a legacy (0x01) module exist in the DB, so a 404 on the legacy
-        // one proves the endpoint filters by module type, not merely by module existence.
+        // CSM, CMv2 and a curated (NOR) module exist in the DB, so a 404 on the curated one
+        // proves the endpoint filters by module type, not merely by module existence.
         await operatorsStorageService.save([
-          compoundingOperatorOne,
-          compoundingOperatorTwo,
+          csmOperatorOne,
+          csmOperatorTwo,
+          cmv2Operator,
           operatorOneCurated,
           operatorTwoCurated,
         ]);
-        await moduleStorageService.upsert(compoundingModule, 1, '');
+        await moduleStorageService.upsert(csmModule, 1, '');
+        await moduleStorageService.upsert(cmv2Module, 1, '');
         await moduleStorageService.upsert(curatedModule, 1, '');
       });
 
@@ -178,16 +212,14 @@ describe('SRModulesCompoundingOperatorsController (e2e)', () => {
         await cleanDB();
       });
 
-      it('should return operators only for the compounding (0x02) module, with totalWithdrawnKeys', async () => {
-        const resp = await request(app.getHttpServer()).get(
-          `/v2/modules/${compoundingModule.moduleId}/compounding-operators`,
-        );
+      it('should return operators of the CSM (0x01) module, with totalWithdrawnKeys', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v2/modules/${csmModule.moduleId}/operators`);
 
         expect(resp.status).toEqual(200);
 
-        // the response carries exactly the requested compounding module
-        expect(resp.body.data.module.id).toEqual(compoundingModule.moduleId);
-        expect(resp.body.data.module.withdrawalCredentialsType).toEqual(WITHDRAWAL_CREDENTIALS_TYPE.COMPOUNDING);
+        // the response carries exactly the requested module
+        expect(resp.body.data.module.id).toEqual(csmModule.moduleId);
+        expect(resp.body.data.module.withdrawalCredentialsType).toEqual(1);
 
         // only that module's operators are returned
         const operators = resp.body.data.operators;
@@ -212,31 +244,37 @@ describe('SRModulesCompoundingOperatorsController (e2e)', () => {
         });
       });
 
-      it('should resolve the compounding module by contract address too', async () => {
-        const resp = await request(app.getHttpServer()).get(
-          `/v2/modules/${compoundingModule.stakingModuleAddress}/compounding-operators`,
-        );
+      it('should return operators of the curated-onchain-v2 (0x02) module, with totalWithdrawnKeys', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v2/modules/${cmv2Module.moduleId}/operators`);
 
         expect(resp.status).toEqual(200);
-        expect(resp.body.data.module.id).toEqual(compoundingModule.moduleId);
+        expect(resp.body.data.module.id).toEqual(cmv2Module.moduleId);
+        expect(resp.body.data.module.withdrawalCredentialsType).toEqual(2);
+        expect(resp.body.data.operators).toHaveLength(1);
+        expect(resp.body.data.operators[0].totalWithdrawnKeys).toEqual(1);
+      });
+
+      it('should resolve the module by contract address too', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v2/modules/${csmModule.stakingModuleAddress}/operators`);
+
+        expect(resp.status).toEqual(200);
+        expect(resp.body.data.module.id).toEqual(csmModule.moduleId);
         expect(resp.body.data.operators).toHaveLength(2);
       });
 
-      it('should return 404 for an existing legacy (0x01) module (not a compounding module)', async () => {
-        const resp = await request(app.getHttpServer()).get(
-          `/v2/modules/${curatedModule.moduleId}/compounding-operators`,
-        );
+      it('should return 404 for an existing curated (NOR) module', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v2/modules/${curatedModule.moduleId}/operators`);
 
         expect(resp.status).toEqual(404);
         expect(resp.body).toEqual({
           error: 'Not Found',
-          message: `Module with moduleId ${curatedModule.moduleId} does not support compounding operators`,
+          message: `Module with moduleId ${curatedModule.moduleId} is not supported by v2 operators endpoint`,
           statusCode: 404,
         });
       });
 
       it('should return 404 for a module that does not exist', async () => {
-        const resp = await request(app.getHttpServer()).get('/v2/modules/777/compounding-operators');
+        const resp = await request(app.getHttpServer()).get('/v2/modules/777/operators');
 
         expect(resp.status).toEqual(404);
         expect(resp.body).toEqual({
@@ -247,7 +285,7 @@ describe('SRModulesCompoundingOperatorsController (e2e)', () => {
       });
 
       it('should return 400 if module_id is not a contract address or number', async () => {
-        const resp = await request(app.getHttpServer()).get('/v2/modules/not-a-module/compounding-operators');
+        const resp = await request(app.getHttpServer()).get('/v2/modules/not-a-module/operators');
         expect(resp.status).toEqual(400);
       });
     });
@@ -262,12 +300,10 @@ describe('SRModulesCompoundingOperatorsController (e2e)', () => {
       });
 
       it('should return too early response if there is no meta', async () => {
-        await operatorsStorageService.save([compoundingOperatorOne, compoundingOperatorTwo]);
-        await moduleStorageService.upsert(compoundingModule, 1, '');
+        await operatorsStorageService.save([csmOperatorOne, csmOperatorTwo]);
+        await moduleStorageService.upsert(csmModule, 1, '');
 
-        const resp = await request(app.getHttpServer()).get(
-          `/v2/modules/${compoundingModule.moduleId}/compounding-operators`,
-        );
+        const resp = await request(app.getHttpServer()).get(`/v2/modules/${csmModule.moduleId}/operators`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
