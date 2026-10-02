@@ -89,6 +89,216 @@ export const consensusMetaResp: CLBlockSnapshot = {
   blockHash: block.data.message.body.execution_payload.block_hash,
 };
 
+/*
+ * Glamsterdam (EIP-7732) answers of a consensus node.
+ *
+ * Since the fork a beacon block carries no execution payload. It commits to a bid, and the builder reveals the payload
+ * later in the slot, in an envelope of its own. That payload is applied to the state while the next block is being
+ * processed, so the state of a block holds the payload of an earlier block and never its own. The bid names the payload
+ * the state already holds, in `parent_block_hash`, and the registry walks the ancestors back to find the block it
+ * belongs to.
+ *
+ * Three slots in a row are described here. The builder of G1 never reveals its payload, so G2 still runs on the payload
+ * of G0 and reports the same execution layer block that G1 reports.
+ *
+ * | slot    | block        | bid promises   | state already holds | meta reports                  |
+ * | ------- | ------------ | -------------- | ------------------- | ----------------------------- |
+ * | 9600000 | gloasBlockG0 | gloasElHashG0  | an earlier payload  | —                             |
+ * | 9600001 | gloasBlockG1 | gloasElHashG1  | gloasElHashG0       | block 9000000, payloadSlot G0 |
+ * | 9600002 | gloasBlockG2 | gloasElHashG2  | gloasElHashG0       | block 9000000, payloadSlot G0 |
+ *
+ * Only the payload of G0 is ever revealed, so `gloasEnvelopeG0` is the only envelope a node can answer with.
+ */
+
+const fillHash = (byte: string) => `0x${byte.repeat(32)}`;
+
+const gloasSlotG0 = '9600000';
+export const gloasSlotG1 = '9600001';
+export const gloasSlotG2 = '9600002';
+
+export const gloasRootG0 = fillHash('a0');
+export const gloasRootG1 = fillHash('a1');
+export const gloasRootG2 = fillHash('a2');
+const gloasRootBeforeG0 = fillHash('af');
+
+const gloasStateRootG0 = fillHash('b0');
+const gloasStateRootG1 = fillHash('b1');
+const gloasStateRootG2 = fillHash('b2');
+
+// Execution layer block each builder promised in its bid. Only the one of G0 is ever revealed.
+const gloasElHashG0 = fillHash('e0');
+const gloasElHashG1 = fillHash('e1');
+const gloasElHashG2 = fillHash('e2');
+const gloasElHashBeforeG0 = fillHash('ef');
+
+const gloasElBlockNumber = '9000000';
+const gloasElTimestamp = '1790000000';
+
+const gloasSignature =
+  '0xb4d8b266a7c6bf3cc1efebe6fa85dea914428928e7414f29db6f17b71925a1bbb7213410160717d199b9c287aba64fe4102804f28bfa0c313b1dcf7e687dacde8e7fa70482d8e05f2d4f981bc71b52aff72ade601e107a0fd89db7a0dcbe3c06';
+
+const makeGloasHeader = (args: { root: string; slot: string; parentRoot: string; stateRoot: string }) => ({
+  execution_optimistic: false,
+  data: {
+    root: args.root,
+    canonical: true,
+    header: {
+      message: {
+        slot: args.slot,
+        proposer_index: '130400',
+        parent_root: args.parentRoot,
+        state_root: args.stateRoot,
+        body_root: fillHash('c0'),
+      },
+      signature: gloasSignature,
+    },
+  },
+});
+
+const makeGloasBlock = (args: {
+  slot: string;
+  stateRoot: string;
+  parentRoot: string;
+  /** Hash of the execution layer block the state of this block already holds, asserted by the spec to be the one the bid points at. */
+  appliedBlockHash: string;
+  /** Hash of the execution layer block the builder of this block promised to reveal. */
+  ownBlockHash: string;
+}) => ({
+  version: 'gloas',
+  execution_optimistic: false,
+  data: {
+    message: {
+      slot: args.slot,
+      proposer_index: '130400',
+      parent_root: args.parentRoot,
+      state_root: args.stateRoot,
+      body: {
+        randao_reveal: gloasSignature,
+        eth1_data: {
+          deposit_root: fillHash('d1'),
+          deposit_count: '195216',
+          block_hash: fillHash('d2'),
+        },
+        graffiti: fillHash('00'),
+        proposer_slashings: [],
+        attester_slashings: [],
+        attestations: [],
+        deposits: [],
+        voluntary_exits: [],
+        sync_aggregate: {
+          sync_committee_bits: `0x${'ff'.repeat(64)}`,
+          sync_committee_signature: gloasSignature,
+        },
+        // [New in Gloas:EIP7732] no execution_payload, the block only commits to a bid. Only the two hashes below are
+        // read, so the rest of the bid is left out: its layout is still moving in the specs.
+        signed_execution_payload_bid: {
+          message: {
+            parent_block_hash: args.appliedBlockHash,
+            parent_block_root: args.parentRoot,
+            block_hash: args.ownBlockHash,
+            builder_index: '1',
+            slot: args.slot,
+            value: '1000000000',
+          },
+          signature: gloasSignature,
+        },
+        payload_attestations: [],
+      },
+    },
+    signature: gloasSignature,
+  },
+});
+
+export const gloasHeaderG1 = makeGloasHeader({
+  root: gloasRootG1,
+  slot: gloasSlotG1,
+  parentRoot: gloasRootG0,
+  stateRoot: gloasStateRootG1,
+});
+
+export const gloasHeaderG2 = makeGloasHeader({
+  root: gloasRootG2,
+  slot: gloasSlotG2,
+  parentRoot: gloasRootG1,
+  stateRoot: gloasStateRootG2,
+});
+
+export const gloasBlockG0 = makeGloasBlock({
+  slot: gloasSlotG0,
+  stateRoot: gloasStateRootG0,
+  parentRoot: gloasRootBeforeG0,
+  appliedBlockHash: gloasElHashBeforeG0,
+  ownBlockHash: gloasElHashG0,
+});
+
+export const gloasBlockG1 = makeGloasBlock({
+  slot: gloasSlotG1,
+  stateRoot: gloasStateRootG1,
+  parentRoot: gloasRootG0,
+  appliedBlockHash: gloasElHashG0,
+  ownBlockHash: gloasElHashG1,
+});
+
+export const gloasBlockG2 = makeGloasBlock({
+  slot: gloasSlotG2,
+  stateRoot: gloasStateRootG2,
+  parentRoot: gloasRootG1,
+  // the builder of G1 was too late, so the state of G2 still holds the payload of G0
+  appliedBlockHash: gloasElHashG0,
+  ownBlockHash: gloasElHashG2,
+});
+
+/** The only payload a builder revealed in this run, published in the envelope of G0. */
+export const gloasEnvelopeG0 = {
+  version: 'gloas',
+  execution_optimistic: false,
+  finalized: true,
+  data: {
+    message: {
+      payload: {
+        parent_hash: gloasElHashBeforeG0,
+        fee_recipient: '0x000095e79eac4d76aab57cb2c1f091d553b36ca0',
+        state_root: fillHash('f1'),
+        receipts_root: fillHash('f2'),
+        logs_bloom: `0x${'00'.repeat(256)}`,
+        prev_randao: fillHash('f3'),
+        block_number: gloasElBlockNumber,
+        gas_limit: '200000000',
+        gas_used: '7972101',
+        timestamp: gloasElTimestamp,
+        extra_data: '0x',
+        base_fee_per_gas: '3778',
+        block_hash: gloasElHashG0,
+        transactions: [],
+        withdrawals: [],
+      },
+      builder_index: '1',
+      beacon_block_root: gloasRootG0,
+      parent_beacon_block_root: gloasRootBeforeG0,
+    },
+    signature: gloasSignature,
+  },
+};
+
+/** `payloadSlot` is the parent slot: the state of G1 holds the payload of G0. */
+export const gloasMetaRespG1: CLBlockSnapshot = {
+  epoch: Math.floor(Number(gloasSlotG1) / 32),
+  slot: Number(gloasSlotG1),
+  root: gloasStateRootG1,
+  timestamp: Number(gloasElTimestamp),
+  blockNumber: Number(gloasElBlockNumber),
+  blockHash: gloasElHashG0,
+  payloadSlot: Number(gloasSlotG0),
+};
+
+/** The slot moved on but the execution layer block did not, because the payload of G1 was never revealed. */
+export const gloasMetaRespG2: CLBlockSnapshot = {
+  ...gloasMetaRespG1,
+  epoch: Math.floor(Number(gloasSlotG2) / 32),
+  slot: Number(gloasSlotG2),
+  root: gloasStateRootG2,
+};
+
 export const dvtOpOneReadyForExitValidators = [
   {
     index: '1',
