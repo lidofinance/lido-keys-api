@@ -19,7 +19,15 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { SRModulesOperatorsController } from './sr-modules-operators.controller';
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
 import { elMeta } from '../el-meta.fixture';
-import { operators, dvtModule, curatedModule, srModules } from '../db.fixtures';
+import {
+  operators,
+  dvtModule,
+  curatedModule,
+  srModules,
+  csmModule,
+  csmOperatorOne,
+  csmOperatorTwo,
+} from '../db.fixtures';
 import { dvtModuleResp, curatedModuleResp } from '../module.fixture';
 import { dvtOperatorsResp, curatedOperatorsResp } from '../operator.fixtures';
 import { DatabaseE2ETestingModule } from 'app';
@@ -486,6 +494,66 @@ describe('SRModuleOperatorsController (e2e)', () => {
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
+    });
+  });
+
+  describe('totalWithdrawnKeys field', () => {
+    beforeAll(async () => {
+      await elMetaStorageService.update(elMeta);
+      await operatorsStorageService.save([...operators, csmOperatorOne, csmOperatorTwo]);
+      await moduleStorageService.upsert(curatedModule, 1, '');
+      await moduleStorageService.upsert(csmModule, 1, '');
+    });
+
+    afterAll(async () => {
+      await cleanDB();
+    });
+
+    it('should be present for community module operators, a real 0 included', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v1/modules/${csmModule.moduleId}/operators`);
+
+      expect(resp.status).toEqual(200);
+      const operatorsResp = resp.body.data.operators;
+      expect(operatorsResp).toHaveLength(2);
+
+      const withdrawnByIndex = Object.fromEntries(operatorsResp.map((op) => [op.index, op.totalWithdrawnKeys]));
+      expect(withdrawnByIndex).toEqual({ 1: 5, 2: 0 });
+
+      const stoppedByIndex = Object.fromEntries(operatorsResp.map((op) => [op.index, op.stoppedValidators]));
+      expect(stoppedByIndex).toEqual({ 1: 4, 2: 0 });
+    });
+
+    it('should be omitted for curated module operators', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}/operators`);
+
+      expect(resp.status).toEqual(200);
+      expect(resp.body.data.operators.length).toBeGreaterThan(0);
+      for (const op of resp.body.data.operators) {
+        expect(op).not.toHaveProperty('totalWithdrawnKeys');
+        expect(op).toHaveProperty('stoppedValidators');
+      }
+    });
+
+    it('should be present in a single community module operator response', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v1/modules/${csmModule.moduleId}/operators/2`);
+
+      expect(resp.status).toEqual(200);
+      expect(resp.body.data.operator.totalWithdrawnKeys).toEqual(0);
+    });
+
+    it('should be present only for community module operators in /operators', async () => {
+      const resp = await request(app.getHttpServer()).get('/v1/operators');
+
+      expect(resp.status).toEqual(200);
+      for (const { module, operators } of resp.body.data) {
+        for (const op of operators) {
+          if (module.id === csmModule.moduleId) {
+            expect(op).toHaveProperty('totalWithdrawnKeys');
+          } else {
+            expect(op).not.toHaveProperty('totalWithdrawnKeys');
+          }
+        }
+      }
     });
   });
 });

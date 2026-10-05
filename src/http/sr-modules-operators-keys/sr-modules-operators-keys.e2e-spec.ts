@@ -22,7 +22,7 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 
 import { curatedModuleResp, dvtModuleResp } from '../module.fixture';
 import { elMeta } from '../el-meta.fixture';
-import { keys, operators, dvtModule, curatedModule } from '../db.fixtures';
+import { keys, operators, dvtModule, curatedModule, csmModule, csmOperatorOne, csmOperatorTwo } from '../db.fixtures';
 import { curatedModuleKeysResponse, dvtModuleKeysResponse } from '../keys.fixtures';
 import { curatedOperatorsResp, dvtOperatorsResp } from '../operator.fixtures';
 import { DatabaseE2ETestingModule } from 'app';
@@ -489,6 +489,50 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
           expect(resp.body).toEqual(expect.arrayContaining(expectedResponse));
         });
       });
+    });
+  });
+
+  describe('totalWithdrawnKeys field', () => {
+    beforeAll(async () => {
+      await elMetaStorageService.update(elMeta);
+      await keysStorageService.save(keys);
+      await operatorsStorageService.save([...operators, csmOperatorOne, csmOperatorTwo]);
+      await moduleStorageService.upsert(curatedModule, 1, '');
+      await moduleStorageService.upsert(csmModule, 1, '');
+    });
+
+    afterAll(async () => {
+      await cleanDB();
+    });
+
+    it('should be present for community module operators in /v1/modules/:module_id/operators/keys', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v1/modules/${csmModule.moduleId}/operators/keys`);
+
+      expect(resp.status).toEqual(200);
+      const withdrawnByIndex = Object.fromEntries(
+        resp.body.data.operators.map((op) => [op.index, op.totalWithdrawnKeys]),
+      );
+      expect(withdrawnByIndex).toEqual({ 1: 5, 2: 0 });
+    });
+
+    it('should be present only for community module operators in the /v2/modules/operators/keys stream', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v2/modules/operators/keys`);
+
+      expect(resp.status).toEqual(200);
+
+      const streamedOperators = resp.body.filter((record) => record.operator).map((record) => record.operator);
+
+      const csmAddress = csmModule.stakingModuleAddress.toLowerCase();
+      const csmOperators = streamedOperators.filter((op) => op.moduleAddress.toLowerCase() === csmAddress);
+      const otherOperators = streamedOperators.filter((op) => op.moduleAddress.toLowerCase() !== csmAddress);
+
+      const withdrawnByIndex = Object.fromEntries(csmOperators.map((op) => [op.index, op.totalWithdrawnKeys]));
+      expect(withdrawnByIndex).toEqual({ 1: 5, 2: 0 });
+
+      expect(otherOperators.length).toBeGreaterThan(0);
+      for (const op of otherOperators) {
+        expect(op).not.toHaveProperty('totalWithdrawnKeys');
+      }
     });
   });
 });

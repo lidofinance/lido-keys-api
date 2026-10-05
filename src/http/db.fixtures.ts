@@ -305,3 +305,52 @@ export const operatorTwoDvt: RegistryOperator = {
 };
 
 export const operators = [operatorOneCurated, operatorTwoCurated, operatorOneDvt, operatorTwoDvt];
+
+// CSM: served by the community impl, exposes totalWithdrawnKeys
+export const csmModule: StakingModule = {
+  moduleId: 3,
+  stakingModuleAddress: '0x0165878a594ca255338adfa4d48449f69242eb90',
+  moduleFee: 100,
+  treasuryFee: 100,
+  targetShare: 100,
+  status: 0,
+  name: 'community-onchain-v1',
+  type: 'community-onchain-v1' as STAKING_MODULE_TYPE,
+  lastDepositAt: 1691500734,
+  lastDepositBlock: 11,
+  exitedValidatorsCount: 0,
+  active: true,
+  withdrawalCredentialsType: 1,
+};
+
+// One operator has a genuine 0 withdrawn keys to prove that a real 0 is preserved
+// (never conflated with the "not applicable" NULL of curated (NOR) modules).
+export const csmOperatorOne: RegistryOperator = {
+  index: 1,
+  active: true,
+  name: 'csm-op-1',
+  rewardAddress: '0x0000000000000000000000000000000000000000',
+  stoppedValidators: 4,
+  stakingLimit: 10,
+  usedSigningKeys: 8,
+  totalSigningKeys: 12,
+  moduleAddress: csmModule.stakingModuleAddress,
+  finalizedUsedSigningKeys: 8,
+  depositableValidatorsCount: 2,
+  totalWithdrawnKeys: 5,
+};
+
+export const csmOperatorTwo: RegistryOperator = {
+  index: 2,
+  active: true,
+  name: 'csm-op-2',
+  rewardAddress: '0x0000000000000000000000000000000000000000',
+  stoppedValidators: 0,
+  stakingLimit: 6,
+  usedSigningKeys: 3,
+  totalSigningKeys: 6,
+  moduleAddress: csmModule.stakingModuleAddress,
+  finalizedUsedSigningKeys: 3,
+  depositableValidatorsCount: 1,
+  totalWithdrawnKeys: 0,
+};

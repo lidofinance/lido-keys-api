@@ -15,6 +15,11 @@ export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKey
     this.active = operator.active;
     this.moduleAddress = addressToChecksum(operator.moduleAddress);
     this.depositableValidatorsCount = operator.depositableValidatorsCount;
+    // NULL for curated (NOR) modules that do not expose this counter on-chain; the field is then omitted from the response.
+    // A genuine 0 of community/CSM implementation modules is preserved.
+    if (operator.totalWithdrawnKeys != null) {
+      this.totalWithdrawnKeys = operator.totalWithdrawnKeys;
+    }
   }
 
   @ApiProperty({
@@ -76,4 +81,11 @@ export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKey
     description: 'Number of validators that are ready for deposit',
   })
   depositableValidatorsCount: number;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Total number of withdrawn keys for the operator. Present only for community-onchain-v1 and curated-onchain-v2 module types',
+  })
+  totalWithdrawnKeys?: number;
 }
