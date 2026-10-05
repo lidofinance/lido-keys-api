@@ -13,7 +13,6 @@ import { SRModulesModule } from './sr-modules';
 import { SRModulesValidatorsModule } from './sr-modules-validators';
 import { SRModulesKeysModule } from './sr-modules-keys';
 import { SRModulesOperatorsModule } from './sr-modules-operators';
-import { SRModulesOperatorsV2Module } from './sr-modules-operators-v2';
 import { SRModulesOperatorsKeysModule } from './sr-modules-operators-keys';
 import { StatusModule } from './status';
 import { CustomCacheInterceptor } from './common/cache/cache.service';
@@ -26,7 +25,6 @@ import { CacheHeadersInterceptor } from './common/cache/cache-headers.intercepto
     SRModulesKeysModule,
     SRModulesValidatorsModule,
     SRModulesOperatorsModule,
-    SRModulesOperatorsV2Module,
     SRModulesOperatorsKeysModule,
     StatusModule,
     CacheModule,
