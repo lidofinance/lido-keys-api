@@ -22,7 +22,17 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 
 import { curatedModuleResp, dvtModuleResp } from '../module.fixture';
 import { elMeta } from '../el-meta.fixture';
-import { keys, operators, dvtModule, curatedModule, csmModule, csmOperatorOne, csmOperatorTwo } from '../db.fixtures';
+import {
+  keys,
+  operators,
+  dvtModule,
+  curatedModule,
+  csmModule,
+  csmOperatorOne,
+  csmOperatorTwo,
+  curatedV2Module,
+  curatedV2OperatorOne,
+} from '../db.fixtures';
 import { curatedModuleKeysResponse, dvtModuleKeysResponse } from '../keys.fixtures';
 import { curatedOperatorsResp, dvtOperatorsResp } from '../operator.fixtures';
 import { DatabaseE2ETestingModule } from 'app';
@@ -496,9 +506,10 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
     beforeAll(async () => {
       await elMetaStorageService.update(elMeta);
       await keysStorageService.save(keys);
-      await operatorsStorageService.save([...operators, csmOperatorOne, csmOperatorTwo]);
+      await operatorsStorageService.save([...operators, csmOperatorOne, csmOperatorTwo, curatedV2OperatorOne]);
       await moduleStorageService.upsert(curatedModule, 1, '');
       await moduleStorageService.upsert(csmModule, 1, '');
+      await moduleStorageService.upsert(curatedV2Module, 1, '');
     });
 
     afterAll(async () => {
@@ -515,24 +526,34 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
       expect(withdrawnByIndex).toEqual({ 1: 5, 2: 0 });
     });
 
-    it('should be present only for community module operators in the /v2/modules/operators/keys stream', async () => {
+    it('should be present for curated-onchain-v2 module operators in /v1/modules/:module_id/operators/keys', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedV2Module.moduleId}/operators/keys`);
+
+      expect(resp.status).toEqual(200);
+      const withdrawnByIndex = Object.fromEntries(
+        resp.body.data.operators.map((op) => [op.index, op.totalWithdrawnKeys]),
+      );
+      expect(withdrawnByIndex).toEqual({ 1: 3 });
+    });
+
+    it('should be set for community and curated-onchain-v2 operators and null for others in the /v2/modules/operators/keys stream', async () => {
       const resp = await request(app.getHttpServer()).get(`/v2/modules/operators/keys`);
 
       expect(resp.status).toEqual(200);
 
       const streamedOperators = resp.body.filter((record) => record.operator).map((record) => record.operator);
 
-      const csmAddress = csmModule.stakingModuleAddress.toLowerCase();
-      const csmOperators = streamedOperators.filter((op) => op.moduleAddress.toLowerCase() === csmAddress);
-      const otherOperators = streamedOperators.filter((op) => op.moduleAddress.toLowerCase() !== csmAddress);
-
-      const withdrawnByIndex = Object.fromEntries(csmOperators.map((op) => [op.index, op.totalWithdrawnKeys]));
-      expect(withdrawnByIndex).toEqual({ 1: 5, 2: 0 });
-
-      expect(otherOperators.length).toBeGreaterThan(0);
-      for (const op of otherOperators) {
-        expect(op).not.toHaveProperty('totalWithdrawnKeys');
+      const withdrawnByModule = {};
+      for (const op of streamedOperators) {
+        const moduleAddress = op.moduleAddress.toLowerCase();
+        withdrawnByModule[moduleAddress] = { ...withdrawnByModule[moduleAddress], [op.index]: op.totalWithdrawnKeys };
       }
+
+      expect(withdrawnByModule).toEqual({
+        [curatedModule.stakingModuleAddress]: { 1: null, 2: null },
+        [csmModule.stakingModuleAddress]: { 1: 5, 2: 0 },
+        [curatedV2Module.stakingModuleAddress]: { 1: 3 },
+      });
     });
   });
 });

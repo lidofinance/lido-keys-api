@@ -354,3 +354,35 @@ export const csmOperatorTwo: RegistryOperator = {
   depositableValidatorsCount: 1,
   totalWithdrawnKeys: 0,
 };
+
+// Curated v2: also served by the community impl, so it exposes totalWithdrawnKeys too
+export const curatedV2Module: StakingModule = {
+  moduleId: 4,
+  stakingModuleAddress: '0x0165878a594ca255338adfa4d48449f69242eb91',
+  moduleFee: 100,
+  treasuryFee: 100,
+  targetShare: 100,
+  status: 0,
+  name: 'curated-onchain-v2',
+  type: 'curated-onchain-v2' as STAKING_MODULE_TYPE,
+  lastDepositAt: 1691500734,
+  lastDepositBlock: 11,
+  exitedValidatorsCount: 0,
+  active: true,
+  withdrawalCredentialsType: 1,
+};
+
+export const curatedV2OperatorOne: RegistryOperator = {
+  index: 1,
+  active: true,
+  name: 'curated-v2-op-1',
+  rewardAddress: '0x0000000000000000000000000000000000000000',
+  stoppedValidators: 2,
+  stakingLimit: 10,
+  usedSigningKeys: 7,
+  totalSigningKeys: 10,
+  moduleAddress: curatedV2Module.stakingModuleAddress,
+  finalizedUsedSigningKeys: 7,
+  depositableValidatorsCount: 3,
+  totalWithdrawnKeys: 3,
+};

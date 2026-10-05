@@ -12,10 +12,12 @@ export const dvtOperatorsResp: Operator[] = [operatorOneDvt, operatorTwoDvt].map
   ...op,
   finalizedUsedSigningKeys: undefined,
   moduleAddress: dvtModuleAddressWithChecksum,
+  totalWithdrawnKeys: null,
 }));
 
 export const curatedOperatorsResp: Operator[] = [operatorOneCurated, operatorTwoCurated].map((op) => ({
   ...op,
   finalizedUsedSigningKeys: undefined,
   moduleAddress: curatedModuleAddressWithCheckSum,
+  totalWithdrawnKeys: null,
 }));

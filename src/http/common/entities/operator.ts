@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { RegistryOperator } from '../../../common/registry';
 import { addressToChecksum } from '../utils';
 
-export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKeys'> {
+export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKeys' | 'totalWithdrawnKeys'> {
   constructor(operator: RegistryOperator) {
     this.name = operator.name;
     this.rewardAddress = operator.rewardAddress;
@@ -15,11 +15,9 @@ export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKey
     this.active = operator.active;
     this.moduleAddress = addressToChecksum(operator.moduleAddress);
     this.depositableValidatorsCount = operator.depositableValidatorsCount;
-    // NULL for curated (NOR) modules that do not expose this counter on-chain; the field is then omitted from the response.
-    // A genuine 0 of community/CSM implementation modules is preserved.
-    if (operator.totalWithdrawnKeys != null) {
-      this.totalWithdrawnKeys = operator.totalWithdrawnKeys;
-    }
+    // null for curated (NOR) modules that do not expose this counter on-chain;
+    // `??` (not `||`) keeps a genuine 0 of community/CSM implementation modules
+    this.totalWithdrawnKeys = operator.totalWithdrawnKeys ?? null;
   }
 
   @ApiProperty({
@@ -83,9 +81,11 @@ export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKey
   depositableValidatorsCount: number;
 
   @ApiProperty({
-    required: false,
+    required: true,
+    nullable: true,
+    type: Number,
     description:
-      'Total number of withdrawn keys for the operator. Present only for community-onchain-v1 and curated-onchain-v2 module types',
+      'Total number of withdrawn keys for the operator. Set for community-onchain-v1 and curated-onchain-v2 module types, null for other module types',
   })
-  totalWithdrawnKeys?: number;
+  totalWithdrawnKeys: number | null;
 }

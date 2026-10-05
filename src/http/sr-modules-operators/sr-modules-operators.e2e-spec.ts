@@ -27,6 +27,8 @@ import {
   csmModule,
   csmOperatorOne,
   csmOperatorTwo,
+  curatedV2Module,
+  curatedV2OperatorOne,
 } from '../db.fixtures';
 import { dvtModuleResp, curatedModuleResp } from '../module.fixture';
 import { dvtOperatorsResp, curatedOperatorsResp } from '../operator.fixtures';
@@ -500,9 +502,10 @@ describe('SRModuleOperatorsController (e2e)', () => {
   describe('totalWithdrawnKeys field', () => {
     beforeAll(async () => {
       await elMetaStorageService.update(elMeta);
-      await operatorsStorageService.save([...operators, csmOperatorOne, csmOperatorTwo]);
+      await operatorsStorageService.save([...operators, csmOperatorOne, csmOperatorTwo, curatedV2OperatorOne]);
       await moduleStorageService.upsert(curatedModule, 1, '');
       await moduleStorageService.upsert(csmModule, 1, '');
+      await moduleStorageService.upsert(curatedV2Module, 1, '');
     });
 
     afterAll(async () => {
@@ -523,13 +526,22 @@ describe('SRModuleOperatorsController (e2e)', () => {
       expect(stoppedByIndex).toEqual({ 1: 4, 2: 0 });
     });
 
-    it('should be omitted for curated module operators', async () => {
+    it('should be present for curated-onchain-v2 module operators', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedV2Module.moduleId}/operators`);
+
+      expect(resp.status).toEqual(200);
+      const operatorsResp = resp.body.data.operators;
+      expect(operatorsResp).toHaveLength(1);
+      expect(operatorsResp[0].totalWithdrawnKeys).toEqual(3);
+    });
+
+    it('should be null for curated module operators', async () => {
       const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}/operators`);
 
       expect(resp.status).toEqual(200);
       expect(resp.body.data.operators.length).toBeGreaterThan(0);
       for (const op of resp.body.data.operators) {
-        expect(op).not.toHaveProperty('totalWithdrawnKeys');
+        expect(op.totalWithdrawnKeys).toBeNull();
         expect(op).toHaveProperty('stoppedValidators');
       }
     });
@@ -541,19 +553,28 @@ describe('SRModuleOperatorsController (e2e)', () => {
       expect(resp.body.data.operator.totalWithdrawnKeys).toEqual(0);
     });
 
-    it('should be present only for community module operators in /operators', async () => {
+    it('should be present in a single curated-onchain-v2 module operator response', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedV2Module.moduleId}/operators/1`);
+
+      expect(resp.status).toEqual(200);
+      expect(resp.body.data.operator.totalWithdrawnKeys).toEqual(3);
+    });
+
+    it('should be set for community and curated-onchain-v2 operators and null for others in /operators', async () => {
       const resp = await request(app.getHttpServer()).get('/v1/operators');
 
       expect(resp.status).toEqual(200);
-      for (const { module, operators } of resp.body.data) {
-        for (const op of operators) {
-          if (module.id === csmModule.moduleId) {
-            expect(op).toHaveProperty('totalWithdrawnKeys');
-          } else {
-            expect(op).not.toHaveProperty('totalWithdrawnKeys');
-          }
-        }
-      }
+      const withdrawnByModule = Object.fromEntries(
+        resp.body.data.map(({ module, operators }) => [
+          module.id,
+          Object.fromEntries(operators.map((op) => [op.index, op.totalWithdrawnKeys])),
+        ]),
+      );
+      expect(withdrawnByModule).toEqual({
+        [curatedModule.moduleId]: { 1: null, 2: null },
+        [csmModule.moduleId]: { 1: 5, 2: 0 },
+        [curatedV2Module.moduleId]: { 1: 3 },
+      });
     });
   });
 });
