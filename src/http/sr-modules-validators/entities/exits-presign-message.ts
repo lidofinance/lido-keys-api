@@ -9,7 +9,7 @@ export class ExitPresignMessage {
 
   @ApiProperty({
     required: true,
-    description: 'Finalized epoch',
+    description: 'Finalized epoch of the consensus slot the validators were read at.',
   })
   epoch!: string;
 }
