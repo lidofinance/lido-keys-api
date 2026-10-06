@@ -1,5 +1,6 @@
 import { ValidatorStatus } from '@lido-nestjs/validators-registry';
 
+// FilteredValidatorsRegistry also uses this list to decide which validators it fetches and stores.
 export const VALIDATORS_STATUSES_FOR_EXIT = [
   ValidatorStatus.ACTIVE_ONGOING,
   ValidatorStatus.PENDING_INITIALIZED,
