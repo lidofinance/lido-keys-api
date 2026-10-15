@@ -40,6 +40,19 @@ import {
   dvtOpOneRespExitMessages10percent,
   dvtOpOneRespExitMessages20percent,
   dvtOpOneRespExitMessages5maxAmount,
+  gloasBlockG0,
+  gloasBlockG1,
+  gloasBlockG2,
+  gloasEnvelopeG0,
+  gloasHeaderG1,
+  gloasHeaderG2,
+  gloasMetaRespG1,
+  gloasMetaRespG2,
+  gloasRootG0,
+  gloasRootG1,
+  gloasRootG2,
+  gloasSlotG1,
+  gloasSlotG2,
 } from '../consensus.fixtures';
 import { DatabaseE2ETestingModule } from 'app';
 import { CSMKeyRegistryService } from 'common/registry-csm';
@@ -89,16 +102,44 @@ describe('SRModulesValidatorsController (e2e)', () => {
     }
   }
 
+  // The registry asks for a header by the block id `update()` was called with, and for a block by the root that header
+  // carries. Since Glamsterdam (EIP-7732) it also walks the ancestors and asks for the envelope of the block whose
+  // payload the state already holds, so the answers are keyed rather than fixed.
+  const consensusHeaders: Record<string, unknown> = {
+    [slot]: header,
+    [gloasSlotG1]: gloasHeaderG1,
+    [gloasSlotG2]: gloasHeaderG2,
+  };
+
+  const consensusBlocks: Record<string, unknown> = {
+    [header.data.root]: block,
+    [gloasRootG0]: gloasBlockG0,
+    [gloasRootG1]: gloasBlockG1,
+    [gloasRootG2]: gloasBlockG2,
+  };
+
+  const consensusEnvelopes: Record<string, unknown> = {
+    [gloasRootG0]: gloasEnvelopeG0,
+  };
+
+  // Fail loudly on an id no fixture answers for, so a wrong walk shows up as itself instead of as invalid data
+  const answerOrFail = (answers: Record<string, unknown>, blockId: string | number, method: string) => {
+    const answer = answers[String(blockId)];
+    if (!answer) {
+      throw new Error(`${method} has no fixture for [${blockId}]`);
+    }
+    return answer;
+  };
+
   const consensusServiceMock = {
-    getBlockV2: (args: { blockId: string | number }) => {
-      return block;
-    },
-    getBlockHeader: (args: { blockId: string | number }) => {
-      return header;
-    },
+    getBlockV2: (args: { blockId: string | number }) => answerOrFail(consensusBlocks, args.blockId, 'getBlockV2'),
+    getBlockHeader: (args: { blockId: string | number }) =>
+      answerOrFail(consensusHeaders, args.blockId, 'getBlockHeader'),
     getStateValidators: (args: { stateId: string }) => {
       return validators;
     },
+    getSignedExecutionPayloadEnvelope: (args: { blockId: string | number }) =>
+      answerOrFail(consensusEnvelopes, args.blockId, 'getSignedExecutionPayloadEnvelope'),
   };
 
   beforeAll(async () => {
@@ -863,6 +904,58 @@ describe('SRModulesValidatorsController (e2e)', () => {
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
+    });
+  });
+
+  /**
+   * Since Glamsterdam (EIP-7732) a beacon block carries no execution payload, so the execution layer fields of the
+   * snapshot describe the payload of an earlier slot. These cases run last on purpose: the registry only takes an
+   * update whose slot is ahead of the stored one, and the slots used here are ahead of the ones used above.
+   */
+  describe('Glamsterdam (EIP-7732) block shape', () => {
+    beforeAll(async () => {
+      await keysStorageService.save(keys);
+      await moduleStorageService.upsert(dvtModule, 1, '');
+      await moduleStorageService.upsert(curatedModule, 1, '');
+    });
+
+    afterAll(async () => {
+      await cleanDB();
+    });
+
+    it('Should report the execution layer block the state holds and the slot it belongs to', async () => {
+      await validatorsRegistry.update(gloasSlotG1);
+      await elMetaStorageService.update({ ...elMeta, number: gloasMetaRespG1.blockNumber });
+
+      const resp = await request(app.getHttpServer()).get(
+        `/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/1`,
+      );
+
+      expect(resp.status).toEqual(200);
+      expect(resp.body.data).toEqual(expect.arrayContaining(dvtOpOneResp10percent));
+      expect(resp.body.meta).toEqual({ clBlockSnapshot: gloasMetaRespG1 });
+      // the payload of the slot itself is revealed later and reaches the state only with the next block, so the
+      // execution layer data belongs to the parent slot here
+      expect(resp.body.meta.clBlockSnapshot.payloadSlot).toEqual(resp.body.meta.clBlockSnapshot.slot - 1);
+    });
+
+    it('Should keep the execution layer block of an earlier slot when a builder did not reveal its payload', async () => {
+      await validatorsRegistry.update(gloasSlotG2);
+      await elMetaStorageService.update({ ...elMeta, number: gloasMetaRespG2.blockNumber });
+
+      const resp = await request(app.getHttpServer()).get(
+        `/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/1`,
+      );
+
+      expect(resp.status).toEqual(200);
+      expect(resp.body.meta).toEqual({ clBlockSnapshot: gloasMetaRespG2 });
+      // the slot moved on, the execution layer block did not: nothing but `slot` tells the two snapshots apart
+      expect(resp.body.meta.clBlockSnapshot.slot).toBeGreaterThan(gloasMetaRespG1.slot);
+      expect(resp.body.meta.clBlockSnapshot.blockNumber).toEqual(gloasMetaRespG1.blockNumber);
+      expect(resp.body.meta.clBlockSnapshot.blockHash).toEqual(gloasMetaRespG1.blockHash);
+      expect(resp.body.meta.clBlockSnapshot.payloadSlot).toEqual(gloasMetaRespG1.payloadSlot);
+      // the exit message epoch follows the consensus slot, so the payload lag does not reach it
+      expect(resp.body.data[0].epoch).toEqual(String(gloasMetaRespG2.epoch));
     });
   });
 });

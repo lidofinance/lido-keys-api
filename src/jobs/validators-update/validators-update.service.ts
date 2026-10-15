@@ -38,7 +38,12 @@ export class ValidatorsUpdateService {
     protected readonly entityManager: EntityManager,
   ) {}
 
-  // prometheus metrics
+  // Prometheus metrics.
+  //
+  // Since Glamsterdam (EIP-7732) the execution layer data of a meta belongs to an earlier slot than the meta itself,
+  // so the first two fields lag behind the third one and can stay put while it moves on. The staleness alert reads
+  // `lastBlockTimestampSec` against an hour, which is far more than the slot or two the lag ever amounts to, and only
+  // `lastSlot` is a reliable sign that an update really happened.
   protected lastBlockTimestampSec: number | undefined = undefined;
   protected lastBlockNumber: number | undefined = undefined;
   protected lastSlot: number | undefined = undefined;

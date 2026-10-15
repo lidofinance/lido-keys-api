@@ -69,7 +69,9 @@ export class PrometheusService {
   public validatorsRegistryLastTimestampUpdate = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'validators_registry_last_update_block_timestamp',
-    help: 'Block timestamp for which the last ValidatorsRegistry update was made.',
+    help:
+      'Timestamp of the execution layer block of the last ValidatorsRegistry update. ' +
+      'Since Glamsterdam (EIP-7732) it is the time of an earlier slot than validators_registry_last_slot.',
   });
 
   public registryNumberOfKeysBySRModuleAndOperator = this.getOrCreateMetric('Gauge', {
@@ -95,13 +97,17 @@ export class PrometheusService {
   public validatorsRegistryLastBlockNumber = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'validators_registry_last_block_number',
-    help: 'Block number for which the last ValidatorsRegistry update was made.',
+    help:
+      'Execution layer block number of the last ValidatorsRegistry update. ' +
+      'Since Glamsterdam (EIP-7732) it can stay the same while validators_registry_last_slot moves on.',
   });
 
   public validatorsRegistryLastSlot = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'validators_registry_last_slot',
-    help: 'Slot for which the last ValidatorsRegistry update was made.',
+    help:
+      'Consensus slot of the last ValidatorsRegistry update. ' +
+      'Unlike the execution layer metrics of the registry, it always moves forward.',
   });
 
   public validatorsEnabled = this.getOrCreateMetric('Gauge', {
