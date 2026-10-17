@@ -127,9 +127,9 @@ export class SRModulesValidatorsService {
         }
 
         // We need EL meta always be actual.
-        // `clMeta.blockNumber` is the execution layer block the beacon state already holds. Since Glamsterdam
-        // (EIP-7732) that is the block of an earlier slot, because the payload of a slot reaches the state only with
-        // the next block, so the number this is compared against is a slot or two behind the consensus slot.
+        // `clMeta.blockNumber` is the execution layer block the beacon state already holds. Since Glamsterdam that is
+        // the block of an earlier slot, so the number this is compared against is a slot or two behind the consensus
+        // slot.
         if (elBlockSnapshot.blockNumber < clMeta.blockNumber) {
           this.logger.warn(
             'The Execution Layer node is behind the Consensus Layer node, check that the EL node is synced and running.',
