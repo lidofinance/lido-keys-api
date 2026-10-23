@@ -8,7 +8,7 @@ Simple Lido keys and validators HTTP API.
 
 ## API
 
-You can familiarize yourself with the REST API by accessing it [here](rest-api.md).
+The REST API is described by the Swagger UI served at `/api` of a running instance.
 
 ## Requirements
 

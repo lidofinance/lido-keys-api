@@ -107,6 +107,7 @@ export class CommunityModuleService implements StakingModuleInterface {
       'used_signing_keys as usedSigningKeys',
       'module_address as moduleAddress',
       'depositable_validators_count as depositableValidatorsCount',
+      'total_withdrawn_keys as totalWithdrawnKeys',
     ]);
   }
 

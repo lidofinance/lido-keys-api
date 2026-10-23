@@ -49,14 +49,10 @@ export class RegistryOperatorFetchService {
       );
     }
 
-    // The operator name is free-form and validated on chain for length only, so it may contain
-    // bytes the indexer cannot process. It must never wedge the shared update loop (bug 87712):
     let name: string;
     try {
       name = await resolver.resolve(moduleAddress, operatorIndex, overrides);
     } catch (error) {
-      // Invalid UTF-8 makes ethers install a throwing getter that fires when the name field is
-      // read (meta-registry.resolver). Fall back to a placeholder instead of rejecting.
       this.logger.error(
         `Failed to resolve name for operator ${operatorIndex} of module ${moduleAddress}; using a placeholder.`,
       );
@@ -64,8 +60,6 @@ export class RegistryOperatorFetchService {
       return `invalidName${operatorIndex}`;
     }
 
-    // A NUL byte is valid UTF-8 (so it passes ethers) but Postgres text/varchar cannot store it:
-    // the INSERT would revert and roll back the whole update transaction. Replace it too.
     if (name.includes(String.fromCharCode(0))) {
       this.logger.error(
         `Operator ${operatorIndex} of module ${moduleAddress} has a NUL byte in its name; using a placeholder.`,
@@ -90,6 +84,7 @@ export class RegistryOperatorFetchService {
         [
           // KECCAK256 hash of the text bytes
           utils.id('NodeOperatorRewardAddressChanged(uint256,address,address)'),
+          utils.id('VettedSigningKeysCountChanged(uint256,uint256)'),
         ],
       ],
       fromBlock,
@@ -101,8 +96,14 @@ export class RegistryOperatorFetchService {
 
   public async operatorsWereChanged(moduleAddress: string, fromBlock: number, toBlock: number): Promise<boolean> {
     const events = await this.fetchOperatorsEvents(moduleAddress, fromBlock, toBlock);
+    if (events.length > 0) {
+      return true;
+    }
 
-    return events.length > 0;
+    const type = this.moduleTypeRegistry.get(moduleAddress);
+    const resolver = type ? this.resolvers[type] : undefined;
+
+    return (await resolver?.namesWereChanged?.(moduleAddress, fromBlock, toBlock)) ?? false;
   }
 
   /** return blockTag for finalized block, it need for testing purposes */
@@ -154,7 +155,8 @@ export class RegistryOperatorFetchService {
       this.resolveOperatorName(moduleAddress, operatorIndex, overrides),
     ]);
 
-    const { rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys, totalVettedKeys } = operator;
+    const { rewardAddress, totalAddedKeys, totalExitedKeys, totalDepositedKeys, totalVettedKeys, totalWithdrawnKeys } =
+      operator;
 
     // There is no concept of "active/inactive" operator in CSM.
     // The method `getNodeOperatorIsActive` only checks if the operator's ID exists (ID < count).
@@ -177,6 +179,7 @@ export class RegistryOperatorFetchService {
       moduleAddress,
       finalizedUsedSigningKeys,
       depositableValidatorsCount: summary.depositableValidatorsCount.toNumber(),
+      totalWithdrawnKeys,
     };
   }
 

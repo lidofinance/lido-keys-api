@@ -19,7 +19,17 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { SRModulesOperatorsController } from './sr-modules-operators.controller';
 import { SRModulesOperatorsService } from './sr-modules-operators.service';
 import { elMeta } from '../el-meta.fixture';
-import { operators, dvtModule, curatedModule, srModules } from '../db.fixtures';
+import {
+  operators,
+  dvtModule,
+  curatedModule,
+  srModules,
+  csmModule,
+  csmOperatorOne,
+  csmOperatorTwo,
+  curatedV2Module,
+  curatedV2OperatorOne,
+} from '../db.fixtures';
 import { dvtModuleResp, curatedModuleResp } from '../module.fixture';
 import { dvtOperatorsResp, curatedOperatorsResp } from '../operator.fixtures';
 import { DatabaseE2ETestingModule } from 'app';
@@ -485,6 +495,85 @@ describe('SRModuleOperatorsController (e2e)', () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}/operators/1`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+      });
+    });
+  });
+
+  describe('totalWithdrawnKeys field', () => {
+    beforeAll(async () => {
+      await elMetaStorageService.update(elMeta);
+      await operatorsStorageService.save([...operators, csmOperatorOne, csmOperatorTwo, curatedV2OperatorOne]);
+      await moduleStorageService.upsert(curatedModule, 1, '');
+      await moduleStorageService.upsert(csmModule, 1, '');
+      await moduleStorageService.upsert(curatedV2Module, 1, '');
+    });
+
+    afterAll(async () => {
+      await cleanDB();
+    });
+
+    it('should be present for community module operators, a real 0 included', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v1/modules/${csmModule.moduleId}/operators`);
+
+      expect(resp.status).toEqual(200);
+      const operatorsResp = resp.body.data.operators;
+      expect(operatorsResp).toHaveLength(2);
+
+      const withdrawnByIndex = Object.fromEntries(operatorsResp.map((op) => [op.index, op.totalWithdrawnKeys]));
+      expect(withdrawnByIndex).toEqual({ 1: 5, 2: 0 });
+
+      const stoppedByIndex = Object.fromEntries(operatorsResp.map((op) => [op.index, op.stoppedValidators]));
+      expect(stoppedByIndex).toEqual({ 1: 4, 2: 0 });
+    });
+
+    it('should be present for curated-onchain-v2 module operators', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedV2Module.moduleId}/operators`);
+
+      expect(resp.status).toEqual(200);
+      const operatorsResp = resp.body.data.operators;
+      expect(operatorsResp).toHaveLength(1);
+      expect(operatorsResp[0].totalWithdrawnKeys).toEqual(3);
+    });
+
+    it('should be null for curated module operators', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}/operators`);
+
+      expect(resp.status).toEqual(200);
+      expect(resp.body.data.operators.length).toBeGreaterThan(0);
+      for (const op of resp.body.data.operators) {
+        expect(op.totalWithdrawnKeys).toBeNull();
+        expect(op).toHaveProperty('stoppedValidators');
+      }
+    });
+
+    it('should be present in a single community module operator response', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v1/modules/${csmModule.moduleId}/operators/2`);
+
+      expect(resp.status).toEqual(200);
+      expect(resp.body.data.operator.totalWithdrawnKeys).toEqual(0);
+    });
+
+    it('should be present in a single curated-onchain-v2 module operator response', async () => {
+      const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedV2Module.moduleId}/operators/1`);
+
+      expect(resp.status).toEqual(200);
+      expect(resp.body.data.operator.totalWithdrawnKeys).toEqual(3);
+    });
+
+    it('should be set for community and curated-onchain-v2 operators and null for others in /operators', async () => {
+      const resp = await request(app.getHttpServer()).get('/v1/operators');
+
+      expect(resp.status).toEqual(200);
+      const withdrawnByModule = Object.fromEntries(
+        resp.body.data.map(({ module, operators }) => [
+          module.id,
+          Object.fromEntries(operators.map((op) => [op.index, op.totalWithdrawnKeys])),
+        ]),
+      );
+      expect(withdrawnByModule).toEqual({
+        [curatedModule.moduleId]: { 1: null, 2: null },
+        [csmModule.moduleId]: { 1: 5, 2: 0 },
+        [curatedV2Module.moduleId]: { 1: 3 },
       });
     });
   });
