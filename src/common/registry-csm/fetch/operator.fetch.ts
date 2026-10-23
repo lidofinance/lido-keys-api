@@ -84,6 +84,7 @@ export class RegistryOperatorFetchService {
         [
           // KECCAK256 hash of the text bytes
           utils.id('NodeOperatorRewardAddressChanged(uint256,address,address)'),
+          utils.id('VettedSigningKeysCountChanged(uint256,uint256)'),
         ],
       ],
       fromBlock,
@@ -95,8 +96,14 @@ export class RegistryOperatorFetchService {
 
   public async operatorsWereChanged(moduleAddress: string, fromBlock: number, toBlock: number): Promise<boolean> {
     const events = await this.fetchOperatorsEvents(moduleAddress, fromBlock, toBlock);
+    if (events.length > 0) {
+      return true;
+    }
 
-    return events.length > 0;
+    const type = this.moduleTypeRegistry.get(moduleAddress);
+    const resolver = type ? this.resolvers[type] : undefined;
+
+    return (await resolver?.namesWereChanged?.(moduleAddress, fromBlock, toBlock)) ?? false;
   }
 
   /** return blockTag for finalized block, it need for testing purposes */
