@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { RegistryOperator } from '../../../common/registry';
 import { addressToChecksum } from '../utils';
 
-export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKeys'> {
+export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKeys' | 'totalWithdrawnKeys'> {
   constructor(operator: RegistryOperator) {
     this.name = operator.name;
     this.rewardAddress = operator.rewardAddress;
@@ -15,6 +15,9 @@ export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKey
     this.active = operator.active;
     this.moduleAddress = addressToChecksum(operator.moduleAddress);
     this.depositableValidatorsCount = operator.depositableValidatorsCount;
+    // null for curated (NOR) modules that do not expose this counter on-chain;
+    // `??` (not `||`) keeps a genuine 0 of community/CSM implementation modules
+    this.totalWithdrawnKeys = operator.totalWithdrawnKeys ?? null;
   }
 
   @ApiProperty({
@@ -76,4 +79,13 @@ export class Operator implements Omit<RegistryOperator, 'finalizedUsedSigningKey
     description: 'Number of validators that are ready for deposit',
   })
   depositableValidatorsCount: number;
+
+  @ApiProperty({
+    required: true,
+    nullable: true,
+    type: Number,
+    description:
+      'Total number of withdrawn keys for the operator. Set for community-onchain-v1 and curated-onchain-v2 module types, null for other module types',
+  })
+  totalWithdrawnKeys: number | null;
 }

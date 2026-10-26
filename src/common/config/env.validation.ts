@@ -14,9 +14,11 @@ import {
   Min,
   ValidateIf,
   validateSync,
+  getMetadataStorage,
 } from 'class-validator';
 import { Environment, LogLevel, LogFormat, Chain } from './interfaces';
 import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
+import { SECRETS_IN_FORCE } from '../secrets/bootstrap-env';
 
 const toNumber =
   ({ defaultValue }) =>
@@ -230,6 +232,40 @@ export class EnvironmentVariables {
   LIDO_LOCATOR_DEVNET_ADDRESS = '';
 }
 
+// The logger's replacement token, so masked validation output reads the same as masked logs.
+// The redacting logger itself cannot be used here: validation runs while the config it would
+// be built from is still being parsed.
+const SECRET_REPLACER = '<removed>';
+const SECRET_VALUE_KEYS = ['DB_PASSWORD', 'SENTRY_DSN'];
+const SECRET_URL_LIST_KEYS = ['PROVIDERS_URLS', 'CL_API_URLS'];
+
+export function maskSecretsInValidationOutput(text: string, config: Record<string, unknown>): string {
+  const values = [
+    ...SECRET_VALUE_KEYS.map((key) => config[key]),
+    ...SECRET_URL_LIST_KEYS.flatMap((key) => String(config[key] ?? '').split(',')).map((url) => url.trim()),
+    ...Object.values(SECRETS_IN_FORCE),
+  ]
+    .map((value) => (value == null ? '' : String(value)))
+    .filter((value) => value.length > 0)
+    // Longest first, so a value that contains another one is replaced whole.
+    .sort((a, b) => b.length - a.length);
+
+  return values.reduce((result, value) => result.split(value).join(SECRET_REPLACER), text);
+}
+
+// Decorated fields plus fields with initializers: with target es2017 an uninitialized class
+// field does not exist on a fresh instance, so neither source alone lists every key.
+export function declaredConfigKeys(): string[] {
+  const decorated = getMetadataStorage()
+    .getTargetValidationMetadatas(EnvironmentVariables, EnvironmentVariables.name, true, false)
+    .map((meta) => meta.propertyName);
+  return [...new Set([...decorated, ...Object.getOwnPropertyNames(new EnvironmentVariables())])];
+}
+
+// Exposed for the startup dump: the validated instance carries every effective value,
+// defaults included, which ConfigService has no way to enumerate.
+export let VALIDATED_ENV: Record<string, unknown> | undefined;
+
 export function validate(config: Record<string, unknown>) {
   if (process.env.NODE_ENV == 'test') {
     return config;
@@ -241,9 +277,14 @@ export function validate(config: Record<string, unknown>) {
   const errors = validateSync(validatedConfig, validatorOptions);
 
   if (errors.length > 0) {
-    console.error(errors.toString());
+    console.error(maskSecretsInValidationOutput(errors.toString(), config));
     process.exit(1);
   }
 
+  // Only the declared keys: plainToInstance keeps unknown properties, so the instance itself
+  // carries the entire environment — npm_* variables, tokens of whatever launched the process.
+  VALIDATED_ENV = Object.fromEntries(
+    declaredConfigKeys().map((key) => [key, (validatedConfig as unknown as Record<string, unknown>)[key]]),
+  );
   return validatedConfig;
 }

@@ -1347,10 +1347,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@lido-nestjs/consensus@1.5.0", "@lido-nestjs/consensus@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/consensus/-/consensus-1.5.0.tgz#a8a75d6ed89c315bf2e944f422aa4e7762b557a3"
-  integrity sha512-hFJ9U3cHFEDYt/hpp9ZwhdYc1msVA+JrHSdQTWIv3Mr2xd7yqNmO08FyS/6fwlwNL77chHgv5S1NOtr/8Lt7fQ==
+"@lido-nestjs/consensus@2.0.0", "@lido-nestjs/consensus@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/consensus/-/consensus-2.0.0.tgz#9b305dcfa43da4f139dedbaaf83419afe23eacfd"
+  integrity sha512-9zao4dKqgQoGv1vsJ4mdVj1pG0dqEzA5LSlLfZSAHYuBBKSmPw0CJPu2iC/JiDweFvld3eeAFpcOtEzvmtz5bA==
   dependencies:
     "@lido-nestjs/fetch" "1.4.0"
     lodash.snakecase "^4.1.1"
@@ -1367,10 +1367,10 @@
   resolved "https://registry.yarnpkg.com/@lido-nestjs/di/-/di-1.0.1.tgz#cb1b1f06ca0b8ed93eefa3f9974691658456910e"
   integrity sha512-n/oPivizv6PffyLjtxf8wxm1IteG/YvelHFiz4X6jb4WhrCPpK8J46L/LHTLUmFfcCBXquVcUJqG5Nwy3b2pIg==
 
-"@lido-nestjs/execution@1.23.0":
-  version "1.23.0"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/execution/-/execution-1.23.0.tgz#f8bbc35129a5ef7a648c2b988fa8b340c1d8d6c8"
-  integrity sha512-s+8sd7SELesfdMa6bPoqgo0pIY/DOcj5ONvQqdSemIDsm5mOTi3bC2bfi8eMwRvSbShkqekgHUCqMaFlyP+FIA==
+"@lido-nestjs/execution@1.23.1":
+  version "1.23.1"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/execution/-/execution-1.23.1.tgz#24c50fda2ae7ff61cb2248374e8835ccd1a4078f"
+  integrity sha512-903mAtjUk+W9sNg0/UirF5sgYdkj3A+RDkqZlXi7xPYQ9ufR48hkpF+izE+CApWYm//7qS6Qj1k4cgNfNPOhBQ==
   dependencies:
     "@ethersproject/bignumber" "5.8.0"
     "@ethersproject/bytes" "5.8.0"
@@ -1405,23 +1405,23 @@
   resolved "https://registry.yarnpkg.com/@lido-nestjs/middleware/-/middleware-1.2.0.tgz#0e64b69149ef1f7e4594896fd08d6e0bd9ef5382"
   integrity sha512-0rkXWKXEKJPRbq1W6cN+yelhc+CruqhUqmdkNKwl4vTk631fpG9yfSfxxQFDAs3LhsTORqqgKUBpdK+epRYjIQ==
 
-"@lido-nestjs/utils@1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/utils/-/utils-1.3.0.tgz#8bdc69c3fd18bc57752b1799516096d284f1112b"
-  integrity sha512-/5I30Dos9TC18YfZq8O9ele28DpUQQCySB9X9GXPeSmY1AV4w2kIGQrws1wu2gtw7x5mZnW8PtWthJmH1f6vJQ==
+"@lido-nestjs/utils@1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/utils/-/utils-1.4.0.tgz#506fcb84b6a03fbc1744b1397bba078e6e9f1dba"
+  integrity sha512-uvKq9YkaZd1ClNikoFBul+xArhKcxRu2YlC/Ei/5H783x3BUX7FFUlf0Ot15PHFJ7M3rcorI3Me8QmDaDMSVQw==
 
-"@lido-nestjs/validators-registry@^1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/validators-registry/-/validators-registry-1.3.1.tgz#0851efcff7af8c56ebd27ee9021b1ccbe010e399"
-  integrity sha512-20frZsj7VG5iOoof+iPpXn3s5oBwuwsKuB9sRAGnqTFmwtiEr4AAGtE0WgGQNd4YLX9G7yF1bHr8mXCeaG8wUg==
+"@lido-nestjs/validators-registry@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/validators-registry/-/validators-registry-3.0.0.tgz#205bbbb87e838ea833df887e0d70d643e8231dbd"
+  integrity sha512-LOsQUzgsEBmukAc8kOSL50bsb3mdwPk8FlurNIVDiUtwd9DZL2zubp6FRtRX1YFZwk9FnN1fRvBZjr2OsWQkMg==
   dependencies:
-    "@lido-nestjs/consensus" "1.5.0"
+    "@lido-nestjs/consensus" "2.0.0"
     "@lido-nestjs/di" "1.0.1"
-    "@lido-nestjs/utils" "1.3.0"
+    "@lido-nestjs/utils" "1.4.0"
     "@types/stream-json" "^1.7.4"
     stream-chain "^2.2.5"
     stream-json "^1.8.0"
-    zod "^3.20.2"
+    zod "^3.23.0"
 
 "@ljharb/through@^2.3.12":
   version "2.3.14"
@@ -4322,6 +4322,11 @@ interpret@^2.2.0:
   resolved "https://registry.yarnpkg.com/interpret/-/interpret-2.2.0.tgz#1a78a0b5965c40a5416d007ad6f50ad27c417df9"
   integrity sha512-Ju0Bz/cEia55xDwUWEa8+olFpCiQoypjnQySseKtmjNrnps3P+xfpUmGr90T7yjlVJmOtybRvPXhKMbHr+fWnw==
 
+ip-address@^10.4.0:
+  version "10.7.0"
+  resolved "https://registry.yarnpkg.com/ip-address/-/ip-address-10.7.0.tgz#9713429f16787ede8f642f6255b41fb515c825d9"
+  integrity sha512-BGFsyJd5mpXp3rK6jIdADLNgpJUK1jnjzvYF8lK+VyDab9JAmqN0YOKDdP17HlgKb2+ehPgDc8EtnRLbGCAMhA==
+
 ipaddr.js@1.9.1:
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/ipaddr.js/-/ipaddr.js-1.9.1.tgz#bff38543eeb8984825079ff3a2a8e6cbd46781b3"
@@ -7081,7 +7086,7 @@ yocto-queue@^0.1.0:
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
 
-zod@^3.20.2:
-  version "3.20.2"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.20.2.tgz#068606642c8f51b3333981f91c0a8ab37dfc2807"
-  integrity sha512-1MzNQdAvO+54H+EaK5YpyEy0T+Ejo/7YLHS93G3RnYWh5gaotGHwGeN/ZO687qEDU2y4CdStQYXVHIgrUl5UVQ==
+zod@^3.23.0:
+  version "3.25.76"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.76.tgz#26841c3f6fd22a6a2760e7ccb719179768471e34"
+  integrity sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==

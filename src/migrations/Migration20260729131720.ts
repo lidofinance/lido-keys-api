@@ -7,7 +7,7 @@ import { Migration } from '@mikro-orm/migrations';
  * one ahead of the block's deposited count, freezing one deposited key as used=false below the
  * pointer. The incremental sync never re-reads keys below the pointer, and when a module's nonce is
  * unchanged with no reorg/operator event the updater takes the "No changes" fast path and does not
- * refetch at all — so a poisoned row can persist indefinitely.
+ * refetch at all — so an invalid row can persist indefinitely.
  *
  * We wipe all registry data (same reset the codebase already uses for schema changes) so the next
  * sync rebuilds every module from block 0. Before wiping, we log any operator whose stored used-key

@@ -61,25 +61,29 @@ export class ValidatorsService {
 
     const { validators, meta } = await this.validatorsRegistry.getValidators(filter.pubkeys, where, options);
 
-    // the lower the index, the older the validator
-    // if percent is provided, we will get percent oldest validators from db
-    if (filter.percent) {
+    // the lower the index, the older the validator.
+    // check `!== undefined`, not truthiness, so that 0 means "exit none", not "not set".
+    // percent has a higher priority than max_amount (see ValidatorsQuery).
+    if (filter.percent !== undefined) {
       return { validators: this.getPercentOfValidators(validators, filter.percent), meta };
     }
 
-    if (filter.max_amount) {
+    if (filter.max_amount !== undefined) {
       const nextValidatorsToExit = validators.slice(0, filter.max_amount);
       return { validators: nextValidatorsToExit, meta };
-    }
-
-    // return default value in this case is unpredictable. so lets return []
-    if (filter.percent == 0) {
-      return { validators: [], meta };
     }
 
     return { validators, meta };
   }
 
+  /**
+   * Consensus slot the stored validators were read at, with the execution layer block the state of that slot holds.
+   *
+   * Since Glamsterdam (EIP-7732) a block carries no execution payload of its own, so `blockNumber`, `blockHash` and
+   * `timestamp` belong to `payloadSlot`, an earlier slot. They can repeat across updates while `slot` moves on.
+   *
+   * null if ValidatorsRegistry is disabled, or if no update has been made yet.
+   */
   public async getMetaDataFromStorage(): Promise<ConsensusMeta | null> {
     if (this.isDisabledRegistry()) {
       return null;

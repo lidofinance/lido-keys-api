@@ -10,4 +10,6 @@ export interface RegistryOperator {
   moduleAddress: string;
   finalizedUsedSigningKeys: number;
   depositableValidatorsCount: number;
+  // total number of withdrawn keys for the operator, exposed by the community/CSM contract
+  totalWithdrawnKeys: number;
 }

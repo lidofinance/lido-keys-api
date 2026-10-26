@@ -26,7 +26,7 @@ export class PrometheusService {
     prefix: false,
     name: 'build_info',
     help: 'Build information',
-    labelNames: ['name', 'version', 'env', 'network'],
+    labelNames: ['name', 'version', 'env', 'network', 'commit', 'branch'],
   });
 
   public elRpcRequestDuration = this.getOrCreateMetric('Histogram', {
@@ -69,7 +69,9 @@ export class PrometheusService {
   public validatorsRegistryLastTimestampUpdate = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'validators_registry_last_update_block_timestamp',
-    help: 'Block timestamp for which the last ValidatorsRegistry update was made.',
+    help:
+      'Timestamp of the execution layer block of the last ValidatorsRegistry update. ' +
+      'Since Glamsterdam (EIP-7732) it is the time of an earlier slot than validators_registry_last_slot.',
   });
 
   public registryNumberOfKeysBySRModuleAndOperator = this.getOrCreateMetric('Gauge', {
@@ -95,18 +97,30 @@ export class PrometheusService {
   public validatorsRegistryLastBlockNumber = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'validators_registry_last_block_number',
-    help: 'Block number for which the last ValidatorsRegistry update was made.',
+    help:
+      'Execution layer block number of the last ValidatorsRegistry update. ' +
+      'Since Glamsterdam (EIP-7732) it can stay the same while validators_registry_last_slot moves on.',
   });
 
   public validatorsRegistryLastSlot = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'validators_registry_last_slot',
-    help: 'Slot for which the last ValidatorsRegistry update was made.',
+    help:
+      'Consensus slot of the last ValidatorsRegistry update. ' +
+      'Unlike the execution layer metrics of the registry, it always moves forward.',
   });
 
   public validatorsEnabled = this.getOrCreateMetric('Gauge', {
     prefix: true,
     name: 'validators_registry_enabled',
     help: 'Validators registry is enabled',
+  });
+
+  // A gauge, not a counter: the process exits on a change, so a counter would be reset by the
+  // restart it records.
+  public secretsFileMtime = this.getOrCreateMetric('Gauge', {
+    prefix: false,
+    name: 'secrets_file_mtime_seconds',
+    help: 'mtime of the secrets file in force, 0 when the configuration came from the environment',
   });
 }

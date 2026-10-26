@@ -1,9 +1,12 @@
 import { Global, LoggerService, Module } from '@nestjs/common';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { FallbackProviderModule } from '@lido-nestjs/execution';
+import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
+import { ConnectionInfo } from '@ethersproject/web';
 import { PrometheusService } from '../prometheus';
 import { ConfigService } from '../config';
 import { ExecutionProviderService } from './execution-provider.service';
+import { APP_NAME, APP_VERSION } from '../../app/app.constants';
 
 @Global()
 @Module({
@@ -11,7 +14,12 @@ import { ExecutionProviderService } from './execution-provider.service';
     FallbackProviderModule.forRootAsync({
       async useFactory(configService: ConfigService, logger: LoggerService, prometheusService: PrometheusService) {
         return {
-          urls: configService.get('PROVIDERS_URLS'),
+          // ConnectionInfo instead of plain strings, so providers can attribute the traffic.
+          // The tuple cast is safe: validation rejects an empty PROVIDERS_URLS at startup.
+          urls: configService.get('PROVIDERS_URLS').map((url) => ({
+            url,
+            headers: { 'User-Agent': `${APP_NAME}/${APP_VERSION}` },
+          })) as unknown as NonEmptyArray<ConnectionInfo>,
           network: configService.get('CHAIN_ID'),
           requestPolicy: {
             jsonRpcMaxBatchSize: configService.get('PROVIDER_JSON_RPC_MAX_BATCH_SIZE'),
