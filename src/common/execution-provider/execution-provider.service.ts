@@ -1,4 +1,5 @@
 import { SimpleFallbackJsonRpcBatchProvider } from '@lido-nestjs/execution';
+import { Block } from '@ethersproject/providers';
 import { CHAINS } from '@lido-nestjs/constants';
 import { Injectable, Inject } from '@nestjs/common';
 import { LOGGER_PROVIDER, LoggerService } from '../logger';
@@ -50,9 +51,10 @@ export class ExecutionProviderService {
   /**
    *
    * Returns full block info
+   * null if the node doesn't know the block (e.g. a reorged block or a block it hasn't seen yet)
    */
-  public async getFullBlock(blockHashOrBlockTag: number | string) {
-    const block = await this.provider.getBlock(blockHashOrBlockTag);
+  public async getFullBlock(blockHashOrBlockTag: number | string): Promise<Block | null> {
+    const block: Block | null = await this.provider.getBlock(blockHashOrBlockTag);
     return block;
   }
 }
