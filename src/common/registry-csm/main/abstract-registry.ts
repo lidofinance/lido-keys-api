@@ -221,6 +221,17 @@ export abstract class AbstractRegistryService {
   public async saveOperators(moduleAddress: string, currentOperators: RegistryOperator[]) {
     // save all data in a transaction
     await this.entityManager.transactional(async (entityManager) => {
+      // remove operators that are absent from the contract (e.g. created in a reorged block) and their keys
+      // operator indexes in the contract are sequential, so everything at or above the count is stale
+      await entityManager.nativeDelete(RegistryKey, {
+        operatorIndex: { $gte: currentOperators.length },
+        moduleAddress,
+      });
+      await entityManager.nativeDelete(RegistryOperator, {
+        index: { $gte: currentOperators.length },
+        moduleAddress,
+      });
+
       await Promise.all(
         // remove all keys from the database that are greater than the total number of keys
         // it's needed to clear the list in db when removing keys from the contract
