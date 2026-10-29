@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { range } from '@lido-nestjs/utils';
+import { Block } from '@ethersproject/providers';
 import { LOGGER_PROVIDER, LoggerService } from 'common/logger';
 import { StakingRouterService } from 'staking-router-modules/staking-router.service';
 import { ElMetaStorageService } from 'storage/el-meta.storage';
@@ -180,6 +181,16 @@ export class StakingModuleUpdaterService {
     // get full block data by hashes
     const currentBlock = await this.executionProvider.getFullBlock(currentBlockHash);
     const prevBlock = await this.executionProvider.getFullBlock(prevBlockHash);
+    // the node hasn't seen the current block yet (e.g. a lagging node behind a load balancer)
+    // abort the iteration, it will be retried in the next one
+    if (!currentBlock) {
+      throw new Error(`Current block ${currentBlockHash} is not available`);
+    }
+    // the node doesn't know the previously stored block, so it is not in the canonical chain
+    if (!prevBlock) {
+      updaterState.isReorgDetected = true;
+      return true;
+    }
     // prevBlock is a direct parent of currentBlock
     // there's no need to check deeper as we get the currentBlock by tag
     if (currentBlock.parentHash === prevBlock.hash) return false;
@@ -196,6 +207,11 @@ export class StakingModuleUpdaterService {
         return await this.executionProvider.getFullBlock(bNumber);
       }),
     );
+    // some block in the range is unavailable, the chain can't be verified, so treat it as a reorg
+    if (!blocks.every((block): block is Block => block !== null)) {
+      updaterState.isReorgDetected = true;
+      return true;
+    }
     // compare hash from the first block
     if (blocks[0].hash !== prevBlockHash) {
       updaterState.isReorgDetected = true;

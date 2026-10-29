@@ -164,6 +164,13 @@ export class KeysUpdateService {
       process.exit(1);
     }
 
+    // a module with the same id but a different address means the stored module was replaced (e.g. by a reorg)
+    if (this.modulesWereReplaced(contractModules, storageModules)) {
+      const error = new Error('Module address changed for the same module id');
+      this.logger.error(error);
+      process.exit(1);
+    }
+
     // READ_COMMITTED alone allows a lost update — a writer holding an older block overwrites a newer one — so the
     // meta is re-read under the lock and the cycle is skipped when it has already moved on.
     const updated = await this.entityManager.transactional(
@@ -251,5 +258,16 @@ export class KeysUpdateService {
     const contractModulesIds = contractModules.map((contractModule) => contractModule.moduleId);
 
     return !storageModules.every((storageModule) => contractModulesIds.includes(storageModule.moduleId));
+  }
+
+  private modulesWereReplaced(contractModules: StakingModule[], storageModules: SrModuleEntity[]): boolean {
+    // we want to check here that modules from storageModules keep the same address in contractModules
+    // type is not compared: it is read from the module contract and can change after a proxy upgrade
+    return storageModules.some((storageModule) => {
+      const contractModule = contractModules.find(({ moduleId }) => moduleId === storageModule.moduleId);
+      if (!contractModule) return false;
+
+      return contractModule.stakingModuleAddress.toLowerCase() !== storageModule.stakingModuleAddress.toLowerCase();
+    });
   }
 }
