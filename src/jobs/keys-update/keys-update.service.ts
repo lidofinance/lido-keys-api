@@ -164,9 +164,13 @@ export class KeysUpdateService {
       process.exit(1);
     }
 
-    // a module with the same id but a different address means the stored module was replaced (e.g. by a reorg)
+    // a module with the same id but a different address means the stored data does not match the chain,
+    // e.g. the DB was left from another deployment (testnet redeploy, fork) or a reorg replaced the module
     if (this.modulesWereReplaced(contractModules, storageModules)) {
-      const error = new Error('Module address changed for the same module id');
+      const error = new Error(
+        'Module address changed for the same module id. Check that the config matches the intended network, ' +
+          'then clear the database by hand and restart the service to resync',
+      );
       this.logger.error(error);
       process.exit(1);
     }
