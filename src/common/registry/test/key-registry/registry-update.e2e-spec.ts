@@ -163,6 +163,25 @@ describe('Registry update', () => {
 
     expect(keysOfOperator0.length).toBe(newOperators[0].totalSigningKeys);
   });
+
+  test('remove operators and their keys absent from the contract', async () => {
+    // operator 1 was created in a block that got reorged out, the canonical contract returns only operator 0
+    // saveOperators() deletes operators with index >= count and all their keys
+    const newOperators = clone(operatorsWithModuleAddress).filter(({ index }) => index === 0);
+    const newKeys = keysWithModuleAddress.filter(({ operatorIndex }) => operatorIndex === 0);
+
+    registryServiceMock(moduleRef, {
+      keys: newKeys,
+      operators: newOperators,
+    });
+
+    await registryService.update(address, blockHash);
+
+    await compareTestKeysAndOperators(address, registryService, {
+      keys: newKeys,
+      operators: newOperators,
+    });
+  });
 });
 
 describe('Reorg detection', () => {

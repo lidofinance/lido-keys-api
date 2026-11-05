@@ -7,7 +7,11 @@ import { CSM_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
 import { CallOverrides } from './interfaces/overrides.interface';
 import { RegistryOperator } from './interfaces/operator.interface';
 import { REGISTRY_OPERATORS_BATCH_SIZE } from './operator.constants';
-import { OPERATOR_NAME_RESOLVERS_TOKEN, OperatorNameResolversConfig } from './operator-name-resolver';
+import {
+  InvalidOperatorNameError,
+  OPERATOR_NAME_RESOLVERS_TOKEN,
+  OperatorNameResolversConfig,
+} from './operator-name-resolver';
 import { ModuleTypeRegistry } from 'common/module-type-registry';
 import { utils } from 'ethers';
 
@@ -53,6 +57,10 @@ export class RegistryOperatorFetchService {
     try {
       name = await resolver.resolve(moduleAddress, operatorIndex, overrides);
     } catch (error) {
+      // only an undecodable name falls back to a placeholder
+      // transport errors propagate so the update is rolled back and retried instead of committing a placeholder
+      if (!(error instanceof InvalidOperatorNameError)) throw error;
+
       this.logger.error(
         `Failed to resolve name for operator ${operatorIndex} of module ${moduleAddress}; using a placeholder.`,
       );
