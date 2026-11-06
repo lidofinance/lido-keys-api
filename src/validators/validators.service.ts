@@ -78,11 +78,6 @@ export class ValidatorsService {
 
   /**
    * Consensus slot the stored validators were read at, with the execution layer block the state of that slot holds.
-   *
-   * Since Glamsterdam (EIP-7732) a block carries no execution payload of its own, so `blockNumber`, `blockHash` and
-   * `timestamp` belong to `payloadSlot`, an earlier slot. They can repeat across updates while `slot` moves on.
-   *
-   * null if ValidatorsRegistry is disabled, or if no update has been made yet.
    */
   public async getMetaDataFromStorage(): Promise<ConsensusMeta | null> {
     if (this.isDisabledRegistry()) {

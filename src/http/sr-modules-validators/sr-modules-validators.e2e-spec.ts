@@ -102,9 +102,6 @@ describe('SRModulesValidatorsController (e2e)', () => {
     }
   }
 
-  // The registry asks for a header by the block id `update()` was called with, and for a block by the root that header
-  // carries. Since Glamsterdam (EIP-7732) it also walks the ancestors and asks for the envelope of the block whose
-  // payload the state already holds, so the answers are keyed rather than fixed.
   const consensusHeaders: Record<string, unknown> = {
     [slot]: header,
     [gloasSlotG1]: gloasHeaderG1,
@@ -122,7 +119,6 @@ describe('SRModulesValidatorsController (e2e)', () => {
     [gloasRootG0]: gloasEnvelopeG0,
   };
 
-  // Fail loudly on an id no fixture answers for, so a wrong walk shows up as itself instead of as invalid data
   const answerOrFail = (answers: Record<string, unknown>, blockId: string | number, method: string) => {
     const answer = answers[String(blockId)];
     if (!answer) {
@@ -908,9 +904,9 @@ describe('SRModulesValidatorsController (e2e)', () => {
   });
 
   /**
-   * Since Glamsterdam (EIP-7732) a beacon block carries no execution payload, so the execution layer fields of the
-   * snapshot describe the payload of an earlier slot. These cases run last on purpose: the registry only takes an
-   * update whose slot is ahead of the stored one, and the slots used here are ahead of the ones used above.
+   * Since Glamsterdam a beacon block carries no execution payload, so the execution layer fields of the snapshot
+   * describe the payload of an earlier slot. These cases run last on purpose: the registry only takes an update whose
+   * slot is ahead of the stored one, and the slots used here are ahead of the ones used above.
    */
   describe('Glamsterdam (EIP-7732) block shape', () => {
     beforeAll(async () => {
