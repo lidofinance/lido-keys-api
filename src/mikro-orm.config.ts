@@ -9,6 +9,7 @@ import { RegistryKey } from './common/registry/storage/key.entity';
 import { ConsensusMetaEntity } from '@lido-nestjs/validators-registry';
 import { ConsensusValidatorEntity } from '@lido-nestjs/validators-registry';
 import { readFileSync } from 'fs';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { SrModuleEntity } from './storage/sr-module.entity';
 import { ElMetaEntity } from './storage/el-meta.entity';
 import { Logger } from '@nestjs/common';
@@ -113,7 +114,7 @@ if (!DB_PASSWORD) {
 }
 
 const config: Options = {
-  type: 'postgresql',
+  driver: PostgreSqlDriver,
   dbName: process.env.DB_NAME,
   host: process.env.DB_HOST,
   port: parseInt(process?.env?.DB_PORT ?? '', 10),

@@ -92,7 +92,7 @@ export class RegistryKeyStorageService {
   /** saves key to storage */
   async saveOne(operatorKey: RegistryKey) {
     const key = new RegistryKey(operatorKey);
-    return await this.repository.persistAndFlush(key);
+    return await this.repository.getEntityManager().persistAndFlush(key);
   }
 
   /** saves multiply keys to storage */
@@ -100,11 +100,11 @@ export class RegistryKeyStorageService {
     const result = await Promise.all(
       operatorKeys.map(async (operatorKey) => {
         const instance = new RegistryKey(operatorKey);
-        return await this.repository.persist(instance);
+        return await this.repository.getEntityManager().persist(instance);
       }),
     );
 
-    await this.repository.flush();
+    await this.repository.getEntityManager().flush();
     return result;
   }
 }

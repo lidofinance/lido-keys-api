@@ -9,6 +9,7 @@ import {
 import { LOGGER_PROVIDER, LoggerService } from '../common/logger';
 import { ConfigService } from '../common/config';
 import { QueryOrder } from '@mikro-orm/core';
+import { VALIDATORS_STATUSES_FOR_EXIT } from './validators.constants';
 
 export interface ValidatorsFilter {
   pubkeys: string[];
@@ -35,7 +36,7 @@ export class ValidatorsService {
       return null;
     }
 
-    return await this.validatorsRegistry.updateStream(blockId);
+    return await this.validatorsRegistry.updateStream(blockId, { status: VALIDATORS_STATUSES_FOR_EXIT });
   }
 
   /**
