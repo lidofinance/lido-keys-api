@@ -1,11 +1,11 @@
-import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
+import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { ADDRESS_LEN } from './constants';
 import { RegistryOperatorRepository } from './operator.repository';
 
-@Entity({ customRepository: () => RegistryOperatorRepository })
+@Entity({ repository: () => RegistryOperatorRepository })
 export class RegistryOperator {
   [EntityRepositoryType]?: RegistryOperatorRepository;
-  [PrimaryKeyType]?: [RegistryOperator['index'], RegistryOperator['moduleAddress']];
+  [PrimaryKeyProp]?: ['index', 'moduleAddress'];
 
   constructor(operator: RegistryOperator) {
     this.index = operator.index;

@@ -1,11 +1,11 @@
-import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
+import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { BLOCK_HASH_LEN } from './constants';
 import { ElMetaRepository } from './el-meta.repository';
 
-@Entity({ customRepository: () => ElMetaRepository })
+@Entity({ repository: () => ElMetaRepository })
 export class ElMetaEntity {
   [EntityRepositoryType]?: ElMetaRepository;
-  [PrimaryKeyType]?: [number, number];
+  [PrimaryKeyProp]?: ['blockNumber', 'blockHash'];
 
   constructor(meta: ElMetaEntity) {
     this.blockNumber = meta.blockNumber;

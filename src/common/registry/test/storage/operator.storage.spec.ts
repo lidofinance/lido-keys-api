@@ -26,6 +26,12 @@ describe('Operators', () => {
 
   const addTimeoutToStream = jest.spyOn(streamUtils, 'addTimeoutToStream').mockReturnValue();
 
+  // em.persist returns the same entity manager, so persist(x).flush() chains as in MikroORM
+  const mockEntityManager = {
+    persist: jest.fn().mockReturnThis(),
+    flush: jest.fn().mockResolvedValue(undefined),
+  };
+
   const mockRegistryOperatorRepository = {
     findAll: jest.fn().mockImplementation(() => {
       return Promise.resolve([]);
@@ -36,19 +42,11 @@ describe('Operators', () => {
     findOne: jest.fn().mockImplementation(() => {
       return Promise.resolve(registryOperator);
     }),
-    persistAndFlush: jest.fn().mockImplementation((operator: RegistryOperator) => {
-      return Promise.resolve({ ...operator });
-    }),
-    persist: jest.fn().mockImplementation((operator: RegistryOperator) => {
-      return Promise.resolve({ ...operator });
-    }),
-    flush: jest.fn().mockImplementation(() => {
-      return;
-    }),
     nativeDelete: jest.fn().mockImplementation(() => {
       return 1;
     }),
     createQueryBuilder: jest.fn().mockReturnValue(mockedCreateQueryBuilder),
+    getEntityManager: jest.fn().mockReturnValue(mockEntityManager),
   };
 
   let storageService: RegistryOperatorStorageService;
@@ -79,7 +77,7 @@ describe('Operators', () => {
   });
 
   beforeEach(() => {
-    Object.values(mockRegistryOperatorRepository).forEach((mockCall) => {
+    [...Object.values(mockRegistryOperatorRepository), ...Object.values(mockEntityManager)].forEach((mockCall) => {
       mockCall.mockClear();
     });
   });
@@ -127,13 +125,16 @@ describe('Operators', () => {
   });
 
   test('saveOne', async () => {
-    await expect(storageService.saveOne(registryOperator)).resolves.toEqual(registryOperator);
-    expect(mockRegistryOperatorRepository.persistAndFlush).toBeCalledTimes(1);
+    await storageService.saveOne(registryOperator);
+    expect(mockEntityManager.persist).toBeCalledTimes(1);
+    expect(mockEntityManager.persist).toBeCalledWith(expect.objectContaining(registryOperator));
+    expect(mockEntityManager.flush).toBeCalledTimes(1);
   });
 
   test('save', async () => {
-    await expect(storageService.save([registryOperator])).resolves.toEqual([registryOperator]);
-    expect(mockRegistryOperatorRepository.persist).toBeCalledTimes(1);
-    expect(mockRegistryOperatorRepository.flush).toBeCalledTimes(1);
+    await storageService.save([registryOperator]);
+    expect(mockEntityManager.persist).toBeCalledTimes(1);
+    expect(mockEntityManager.persist).toBeCalledWith(expect.objectContaining(registryOperator));
+    expect(mockEntityManager.flush).toBeCalledTimes(1);
   });
 });

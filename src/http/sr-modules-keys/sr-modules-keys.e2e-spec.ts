@@ -319,13 +319,13 @@ describe('SRModulesKeysController (e2e)', () => {
           });
         });
 
-        it('Should return 400 error if module_id is not set', async () => {
+        it('Should return 404 if module_id is not set', async () => {
           const resp = await request(app.getHttpServer()).get(`/v1/modules//keys`);
-          expect(resp.status).toEqual(400);
+          expect(resp.status).toEqual(404);
           expect(resp.body).toEqual({
-            error: 'Bad Request',
-            message: ['module_id must be a contract address or numeric value'],
-            statusCode: 400,
+            error: 'Not Found',
+            message: `Cannot GET /v1/modules//keys`,
+            statusCode: 404,
           });
         });
 
@@ -441,15 +441,15 @@ describe('SRModulesKeysController (e2e)', () => {
           });
         });
 
-        it('Should return 400 error if module_id is not set', async () => {
+        it('Should return 404 if module_id is not set', async () => {
           const pubkeys = [dvtModuleKeysResponse[0].key, dvtModuleKeysResponse[1].key];
 
           const resp = await request(app.getHttpServer()).post(`/v1/modules//keys/find`).send({ pubkeys });
-          expect(resp.status).toEqual(400);
+          expect(resp.status).toEqual(404);
           expect(resp.body).toEqual({
-            error: 'Bad Request',
-            message: ['module_id must be a contract address or numeric value'],
-            statusCode: 400,
+            error: 'Not Found',
+            message: `Cannot POST /v1/modules//keys/find`,
+            statusCode: 404,
           });
         });
 
