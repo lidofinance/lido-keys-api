@@ -1364,13 +1364,21 @@
     "@types/node-fetch" "^2.5.12"
     node-fetch "^2.6.7"
 
-"@lido-nestjs/logger@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@lido-nestjs/logger/-/logger-2.0.0.tgz#fe12b1297edd06d6a05bffdda6fbea5f161c675d"
-  integrity sha512-Leg5D9sC/xCGXdLr+D/tEanqsJ3hpi0cAeYkl4h8XN1sEOqX6LXiNXRAMcJbnvw/OGeKaU2SayAmm0eZ+VfLYA==
+"@lido-nestjs/logger@2.0.0", "@lido-nestjs/logger@file:/Users/work/lido-pack/logger.tgz":
+  version "3.0.0"
+  resolved "file:/Users/work/lido-pack/logger.tgz#9bc5b7931236a81878e1cb5c3cd9267a205a654e"
   dependencies:
+    "@lidofinance/satanizer" "^0.64.0"
     nest-winston "^1.10.2"
-    traverse "^0.6.7"
+    winston "^3.4.0"
+
+"@lido-nestjs/logger@file:../../../../lido-pack/logger.tgz":
+  version "3.0.0"
+  uid "9bc5b7931236a81878e1cb5c3cd9267a205a654e"
+  resolved "file:../../../../lido-pack/logger.tgz#9bc5b7931236a81878e1cb5c3cd9267a205a654e"
+  dependencies:
+    "@lidofinance/satanizer" "^0.64.0"
+    nest-winston "^1.10.2"
     winston "^3.4.0"
 
 "@lido-nestjs/middleware@2.0.0":
@@ -1383,9 +1391,10 @@
   resolved "https://registry.yarnpkg.com/@lido-nestjs/utils/-/utils-2.0.0.tgz#2d2508bbeb450a2db51ba48464a2b811ccea1541"
   integrity sha512-KiEIQzwgm/4RXcROMx+nDVHSDAxVjmE1Nx3w3y7jH03QUgFIr8q1FMJn1gohSKfvTJeXVjysK1k+d9NvZa6WLQ==
 
-"@lido-nestjs/validators-registry@file:../../../../lido-pack/validators-registry.tgz":
-  version "0.0.0-semantic-release"
-  resolved "file:../../../../lido-pack/validators-registry.tgz#3d3905b2efed3d6215e9f2b3358a698e42081257"
+"@lido-nestjs/validators-registry@5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/validators-registry/-/validators-registry-5.0.0.tgz#8419978d18d6ac058c6e0b30b4387736ccec233a"
+  integrity sha512-IQKInGILjwFtRlcrE4t5eZ9t2kIIsRJ58vG9xxT4iNSaVPBVwmbSzDlq4Q4TgyoUkZIpBUxIjNWNVS8yTwzh5A==
   dependencies:
     "@lido-nestjs/consensus" "3.0.0"
     "@lido-nestjs/di" "2.0.0"
@@ -1394,6 +1403,11 @@
     stream-chain "^2.2.5"
     stream-json "^1.8.0"
     zod "^3.23.0"
+
+"@lidofinance/satanizer@^0.64.0":
+  version "0.64.0"
+  resolved "https://registry.yarnpkg.com/@lidofinance/satanizer/-/satanizer-0.64.0.tgz#9d9485316f1bbd77772c6709169bd32e1ca48ab7"
+  integrity sha512-meEnpvBzvjEDEAhh3MmHd3kHk5ZDfHreqrJGPNll4o4oTnIkZ8S/YHJhAttn/baO+iWllA11F90ywrP/HHHixA==
 
 "@lukeed/csprng@^1.0.0":
   version "1.1.0"
@@ -1410,7 +1424,7 @@
   resolved "https://registry.yarnpkg.com/@microsoft/tsdoc/-/tsdoc-0.17.1.tgz#b8bb5062280827c4a54443297701a3e70dc1018d"
   integrity sha512-VHyYyyoH63jFoO3shpw9Zfijk5v/9p/VrClW35z0/q6ooK7sSmxpzOkS4iZPxs3vO4XtBW4H38HRAKkAMIK7DA==
 
-"@mikro-orm/cli@^6.6.17":
+"@mikro-orm/cli@6.6.17":
   version "6.6.17"
   resolved "https://registry.yarnpkg.com/@mikro-orm/cli/-/cli-6.6.17.tgz#4618e2836d13111aa2455d3496afc6b940378f8f"
   integrity sha512-cQ9HXCVe1L+MXvlg3jNPVGkIgA4ngsH48GoGj3SfxJdrdB7W5JOLuu8dGQrc6HDUvuff78lkBpIy/XROm8t/fg==
@@ -1422,7 +1436,7 @@
     tsconfig-paths "4.2.0"
     yargs "17.7.2"
 
-"@mikro-orm/core@6.6.17", "@mikro-orm/core@^6.6.17":
+"@mikro-orm/core@6.6.17":
   version "6.6.17"
   resolved "https://registry.yarnpkg.com/@mikro-orm/core/-/core-6.6.17.tgz#cb36de75af5e9a9dfa98da918f116c3d64ce4bb1"
   integrity sha512-LFl6s0U6evvhB2iqifGEAzY0Nl1DC4Ge2N6GcPoNEvtg3OC/0GjvIftyzXnpaANjo/IxEaY/ge5BgMLt1B729g==
@@ -1435,7 +1449,7 @@
     mikro-orm "6.6.17"
     reflect-metadata "0.2.2"
 
-"@mikro-orm/knex@6.6.17", "@mikro-orm/knex@^6.6.17":
+"@mikro-orm/knex@6.6.17":
   version "6.6.17"
   resolved "https://registry.yarnpkg.com/@mikro-orm/knex/-/knex-6.6.17.tgz#312c24db5343791e16a4edd02db9f3ab7202ba0a"
   integrity sha512-v65plaUKRuPsmMBXl/0h6ejqhVvS0Np4bGJSxHGOuWPONNEQHvSlt1aIpddhSYtdnzCXKV2hQNVBEaj8/wkA2Q==
@@ -1444,7 +1458,7 @@
     knex "3.2.10"
     sqlstring "2.3.3"
 
-"@mikro-orm/migrations@^6.6.17":
+"@mikro-orm/migrations@6.6.17":
   version "6.6.17"
   resolved "https://registry.yarnpkg.com/@mikro-orm/migrations/-/migrations-6.6.17.tgz#cda67a8f69677436b5819e1eb61b58b4651d09fb"
   integrity sha512-wkEiYM1o4v5ym8iQJ6QllvdRZLWRv3SF2GiXob0A8VVD6343ZSxU4bPoo1eSdhzssq0cBttdmL6pObnRlwEGDA==
@@ -1458,7 +1472,7 @@
   resolved "https://registry.yarnpkg.com/@mikro-orm/nestjs/-/nestjs-6.1.2.tgz#5cbae0701c955ef2226a205bcca9ecd26c04751e"
   integrity sha512-rITNvXusRVAB7PjEftT5ooDg6U2FZHwpn0u9f5RJyc9gVJGL2XroSJ6iX7VbDXasY8GUT1agdeeKmImx+MThdw==
 
-"@mikro-orm/postgresql@^6.6.17":
+"@mikro-orm/postgresql@6.6.17":
   version "6.6.17"
   resolved "https://registry.yarnpkg.com/@mikro-orm/postgresql/-/postgresql-6.6.17.tgz#20b688651beb6d156220836ec872797a38d16794"
   integrity sha512-9cFWSVn77uk93SCu822gpYxYUiDi9jMBxSq1x0PGAPLF+froYrRCsTfYoGLV686mdnQS0Ac0GStp0E3dNNTHqg==
@@ -6290,11 +6304,6 @@ tr46@~0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
-
-traverse@^0.6.7:
-  version "0.6.7"
-  resolved "https://registry.yarnpkg.com/traverse/-/traverse-0.6.7.tgz#46961cd2d57dd8706c36664acde06a248f1173fe"
-  integrity sha512-/y956gpUo9ZNCb99YjxG7OaslxZWHfCHAUUfshwqOXmxUIvqLjVO581BT+gM59+QV9tFe6/CGG53tsA1Y7RSdg==
 
 triple-beam@^1.3.0:
   version "1.3.0"

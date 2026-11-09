@@ -47,14 +47,14 @@
     "@lido-nestjs/constants": "6.0.0",
     "@lido-nestjs/execution": "2.0.0",
     "@lido-nestjs/fetch": "2.0.0",
-    "@lido-nestjs/logger": "2.0.0",
+    "@lido-nestjs/logger": "file:/Users/work/lido-pack/logger.tgz",
     "@lido-nestjs/middleware": "2.0.0",
-    "@lido-nestjs/validators-registry": "file:/Users/work/lido-pack/validators-registry.tgz",
-    "@mikro-orm/core": "^6.6.17",
-    "@mikro-orm/knex": "^6.6.17",
-    "@mikro-orm/migrations": "^6.6.17",
+    "@lido-nestjs/validators-registry": "5.0.0",
+    "@mikro-orm/core": "6.6.17",
+    "@mikro-orm/knex": "6.6.17",
+    "@mikro-orm/migrations": "6.6.17",
     "@mikro-orm/nestjs": "^6.1.2",
-    "@mikro-orm/postgresql": "^6.6.17",
+    "@mikro-orm/postgresql": "6.6.17",
     "@nestjs/cache-manager": "^3.1.3",
     "@nestjs/common": "^11.2.8",
     "@nestjs/config": "^4.0.2",
@@ -83,7 +83,7 @@
     "typechain": "^8.0.0"
   },
   "devDependencies": {
-    "@mikro-orm/cli": "^6.6.17",
+    "@mikro-orm/cli": "6.6.17",
     "@nestjs/cli": "^11.0.24",
     "@nestjs/schematics": "^11.1.0",
     "@nestjs/testing": "^11.2.8",
@@ -106,6 +106,7 @@
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
   "resolutions": {
-    "light-my-request": "6.6.0"
+    "light-my-request": "6.6.0",
+    "@lido-nestjs/logger": "file:/Users/work/lido-pack/logger.tgz"
   }
 }

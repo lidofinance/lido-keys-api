@@ -3,9 +3,9 @@ import { SECRETS_FILE_PATH, SECRETS_IN_FORCE, SECRETS_POLL_INTERVAL_IN_SECONDS }
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
+import { LOGGER_PROVIDER, secretsMask } from '@lido-nestjs/logger';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { SWAGGER_URL } from './http/common/swagger';
 import { ConfigService, VALIDATED_ENV } from './common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
@@ -13,6 +13,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
 import { PrometheusService } from './common/prometheus';
 import { SecretsWatcher, secretsFileMtimeMs } from './common/secrets';
+import { buildBeforeSend } from './common/sentry';
 
 export const validationOpt = { transform: true };
 
@@ -126,7 +127,13 @@ async function bootstrap() {
 
   // sentry
   const release = `${APP_NAME}@${APP_VERSION}`;
-  Sentry.init({ dsn: sentryDsn, release, environment });
+  // Sentry sends events by itself, past the logger: mask the same secrets in them
+  Sentry.init({
+    dsn: sentryDsn,
+    release,
+    environment,
+    beforeSend: buildBeforeSend(secretsMask({ secrets: configService.secrets })),
+  });
 
   // cors
   if (corsWhitelist !== '') {
