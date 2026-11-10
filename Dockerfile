@@ -1,4 +1,4 @@
-FROM node:20.20-alpine3.23 AS building
+FROM node:24.22.1-alpine3.23 AS building
 
 WORKDIR /app
 
@@ -12,14 +12,14 @@ COPY ./src ./src
 RUN yarn typechain && yarn build
 
 # Production-only dependency tree for the runtime stage
-FROM node:20.20-alpine3.23 AS proddeps
+FROM node:24.22.1-alpine3.23 AS proddeps
 
 WORKDIR /app
 
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --non-interactive --production && yarn cache clean
 
-FROM node:20.20-alpine3.23
+FROM node:24.22.1-alpine3.23
 
 WORKDIR /app
 
