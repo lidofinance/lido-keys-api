@@ -1364,18 +1364,10 @@
     "@types/node-fetch" "^2.5.12"
     node-fetch "^2.6.7"
 
-"@lido-nestjs/logger@2.0.0", "@lido-nestjs/logger@file:/Users/work/lido-pack/logger.tgz":
+"@lido-nestjs/logger@2.0.0", "@lido-nestjs/logger@3.0.0":
   version "3.0.0"
-  resolved "file:/Users/work/lido-pack/logger.tgz#9bc5b7931236a81878e1cb5c3cd9267a205a654e"
-  dependencies:
-    "@lidofinance/satanizer" "^0.64.0"
-    nest-winston "^1.10.2"
-    winston "^3.4.0"
-
-"@lido-nestjs/logger@file:../../../../lido-pack/logger.tgz":
-  version "3.0.0"
-  uid "9bc5b7931236a81878e1cb5c3cd9267a205a654e"
-  resolved "file:../../../../lido-pack/logger.tgz#9bc5b7931236a81878e1cb5c3cd9267a205a654e"
+  resolved "https://registry.yarnpkg.com/@lido-nestjs/logger/-/logger-3.0.0.tgz#cadcfc4087424a87a67a82248bf284befb760538"
+  integrity sha512-/Fi94z6++NlUJYcmsy3Y7R8mRY/KvMqLyyKs4bWO4kx4TTTbHbZMu5tHdJXCGmZOw7uJh+zN36R/UaXRlUfrfw==
   dependencies:
     "@lidofinance/satanizer" "^0.64.0"
     nest-winston "^1.10.2"
