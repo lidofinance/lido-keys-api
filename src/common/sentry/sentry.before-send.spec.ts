@@ -3,22 +3,22 @@ import { secretsMask } from '@lido-nestjs/logger';
 import { buildBeforeSend, MASKED_EVENT_FIELDS } from './sentry.before-send';
 
 // A provider URL, as configured in PROVIDERS_URLS
-const SECRET = 'https://el.example.org/v2/planted-fixture-value';
+const PROVIDER_URL = 'https://el.example.org/v2/planted-fixture-value';
 
 describe('buildBeforeSend', () => {
-  const beforeSend = buildBeforeSend(secretsMask({ secrets: [SECRET] }));
+  const beforeSend = buildBeforeSend(secretsMask({ secrets: [PROVIDER_URL] }));
 
   // The secret in every field the event can carry
   const eventWithSecretEverywhere = (): Event => ({
-    message: `boom ${SECRET}`,
-    exception: { values: [{ type: 'Error', value: `missing response (url="${SECRET}")` }] },
-    breadcrumbs: [{ category: 'http', data: { url: SECRET, method: 'POST' } }],
-    tags: { key: SECRET },
-    request: { url: `${SECRET}/eth/v1/node/syncing` },
-    contexts: { runtime: { detail: SECRET } },
-    extra: { payload: { nested: [SECRET] } },
-    user: { id: SECRET },
-    spans: [{ description: SECRET } as never],
+    message: `boom ${PROVIDER_URL}`,
+    exception: { values: [{ type: 'Error', value: `missing response (url="${PROVIDER_URL}")` }] },
+    breadcrumbs: [{ category: 'http', data: { url: PROVIDER_URL, method: 'POST' } }],
+    tags: { key: PROVIDER_URL },
+    request: { url: `${PROVIDER_URL}/eth/v1/node/syncing` },
+    contexts: { runtime: { detail: PROVIDER_URL } },
+    extra: { payload: { nested: [PROVIDER_URL] } },
+    user: { id: PROVIDER_URL },
+    spans: [{ description: PROVIDER_URL } as never],
   });
 
   // Written out by hand: the tests below run per field of the same list, so a field dropped from it
@@ -41,7 +41,7 @@ describe('buildBeforeSend', () => {
     const masked = beforeSend(eventWithSecretEverywhere());
 
     expect(masked[field]).toBeDefined();
-    expect(JSON.stringify(masked[field])).not.toContain(SECRET);
+    expect(JSON.stringify(masked[field])).not.toContain(PROVIDER_URL);
   });
 
   it('keeps the fields it does not mask', () => {
