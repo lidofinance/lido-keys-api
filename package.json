@@ -42,8 +42,8 @@
     "prepare:csm": "node scripts/prepare-csm-abi.js"
   },
   "dependencies": {
+    "@fastify/static": "^10.1.10",
     "@cacheable/memory": "^2.2.0",
-    "@fastify/static": "10.1.3",
     "@lido-nestjs/consensus": "3.0.0",
     "@lido-nestjs/constants": "6.0.0",
     "@lido-nestjs/execution": "2.0.0",
@@ -89,7 +89,7 @@
     "@nestjs/schematics": "^11.1.0",
     "@nestjs/testing": "^11.2.8",
     "@types/jest": "^27.4.0",
-    "@types/node": "^20.19.0",
+    "@types/node": "^24.19.2",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
@@ -107,7 +107,6 @@
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
   "resolutions": {
-    "light-my-request": "6.6.0",
     "@lido-nestjs/logger": "3.0.0"
   }
 }

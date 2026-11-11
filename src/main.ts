@@ -14,12 +14,16 @@ import { EntityManager } from '@mikro-orm/knex';
 import { PrometheusService } from './common/prometheus';
 import { SecretsWatcher, secretsFileMtimeMs } from './common/secrets';
 import { buildBeforeSend } from './common/sentry';
+import { configureHttpAgents } from './common/http-agents';
 
 export const validationOpt = { transform: true };
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 async function bootstrap() {
+  // Before the providers are created and send their first requests
+  configureHttpAgents();
+
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({
