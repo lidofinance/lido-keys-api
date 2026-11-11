@@ -42,6 +42,7 @@
     "prepare:csm": "node scripts/prepare-csm-abi.js"
   },
   "dependencies": {
+    "@cacheable/memory": "^2.2.0",
     "@fastify/static": "10.1.3",
     "@lido-nestjs/consensus": "3.0.0",
     "@lido-nestjs/constants": "6.0.0",
