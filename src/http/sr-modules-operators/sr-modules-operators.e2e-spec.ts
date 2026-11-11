@@ -291,13 +291,13 @@ describe('SRModuleOperatorsController (e2e)', () => {
           });
         });
 
-        it('should return 400 error if module_id is not set', async () => {
+        it('should return 404 if module_id is not set', async () => {
           const resp = await request(app.getHttpServer()).get('/v1/modules//operators');
-          expect(resp.status).toEqual(400);
+          expect(resp.status).toEqual(404);
           expect(resp.body).toEqual({
-            error: 'Bad Request',
-            message: ['module_id must be a contract address or numeric value'],
-            statusCode: 400,
+            error: 'Not Found',
+            message: `Cannot GET /v1/modules//operators`,
+            statusCode: 404,
           });
         });
 
@@ -400,13 +400,13 @@ describe('SRModuleOperatorsController (e2e)', () => {
           });
         });
 
-        it('should return 400 error if module_id is not set', async () => {
+        it('should return 404 if module_id is not set', async () => {
           const resp = await request(app.getHttpServer()).get('/v1/modules//operators/1');
-          expect(resp.status).toEqual(400);
+          expect(resp.status).toEqual(404);
           expect(resp.body).toEqual({
-            error: 'Bad Request',
-            message: ['module_id must be a contract address or numeric value'],
-            statusCode: 400,
+            error: 'Not Found',
+            message: `Cannot GET /v1/modules//operators/1`,
+            statusCode: 404,
           });
         });
 
@@ -462,17 +462,13 @@ describe('SRModuleOperatorsController (e2e)', () => {
           });
         });
 
-        it('should return 400 error if operator_id is not set', async () => {
+        it('should return 404 if operator_id is not set', async () => {
           const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/`);
-          expect(resp.status).toEqual(400);
+          expect(resp.status).toEqual(404);
           expect(resp.body).toEqual({
-            error: 'Bad Request',
-            message: [
-              'operator_id should not be null or undefined',
-              'operator_id must not be less than 0',
-              'operator_id must be an integer number',
-            ],
-            statusCode: 400,
+            error: 'Not Found',
+            message: `Cannot GET /v1/modules/${dvtModule.moduleId}/operators/`,
+            statusCode: 404,
           });
         });
       });

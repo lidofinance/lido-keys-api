@@ -1,0 +1,33 @@
+name: Build and push lido-keys-api to staging
+
+run-name: Build and push lido-keys-api:staging to staging
+
+# Builds the mutable `staging` image tag through the shared reusable build workflow, the same
+# way ci-dev-k8s.yml builds `dev`.
+#
+# This runs alongside ci-staging.yml and does not replace it: both delivery paths are active
+# until the cutover.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    # paths-ignore rather than an allowlist of paths, see ci-dev-k8s.yml
+    paths-ignore:
+      - '.github/**'
+      - 'test/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-push:
+    uses: lidofinance/actions/.github/workflows/k8s-build-push-harbor.yml@c7b5b6c5d8013046347d728d748fa741eb214e28
+    with:
+      tag: staging
+      registry: registry.staging.k8s-staging.org
+      registry_username: ${{ vars.REGISTRY_USERNAME }}
+      image: team-staking-core/lido-keys-api
+      environment: harbor_stage_release
+    secrets:
+      registry_token: ${{ secrets.HARBOR_STAGE_TOKEN }}

@@ -386,13 +386,13 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
           });
         });
 
-        it('should return 400 error if module_id is not set', async () => {
+        it('should return 404 if module_id is not set', async () => {
           const resp = await request(app.getHttpServer()).get('/v1/modules//operators/keys');
-          expect(resp.status).toEqual(400);
+          expect(resp.status).toEqual(404);
           expect(resp.body).toEqual({
-            error: 'Bad Request',
-            message: ['module_id must be a contract address or numeric value'],
-            statusCode: 400,
+            error: 'Not Found',
+            message: `Cannot GET /v1/modules//operators/keys`,
+            statusCode: 404,
           });
         });
 

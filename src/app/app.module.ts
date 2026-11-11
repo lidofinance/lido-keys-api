@@ -9,6 +9,7 @@ import { HTTPModule } from '../http/';
 import { ExecutionProviderModule } from '../common/execution-provider';
 import { ConsensusProviderModule } from '../common/consensus-provider';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { JobsModule } from '../jobs';
 import { ScheduleModule } from '@nestjs/schedule';
 import config from '../mikro-orm.config';
@@ -31,6 +32,7 @@ import { ModuleTypeRegistryModule } from '../common/module-type-registry';
     ModuleTypeRegistryModule,
     ConsensusProviderModule,
     MikroOrmModule.forRootAsync({
+      driver: PostgreSqlDriver,
       async useFactory(configService: ConfigService) {
         return {
           ...config,
@@ -40,7 +42,7 @@ import { ModuleTypeRegistryModule } from '../common/module-type-registry';
           user: configService.get('DB_USER'),
           password: configService.get('DB_PASSWORD'),
           autoLoadEntities: false,
-          cache: { enabled: false },
+          metadataCache: { enabled: false },
           debug: false,
           registerRequestContext: true,
           allowGlobalContext: false,

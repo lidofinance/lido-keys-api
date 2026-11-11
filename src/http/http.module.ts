@@ -42,7 +42,15 @@ export class HTTPModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(MetricsMiddleware, LoggerMiddleware)
-      .exclude(`${SWAGGER_URL}/(.*)`, SWAGGER_URL, METRICS_URL, HEALTH_URL)
-      .forRoutes('*');
+      .exclude(
+        SWAGGER_URL,
+        `${SWAGGER_URL}/{*path}`,
+        // the OpenAPI document that SwaggerModule serves next to the UI
+        `${SWAGGER_URL}-json`,
+        METRICS_URL,
+        HEALTH_URL,
+        `${HEALTH_URL}/{*path}`,
+      )
+      .forRoutes('{*path}');
   }
 }

@@ -56,7 +56,7 @@ export class SRModuleStorageService {
     }
 
     // Save the entity (either a new one or an updated one)
-    await this.repository.persistAndFlush(existingModule);
+    await this.repository.getEntityManager().persist(existingModule).flush();
   }
 
   /** removes all modules */

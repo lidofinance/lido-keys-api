@@ -1,5 +1,7 @@
-import { maskSecretsInValidationOutput, validate } from './env.validation';
-import { EnvironmentVariables } from './env.validation';
+import { inspect } from 'util';
+import { plainToInstance } from 'class-transformer';
+import { validateSync } from 'class-validator';
+import { EnvironmentVariables, maskSecretsInValidationOutput, validate, VALIDATOR_OPTIONS } from './env.validation';
 
 function omit<T extends Record<K, any>, K extends string>(obj: T, ...keys: K[]): Omit<T, K> {
   const result = { ...obj };
@@ -861,7 +863,7 @@ describe('Environment validation', () => {
         'pw hunter2hunter2, dsn https://abc123@sentry.example.org/42',
         config,
       );
-      expect(masked).toBe('pw <removed>, dsn <removed>');
+      expect(masked).toBe(`pw ${'*'.repeat(14)}, dsn ${'*'.repeat(36)}`);
     });
 
     it('masks every entry of the provider URL lists', () => {
@@ -869,7 +871,7 @@ describe('Environment validation', () => {
         'tried https://el-a.example.org/keyA then https://el-b.example.org/keyB then https://cl.example.org/keyC',
         config,
       );
-      expect(masked).toBe('tried <removed> then <removed> then <removed>');
+      expect(masked).toBe(`tried ${'*'.repeat(29)} then ${'*'.repeat(29)} then ${'*'.repeat(27)}`);
     });
 
     it('leaves text without secret values untouched', () => {
@@ -879,6 +881,22 @@ describe('Environment validation', () => {
 
     it('handles absent secret keys', () => {
       expect(maskSecretsInValidationOutput('nothing to mask', {})).toBe('nothing to mask');
+    });
+  });
+
+  describe('validation errors', () => {
+    it('carry neither the value nor the config, so printing them shows no secret', () => {
+      // nosemgrep: semgrep.detected-generic-secrets -- test-only non-secret value
+      const secret = 'https://el.example.org/v2/Ab12Cd34Ef56Gh78Ij90';
+      const config = plainToInstance(EnvironmentVariables, {
+        PROVIDERS_URLS: `${secret},not-a-url`,
+        DB_PASSWORD: secret,
+      });
+
+      const errors = validateSync(config, VALIDATOR_OPTIONS);
+
+      expect(errors.length).toBeGreaterThan(0);
+      expect(inspect(errors, { depth: null })).not.toContain(secret);
     });
   });
 });

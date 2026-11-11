@@ -18,8 +18,9 @@ export class ElMetaStorageService {
     timestamp: number;
     lastChangedBlockHash: string;
   }): Promise<void> {
+    const em = this.repository.getEntityManager();
     await this.repository.nativeDelete({});
-    await this.repository.persist(
+    em.persist(
       new ElMetaEntity({
         blockHash: currElMeta.hash,
         blockNumber: currElMeta.number,
@@ -27,7 +28,7 @@ export class ElMetaStorageService {
         lastChangedBlockHash: currElMeta.lastChangedBlockHash,
       }),
     );
-    await this.repository.flush();
+    await em.flush();
   }
 
   /** removes all modules */
