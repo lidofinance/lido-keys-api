@@ -7,7 +7,7 @@ import { LOGGER_PROVIDER, secretsMask } from '@lido-nestjs/logger';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { SWAGGER_URL } from './http/common/swagger';
-import { ConfigService, VALIDATED_ENV } from './common/config';
+import { ConfigService, maskSecretsInValidationOutput, VALIDATED_ENV } from './common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
 import { MikroORM } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
@@ -129,6 +129,10 @@ async function bootstrap() {
     logger.error(error);
   });
 
+  // Sentry's listener stops Node from turning a rejection into an uncaught exception, and with mode 'none' it
+  // prints nothing: log the rejection here, through the logger and its masking
+  process.on('unhandledRejection', (reason) => logger.error(reason));
+
   // sentry
   const release = `${APP_NAME}@${APP_VERSION}`;
   // Sentry sends events by itself, past the logger: mask the same secrets in them
@@ -137,6 +141,9 @@ async function bootstrap() {
     release,
     environment,
     beforeSend: buildBeforeSend(secretsMask({ secrets: configService.secrets })),
+    // The default mode 'warn' prints the rejection with console.error, past the logger and its masking.
+    // The event still goes to Sentry, through beforeSend.
+    integrations: [new Sentry.Integrations.OnUnhandledRejection({ mode: 'none' })],
   });
 
   // cors
@@ -164,4 +171,10 @@ async function bootstrap() {
   // app
   await app.listen(appPort, '0.0.0.0', () => logger.log(`Listening on ${appPort}`));
 }
-bootstrap();
+
+// A failed start must end the process: with Sentry's rejection handler installed it would stay up with the
+// port closed. The logger may not exist yet, so the error is masked the way the env validation output is.
+bootstrap().catch((error) => {
+  console.error(maskSecretsInValidationOutput(String(error?.stack ?? error), process.env));
+  process.exit(1);
+});
