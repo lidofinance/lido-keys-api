@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { jsonTransport, simpleTransport, LoggerModule as Logger } from '@lido-nestjs/logger';
 import { ConfigModule, ConfigService, LogFormat } from '../config';
+import { toWinstonLevel } from './winston-level';
 
 @Module({
   imports: [
@@ -9,7 +10,7 @@ import { ConfigModule, ConfigService, LogFormat } from '../config';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         const { secrets } = configService;
-        const level = configService.get('LOG_LEVEL');
+        const level = toWinstonLevel(configService.get('LOG_LEVEL'));
         const format = configService.get('LOG_FORMAT');
         const isJSON = format === LogFormat.json;
 

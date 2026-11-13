@@ -16,6 +16,7 @@ import { ElMetaStorageService } from '../../storage/el-meta.storage';
 import { KeysService } from './keys.service';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import * as request from 'supertest';
+import { PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { elMeta } from '../el-meta.fixture';
 import { curatedKeyWithDuplicate, curatedModule, curatedModuleKeys, dvtModule, keys } from '../db.fixtures';
@@ -129,6 +130,7 @@ describe('KeyController (e2e)', () => {
           const resp = await request(app.getHttpServer()).get('/v1/keys');
 
           expect(resp.status).toEqual(200);
+          expect(resp.headers['cache-control']).toBe(PUBLIC_GET_CACHE_CONTROL);
           expect(resp.body.data.length).toEqual(keys.length);
           expect(resp.body.data).toEqual(
             expect.arrayContaining([...curatedModuleKeysResponse, ...dvtModuleKeysResponse]),
@@ -484,6 +486,7 @@ describe('KeyController (e2e)', () => {
         const resp = await request(app.getHttpServer()).get('/v1/keys');
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+        expect(resp.headers['cache-control']).toBeUndefined();
       });
     });
   });

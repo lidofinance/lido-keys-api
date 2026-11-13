@@ -22,6 +22,7 @@ import type { FastifyReply } from 'fastify';
 import { ModuleIdPipe } from 'http/common/pipeline/module-id-pipe';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { SkipCache } from 'common/decorators/skipCache';
+import { PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
 
 @Controller('/modules')
 @ApiTags('operators-keys')
@@ -82,7 +83,7 @@ export class SRModulesOperatorsKeysController {
           ']}}',
         );
 
-        reply.type('application/json').send(jsonStream);
+        reply.type('application/json').header('Cache-Control', PUBLIC_GET_CACHE_CONTROL).send(jsonStream);
 
         try {
           for await (const key of keysGenerator) {
@@ -122,7 +123,7 @@ export class SRModulesOperatorsKeysController {
   async getModulesOperatorsKeysStream(@Res() reply: FastifyReply) {
     const jsonStream = JSONStream.stringify();
 
-    reply.type('application/json').send(jsonStream);
+    reply.type('application/json').header('Cache-Control', PUBLIC_GET_CACHE_CONTROL).send(jsonStream);
 
     const generator = await this.srModulesOperatorsKeys.getModulesOperatorsKeysGenerator();
 

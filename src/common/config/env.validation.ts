@@ -263,6 +263,12 @@ export function declaredConfigKeys(): string[] {
 // defaults included, which ConfigService has no way to enumerate.
 export let VALIDATED_ENV: Record<string, unknown> | undefined;
 
+// The startup dump. Masked before JSON.stringify: it escapes `"` and `\`, and the escaped form of a
+// secret no longer matches the mask the logger applies to the line.
+export function effectiveConfigurationJson(config: Record<string, unknown> | undefined, secrets: string[]): string {
+  return JSON.stringify(secretsMask({ secrets })(config));
+}
+
 // Errors carry neither the value nor the whole config, so printing them in any form shows no secret
 export const VALIDATOR_OPTIONS = { skipMissingProperties: false, validationError: { target: false, value: false } };
 

@@ -54,6 +54,25 @@ describe('secrets file', () => {
       expect(() => readSecretsFile(path)).toThrow();
     });
 
+    it('does not quote the file in the parse error', () => {
+      render('{"DB_PASSWORD": Sup3rS3cret}');
+      let message = '';
+      try {
+        readSecretsFile(path);
+      } catch (error) {
+        message = (error as Error).message;
+      }
+      expect(message).toBe(`Can not parse secrets file ${path}: not valid JSON`);
+      expect(message).not.toMatch(/Sup3r|S3cret|PASSWORD/);
+    });
+
+    it('gives the line and column of the error, without the file text', () => {
+      render('{"PROVIDERS_URLS": "http://el:8545",\n"DB_PASSWORD": "Pa"ss"}');
+      expect(() => readSecretsFile(path)).toThrow(
+        new Error(`Can not parse secrets file ${path}: not valid JSON at line 2 column 20`),
+      );
+    });
+
     it('reads a file that parses to nothing as no values', () => {
       render('{}');
       expect(readSecretsFile(path)).toEqual({});

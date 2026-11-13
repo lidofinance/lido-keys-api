@@ -26,6 +26,7 @@ import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
 import { Pubkey } from 'http/common/entities/pubkey';
 import { SkipCache } from 'common/decorators/skipCache';
+import { PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
 
 @Controller('keys')
 @ApiTags('keys')
@@ -57,7 +58,7 @@ export class KeysController {
         const { keysGenerators, meta } = await this.keysService.get(filters);
 
         const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
-        reply.type('application/json').send(jsonStream);
+        reply.type('application/json').header('Cache-Control', PUBLIC_GET_CACHE_CONTROL).send(jsonStream);
 
         try {
           for (const keysGenerator of keysGenerators) {
