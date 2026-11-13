@@ -21,7 +21,11 @@ export function readSecretsFile(path: string): Record<string, string> {
   try {
     raw = JSON.parse(blob);
   } catch (error) {
-    throw new Error(`Can not parse secrets file ${path}: ${(error as Error).message}`);
+    // Not the parser's message: it can quote the file text around the error, secret values included.
+    // Only the line and column it gives for some errors, which are numbers.
+    const where = /\(line (\d+) column (\d+)\)/.exec((error as Error).message);
+    const at = where ? ` at line ${where[1]} column ${where[2]}` : '';
+    throw new Error(`Can not parse secrets file ${path}: not valid JSON${at}`);
   }
 
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
