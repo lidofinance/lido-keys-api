@@ -14,6 +14,7 @@ import { SRModuleStorageService } from '../../storage/sr-module.storage';
 import { ElMetaStorageService } from '../../storage/el-meta.storage';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import * as request from 'supertest';
+import { PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { SRModulesKeysController } from './sr-modules-keys.controller';
 import { SRModulesKeysService } from './sr-modules-keys.service';
@@ -140,6 +141,7 @@ describe('SRModulesKeysController (e2e)', () => {
           const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/keys`);
 
           expect(resp.status).toEqual(200);
+          expect(resp.headers['cache-control']).toBe(PUBLIC_GET_CACHE_CONTROL);
           expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeysResponse));
           expect(resp.body.data.module).toEqual(dvtModuleResp);
           expect(resp.body.meta).toEqual({
@@ -406,6 +408,7 @@ describe('SRModulesKeysController (e2e)', () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/keys`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+        expect(resp.headers['cache-control']).toBeUndefined();
       });
     });
   });
