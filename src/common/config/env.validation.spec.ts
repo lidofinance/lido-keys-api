@@ -908,17 +908,17 @@ describe('Environment validation', () => {
   });
 
   describe('effectiveConfigurationJson', () => {
-    const password = 'Pa"ss\\w0rd';
-    const providerUrl = 'https://el.example.com/key-"abc"';
-    const config = { PORT: 3000, DB_PASSWORD: password, PROVIDERS_URLS: [providerUrl] };
-    const secrets = [password, providerUrl];
+    const DB_VALUE = 'db"fixture\\value';
+    const PROVIDER_URL = 'https://el.example.com/key-"abc"';
+    const config = { PORT: 3000, DB_PASSWORD: DB_VALUE, PROVIDERS_URLS: [PROVIDER_URL] };
+    const secrets = [DB_VALUE, PROVIDER_URL];
     // What the logger's secrets format does to the line afterwards
     const asLogged = (line: string) => secretsMask({ secrets })(line);
     const escaped = (value: string) => JSON.stringify(value).slice(1, -1);
 
     it('the escaped form of a secret slips past the mask of the serialized line', () => {
       const line = asLogged(JSON.stringify(config));
-      expect(line).toContain(escaped(password));
+      expect(line).toContain(escaped(DB_VALUE));
     });
 
     it('carries no secret, raw or escaped, and keeps the other values', () => {
@@ -928,7 +928,7 @@ describe('Environment validation', () => {
         expect(line).not.toContain(secret);
         expect(line).not.toContain(escaped(secret));
       }
-      expect(line).not.toContain('w0rd');
+      expect(line).not.toContain('fixture');
       expect(line).not.toContain('key-');
       expect(JSON.parse(line).PORT).toBe(3000);
     });
