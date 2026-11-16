@@ -1,4 +1,4 @@
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD } from '@nestjs/core';
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 
 import { HEALTH_URL } from '../common/health';
@@ -15,8 +15,7 @@ import { SRModulesKeysModule } from './sr-modules-keys';
 import { SRModulesOperatorsModule } from './sr-modules-operators';
 import { SRModulesOperatorsKeysModule } from './sr-modules-operators-keys';
 import { StatusModule } from './status';
-import { CustomCacheInterceptor } from './common/cache/cache.service';
-import { CacheHeadersInterceptor } from './common/cache/cache-headers.interceptor';
+import { CACHE_INTERCEPTORS } from './common/cache/cache-interceptors';
 
 @Module({
   imports: [
@@ -30,13 +29,7 @@ import { CacheHeadersInterceptor } from './common/cache/cache-headers.intercepto
     CacheModule,
     ThrottlerModule,
   ],
-  providers: [
-    { provide: APP_GUARD, useClass: ThrottlerBehindProxyGuard },
-    // Before the response cache: a cache hit short-circuits the chain, and interceptors
-    // registered after it would never stamp the Cache-Control header on hits.
-    { provide: APP_INTERCEPTOR, useClass: CacheHeadersInterceptor },
-    { provide: APP_INTERCEPTOR, useClass: CustomCacheInterceptor },
-  ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerBehindProxyGuard }, ...CACHE_INTERCEPTORS],
 })
 export class HTTPModule {
   configure(consumer: MiddlewareConsumer) {

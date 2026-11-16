@@ -1,7 +1,14 @@
 import { inspect } from 'util';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { EnvironmentVariables, maskSecretsInValidationOutput, validate, VALIDATOR_OPTIONS } from './env.validation';
+import { secretsMask } from '@lido-nestjs/logger';
+import {
+  effectiveConfigurationJson,
+  EnvironmentVariables,
+  maskSecretsInValidationOutput,
+  validate,
+  VALIDATOR_OPTIONS,
+} from './env.validation';
 
 function omit<T extends Record<K, any>, K extends string>(obj: T, ...keys: K[]): Omit<T, K> {
   const result = { ...obj };
@@ -897,6 +904,33 @@ describe('Environment validation', () => {
 
       expect(errors.length).toBeGreaterThan(0);
       expect(inspect(errors, { depth: null })).not.toContain(secret);
+    });
+  });
+
+  describe('effectiveConfigurationJson', () => {
+    const DB_VALUE = 'db"fixture\\value';
+    const PROVIDER_URL = 'https://el.example.com/key-"abc"';
+    const config = { PORT: 3000, DB_PASSWORD: DB_VALUE, PROVIDERS_URLS: [PROVIDER_URL] };
+    const secrets = [DB_VALUE, PROVIDER_URL];
+    // What the logger's secrets format does to the line afterwards
+    const asLogged = (line: string) => secretsMask({ secrets })(line);
+    const escaped = (value: string) => JSON.stringify(value).slice(1, -1);
+
+    it('the escaped form of a secret slips past the mask of the serialized line', () => {
+      const line = asLogged(JSON.stringify(config));
+      expect(line).toContain(escaped(DB_VALUE));
+    });
+
+    it('carries no secret, raw or escaped, and keeps the other values', () => {
+      const line = asLogged(effectiveConfigurationJson(config, secrets));
+
+      for (const secret of secrets) {
+        expect(line).not.toContain(secret);
+        expect(line).not.toContain(escaped(secret));
+      }
+      expect(line).not.toContain('fixture');
+      expect(line).not.toContain('key-');
+      expect(JSON.parse(line).PORT).toBe(3000);
     });
   });
 });

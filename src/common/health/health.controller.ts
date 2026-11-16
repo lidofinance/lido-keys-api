@@ -8,6 +8,7 @@ import {
 import { Controller, Get } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { SkipCache } from 'common/decorators/skipCache';
+import { NoStore } from 'common/decorators/noStore';
 import { SkipThrottle } from '@nestjs/throttler';
 import { HEALTH_URL, HEALTH_READY_URL } from './health.constants';
 import { HEAP_USED_THRESHOLD } from './constants';
@@ -17,9 +18,11 @@ const READY_DB_TIMEOUT_MS = 1000;
 
 // SkipCache: the global interceptor caches every GET by URL, and a cached 200 kept answering
 // for a probe through a whole database outage — measured before this decorator was here.
+// NoStore: the same holds for a CDN or proxy in front.
 @Controller(HEALTH_URL)
 @ApiExcludeController()
 @SkipCache()
+@NoStore()
 @SkipThrottle()
 export class HealthController {
   constructor(

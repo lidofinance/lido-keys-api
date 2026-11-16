@@ -26,6 +26,7 @@ import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
 import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
 import { SkipCache } from 'common/decorators/skipCache';
+import { PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
 
 @Controller('modules')
 @ApiTags('sr-module-keys')
@@ -96,7 +97,7 @@ export class SRModulesKeysController {
           ']}}',
         );
 
-        reply.type('application/json').send(jsonStream);
+        reply.type('application/json').header('Cache-Control', PUBLIC_GET_CACHE_CONTROL).send(jsonStream);
 
         try {
           for await (const key of keysGenerator) {
