@@ -6,6 +6,14 @@ export interface OperatorNameResolver {
   namesWereChanged?(moduleAddress: string, fromBlock: number, toBlock: number): Promise<boolean>;
 }
 
+/** the name was read from the chain but can't be decoded (e.g. malformed UTF-8), unlike transport errors */
+export class InvalidOperatorNameError extends Error {
+  constructor(message: string, public readonly cause?: unknown) {
+    super(message);
+    this.name = 'InvalidOperatorNameError';
+  }
+}
+
 export const OPERATOR_NAME_RESOLVERS_TOKEN = Symbol('OPERATOR_NAME_RESOLVERS');
 
 export type OperatorNameResolversConfig = Record<string, OperatorNameResolver>;

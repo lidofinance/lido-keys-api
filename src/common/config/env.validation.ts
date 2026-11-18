@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { secretsMask } from '@lido-nestjs/logger';
 import { plainToInstance, Transform } from 'class-transformer';
 import {
   ArrayMinSize,
@@ -232,25 +234,35 @@ export class EnvironmentVariables {
   LIDO_LOCATOR_DEVNET_ADDRESS = '';
 }
 
-// The logger's replacement token, so masked validation output reads the same as masked logs.
-// The redacting logger itself cannot be used here: validation runs while the config it would
-// be built from is still being parsed.
-const SECRET_REPLACER = '<removed>';
+// The logger cannot be used here: validation runs while the config it would be built from is
+// still being parsed. secretsMask hides the values the way the logger does.
 const SECRET_VALUE_KEYS = ['DB_PASSWORD', 'SENTRY_DSN'];
 const SECRET_URL_LIST_KEYS = ['PROVIDERS_URLS', 'CL_API_URLS'];
+
+// The password ConfigService takes from DB_PASSWORD_FILE when DB_PASSWORD is empty, read the same way.
+// An unreadable file gives nothing to mask: masking must never fail.
+function dbPasswordFromFile(config: Record<string, unknown>): string {
+  if (config.DB_PASSWORD || !config.DB_PASSWORD_FILE) return '';
+  try {
+    return readFileSync(String(config.DB_PASSWORD_FILE), 'utf-8')
+      .replace(/(\r\n|\n|\r)/gm, '')
+      .trim();
+  } catch {
+    return '';
+  }
+}
 
 export function maskSecretsInValidationOutput(text: string, config: Record<string, unknown>): string {
   const values = [
     ...SECRET_VALUE_KEYS.map((key) => config[key]),
+    dbPasswordFromFile(config),
     ...SECRET_URL_LIST_KEYS.flatMap((key) => String(config[key] ?? '').split(',')).map((url) => url.trim()),
     ...Object.values(SECRETS_IN_FORCE),
   ]
     .map((value) => (value == null ? '' : String(value)))
-    .filter((value) => value.length > 0)
-    // Longest first, so a value that contains another one is replaced whole.
-    .sort((a, b) => b.length - a.length);
+    .filter((value) => value.length > 0);
 
-  return values.reduce((result, value) => result.split(value).join(SECRET_REPLACER), text);
+  return secretsMask({ secrets: values })(text);
 }
 
 // Decorated fields plus fields with initializers: with target es2017 an uninitialized class
@@ -266,6 +278,15 @@ export function declaredConfigKeys(): string[] {
 // defaults included, which ConfigService has no way to enumerate.
 export let VALIDATED_ENV: Record<string, unknown> | undefined;
 
+// The startup dump. Masked before JSON.stringify: it escapes `"` and `\`, and the escaped form of a
+// secret no longer matches the mask the logger applies to the line.
+export function effectiveConfigurationJson(config: Record<string, unknown> | undefined, secrets: string[]): string {
+  return JSON.stringify(secretsMask({ secrets })(config));
+}
+
+// Errors carry neither the value nor the whole config, so printing them in any form shows no secret
+export const VALIDATOR_OPTIONS = { skipMissingProperties: false, validationError: { target: false, value: false } };
+
 export function validate(config: Record<string, unknown>) {
   if (process.env.NODE_ENV == 'test') {
     return config;
@@ -273,8 +294,7 @@ export function validate(config: Record<string, unknown>) {
 
   const validatedConfig = plainToInstance(EnvironmentVariables, config);
 
-  const validatorOptions = { skipMissingProperties: false };
-  const errors = validateSync(validatedConfig, validatorOptions);
+  const errors = validateSync(validatedConfig, VALIDATOR_OPTIONS);
 
   if (errors.length > 0) {
     console.error(maskSecretsInValidationOutput(errors.toString(), config));

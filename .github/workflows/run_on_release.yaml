@@ -1,0 +1,43 @@
+name: Run_on_release
+
+on:
+  release:
+    types:
+      - released
+
+permissions:
+  contents: read
+
+jobs:
+  save-release-tag:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Validate and save stable release tag
+        shell: bash
+        env:
+          RELEASE_DRAFT: ${{ github.event.release.draft }}
+          RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$RELEASE_DRAFT" != "false" || "$RELEASE_PRERELEASE" != "false" ]]; then
+            echo "::error::Only published stable releases can start a release build"
+            exit 1
+          fi
+
+          if [[ ! "$RELEASE_TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Release tag must use stable SemVer such as v1.2.3 or 1.2.3"
+            exit 1
+          fi
+
+          printf '%s\n' "$RELEASE_TAG" > release_tag.txt
+
+      - name: Upload release tag
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: release-tag
+          path: release_tag.txt
+          if-no-files-found: error
+          retention-days: 1

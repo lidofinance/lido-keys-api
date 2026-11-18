@@ -3,28 +3,38 @@ import { SECRETS_FILE_PATH, SECRETS_IN_FORCE, SECRETS_POLL_INTERVAL_IN_SECONDS }
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
+import { LOGGER_PROVIDER, secretsMask } from '@lido-nestjs/logger';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { SWAGGER_URL } from './http/common/swagger';
-import { ConfigService, VALIDATED_ENV } from './common/config';
+import {
+  ConfigService,
+  effectiveConfigurationJson,
+  maskSecretsInValidationOutput,
+  VALIDATED_ENV,
+} from './common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
 import { MikroORM } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
 import { PrometheusService } from './common/prometheus';
 import { SecretsWatcher, secretsFileMtimeMs } from './common/secrets';
+import { buildBeforeSend } from './common/sentry';
+import { configureHttpAgents } from './common/http-agents';
 
 export const validationOpt = { transform: true };
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 async function bootstrap() {
+  // Before the providers are created and send their first requests
+  configureHttpAgents();
+
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({
       // request.ip is the raw socket peer; X-Forwarded-For is not trusted.
       trustProxy: false,
-      ignoreTrailingSlash: true,
+      routerOptions: { ignoreTrailingSlash: true },
       forceCloseConnections: true,
     }),
     {
@@ -60,9 +70,8 @@ async function bootstrap() {
       ? `Configuration: ${SECRETS_FILE_PATH} over the environment`
       : `Configuration: the environment (no secrets file at ${SECRETS_FILE_PATH})`,
   );
-  // Defaults included, unlike a dump of process.env. The logger's secrets format masks
-  // every value from configService.secrets in this line.
-  logger.log(`Effective configuration: ${JSON.stringify(VALIDATED_ENV)}`);
+  // Defaults included, unlike a dump of process.env
+  logger.log(`Effective configuration: ${effectiveConfigurationJson(VALIDATED_ENV, configService.secrets)}`);
 
   const prometheusService = app.get(PrometheusService);
   prometheusService.secretsFileMtime.set(fromFile ? (secretsFileMtimeMs(SECRETS_FILE_PATH) ?? 0) / 1000 : 0);
@@ -124,9 +133,22 @@ async function bootstrap() {
     logger.error(error);
   });
 
+  // Sentry's listener stops Node from turning a rejection into an uncaught exception, and with mode 'none' it
+  // prints nothing: log the rejection here, through the logger and its masking
+  process.on('unhandledRejection', (reason) => logger.error(reason));
+
   // sentry
   const release = `${APP_NAME}@${APP_VERSION}`;
-  Sentry.init({ dsn: sentryDsn, release, environment });
+  // Sentry sends events by itself, past the logger: mask the same secrets in them
+  Sentry.init({
+    dsn: sentryDsn,
+    release,
+    environment,
+    beforeSend: buildBeforeSend(secretsMask({ secrets: configService.secrets })),
+    // The default mode 'warn' prints the rejection with console.error, past the logger and its masking.
+    // The event still goes to Sentry, through beforeSend.
+    integrations: [new Sentry.Integrations.OnUnhandledRejection({ mode: 'none' })],
+  });
 
   // cors
   if (corsWhitelist !== '') {
@@ -137,7 +159,7 @@ async function bootstrap() {
         if (!origin || whitelistRegexp.test(origin)) {
           callback(null, true);
         } else {
-          callback(new Error('Not allowed by CORS'));
+          callback(new Error('Not allowed by CORS'), false);
         }
       },
     });
@@ -153,4 +175,10 @@ async function bootstrap() {
   // app
   await app.listen(appPort, '0.0.0.0', () => logger.log(`Listening on ${appPort}`));
 }
-bootstrap();
+
+// A failed start must end the process: with Sentry's rejection handler installed it would stay up with the
+// port closed. The logger may not exist yet, so the error is masked the way the env validation output is.
+bootstrap().catch((error) => {
+  console.error(maskSecretsInValidationOutput(String(error?.stack ?? error), process.env));
+  process.exit(1);
+});

@@ -22,6 +22,7 @@ import type { FastifyReply } from 'fastify';
 import { ModuleIdPipe } from 'http/common/pipeline/module-id-pipe';
 import { LOGGER_PROVIDER } from '@lido-nestjs/logger';
 import { SkipCache } from 'common/decorators/skipCache';
+import { setNoStoreIfUnsent, PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
 
 @Controller('/modules')
 @ApiTags('operators-keys')
@@ -82,7 +83,7 @@ export class SRModulesOperatorsKeysController {
           ']}}',
         );
 
-        reply.type('application/json').send(jsonStream);
+        reply.type('application/json').header('Cache-Control', PUBLIC_GET_CACHE_CONTROL).send(jsonStream);
 
         try {
           for await (const key of keysGenerator) {
@@ -95,6 +96,7 @@ export class SRModulesOperatorsKeysController {
           // Handle the error during streaming.
           this.logger.error('operators-keys streaming error');
           this.logger.error(streamError);
+          setNoStoreIfUnsent(reply);
           // destroy method closes the stream without ']' and corrupt the result
           // https://github.com/dominictarr/through/blob/master/index.js#L78
           jsonStream.destroy();
@@ -120,15 +122,20 @@ export class SRModulesOperatorsKeysController {
   })
   @Get('operators/keys')
   async getModulesOperatorsKeysStream(@Res() reply: FastifyReply) {
-    const jsonStream = JSONStream.stringify();
-
-    reply.type('application/json').send(jsonStream);
-
     const generator = await this.srModulesOperatorsKeys.getModulesOperatorsKeysGenerator();
 
     await this.entityManager.transactional(
       async () => {
+        // The first next() runs the generator body, which reads the meta. Without the meta it throws 425
+        // here, before send, so Nest answers 425 as for the v1 streams. Otherwise the stream would die
+        // before its first byte. done is true when the meta exists but there are no modules.
+        const first = await generator.next();
+
+        const jsonStream = JSONStream.stringify();
+        reply.type('application/json').header('Cache-Control', PUBLIC_GET_CACHE_CONTROL).send(jsonStream);
+
         try {
+          if (!first.done) jsonStream.write(first.value);
           for await (const value of generator) {
             jsonStream.write(value);
           }
@@ -137,6 +144,7 @@ export class SRModulesOperatorsKeysController {
         } catch (error) {
           this.logger.error('modules-operators-keys error');
           this.logger.error(error);
+          // No no-store here, unlike the v1 streams: the headers went out with the first record, right after send
 
           jsonStream.destroy();
         }

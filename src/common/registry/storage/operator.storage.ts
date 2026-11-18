@@ -63,19 +63,20 @@ export class RegistryOperatorStorageService {
   /** saves operator to storage */
   async saveOne(operator: RegistryOperator) {
     const key = new RegistryOperator(operator);
-    return await this.repository.persistAndFlush(key);
+    return await this.repository.getEntityManager().persist(key).flush();
   }
 
   /** saves multiply operators to storage */
   async save(operators: RegistryOperator[]) {
+    const em = this.repository.getEntityManager();
     const result = await Promise.all(
       operators.map(async (operator) => {
         const instance = new RegistryOperator(operator);
-        return await this.repository.persist(instance);
+        return em.persist(instance);
       }),
     );
 
-    await this.repository.flush();
+    await em.flush();
     return result;
   }
 }

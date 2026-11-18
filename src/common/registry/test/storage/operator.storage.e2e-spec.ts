@@ -20,6 +20,9 @@ describe('Operators', () => {
   }
   const chainId = process.env.CHAIN_ID as any;
 
+  // the fixture has no totalWithdrawnKeys; the column is nullable, so it is read back from the DB as null
+  const stored = <T>(op: T) => ({ ...op, totalWithdrawnKeys: null });
+
   beforeEach(async () => {
     const imports = [DatabaseE2ETestingModule.forRoot(), RegistryStorageModule.forFeature()];
 
@@ -54,7 +57,7 @@ describe('Operators', () => {
     await storageService.save(operators);
     await expect(
       storageService.find({ active: true }, { limit: 1, orderBy: { index: QueryOrder.DESC } }),
-    ).resolves.toEqual([operators[1]]);
+    ).resolves.toEqual([stored(operators[1])]);
   });
 
   test('save one operator', async () => {
@@ -62,7 +65,7 @@ describe('Operators', () => {
 
     await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.saveOne(registryOperator);
-    await expect(storageService.findAll(address)).resolves.toEqual([registryOperator]);
+    await expect(storageService.findAll(address)).resolves.toEqual([stored(registryOperator)]);
   });
 
   test('save operators', async () => {
@@ -73,7 +76,7 @@ describe('Operators', () => {
 
     await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.save(operators);
-    await expect(storageService.findAll(address)).resolves.toEqual(operators);
+    await expect(storageService.findAll(address)).resolves.toEqual(operators.map(stored));
   });
 
   test('remove one operator', async () => {
@@ -81,7 +84,7 @@ describe('Operators', () => {
 
     await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.saveOne(registryOperator);
-    await expect(storageService.findAll(address)).resolves.toEqual([registryOperator]);
+    await expect(storageService.findAll(address)).resolves.toEqual([stored(registryOperator)]);
     await storageService.removeOneByIndex(address, registryOperator.index);
     await expect(storageService.findAll(address)).resolves.toEqual([]);
   });
@@ -94,7 +97,7 @@ describe('Operators', () => {
 
     await expect(storageService.findAll(address)).resolves.toEqual([]);
     await storageService.save(operators);
-    await expect(storageService.findAll(address)).resolves.toEqual(operators);
+    await expect(storageService.findAll(address)).resolves.toEqual(operators.map(stored));
     await storageService.removeAll();
     await expect(storageService.findAll(address)).resolves.toEqual([]);
   });

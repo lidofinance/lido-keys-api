@@ -18,6 +18,8 @@ import { SRModulesOperatorsKeysService } from './sr-modules-operators-keys.servi
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 
 import * as request from 'supertest';
+import { failingSource, getRaw, streamMeta } from '../stream-failure.e2e-helpers';
+import { NO_STORE_CACHE_CONTROL, PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 
 import { curatedModuleResp, dvtModuleResp } from '../module.fixture';
@@ -48,6 +50,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
   let moduleStorageService: SRModuleStorageService;
   let elMetaStorageService: ElMetaStorageService;
   let registryStorage: RegistryStorageService;
+  let srModulesOperatorsKeysService: SRModulesOperatorsKeysService;
 
   async function cleanDB() {
     await keysStorageService.removeAll();
@@ -106,6 +109,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
     keysStorageService = moduleRef.get(RegistryKeyStorageService);
     moduleStorageService = moduleRef.get(SRModuleStorageService);
     registryStorage = moduleRef.get(RegistryStorageService);
+    srModulesOperatorsKeysService = moduleRef.get(SRModulesOperatorsKeysService);
     operatorsStorageService = moduleRef.get(RegistryOperatorStorageService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
@@ -149,6 +153,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
           const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/keys`);
 
           expect(resp.status).toEqual(200);
+          expect(resp.headers['cache-control']).toBe(PUBLIC_GET_CACHE_CONTROL);
           expect(resp.body.data.operators).toEqual(expect.arrayContaining(dvtOperatorsResp));
           expect(resp.body.data.keys).toEqual(expect.arrayContaining(dvtModuleKeysResponse));
           expect(resp.body.data.module).toEqual(dvtModuleResp);
@@ -386,13 +391,13 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
           });
         });
 
-        it('should return 400 error if module_id is not set', async () => {
+        it('should return 404 if module_id is not set', async () => {
           const resp = await request(app.getHttpServer()).get('/v1/modules//operators/keys');
-          expect(resp.status).toEqual(400);
+          expect(resp.status).toEqual(404);
           expect(resp.body).toEqual({
-            error: 'Bad Request',
-            message: ['module_id must be a contract address or numeric value'],
-            statusCode: 400,
+            error: 'Not Found',
+            message: `Cannot GET /v1/modules//operators/keys`,
+            statusCode: 404,
           });
         });
 
@@ -431,6 +436,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
         const resp = await request(app.getHttpServer()).get(`/v1/modules/${dvtModule.moduleId}/operators/keys`);
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+        expect(resp.headers['cache-control']).toBeUndefined();
       });
     });
   });
@@ -458,6 +464,7 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
           const resp = await request(app.getHttpServer()).get(`/v2/modules/operators/keys`);
 
           expect(resp.status).toEqual(200);
+          expect(resp.headers['cache-control']).toBe(PUBLIC_GET_CACHE_CONTROL);
 
           const expectedResponse: ModulesOperatorsKeysRecord[] = [
             {
@@ -554,6 +561,108 @@ describe('SRModulesOperatorsKeysController (e2e)', () => {
         [csmModule.stakingModuleAddress]: { 1: 5, 2: 0 },
         [curatedV2Module.stakingModuleAddress]: { 1: 3 },
       });
+    });
+  });
+  describe('stream failure', () => {
+    afterEach(() => jest.restoreAllMocks());
+
+    describe('The /v1/modules/:module_id/operators/keys request', () => {
+      const path = `/v1/modules/${dvtModule.moduleId}/operators/keys`;
+      const mockSource = (rowsBeforeFailure: number) =>
+        jest.spyOn(srModulesOperatorsKeysService, 'get').mockResolvedValueOnce({
+          meta: streamMeta,
+          module: dvtModuleResp,
+          operators: [],
+          keysGenerator: failingSource(keys, rowsBeforeFailure),
+        } as unknown as Awaited<ReturnType<SRModulesOperatorsKeysService['get']>>);
+
+      it('fails before the first row: 500 with no-store', async () => {
+        mockSource(0);
+
+        const resp = await getRaw(app, path);
+
+        expect(resp.status).toEqual(500);
+        expect(resp.headers['cache-control']).toEqual(NO_STORE_CACHE_CONTROL);
+      });
+
+      it('fails after the first row: 200 with a cut body, never a complete response', async () => {
+        mockSource(1);
+
+        const resp = await getRaw(app, path);
+
+        expect(resp.status).toEqual(200);
+        expect(resp.body).toContain(keys[0].key);
+        expect(resp.body).not.toMatch(/\]\}+\s*$/);
+        expect(resp.completed).toBe(false);
+        expect(resp.headers['cache-control']).toEqual(PUBLIC_GET_CACHE_CONTROL);
+      });
+    });
+
+    describe('The /v2/modules/operators/keys request', () => {
+      const path = '/v2/modules/operators/keys';
+      const records = [{ stakingModule: dvtModuleResp, meta: streamMeta, key: null, operator: null }];
+      const mockSource = (rowsBeforeFailure: number) =>
+        jest
+          .spyOn(srModulesOperatorsKeysService, 'getModulesOperatorsKeysGenerator')
+          .mockReturnValueOnce(failingSource(records, rowsBeforeFailure) as AsyncGenerator<ModulesOperatorsKeysRecord>);
+
+      it('fails before the first record: 500 without Cache-Control', async () => {
+        mockSource(0);
+
+        const resp = await getRaw(app, path);
+
+        expect(resp.status).toEqual(500);
+        expect(resp.headers['cache-control']).toBeUndefined();
+      });
+
+      it('fails after the first record: 200 with a cut body, never a complete response', async () => {
+        mockSource(1);
+
+        const resp = await getRaw(app, path);
+
+        expect(resp.status).toEqual(200);
+        expect(resp.body).toContain(dvtModuleResp.stakingModuleAddress);
+        expect(resp.body).not.toMatch(/\]\s*$/);
+        expect(resp.completed).toBe(false);
+        expect(resp.headers['cache-control']).toEqual(PUBLIC_GET_CACHE_CONTROL);
+      });
+    });
+  });
+
+  describe('The /v2/modules/operators/keys request without modules', () => {
+    beforeEach(async () => {
+      await cleanDB();
+    });
+
+    afterEach(async () => {
+      await cleanDB();
+    });
+
+    it('should return an empty list when the meta exists but no module does', async () => {
+      await elMetaStorageService.update(elMeta);
+
+      const resp = await request(app.getHttpServer()).get('/v2/modules/operators/keys');
+
+      expect(resp.status).toEqual(200);
+      expect(resp.body).toEqual([]);
+    });
+  });
+
+  describe('The /v2/modules/operators/keys too early response case', () => {
+    beforeEach(async () => {
+      await cleanDB();
+    });
+
+    afterEach(async () => {
+      await cleanDB();
+    });
+
+    it('should return too early response if there are no meta', async () => {
+      const resp = await request(app.getHttpServer()).get('/v2/modules/operators/keys');
+
+      expect(resp.status).toEqual(425);
+      expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+      expect(resp.headers['cache-control']).toBeUndefined();
     });
   });
 });

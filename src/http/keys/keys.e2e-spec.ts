@@ -16,6 +16,8 @@ import { ElMetaStorageService } from '../../storage/el-meta.storage';
 import { KeysService } from './keys.service';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import * as request from 'supertest';
+import { failingSource, getRaw, streamMeta } from '../stream-failure.e2e-helpers';
+import { NO_STORE_CACHE_CONTROL, PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { elMeta } from '../el-meta.fixture';
 import { curatedKeyWithDuplicate, curatedModule, curatedModuleKeys, dvtModule, keys } from '../db.fixtures';
@@ -30,6 +32,7 @@ describe('KeyController (e2e)', () => {
   let moduleStorageService: SRModuleStorageService;
   let elMetaStorageService: ElMetaStorageService;
   let registryStorage: RegistryStorageService;
+  let keysService: KeysService;
 
   async function cleanDB() {
     await keysStorageService.removeAll();
@@ -87,6 +90,7 @@ describe('KeyController (e2e)', () => {
     keysStorageService = moduleRef.get(RegistryKeyStorageService);
     moduleStorageService = moduleRef.get(SRModuleStorageService);
     registryStorage = moduleRef.get(RegistryStorageService);
+    keysService = moduleRef.get(KeysService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
     await generator.refreshDatabase();
@@ -129,6 +133,7 @@ describe('KeyController (e2e)', () => {
           const resp = await request(app.getHttpServer()).get('/v1/keys');
 
           expect(resp.status).toEqual(200);
+          expect(resp.headers['cache-control']).toBe(PUBLIC_GET_CACHE_CONTROL);
           expect(resp.body.data.length).toEqual(keys.length);
           expect(resp.body.data).toEqual(
             expect.arrayContaining([...curatedModuleKeysResponse, ...dvtModuleKeysResponse]),
@@ -484,6 +489,40 @@ describe('KeyController (e2e)', () => {
         const resp = await request(app.getHttpServer()).get('/v1/keys');
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+        expect(resp.headers['cache-control']).toBeUndefined();
+      });
+    });
+
+    // The key source fails as a database stream would, once the meta check has passed and the reply is sent
+    describe('stream failure', () => {
+      const mockSource = (rowsBeforeFailure: number) =>
+        jest.spyOn(keysService, 'get').mockResolvedValueOnce({
+          meta: streamMeta,
+          keysGenerators: [failingSource(keys, rowsBeforeFailure)],
+        } as unknown as Awaited<ReturnType<KeysService['get']>>);
+
+      afterEach(() => jest.restoreAllMocks());
+
+      it('fails before the first row: 500 with no-store', async () => {
+        mockSource(0);
+
+        const resp = await getRaw(app, '/v1/keys');
+
+        expect(resp.status).toEqual(500);
+        expect(resp.headers['cache-control']).toEqual(NO_STORE_CACHE_CONTROL);
+      });
+
+      it('fails after the first row: 200 with a cut body, never a complete response', async () => {
+        mockSource(1);
+
+        const resp = await getRaw(app, '/v1/keys');
+
+        // The status left with the first row and cannot change; the cut connection is the failure signal
+        expect(resp.status).toEqual(200);
+        expect(resp.body).toContain(keys[0].key);
+        expect(resp.body).not.toMatch(/\]\}\s*$/);
+        expect(resp.completed).toBe(false);
+        expect(resp.headers['cache-control']).toEqual(PUBLIC_GET_CACHE_CONTROL);
       });
     });
   });

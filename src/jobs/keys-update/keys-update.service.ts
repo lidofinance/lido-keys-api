@@ -164,6 +164,17 @@ export class KeysUpdateService {
       process.exit(1);
     }
 
+    // a module with the same id but a different address means the stored data does not match the chain,
+    // e.g. the DB was left from another deployment (testnet redeploy, fork) or a reorg replaced the module
+    if (this.modulesWereReplaced(contractModules, storageModules)) {
+      const error = new Error(
+        'Module address changed for the same module id. Check that the config matches the intended network, ' +
+          'then clear the database by hand and restart the service to resync',
+      );
+      this.logger.error(error);
+      process.exit(1);
+    }
+
     // READ_COMMITTED alone allows a lost update — a writer holding an older block overwrites a newer one — so the
     // meta is re-read under the lock and the cycle is skipped when it has already moved on.
     const updated = await this.entityManager.transactional(
@@ -251,5 +262,16 @@ export class KeysUpdateService {
     const contractModulesIds = contractModules.map((contractModule) => contractModule.moduleId);
 
     return !storageModules.every((storageModule) => contractModulesIds.includes(storageModule.moduleId));
+  }
+
+  private modulesWereReplaced(contractModules: StakingModule[], storageModules: SrModuleEntity[]): boolean {
+    // we want to check here that modules from storageModules keep the same address in contractModules
+    // type is not compared: it is read from the module contract and can change after a proxy upgrade
+    return storageModules.some((storageModule) => {
+      const contractModule = contractModules.find(({ moduleId }) => moduleId === storageModule.moduleId);
+      if (!contractModule) return false;
+
+      return contractModule.stakingModuleAddress.toLowerCase() !== storageModule.stakingModuleAddress.toLowerCase();
+    });
   }
 }

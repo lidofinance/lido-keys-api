@@ -1,5 +1,17 @@
-import { maskSecretsInValidationOutput, validate } from './env.validation';
-import { EnvironmentVariables } from './env.validation';
+import { inspect } from 'util';
+import { mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { plainToInstance } from 'class-transformer';
+import { validateSync } from 'class-validator';
+import { secretsMask } from '@lido-nestjs/logger';
+import {
+  effectiveConfigurationJson,
+  EnvironmentVariables,
+  maskSecretsInValidationOutput,
+  validate,
+  VALIDATOR_OPTIONS,
+} from './env.validation';
 
 function omit<T extends Record<K, any>, K extends string>(obj: T, ...keys: K[]): Omit<T, K> {
   const result = { ...obj };
@@ -861,7 +873,7 @@ describe('Environment validation', () => {
         'pw hunter2hunter2, dsn https://abc123@sentry.example.org/42',
         config,
       );
-      expect(masked).toBe('pw <removed>, dsn <removed>');
+      expect(masked).toBe(`pw ${'*'.repeat(14)}, dsn ${'*'.repeat(36)}`);
     });
 
     it('masks every entry of the provider URL lists', () => {
@@ -869,7 +881,7 @@ describe('Environment validation', () => {
         'tried https://el-a.example.org/keyA then https://el-b.example.org/keyB then https://cl.example.org/keyC',
         config,
       );
-      expect(masked).toBe('tried <removed> then <removed> then <removed>');
+      expect(masked).toBe(`tried ${'*'.repeat(29)} then ${'*'.repeat(29)} then ${'*'.repeat(27)}`);
     });
 
     it('leaves text without secret values untouched', () => {
@@ -879,6 +891,70 @@ describe('Environment validation', () => {
 
     it('handles absent secret keys', () => {
       expect(maskSecretsInValidationOutput('nothing to mask', {})).toBe('nothing to mask');
+    });
+
+    describe('the DB password given by DB_PASSWORD_FILE', () => {
+      const FILE_VALUE = 'filefixture42';
+      let dir: string;
+
+      beforeEach(() => (dir = mkdtempSync(join(tmpdir(), 'kapi-mask-'))));
+      afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+      it('masks it, read the way ConfigService reads it: line breaks dropped, trimmed', () => {
+        const file = join(dir, 'db');
+        writeFileSync(file, `  ${FILE_VALUE}\n`);
+
+        const masked = maskSecretsInValidationOutput(`pw ${FILE_VALUE}`, { DB_PASSWORD_FILE: file });
+        expect(masked).toBe(`pw ${'*'.repeat(FILE_VALUE.length)}`);
+      });
+
+      it('leaves the text as is when the file cannot be read', () => {
+        const text = `pw ${FILE_VALUE}`;
+        expect(maskSecretsInValidationOutput(text, { DB_PASSWORD_FILE: join(dir, 'missing') })).toBe(text);
+      });
+    });
+  });
+
+  describe('validation errors', () => {
+    it('carry neither the value nor the config, so printing them shows no secret', () => {
+      // nosemgrep: semgrep.detected-generic-secrets -- test-only non-secret value
+      const secret = 'https://el.example.org/v2/Ab12Cd34Ef56Gh78Ij90';
+      const config = plainToInstance(EnvironmentVariables, {
+        PROVIDERS_URLS: `${secret},not-a-url`,
+        DB_PASSWORD: secret,
+      });
+
+      const errors = validateSync(config, VALIDATOR_OPTIONS);
+
+      expect(errors.length).toBeGreaterThan(0);
+      expect(inspect(errors, { depth: null })).not.toContain(secret);
+    });
+  });
+
+  describe('effectiveConfigurationJson', () => {
+    const DB_VALUE = 'db"fixture\\value';
+    const PROVIDER_URL = 'https://el.example.com/key-"abc"';
+    const config = { PORT: 3000, DB_PASSWORD: DB_VALUE, PROVIDERS_URLS: [PROVIDER_URL] };
+    const secrets = [DB_VALUE, PROVIDER_URL];
+    // What the logger's secrets format does to the line afterwards
+    const asLogged = (line: string) => secretsMask({ secrets })(line);
+    const escaped = (value: string) => JSON.stringify(value).slice(1, -1);
+
+    it('the escaped form of a secret slips past the mask of the serialized line', () => {
+      const line = asLogged(JSON.stringify(config));
+      expect(line).toContain(escaped(DB_VALUE));
+    });
+
+    it('carries no secret, raw or escaped, and keeps the other values', () => {
+      const line = asLogged(effectiveConfigurationJson(config, secrets));
+
+      for (const secret of secrets) {
+        expect(line).not.toContain(secret);
+        expect(line).not.toContain(escaped(secret));
+      }
+      expect(line).not.toContain('fixture');
+      expect(line).not.toContain('key-');
+      expect(JSON.parse(line).PORT).toBe(3000);
     });
   });
 });

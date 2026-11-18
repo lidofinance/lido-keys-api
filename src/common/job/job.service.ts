@@ -1,4 +1,4 @@
-import { MikroORM, UseRequestContext } from '@mikro-orm/core';
+import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
 import { Inject } from '@nestjs/common';
 import { LOGGER_PROVIDER, LoggerService } from '../logger';
 import { PrometheusService } from '../prometheus';
@@ -17,7 +17,7 @@ export class JobService {
    * @param jobFn - job function
    * @returns job function call result
    */
-  @UseRequestContext()
+  @CreateRequestContext()
   async wrapJob<R, M extends { name: string }>(meta: M, jobFn: () => Promise<R>): Promise<R | undefined> {
     this.logger.log('Job started', meta);
     const endTimer = this.prometheusService.jobDuration.startTimer({ job: meta.name });

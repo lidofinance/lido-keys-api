@@ -4,7 +4,7 @@ import { utils } from 'ethers';
 import { Cmv2, MetaRegistry } from 'generated';
 import { CMV2_CONTRACT_TOKEN, META_REGISTRY_CONTRACT_TOKEN, ContractFactoryFn } from 'common/contracts';
 import { CallOverrides } from '../interfaces/overrides.interface';
-import { OperatorNameResolver } from './operator-name.resolver';
+import { InvalidOperatorNameError, OperatorNameResolver } from './operator-name.resolver';
 
 @Injectable()
 export class MetaRegistryNameResolver implements OperatorNameResolver {
@@ -14,12 +14,22 @@ export class MetaRegistryNameResolver implements OperatorNameResolver {
   ) {}
 
   async resolve(moduleAddress: string, operatorIndex: number, overrides: CallOverrides = {}): Promise<string> {
+    // RPC errors are thrown here and must propagate, so the update is retried instead of storing a placeholder
     const metaRegistryAddress = await this.getMetaRegistryAddress(moduleAddress, overrides);
-    const { name } = await this.connectMetaRegistry(metaRegistryAddress).getOperatorMetadata(
+    const metadata = await this.connectMetaRegistry(metaRegistryAddress).getOperatorMetadata(
       operatorIndex,
       overrides as any,
     );
-    return name;
+
+    // ethers defers a malformed UTF-8 decode error and throws it when the field is read
+    try {
+      return metadata.name;
+    } catch (error) {
+      throw new InvalidOperatorNameError(
+        `Operator ${operatorIndex} of module ${moduleAddress} has a name that can't be decoded`,
+        error,
+      );
+    }
   }
 
   async namesWereChanged(moduleAddress: string, fromBlock: number, toBlock: number): Promise<boolean> {

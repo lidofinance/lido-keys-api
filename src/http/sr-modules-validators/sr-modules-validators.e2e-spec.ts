@@ -430,13 +430,13 @@ describe('SRModulesValidatorsController (e2e)', () => {
           });
         });
 
-        it('should return 400 error if module_id is not set', async () => {
+        it('should return 404 if module_id is not set', async () => {
           const resp = await request(app.getHttpServer()).get('/v1/modules//validators/validator-exits-to-prepare/1');
-          expect(resp.status).toEqual(400);
+          expect(resp.status).toEqual(404);
           expect(resp.body).toEqual({
-            error: 'Bad Request',
-            message: ['module_id must be a contract address or numeric value'],
-            statusCode: 400,
+            error: 'Not Found',
+            message: `Cannot GET /v1/modules//validators/validator-exits-to-prepare/1`,
+            statusCode: 404,
           });
         });
 
@@ -477,20 +477,18 @@ describe('SRModulesValidatorsController (e2e)', () => {
           });
         });
 
-        it('Should return 400 error if operator was not set', async () => {
+        it('Should return 404 if operator was not set', async () => {
           await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
           const resp = await request(app.getHttpServer()).get(
             `/v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/`,
           );
 
-          expect(resp.status).toEqual(400);
-          expect(resp.body.message).toEqual(
-            expect.arrayContaining([
-              'operator_id should not be null or undefined',
-              'operator_id must not be less than 0',
-              'operator_id must be an integer number',
-            ]),
-          );
+          expect(resp.status).toEqual(404);
+          expect(resp.body).toEqual({
+            error: 'Not Found',
+            message: `Cannot GET /v1/modules/${dvtModule.moduleId}/validators/validator-exits-to-prepare/`,
+            statusCode: 404,
+          });
         });
 
         it('should return 400 error if operator_id is not a number', async () => {
@@ -781,15 +779,15 @@ describe('SRModulesValidatorsController (e2e)', () => {
           });
         });
 
-        it('should return 400 error if module_id is not set', async () => {
+        it('should return 404 if module_id is not set', async () => {
           const resp = await request(app.getHttpServer()).get(
             '/v1/modules//validators/generate-unsigned-exit-messages/1',
           );
-          expect(resp.status).toEqual(400);
+          expect(resp.status).toEqual(404);
           expect(resp.body).toEqual({
-            error: 'Bad Request',
-            message: ['module_id must be a contract address or numeric value'],
-            statusCode: 400,
+            error: 'Not Found',
+            message: `Cannot GET /v1/modules//validators/generate-unsigned-exit-messages/1`,
+            statusCode: 404,
           });
         });
 
@@ -832,20 +830,18 @@ describe('SRModulesValidatorsController (e2e)', () => {
           });
         });
 
-        it('Should return 400 error if operator was not set', async () => {
+        it('Should return 404 if operator was not set', async () => {
           await elMetaStorageService.update({ ...elMeta, number: consensusMetaResp.blockNumber });
           const resp = await request(app.getHttpServer()).get(
             `/v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/`,
           );
 
-          expect(resp.status).toEqual(400);
-          expect(resp.body.message).toEqual(
-            expect.arrayContaining([
-              'operator_id should not be null or undefined',
-              'operator_id must not be less than 0',
-              'operator_id must be an integer number',
-            ]),
-          );
+          expect(resp.status).toEqual(404);
+          expect(resp.body).toEqual({
+            error: 'Not Found',
+            message: `Cannot GET /v1/modules/${dvtModule.moduleId}/validators/generate-unsigned-exit-messages/`,
+            statusCode: 404,
+          });
         });
 
         it('should return 400 error if operator_id is not a number', async () => {

@@ -21,9 +21,13 @@ describe('KeysUpdateService update: advisory lock and re-read under it', () => {
   let updateStakingModules: jest.Mock;
   let elMetaGet: jest.Mock;
   let execute: jest.Mock;
+  let contractModulesGet: jest.Mock;
+  let storageModulesGet: jest.Mock;
 
   const build = async () => {
     updateStakingModules = jest.fn();
+    contractModulesGet = jest.fn().mockResolvedValue([]);
+    storageModulesGet = jest.fn().mockResolvedValue([]);
     execute = jest.fn().mockResolvedValue([{ locked: true }]);
     elMetaGet = jest.fn().mockResolvedValue(prevElMeta);
 
@@ -34,14 +38,17 @@ describe('KeysUpdateService update: advisory lock and re-read under it', () => {
         { provide: JobService, useValue: {} },
         { provide: SchedulerRegistry, useValue: {} },
         { provide: StakingRouterService, useValue: {} },
-        { provide: StakingRouterFetchService, useValue: { getStakingModules: jest.fn().mockResolvedValue([]) } },
+        {
+          provide: StakingRouterFetchService,
+          useValue: { getStakingModules: (...args) => contractModulesGet(...args) },
+        },
         { provide: ElMetaStorageService, useValue: { get: (...args) => elMetaGet(...args) } },
         {
           provide: EntityManager,
           useValue: { transactional: (cb: (em: unknown) => Promise<unknown>) => cb({ execute }) },
         },
         { provide: ExecutionProviderService, useValue: { getBlock: jest.fn().mockResolvedValue(currElMeta) } },
-        { provide: SRModuleStorageService, useValue: { findAll: jest.fn().mockResolvedValue([]) } },
+        { provide: SRModuleStorageService, useValue: { findAll: (...args) => storageModulesGet(...args) } },
         { provide: PrometheusService, useValue: {} },
         { provide: StakingModuleUpdaterService, useValue: { updateStakingModules } },
         KeysUpdateService,
@@ -88,5 +95,39 @@ describe('KeysUpdateService update: advisory lock and re-read under it', () => {
     expect(updateStakingModules).toHaveBeenCalledWith(
       expect.objectContaining({ currElMeta, prevElMeta: metaUnderLock }),
     );
+  });
+
+  describe('a stored module id that points to another address', () => {
+    // The storage keeps the address lowercase; the comparison must not depend on the letter case
+    const address = '0x55032650b14df07b85bF18A3a3eC8E0Af2e028d5';
+    const otherAddress = '0xaE7B191A31f627b4eB1d4DaC64eab9976995b433';
+
+    let exit: jest.SpyInstance;
+
+    beforeEach(async () => {
+      await build();
+      storageModulesGet.mockResolvedValue([{ moduleId: 1, stakingModuleAddress: address.toLowerCase() }]);
+      exit = jest.spyOn(process, 'exit').mockImplementation(() => {
+        throw new Error('process.exit');
+      });
+    });
+
+    afterEach(() => exit.mockRestore());
+
+    it('does not exit for the same address in another letter case', async () => {
+      contractModulesGet.mockResolvedValue([{ moduleId: 1, stakingModuleAddress: address }]);
+
+      expect(await keysUpdateService.update()).toEqual(currElMeta);
+      expect(exit).not.toHaveBeenCalled();
+      expect(updateStakingModules).toHaveBeenCalled();
+    });
+
+    it('exits with code 1 for another address', async () => {
+      contractModulesGet.mockResolvedValue([{ moduleId: 1, stakingModuleAddress: otherAddress }]);
+
+      await expect(keysUpdateService.update()).rejects.toThrow('process.exit');
+      expect(exit).toHaveBeenCalledWith(1);
+      expect(updateStakingModules).not.toHaveBeenCalled();
+    });
   });
 });

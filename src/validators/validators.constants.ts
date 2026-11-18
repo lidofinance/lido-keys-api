@@ -1,5 +1,6 @@
 import { ValidatorStatus } from '@lido-nestjs/validators-registry';
 
+// statuses the validators update fetches from the CL and the exit endpoints read
 export const VALIDATORS_STATUSES_FOR_EXIT = [
   ValidatorStatus.ACTIVE_ONGOING,
   ValidatorStatus.PENDING_INITIALIZED,

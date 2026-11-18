@@ -1,11 +1,11 @@
-import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
+import { Entity, EntityRepositoryType, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 import { DEPOSIT_SIGNATURE_LEN, ADDRESS_LEN, KEY_LEN } from './constants';
 import { RegistryKeyRepository } from './key.repository';
 
-@Entity({ customRepository: () => RegistryKeyRepository })
+@Entity({ repository: () => RegistryKeyRepository })
 export class RegistryKey {
   [EntityRepositoryType]?: RegistryKeyRepository;
-  [PrimaryKeyType]?: [RegistryKey['index'], RegistryKey['operatorIndex'], RegistryKey['moduleAddress']];
+  [PrimaryKeyProp]?: ['index', 'operatorIndex', 'moduleAddress'];
 
   constructor(operatorKey: RegistryKey) {
     this.index = operatorKey.index;

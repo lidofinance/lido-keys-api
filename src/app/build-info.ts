@@ -5,8 +5,8 @@ export interface BuildInfo {
   readonly commit: string;
 }
 
-// The shared build pipeline rewrites build-info.json in the checkout before the image is built;
-// the committed placeholder keeps local and dev builds working without it.
+// The image build writes build-info.json from the BUILD_BRANCH and BUILD_COMMIT build args (see the Dockerfile);
+// the committed placeholder keeps builds without them working.
 export const readBuildInfo = (path = 'build-info.json'): BuildInfo => {
   let parsed: Partial<BuildInfo>;
   try {

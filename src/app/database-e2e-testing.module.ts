@@ -1,5 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import config from 'mikro-orm.config';
 import { ConfigModule, ConfigService } from 'common/config';
 
@@ -11,6 +12,7 @@ export class DatabaseE2ETestingModule {
       imports: [
         ConfigModule,
         MikroOrmModule.forRootAsync({
+          driver: PostgreSqlDriver,
           async useFactory(configService: ConfigService) {
             return {
               ...config,
@@ -21,7 +23,7 @@ export class DatabaseE2ETestingModule {
               user: configService.get('DB_USER'),
               password: configService.get('DB_PASSWORD'),
               autoLoadEntities: false,
-              cache: { enabled: false },
+              metadataCache: { enabled: false },
               debug: false,
               registerRequestContext: true,
               allowGlobalContext: true,

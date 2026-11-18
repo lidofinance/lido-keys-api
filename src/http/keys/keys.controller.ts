@@ -26,6 +26,7 @@ import { EntityManager } from '@mikro-orm/knex';
 import { IsolationLevel } from '@mikro-orm/core';
 import { Pubkey } from 'http/common/entities/pubkey';
 import { SkipCache } from 'common/decorators/skipCache';
+import { setNoStoreIfUnsent, PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
 
 @Controller('keys')
 @ApiTags('keys')
@@ -57,7 +58,7 @@ export class KeysController {
         const { keysGenerators, meta } = await this.keysService.get(filters);
 
         const jsonStream = JSONStream.stringify('{ "meta": ' + JSON.stringify(meta) + ', "data": [', ',', ']}');
-        reply.type('application/json').send(jsonStream);
+        reply.type('application/json').header('Cache-Control', PUBLIC_GET_CACHE_CONTROL).send(jsonStream);
 
         try {
           for (const keysGenerator of keysGenerators) {
@@ -71,6 +72,7 @@ export class KeysController {
         } catch (streamError) {
           // Handle the error during streaming.
           this.logger.log('keys streaming error', streamError);
+          setNoStoreIfUnsent(reply);
           // destroy method closes the stream without ']' and corrupt the result
           // https://github.com/dominictarr/through/blob/master/index.js#L78
           jsonStream.destroy();

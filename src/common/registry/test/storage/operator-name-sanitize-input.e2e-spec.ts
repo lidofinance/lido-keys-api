@@ -47,7 +47,8 @@ describe('Invalid operator name', () => {
   test('control: a clean name is stored and read back', async () => {
     const op = buildOperator(1, 'clean-name');
     await storageService.saveOne(op);
-    await expect(storageService.findAll(MODULE_ADDRESS)).resolves.toEqual([op]);
+    // totalWithdrawnKeys is not set, so the nullable column is read back as null
+    await expect(storageService.findAll(MODULE_ADDRESS)).resolves.toEqual([{ ...op, totalWithdrawnKeys: null }]);
   });
 
   test('a NUL byte in the name is rejected by Postgres', async () => {
