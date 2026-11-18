@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import { secretsMask } from '@lido-nestjs/logger';
 import { plainToInstance, Transform } from 'class-transformer';
 import {
@@ -238,9 +239,23 @@ export class EnvironmentVariables {
 const SECRET_VALUE_KEYS = ['DB_PASSWORD', 'SENTRY_DSN'];
 const SECRET_URL_LIST_KEYS = ['PROVIDERS_URLS', 'CL_API_URLS'];
 
+// The password ConfigService takes from DB_PASSWORD_FILE when DB_PASSWORD is empty, read the same way.
+// An unreadable file gives nothing to mask: masking must never fail.
+function dbPasswordFromFile(config: Record<string, unknown>): string {
+  if (config.DB_PASSWORD || !config.DB_PASSWORD_FILE) return '';
+  try {
+    return readFileSync(String(config.DB_PASSWORD_FILE), 'utf-8')
+      .replace(/(\r\n|\n|\r)/gm, '')
+      .trim();
+  } catch {
+    return '';
+  }
+}
+
 export function maskSecretsInValidationOutput(text: string, config: Record<string, unknown>): string {
   const values = [
     ...SECRET_VALUE_KEYS.map((key) => config[key]),
+    dbPasswordFromFile(config),
     ...SECRET_URL_LIST_KEYS.flatMap((key) => String(config[key] ?? '').split(',')).map((url) => url.trim()),
     ...Object.values(SECRETS_IN_FORCE),
   ]

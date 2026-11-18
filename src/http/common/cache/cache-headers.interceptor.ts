@@ -1,5 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import type { FastifyReply } from 'fastify';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { NO_STORE_KEY } from 'common/decorators/noStore';
@@ -12,6 +13,15 @@ export const PUBLIC_GET_CACHE_CONTROL = 'public, max-age=30, stale-if-error=1200
 // Probe and metrics answers must never be reused by any cache: a stored 200 keeps answering
 // through an outage.
 export const NO_STORE_CACHE_CONTROL = 'no-store';
+
+// For a stream that failed before its first row: nothing is sent yet, and the error response that
+// replaces the stream would carry the public header. send() has copied the headers onto the raw
+// response, so no-store is set on both. Once the first row went out, the connection is cut instead.
+export const setNoStoreIfUnsent = (reply: FastifyReply) => {
+  if (reply.raw.headersSent) return;
+  reply.header('Cache-Control', NO_STORE_CACHE_CONTROL);
+  reply.raw.setHeader('Cache-Control', NO_STORE_CACHE_CONTROL);
+};
 
 @Injectable()
 export class CacheHeadersInterceptor implements NestInterceptor {

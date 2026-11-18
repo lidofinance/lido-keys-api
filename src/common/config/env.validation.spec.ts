@@ -1,4 +1,7 @@
 import { inspect } from 'util';
+import { mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { secretsMask } from '@lido-nestjs/logger';
@@ -888,6 +891,27 @@ describe('Environment validation', () => {
 
     it('handles absent secret keys', () => {
       expect(maskSecretsInValidationOutput('nothing to mask', {})).toBe('nothing to mask');
+    });
+
+    describe('the DB password given by DB_PASSWORD_FILE', () => {
+      const FILE_VALUE = 'filefixture42';
+      let dir: string;
+
+      beforeEach(() => (dir = mkdtempSync(join(tmpdir(), 'kapi-mask-'))));
+      afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+      it('masks it, read the way ConfigService reads it: line breaks dropped, trimmed', () => {
+        const file = join(dir, 'db');
+        writeFileSync(file, `  ${FILE_VALUE}\n`);
+
+        const masked = maskSecretsInValidationOutput(`pw ${FILE_VALUE}`, { DB_PASSWORD_FILE: file });
+        expect(masked).toBe(`pw ${'*'.repeat(FILE_VALUE.length)}`);
+      });
+
+      it('leaves the text as is when the file cannot be read', () => {
+        const text = `pw ${FILE_VALUE}`;
+        expect(maskSecretsInValidationOutput(text, { DB_PASSWORD_FILE: join(dir, 'missing') })).toBe(text);
+      });
     });
   });
 

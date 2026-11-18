@@ -26,7 +26,7 @@ import * as JSONStream from 'jsonstream';
 import type { FastifyReply } from 'fastify';
 import { ModuleIdPipe } from '../common/pipeline/module-id-pipe';
 import { SkipCache } from 'common/decorators/skipCache';
-import { PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
+import { setNoStoreIfUnsent, PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
 
 @Controller('modules')
 @ApiTags('sr-module-keys')
@@ -110,6 +110,7 @@ export class SRModulesKeysController {
           // Handle the error during streaming.
           this.logger.error('module-keys streaming error');
           this.logger.error(streamError);
+          setNoStoreIfUnsent(reply);
           // destroy method closes the stream without ']' and corrupt the result
           // https://github.com/dominictarr/through/blob/master/index.js#L78
           jsonStream.destroy();

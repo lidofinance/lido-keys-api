@@ -14,7 +14,8 @@ import { SRModuleStorageService } from '../../storage/sr-module.storage';
 import { ElMetaStorageService } from '../../storage/el-meta.storage';
 import { nullTransport, LoggerModule } from '@lido-nestjs/logger';
 import * as request from 'supertest';
-import { PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
+import { failingSource, getRaw, streamMeta } from '../stream-failure.e2e-helpers';
+import { NO_STORE_CACHE_CONTROL, PUBLIC_GET_CACHE_CONTROL } from 'http/common/cache/cache-headers.interceptor';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { SRModulesKeysController } from './sr-modules-keys.controller';
 import { SRModulesKeysService } from './sr-modules-keys.service';
@@ -33,6 +34,7 @@ describe('SRModulesKeysController (e2e)', () => {
   let moduleStorageService: SRModuleStorageService;
   let elMetaStorageService: ElMetaStorageService;
   let registryStorage: RegistryStorageService;
+  let srModulesKeysService: SRModulesKeysService;
 
   async function cleanDB() {
     await keysStorageService.removeAll();
@@ -101,6 +103,7 @@ describe('SRModulesKeysController (e2e)', () => {
     keysStorageService = moduleRef.get(RegistryKeyStorageService);
     moduleStorageService = moduleRef.get(SRModuleStorageService);
     registryStorage = moduleRef.get(RegistryStorageService);
+    srModulesKeysService = moduleRef.get(SRModulesKeysService);
 
     const generator = moduleRef.get(MikroORM).getSchemaGenerator();
     await generator.refreshDatabase();
@@ -410,6 +413,40 @@ describe('SRModulesKeysController (e2e)', () => {
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
         expect(resp.headers['cache-control']).toBeUndefined();
       });
+    });
+  });
+
+  // The key source fails as a database stream would, once the meta check has passed and the reply is sent
+  describe('The /modules/{module_id}/keys stream failure', () => {
+    const path = `/v1/modules/${dvtModule.moduleId}/keys`;
+    const mockSource = (rowsBeforeFailure: number) =>
+      jest.spyOn(srModulesKeysService, 'getModuleKeys').mockResolvedValueOnce({
+        meta: streamMeta,
+        module: dvtModuleResp,
+        keysGenerator: failingSource(keys, rowsBeforeFailure),
+      } as unknown as Awaited<ReturnType<SRModulesKeysService['getModuleKeys']>>);
+
+    afterEach(() => jest.restoreAllMocks());
+
+    it('fails before the first row: 500 with no-store', async () => {
+      mockSource(0);
+
+      const resp = await getRaw(app, path);
+
+      expect(resp.status).toEqual(500);
+      expect(resp.headers['cache-control']).toEqual(NO_STORE_CACHE_CONTROL);
+    });
+
+    it('fails after the first row: 200 with a cut body, never a complete response', async () => {
+      mockSource(1);
+
+      const resp = await getRaw(app, path);
+
+      expect(resp.status).toEqual(200);
+      expect(resp.body).toContain(keys[0].key);
+      expect(resp.body).not.toMatch(/\]\}+\s*$/);
+      expect(resp.completed).toBe(false);
+      expect(resp.headers['cache-control']).toEqual(PUBLIC_GET_CACHE_CONTROL);
     });
   });
 
