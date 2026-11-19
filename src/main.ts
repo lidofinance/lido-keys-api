@@ -1,5 +1,10 @@
 // First: the imports below read process.env while they load.
-import { SECRETS_FILE_PATH, SECRETS_IN_FORCE, SECRETS_POLL_INTERVAL_IN_SECONDS } from './common/secrets/bootstrap-env';
+import {
+  SECRETS_FILE_PATH,
+  SECRETS_IN_FORCE,
+  SECRETS_POLL_INTERVAL_IN_SECONDS,
+  bootstrapLogger,
+} from './common/secrets/bootstrap-env';
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
@@ -7,12 +12,7 @@ import { LOGGER_PROVIDER, secretsMask } from '@lido-nestjs/logger';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { SWAGGER_URL } from './http/common/swagger';
-import {
-  ConfigService,
-  effectiveConfigurationJson,
-  maskSecretsInValidationOutput,
-  VALIDATED_ENV,
-} from './common/config';
+import { ConfigService, effectiveConfigurationJson, VALIDATED_ENV } from './common/config';
 import { AppModule, APP_DESCRIPTION, APP_NAME, APP_VERSION } from './app';
 import { MikroORM } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/knex';
@@ -177,8 +177,8 @@ async function bootstrap() {
 }
 
 // A failed start must end the process: with Sentry's rejection handler installed it would stay up with the
-// port closed. The logger may not exist yet, so the error is masked the way the env validation output is.
+// port closed. The app logger may not exist yet: the bootstrap one masks the same secrets.
 bootstrap().catch((error) => {
-  console.error(maskSecretsInValidationOutput(String(error?.stack ?? error), process.env));
+  bootstrapLogger().error(String(error?.stack ?? error));
   process.exit(1);
 });
