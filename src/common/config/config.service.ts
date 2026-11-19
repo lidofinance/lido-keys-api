@@ -1,7 +1,7 @@
 import { ConfigService as ConfigServiceSource } from '@nestjs/config';
 import { EnvironmentVariables } from './env.validation';
 import { readFileSync } from 'fs';
-import { SECRETS_IN_FORCE } from '../secrets/bootstrap-env';
+import { SECRETS_IN_FORCE, bootstrapLogger } from '../secrets/bootstrap-env';
 
 export class ConfigService extends ConfigServiceSource<EnvironmentVariables> {
   /**
@@ -45,13 +45,13 @@ export class ConfigService extends ConfigServiceSource<EnvironmentVariables> {
 
     const filePath = super.get('DB_PASSWORD_FILE', { infer: true });
     if (!filePath) {
-      console.error(`DB_PASSWORD or DB_PASSWORD_FILE environments are not provided.`);
+      bootstrapLogger().error(`DB_PASSWORD or DB_PASSWORD_FILE environments are not provided.`);
       process.exit(1);
     }
     const password = this.readEnvFromFile(filePath, 'DB_PASSWORD_FILE') as EnvironmentVariables[T];
 
     if (!password) {
-      console.error(
+      bootstrapLogger().error(
         'File in DB_PASSWORD_FILE doesnt contain a password. Please provide postgresql password via DB_PASSWORD or DB_PASSWORD_FILE envs',
       );
       process.exit(1);

@@ -13,7 +13,7 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Migrator } from '@mikro-orm/migrations';
 import { SrModuleEntity } from './storage/sr-module.entity';
 import { ElMetaEntity } from './storage/el-meta.entity';
-import { Logger } from '@nestjs/common';
+import { bootstrapLogger } from './common/secrets/bootstrap-env';
 
 dotenv.config();
 
@@ -59,12 +59,12 @@ const findMigrations = (mainFolder: string, npmPackageNames: string[]): Migratio
     .sort((n1, n2) => (n1.name > n2.name ? 1 : -1));
 
   if (hasDuplicatesByName(migrations)) {
-    console.error('Found duplicated migration name in list');
+    bootstrapLogger().error('Found duplicated migration name in list');
     process.exit(1);
   }
 
-  const logger = new Logger();
-  logger.log(`Found [${migrations.length}] DB migration files.`);
+  // The Nest logger is not set up yet: this config is read while the app module loads
+  bootstrapLogger().log(`Found [${migrations.length}] DB migration files.`);
 
   return migrations;
 };
@@ -110,7 +110,7 @@ const DB_PASSWORD =
       .trim());
 
 if (!DB_PASSWORD) {
-  console.error('Please set postgres password in DB_PASSWORD or in file DB_PASSWORD_FILE');
+  bootstrapLogger().error('Please set postgres password in DB_PASSWORD or in file DB_PASSWORD_FILE');
   process.exit(1);
 }
 
