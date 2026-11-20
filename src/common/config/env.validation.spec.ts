@@ -5,13 +5,8 @@ import { join } from 'path';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { secretsMask } from '@lido-nestjs/logger';
-import {
-  effectiveConfigurationJson,
-  EnvironmentVariables,
-  maskSecretsInValidationOutput,
-  validate,
-  VALIDATOR_OPTIONS,
-} from './env.validation';
+import { effectiveConfigurationJson, EnvironmentVariables, validate, VALIDATOR_OPTIONS } from './env.validation';
+import { bootstrapSecrets } from '../secrets/bootstrap-secrets';
 
 function omit<T extends Record<K, any>, K extends string>(obj: T, ...keys: K[]): Omit<T, K> {
   const result = { ...obj };
@@ -859,7 +854,11 @@ describe('Environment validation', () => {
     });
   });
 
-  describe('maskSecretsInValidationOutput', () => {
+  describe('bootstrapSecrets, the secrets the bootstrap logger masks', () => {
+    // The mask the bootstrap logger applies to a line
+    const maskWithBootstrapSecrets = (text: string, config: Record<string, unknown>) =>
+      secretsMask({ secrets: bootstrapSecrets(config) })(text);
+
     const config = {
       // nosemgrep: semgrep.detected-generic-secrets -- test-only non-secret value
       DB_PASSWORD: 'hunter2hunter2',
@@ -869,15 +868,12 @@ describe('Environment validation', () => {
     };
 
     it('masks the DB password and Sentry DSN', () => {
-      const masked = maskSecretsInValidationOutput(
-        'pw hunter2hunter2, dsn https://abc123@sentry.example.org/42',
-        config,
-      );
+      const masked = maskWithBootstrapSecrets('pw hunter2hunter2, dsn https://abc123@sentry.example.org/42', config);
       expect(masked).toBe(`pw ${'*'.repeat(14)}, dsn ${'*'.repeat(36)}`);
     });
 
     it('masks every entry of the provider URL lists', () => {
-      const masked = maskSecretsInValidationOutput(
+      const masked = maskWithBootstrapSecrets(
         'tried https://el-a.example.org/keyA then https://el-b.example.org/keyB then https://cl.example.org/keyC',
         config,
       );
@@ -886,11 +882,11 @@ describe('Environment validation', () => {
 
     it('leaves text without secret values untouched', () => {
       const text = 'property CHAIN_ID has failed the following constraints: isInt';
-      expect(maskSecretsInValidationOutput(text, config)).toBe(text);
+      expect(maskWithBootstrapSecrets(text, config)).toBe(text);
     });
 
     it('handles absent secret keys', () => {
-      expect(maskSecretsInValidationOutput('nothing to mask', {})).toBe('nothing to mask');
+      expect(maskWithBootstrapSecrets('nothing to mask', {})).toBe('nothing to mask');
     });
 
     describe('the DB password given by DB_PASSWORD_FILE', () => {
@@ -904,13 +900,13 @@ describe('Environment validation', () => {
         const file = join(dir, 'db');
         writeFileSync(file, `  ${FILE_VALUE}\n`);
 
-        const masked = maskSecretsInValidationOutput(`pw ${FILE_VALUE}`, { DB_PASSWORD_FILE: file });
+        const masked = maskWithBootstrapSecrets(`pw ${FILE_VALUE}`, { DB_PASSWORD_FILE: file });
         expect(masked).toBe(`pw ${'*'.repeat(FILE_VALUE.length)}`);
       });
 
       it('leaves the text as is when the file cannot be read', () => {
         const text = `pw ${FILE_VALUE}`;
-        expect(maskSecretsInValidationOutput(text, { DB_PASSWORD_FILE: join(dir, 'missing') })).toBe(text);
+        expect(maskWithBootstrapSecrets(text, { DB_PASSWORD_FILE: join(dir, 'missing') })).toBe(text);
       });
     });
   });

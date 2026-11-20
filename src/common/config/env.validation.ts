@@ -1,4 +1,3 @@
-import { readFileSync } from 'fs';
 import { secretsMask } from '@lido-nestjs/logger';
 import { plainToInstance, Transform } from 'class-transformer';
 import {
@@ -20,7 +19,7 @@ import {
 } from 'class-validator';
 import { Environment, LogLevel, LogFormat, Chain } from './interfaces';
 import { NonEmptyArray } from '@lido-nestjs/execution/dist/interfaces/non-empty-array';
-import { SECRETS_IN_FORCE } from '../secrets/bootstrap-env';
+import { bootstrapLogger } from '../secrets/bootstrap-env';
 
 const toNumber =
   ({ defaultValue }) =>
@@ -234,37 +233,6 @@ export class EnvironmentVariables {
   LIDO_LOCATOR_DEVNET_ADDRESS = '';
 }
 
-// The logger cannot be used here: validation runs while the config it would be built from is
-// still being parsed. secretsMask hides the values the way the logger does.
-const SECRET_VALUE_KEYS = ['DB_PASSWORD', 'SENTRY_DSN'];
-const SECRET_URL_LIST_KEYS = ['PROVIDERS_URLS', 'CL_API_URLS'];
-
-// The password ConfigService takes from DB_PASSWORD_FILE when DB_PASSWORD is empty, read the same way.
-// An unreadable file gives nothing to mask: masking must never fail.
-function dbPasswordFromFile(config: Record<string, unknown>): string {
-  if (config.DB_PASSWORD || !config.DB_PASSWORD_FILE) return '';
-  try {
-    return readFileSync(String(config.DB_PASSWORD_FILE), 'utf-8')
-      .replace(/(\r\n|\n|\r)/gm, '')
-      .trim();
-  } catch {
-    return '';
-  }
-}
-
-export function maskSecretsInValidationOutput(text: string, config: Record<string, unknown>): string {
-  const values = [
-    ...SECRET_VALUE_KEYS.map((key) => config[key]),
-    dbPasswordFromFile(config),
-    ...SECRET_URL_LIST_KEYS.flatMap((key) => String(config[key] ?? '').split(',')).map((url) => url.trim()),
-    ...Object.values(SECRETS_IN_FORCE),
-  ]
-    .map((value) => (value == null ? '' : String(value)))
-    .filter((value) => value.length > 0);
-
-  return secretsMask({ secrets: values })(text);
-}
-
 // Decorated fields plus fields with initializers: with target es2017 an uninitialized class
 // field does not exist on a fresh instance, so neither source alone lists every key.
 export function declaredConfigKeys(): string[] {
@@ -297,7 +265,8 @@ export function validate(config: Record<string, unknown>) {
   const errors = validateSync(validatedConfig, VALIDATOR_OPTIONS);
 
   if (errors.length > 0) {
-    console.error(maskSecretsInValidationOutput(errors.toString(), config));
+    // The app logger is built from the config being validated here; the bootstrap one masks its secrets
+    bootstrapLogger(config).error(errors.toString());
     process.exit(1);
   }
 
