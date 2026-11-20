@@ -98,16 +98,18 @@ export class StakingRouterService {
   ): Promise<{ module: SrModuleEntity; elBlockSnapshot: ELBlockSnapshot }> {
     const { stakingModule, elBlockSnapshot } = await this.entityManager.transactional(
       async () => {
-        const stakingModule = await this.getStakingModule(moduleId);
-        if (!stakingModule) {
-          throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
-        }
-
+        // Modules and meta are written in the same transaction, so on an empty DB
+        // both are missing: check meta first to answer 425 rather than 404.
         const elBlockSnapshot = await this.getElBlockSnapshot();
 
         if (!elBlockSnapshot) {
           this.logger.warn(`Meta is null, maybe data hasn't been written in db yet.`);
           throw httpExceptionTooEarlyResp();
+        }
+
+        const stakingModule = await this.getStakingModule(moduleId);
+        if (!stakingModule) {
+          throw new NotFoundException(`Module with moduleId ${moduleId} is not supported`);
         }
 
         return { stakingModule, elBlockSnapshot };
