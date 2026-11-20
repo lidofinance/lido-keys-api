@@ -71,7 +71,7 @@ export class PrometheusService {
     name: 'validators_registry_last_update_block_timestamp',
     help:
       'Timestamp of the execution layer block of the last ValidatorsRegistry update. ' +
-      'Since Glamsterdam (EIP-7732) it is the time of an earlier slot than validators_registry_last_slot.',
+      'Since Glamsterdam it is the time of an earlier slot than validators_registry_last_slot.',
   });
 
   public registryNumberOfKeysBySRModuleAndOperator = this.getOrCreateMetric('Gauge', {
@@ -99,7 +99,7 @@ export class PrometheusService {
     name: 'validators_registry_last_block_number',
     help:
       'Execution layer block number of the last ValidatorsRegistry update. ' +
-      'Since Glamsterdam (EIP-7732) it can stay the same while validators_registry_last_slot moves on.',
+      'Since Glamsterdam it can stay the same while validators_registry_last_slot moves on.',
   });
 
   public validatorsRegistryLastSlot = this.getOrCreateMetric('Gauge', {

@@ -90,13 +90,7 @@ export const consensusMetaResp: CLBlockSnapshot = {
 };
 
 /*
- * Glamsterdam (EIP-7732) answers of a consensus node.
- *
- * Since the fork a beacon block carries no execution payload. It commits to a bid, and the builder reveals the payload
- * later in the slot, in an envelope of its own. That payload is applied to the state while the next block is being
- * processed, so the state of a block holds the payload of an earlier block and never its own. The bid names the payload
- * the state already holds, in `parent_block_hash`, and the registry walks the ancestors back to find the block it
- * belongs to.
+ * Glamsterdam answers of a consensus node.
  *
  * Three slots in a row are described here. The builder of G1 never reveals its payload, so G2 still runs on the payload
  * of G0 and reports the same execution layer block that G1 reports.
@@ -190,7 +184,7 @@ const makeGloasBlock = (args: {
           sync_committee_signature: gloasSignature,
         },
         // [New in Gloas:EIP7732] no execution_payload, the block only commits to a bid. Only the two hashes below are
-        // read, so the rest of the bid is left out: its layout is still moving in the specs.
+        // read, so the rest of the bid is left out.
         signed_execution_payload_bid: {
           message: {
             parent_block_hash: args.appliedBlockHash,
