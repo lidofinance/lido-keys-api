@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   build-and-push:
-    uses: lidofinance/actions/.github/workflows/k8s-build-push-harbor.yml@7de400312db7572fb97aa0a745b2fcb201015a76  # main
+    uses: lidofinance/actions/.github/workflows/k8s-build-push-harbor.yml@9a0235f9c24aa3188f373031dda4b49bdba2e7fe  # main
     with:
       target: dev
       harbor_project: team-staking-core

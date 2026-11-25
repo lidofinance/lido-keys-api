@@ -1,58 +1,42 @@
 name: Build and push lido-keys-api to production
 
 on:
-  workflow_run:
-    workflows:
-      - Run_on_release
-    types:
-      - completed
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Stable release tag
+        required: true
+        type: string
 
 permissions: {}
 
 jobs:
   release-tag:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'release' }}
-    runs-on: ubuntu-22.04
-    permissions:
-      actions: read
+    runs-on: ubuntu-24.04
     outputs:
       tag: ${{ steps.release.outputs.tag }}
 
     steps:
-      - name: Download release tag
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
-        with:
-          name: release-tag
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: ${{ runner.temp }}/release-artifact
-
       - name: Validate release tag
         id: release
         shell: bash
         env:
-          TAG_FILE: ${{ runner.temp }}/release-artifact/release_tag.txt
+          RELEASE_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
 
-          if [[ ! -f "$TAG_FILE" || -L "$TAG_FILE" ]]; then
-            echo "::error::Release tag artifact is not a regular file"
+          if [[ ! "$RELEASE_TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Release tag must use stable SemVer such as v1.2.3 or 1.2.3"
             exit 1
           fi
 
-          mapfile -t lines < "$TAG_FILE"
-          if [[ "${#lines[@]}" -ne 1 || ! "${lines[0]}" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Release tag artifact must contain exactly one stable SemVer tag"
-            exit 1
-          fi
-
-          echo "tag=${lines[0]}" >> "$GITHUB_OUTPUT"
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
 
   build-and-push:
     needs: release-tag
     permissions:
       contents: read
-    uses: lidofinance/actions/.github/workflows/k8s-build-push-harbor.yml@7de400312db7572fb97aa0a745b2fcb201015a76  # main
+    uses: lidofinance/actions/.github/workflows/k8s-build-push-harbor.yml@9a0235f9c24aa3188f373031dda4b49bdba2e7fe  # main
     with:
       target: prod
       tag: ${{ needs.release-tag.outputs.tag }}
