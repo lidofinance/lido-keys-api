@@ -33,6 +33,8 @@ For running locally in container run
 1. `docker-compose -f docker-compose.yml build`
 2. `docker-compose -f docker-compose.yml up`
 
+The image is built on Docker Hardened Images (`dhi.io/node`). This registry needs a login: run `docker login dhi.io` once before the build.
+
 For running KAPI, one can also use the image from this page https://docs.lido.fi/guides/tooling#keys-api. Please always use the SHA256 hash of the Docker image for the latest release: lidofinance/lido-keys-api@<latest-hash>.
 
 ## Metrics and alerts
@@ -123,6 +125,7 @@ To create a new release:
 1. When you need to release, go to Repo → Releases.
 1. Publish the desired release draft manually by clicking the edit button - this release is now the `Latest Published`.
 1. After publication, the action to create a release bump will be triggered automatically.
+1. The publication also starts `Run_on_release`. It runs `ci-prod-k8s.yml` from `main`, which builds the image for the k8s platform. The build waits for an approval in the `harbor_prod_release` environment.
 
 ## License
 
