@@ -36,7 +36,7 @@ jobs:
     needs: release-tag
     permissions:
       contents: read
-    uses: lidofinance/actions/.github/workflows/k8s-build-push-harbor.yml@9a0235f9c24aa3188f373031dda4b49bdba2e7fe  # main
+    uses: lidofinance/actions/.github/workflows/k8s-build-push-harbor.yml@main
     with:
       target: prod
       tag: ${{ needs.release-tag.outputs.tag }}
