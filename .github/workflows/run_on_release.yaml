@@ -5,15 +5,22 @@ on:
     types:
       - released
 
-permissions:
-  contents: read
+permissions: {}
 
+# The relay runs from the tagged commit. The build is dispatched from main,
+# because the harbor_prod_release environment allows only main.
 jobs:
-  save-release-tag:
-    runs-on: ubuntu-22.04
+  trigger-release-build:
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write
+    env:
+      RELEASE_BRANCH: main
+      BUILD_WORKFLOW: ci-prod-k8s.yml
 
     steps:
-      - name: Validate and save stable release tag
+      - name: Validate stable release tag
+        id: release
         shell: bash
         env:
           RELEASE_DRAFT: ${{ github.event.release.draft }}
@@ -32,12 +39,18 @@ jobs:
             exit 1
           fi
 
-          printf '%s\n' "$RELEASE_TAG" > release_tag.txt
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Upload release tag
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        with:
-          name: release-tag
-          path: release_tag.txt
-          if-no-files-found: error
-          retention-days: 1
+      - name: Dispatch release build from production branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          gh workflow run "$BUILD_WORKFLOW" \
+            --repo "$GH_REPO" \
+            --ref "$RELEASE_BRANCH" \
+            -f tag="$RELEASE_TAG"
