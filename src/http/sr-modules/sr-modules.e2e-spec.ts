@@ -255,6 +255,12 @@ describe('SRModulesController (e2e)', () => {
         expect(resp.status).toEqual(425);
         expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
       });
+
+      it('Should return too early response if the DB is empty', async () => {
+        const resp = await request(app.getHttpServer()).get(`/v1/modules/${curatedModule.moduleId}`);
+        expect(resp.status).toEqual(425);
+        expect(resp.body).toEqual({ message: 'Too early response', statusCode: 425 });
+      });
     });
   });
 });
